@@ -1,6 +1,6 @@
-/* $Id: MatrixOrbital.c,v 1.15 2000/04/12 08:05:45 reinelt Exp $
+/* $Id: HD44780.c,v 1.1 2000/04/12 08:05:45 reinelt Exp $
  *
- * driver for Matrix Orbital serial display modules
+ * driver for display modules based on the HD44780 chip
  *
  * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
  *
@@ -19,62 +19,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: MatrixOrbital.c,v $
- * Revision 1.15  2000/04/12 08:05:45  reinelt
+ * $Log: HD44780.c,v $
+ * Revision 1.1  2000/04/12 08:05:45  reinelt
  *
  * first version of the HD44780 driver
- *
- * Revision 1.14  2000/04/10 04:40:53  reinelt
- *
- * minor changes and cleanups
- *
- * Revision 1.13  2000/04/07 05:42:20  reinelt
- *
- * UUCP style lockfiles for the serial port
- *
- * Revision 1.12  2000/03/26 18:46:28  reinelt
- *
- * bug in pixmap.c that leaded to empty bars fixed
- * name conflicts with X11 resolved
- *
- * Revision 1.11  2000/03/25 05:50:43  reinelt
- *
- * memory leak in Raster_flush closed
- * driver family logic changed
- *
- * Revision 1.10  2000/03/23 07:24:48  reinelt
- *
- * PPM driver up and running (but slow!)
- *
- * Revision 1.9  2000/03/22 07:33:50  reinelt
- *
- * FAQ added
- * new modules 'processor.c' contains all data processing
- *
- * Revision 1.8  2000/03/19 08:41:28  reinelt
- *
- * documentation available! README, README.MatrixOrbital, README.Drivers
- * added Skeleton.c as a starting point for new drivers
- *
- * Revision 1.7  2000/03/18 08:07:04  reinelt
- *
- * vertical bars implemented
- * bar compaction improved
- * memory information implemented
- *
- * Revision 1.6  2000/03/17 09:21:42  reinelt
- *
- * various memory statistics added
- *
- * Revision 1.5  2000/03/13 15:58:24  reinelt
- *
- * release 0.9
- * moved row parsing to parser.c
- * all basic work finished
- *
- * Revision 1.4  2000/03/10 17:36:02  reinelt
- *
- * first unstable but running release
  *
  */
 
@@ -82,21 +30,18 @@
  *
  * exported fuctions:
  *
- * struct LCD MatrixOrbital[]
+ * struct LCD HD44780[]
  *
  */
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
 #include <unistd.h>
 #include <signal.h>
-#include <termios.h>
-#include <fcntl.h>
+#include <errno.h>
+#include <asm/io.h>
 
 #include "cfg.h"
-#include "lock.h"
 #include "display.h"
 
 #define XRES 5
@@ -105,9 +50,6 @@
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 static LCD Lcd;
-static char *Port=NULL;
-static speed_t Speed;
-static int Device=-1;
 
 typedef struct {
   int len1;
@@ -124,6 +66,8 @@ typedef struct {
   int ascii;
 } SEGMENT;
 
+static unsigned short Port=0;
+
 static char Txt[4][40];
 static BAR  Bar[4][40];
 
@@ -132,61 +76,56 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
-static int MO_open (void)
+static void HD_delay (unsigned long usec)
 {
-  int fd;
-  pid_t pid;
-  struct termios portset;
-  
-  if ((pid=lock_port(Port))!=0) {
-    if (pid==-1)
-      fprintf (stderr, "MatrixOrbital: port %s could not be locked\n", Port);
-    else
-      fprintf (stderr, "MatrixOrbital: port %s is locked by process %d\n", Port, pid);
-    return -1;
-  }
-  fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
-  if (fd==-1) {
-    fprintf (stderr, "MatrixOrbital: open(%s) failed: %s\n", Port, strerror(errno));
-    return -1;
-  }
-  if (tcgetattr(fd, &portset)==-1) {
-    fprintf (stderr, "MatrixOrbital: tcgetattr(%s) failed: %s\n", Port, strerror(errno));
-    return -1;
-  }
-  cfmakeraw(&portset);
-  cfsetospeed(&portset, Speed);
-  if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-    fprintf (stderr, "MatrixOrbital: tcsetattr(%s) failed: %s\n", Port, strerror(errno));
-    return -1;
-  }
-  return fd;
+  usleep(usec);
 }
 
-static void MO_write (char *string, int len)
+static void HD_command (unsigned char cmd)
 {
-  if (Device==-1) return;
-  if (write (Device, string, len)==-1) {
-    if (errno==EAGAIN) {
-      usleep(1000);
-      if (write (Device, string, len)>=0) return;
-    }
-    fprintf (stderr, "MatrixOrbital: write(%s) failed: %s\n", Port, strerror(errno));
+  outb (cmd, Port);    // put data on DB1..DB8
+  outb (0x02, Port+2); // set Enable = bit 0 invertet
+  HD_delay(1);
+  outb (0x03, Port+2); // clear Enable
+}
+
+static void HD_write (char *string, int len)
+{
+  while (len--) {
+    outb (*string++, Port); // put data on DB1..DB8
+    outb (0x00, Port+2); // set Enable = bit 0 invertet
+    HD_delay(1);
+    outb (0x01, Port+2); // clear Enable
+    HD_delay(40);
   }
 }
 
-static int MO_contrast (void)
+static int HD_open (void)
 {
-  char buffer[4];
-  int  contrast;
+  if (ioperm(Port, 3, 1)!=0) {
+    fprintf (stderr, "HD44780: ioperm() failed: %s\n", strerror(errno));
+    return -1;
+  }
 
-  contrast=atoi(cfg_get("Contrast")?:"160");
-  snprintf (buffer, 4, "\376P%c", contrast);
-  MO_write (buffer, 3);
+  HD_command (0x30);  // 8 Bit mode
+  HD_delay (4100);      // wait 4.1 ms
+  HD_command (0x30);  // 8 Bit mode
+  HD_delay (100);       // wait 100 us
+  HD_command (0x30);  // 8 Bit mode
+  HD_delay (4100);      // wait 4.1 ms
+  HD_command (0x38);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  HD_delay (40);        // wait 40 us
+  HD_command (0x08);  // Display off, cursor off, blink off
+  HD_delay (40);        // wait 40 us
+  HD_command (0x0c);  // Display on, cursor off, blink off
+  HD_delay (1640);      // wait 1.64 ms
+  HD_command (0x06);  // curser moves to right, no shift
+  HD_delay (40);        // wait 40 us
+
   return 0;
 }
 
-static void MO_process_bars (void)
+static void HD_process_bars (void)
 {
   int row, col;
   int i, j;
@@ -219,7 +158,7 @@ static void MO_process_bars (void)
   }
 }
 
-static int MO_segment_diff (int i, int j)
+static int HD_segment_diff (int i, int j)
 {
   int RES;
   int i1, i2, j1, j2;
@@ -241,7 +180,7 @@ static int MO_segment_diff (int i, int j)
   return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
 }
 
-static void MO_compact_bars (void)
+static void HD_compact_bars (void)
 {
   int i, j, r, c, min;
   int pack_i, pack_j;
@@ -252,7 +191,7 @@ static void MO_compact_bars (void)
 
     for (i=2; i<nSegment; i++) {
       for (j=0; j<nSegment; j++) {
-	error[i][j]=MO_segment_diff(i,j);
+	error[i][j]=HD_segment_diff(i,j);
       }
     }
     
@@ -275,7 +214,7 @@ static void MO_compact_bars (void)
 	  pass1=0;
 	  continue;
 	} else {
-	  fprintf (stderr, "MatrixOrbital: unable to compact bar characters\n");
+	  fprintf (stderr, "HD44780: unable to compact bar characters\n");
 	  nSegment=CHARS;
 	  break;
 	}
@@ -301,10 +240,10 @@ static void MO_compact_bars (void)
   }
 }
 
-static void MO_define_chars (void)
+static void HD_define_chars (void)
 {
   int c, i, j;
-  char buffer[12]="\376N";
+  char buffer[8];
 
   for (i=2; i<nSegment; i++) {
     if (Segment[i].used) continue;
@@ -316,44 +255,44 @@ static void MO_define_chars (void)
       if (j==nSegment) break;
     }
     Segment[i].ascii=c;
-    buffer[2]=c;
     switch (Segment[i].type) {
     case BAR_L:
       for (j=0; j<4; j++) {
 	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
+	buffer[j]=Pixel[Segment[i].len1];
+	buffer[j+4]=Pixel[Segment[i].len2];
       }
       break;
     case BAR_R:
       for (j=0; j<4; j++) {
 	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
+	buffer[j]=Pixel[Segment[i].len1];
+	buffer[j+4]=Pixel[Segment[i].len2];
       }
       break;
     case BAR_U:
       for (j=0; j<Segment[i].len1; j++) {
-	buffer[10-j]=31;
+	buffer[7-j]=31;
       }
       for (; j<YRES; j++) {
-	buffer[10-j]=0;
+	buffer[7-j]=0;
       }
       break;
     case BAR_D:
       for (j=0; j<Segment[i].len1; j++) {
-	buffer[j+3]=31;
+	buffer[j]=31;
       }
       for (; j<YRES; j++) {
-	buffer[j+3]=0;
+	buffer[j]=0;
       }
       break;
     }
-    MO_write (buffer, 11);
+    HD_command (0x40|8*c);
+    HD_write (buffer, 8);
   }
 }
 
-int MO_clear (void)
+int HD_clear (void)
 {
   int row, col;
 
@@ -366,72 +305,65 @@ int MO_clear (void)
       Bar[row][col].segment=-1;
     }
   }
-  MO_write ("\014", 1);
+  HD_command (0x01); // clear display
+  HD_delay (1640);
   return 0;
 }
 
-static void MO_quit (int signal); //forward declaration
+static void HD_quit (int signal); //forward declaration
 
-int MO_init (LCD *Self)
+int HD_init (LCD *Self)
 {
-  char *port;
-  char *speed;
-
-  Lcd=*Self;
-
-  if (Port) {
-    free (Port);
-    Port=NULL;
-  }
-
-  port=cfg_get ("Port");
-  if (port==NULL || *port=='\0') {
-    fprintf (stderr, "MatrixOrbital: no 'Port' entry in %s\n", cfg_file());
+  int rows=-1, cols=-1;
+  char *s, *e;
+  
+  s=cfg_get ("Port");
+  if (s==NULL || *s=='\0') {
+    fprintf (stderr, "HD44780: no 'Port' entry in %s\n", cfg_file());
     return -1;
   }
-  Port=strdup(port);
-
-  speed=cfg_get("Speed")?:"19200";
-  
-  switch (atoi(speed)) {
-  case 1200:
-    Speed=B1200;
-    break;
-  case 2400:
-    Speed=B2400;
-    break;
-  case 9600:
-    Speed=B9600;
-    break;
-  case 19200:
-    Speed=B19200;
-    break;
-  default:
-    fprintf (stderr, "MatrixOrbital: unsupported speed '%s' in %s\n", speed, cfg_file());
+  if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
+    fprintf (stderr, "HD44780: bad port '%s' in %s\n", s, cfg_file());
     return -1;
   }    
 
-  Device=MO_open();
-  if (Device==-1) return -1;
+  s=cfg_get("Size");
+  if (s==NULL || *s=='\0') {
+    fprintf (stderr, "HD44780: no 'Size' entry in %s\n", cfg_file());
+    return -1;
+  }
+  
+  if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
+    fprintf(stderr,"HD44780: bad size '%s'\n",s);
+    return -1;
+  }
+  
+  Self->rows=rows;
+  Self->cols=cols;
+  Lcd=*Self;
+  
+  if (HD_open()!=0)
+    return -1;
+  
+  HD_clear();
 
-  MO_clear();
-  MO_contrast();
-
-  MO_write ("\376B", 3);  // backlight on
-  MO_write ("\376K", 2);  // cursor off
-  MO_write ("\376T", 2);  // blink off
-  MO_write ("\376D", 2);  // line wrapping off
-  MO_write ("\376R", 2);  // auto scroll off
-  MO_write ("\376V", 2);  // GPO off
-
-  signal(SIGINT,  MO_quit);
-  signal(SIGQUIT, MO_quit);
-  signal(SIGTERM, MO_quit);
+  signal(SIGINT,  HD_quit);
+  signal(SIGQUIT, HD_quit);
+  signal(SIGTERM, HD_quit);
 
   return 0;
 }
 
-int MO_put (int row, int col, char *text)
+void HD_goto (int row, int col)
+{
+  int pos;
+  pos=(row%2)*64+col;
+  if (row>2) pos+=20;
+  HD_command (0x80|pos);
+  HD_delay(40);
+}
+
+int HD_put (int row, int col, char *text)
 {
   char *p=&Txt[row][col];
   char *t=text;
@@ -442,7 +374,7 @@ int MO_put (int row, int col, char *text)
   return 0;
 }
 
-int MO_bar (int type, int row, int col, int max, int len1, int len2)
+int HD_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int rev=0;
   
@@ -513,22 +445,21 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
-int MO_flush (void)
+int HD_flush (void)
 {
-  char buffer[256]="\376G";
+  char buffer[256];
   char *p;
   int s, row, col;
   
-  MO_process_bars();
-  MO_compact_bars();
-  MO_define_chars();
+  HD_process_bars();
+  HD_compact_bars();
+  HD_define_chars();
   
   for (s=0; s<nSegment; s++) {
     Segment[s].used=0;
   }
 
   for (row=0; row<Lcd.rows; row++) {
-    buffer[3]=row+1;
     for (col=0; col<Lcd.cols; col++) {
       s=Bar[row][col].segment;
       if (s!=-1) {
@@ -538,12 +469,12 @@ int MO_flush (void)
     }
     for (col=0; col<Lcd.cols; col++) {
       if (Txt[row][col]=='\t') continue;
-      buffer[2]=col+1;
-      for (p=buffer+4; col<Lcd.cols; col++, p++) {
+      HD_goto (row, col);
+      for (p=buffer; col<Lcd.cols; col++, p++) {
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
-      MO_write (buffer, p-buffer);
+      HD_write (buffer, p-buffer);
     }
   }
   return 0;
@@ -551,20 +482,15 @@ int MO_flush (void)
 
 int lcd_hello (void); // prototype from lcd4linux.c
 
-static void MO_quit (int signal)
+static void HD_quit (int signal)
 {
-  MO_clear();
+  HD_clear();
   lcd_hello();
-  close (Device);
-  unlock_port(Port);
+  // Fixme: ioperm rückgängig machen?
   exit (0);
 }
 
-LCD MatrixOrbital[] = {
-  { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD1621", 2, 16, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD2041", 4, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD4021", 2, 40, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush }, 
+LCD HD44780[] = {
+  { "HD44780", 0, 0, XRES, YRES, BARS, HD_init, HD_clear, HD_put, HD_bar, HD_flush },
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.14 2000/04/03 17:31:52 reinelt Exp $
+/* $Id: display.c,v 1.15 2000/04/12 08:05:45 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.15  2000/04/12 08:05:45  reinelt
+ *
+ * first version of the HD44780 driver
+ *
  * Revision 1.14  2000/04/03 17:31:52  reinelt
  *
  * suppress welcome message if display is smaller than 20x2
@@ -119,12 +123,14 @@
 
 extern LCD Skeleton[];
 extern LCD MatrixOrbital[];
+extern LCD HD44780[];
 extern LCD Raster[];
 extern LCD XWindow[];
 
 FAMILY Driver[] = {
   { "Skeleton",        Skeleton },
   { "Matrix Orbital",  MatrixOrbital },
+  { "Parallel port",   HD44780 },
   { "Raster",          Raster },
 #ifndef X_DISPLAY_MISSING
   { "X Window System", XWindow },

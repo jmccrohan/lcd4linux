@@ -3,6 +3,11 @@
 #Speed 19200
 #Contrast 160
 
+Display HD44780
+Port 0x378
+Size 16x2
+
+
 #Display PPM
 #size 20x4
 #font 5x8
@@ -13,16 +18,15 @@
 #halfground \#70c000
 #background \#80d000
 
-Display X11
-size 20x5
-font 5x8
-pixel 1+0
-gap -1x-1
-border 1
-foreground \#102000
-halfground \#90c000
-background \#a0d000
-
+#Display X11
+#size 20x5
+#font 5x8
+#pixel 1+0
+#gap -1x-1
+#border 1
+#foreground \#102000
+#halfground \#90c000
+#background \#a0d000
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
