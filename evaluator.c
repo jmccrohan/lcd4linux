@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.2 2003/10/06 05:47:27 reinelt Exp $
+/* $Id: evaluator.c,v 1.3 2003/10/11 06:01:52 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,13 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.3  2003/10/11 06:01:52  reinelt
+ *
+ * renamed expression.{c,h} to client.{c,h}
+ * added config file client
+ * new functions 'AddNumericVariable()' and 'AddStringVariable()'
+ * new parameter '-i' for interactive mode
+ *
  * Revision 1.2  2003/10/06 05:47:27  reinelt
  * operators: ==, \!=, <=, >=
  *
@@ -56,7 +63,10 @@
 /* 
  * exported functions:
  *
- * int AddConstant (char *name, double value)
+ * int AddNumericVariable(char *name, double value)
+ *   adds a numerical variable to the evaluator
+ *
+ * int AddStringVariable(char *name, char *value)
  *   adds a numerical variable to the evaluator
  *
  * int AddFunction (char *name, int args, void (*func)())
@@ -339,18 +349,6 @@ static int SetVariable (char *name, RESULT *value)
 }
 
 
-int AddConstant (char *name, double value)
-{
-  RESULT result;
-  
-  result.type=R_NUMBER;
-  result.number=value;
-  result.string=NULL;
-  
-  return SetVariable (name, &result);
-}
-
-
 // bsearch compare function for functions 
 static int f_lookup (const void *a, const void *b)
 {
@@ -367,33 +365,6 @@ static int f_sort (const void *a, const void *b)
   FUNCTION *vb=(FUNCTION*)b;
   return strcmp(va->name, vb->name);
 }
-
-
-int AddFunction (char *name, int args, void (*func)())
-{
-  FUNCTION *F;
-
-  F=bsearch(name, Function, nFunction, sizeof(FUNCTION), f_lookup);
-  if (F!=NULL) {
-    if (F->name) free (F->name);
-    F->name=strdup(name);
-    F->args=args;
-    F->func=func;
-    return 1;
-  }
-  
-  // Fixme: we append the func at the end and re-sort
-  // the whole array! This should be optimized...
-  nFunction++;
-  Function=realloc(Function, nFunction*sizeof(FUNCTION));
-  Function[nFunction-1].name=strdup(name);
-  Function[nFunction-1].args=args;
-  Function[nFunction-1].func=func;
-  qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
-
-  return 0;
-}
-
 
 
 // Prototypes
@@ -749,6 +720,56 @@ static void Level11 (RESULT *result)
 }
 
 
+int AddNumericVariable (char *name, double value)
+{
+  RESULT result;
+  
+  result.type=R_NUMBER;
+  result.number=value;
+  result.string=NULL;
+  
+  return SetVariable (name, &result);
+}
+
+
+int AddStringVariable (char *name, char *value)
+{
+  RESULT result;
+  
+  result.type=R_STRING;
+  result.number=0.0;
+  result.string=strdup(value);
+  
+  return SetVariable (name, &result);
+}
+
+
+int AddFunction (char *name, int args, void (*func)())
+{
+  FUNCTION *F;
+
+  F=bsearch(name, Function, nFunction, sizeof(FUNCTION), f_lookup);
+  if (F!=NULL) {
+    if (F->name) free (F->name);
+    F->name=strdup(name);
+    F->args=args;
+    F->func=func;
+    return 1;
+  }
+  
+  // Fixme: we append the func at the end and re-sort
+  // the whole array! This should be optimized...
+  nFunction++;
+  Function=realloc(Function, nFunction*sizeof(FUNCTION));
+  Function[nFunction-1].name=strdup(name);
+  Function[nFunction-1].args=args;
+  Function[nFunction-1].func=func;
+  qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
+
+  return 0;
+}
+
+
 int Eval (char* expression, RESULT *result)
 {
   int err;
@@ -766,5 +787,3 @@ int Eval (char* expression, RESULT *result)
   if (*Token!='\0') ERROR (E_SYNTAX);
   return 0;
 }
-
-

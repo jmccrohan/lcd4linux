@@ -1,6 +1,6 @@
-/* $Id: expression.c,v 1.3 2003/10/06 05:51:15 reinelt Exp $
+/* $Id: client.c,v 1.1 2003/10/11 06:01:52 reinelt Exp $
  *
- * expression handling
+ * client function handling
  *
  * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
  *
@@ -21,7 +21,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: expression.c,v $
+ * $Log: client.c,v $
+ * Revision 1.1  2003/10/11 06:01:52  reinelt
+ *
+ * renamed expression.{c,h} to client.{c,h}
+ * added config file client
+ * new functions 'AddNumericVariable()' and 'AddStringVariable()'
+ * new parameter '-i' for interactive mode
+ *
  * Revision 1.3  2003/10/06 05:51:15  reinelt
  * functions: min(), max()
  *
@@ -36,7 +43,7 @@
 /* 
  * exported functions:
  *
- * int EX_init (void)
+ * int Client_init (void)
  *  initializes the expression evaluator
  *  adds some handy constants and functions
  *
@@ -49,9 +56,7 @@
 #include <string.h>
 
 #include "debug.h"
-#include "cfg.h"
-#include "evaluator.h"
-#include "expression.h"
+#include "client.h"
 
 
 
@@ -122,18 +127,11 @@ static void my_strlen (RESULT *result, RESULT *arg1)
 }
 
 
-static void my_cfg (RESULT *result, RESULT *arg1)
-{
-  char *value=cfg_get(R2S(arg1), "");
-  SetResult(&result, R_STRING, value); 
-}
-
-
-int EX_init (void)
+int client_init (void)
 {
   // set some handy constants
-  AddConstant ("Pi", M_PI);
-  AddConstant ("e",  M_E);
+  AddNumericVariable ("Pi", M_PI);
+  AddNumericVariable ("e",  M_E);
   
   // register some basic math functions
   AddFunction ("sqrt", 1, my_sqrt);
@@ -151,30 +149,8 @@ int EX_init (void)
   // register some basic string functions
   AddFunction ("strlen", 1, my_strlen);
 
-  // config file access
-  AddFunction ("cfg", 1, my_cfg);
-
   
   return 0;
 }
 
 
-int EX_test(int argc, char* argv[])
-{
-  int ec;
-  char line[1024];
-  RESULT result = {0, 0.0, NULL};
-  
-  printf("\nEE> ");
-  for(gets(line); !feof(stdin); gets(line)) {
-    ec=Eval(line, &result);
-    if (result.type==R_NUMBER) {
-      printf ("%g\n", R2N(&result));
-    } else if (result.type==R_STRING) {
-      printf ("<%s>\n", R2S(&result));
-    }
-    printf("EE> ");
-  }
-
-  return 0;
-}

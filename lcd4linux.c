@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.48 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.49 2003/10/11 06:01:53 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.49  2003/10/11 06:01:53  reinelt
+ *
+ * renamed expression.{c,h} to client.{c,h}
+ * added config file client
+ * new functions 'AddNumericVariable()' and 'AddStringVariable()'
+ * new parameter '-i' for interactive mode
+ *
  * Revision 1.48  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -247,6 +254,7 @@
 #include "udelay.h"
 #include "display.h"
 #include "processor.h"
+#include "client.h"
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
@@ -257,6 +265,7 @@ static int got_signal=0;
 int tick, tack;
 extern char* output;
 
+
 static void usage(void)
 {
   printf ("%s\n", release);
@@ -265,8 +274,10 @@ static void usage(void)
 #ifdef USE_OLD_UDELAY
   printf ("       lcd4linux [-d]\n");
 #endif
+  printf ("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
   printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
+
 
 int hello (void)
 {
@@ -304,6 +315,7 @@ int hello (void)
   return flag;
 }
 
+
 #ifdef USE_OLD_UDELAY
 void calibrate (void)
 {
@@ -322,11 +334,13 @@ void calibrate (void)
 }
 #endif
 
+
 void handler (int signal)
 {
   debug ("got signal %d", signal);
   got_signal=signal;
 }
+
 
 int main (int argc, char *argv[])
 {
@@ -334,6 +348,7 @@ int main (int argc, char *argv[])
   char *driver;
   int c;
   int quiet=0;
+  int interactive=0;
   
   // save arguments for restart
   my_argv=malloc(sizeof(char*)*(argc+1));
@@ -344,11 +359,11 @@ int main (int argc, char *argv[])
 
   running_foreground=0;
   running_background=0;
-
+  
 #ifdef USE_OLD_UDELAY
-  while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:dFf:hilo:qv"))!=EOF) {
 #else
-  while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:dFf:hilo:qv"))!=EOF) {
 #endif
     switch (c) {
     case 'c':
@@ -374,6 +389,9 @@ int main (int argc, char *argv[])
     case 'h':
       usage();
       exit(0);
+    case 'i':
+      interactive++;
+      break;
     case 'l':
       printf ("%s\n", release);
       lcd_list();
@@ -397,17 +415,21 @@ int main (int argc, char *argv[])
     exit(2);
   }
 
+  // do not fork in interactive mode
+  if (interactive) {
+    running_foreground=1;
+  }
+
   info ("Version " VERSION " starting");
   if (!running_foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
     info ("invoked without full path; restart may not work!");
   }
   
-  if (cfg_init (cfg)==-1)
+  if (client_init()==-1)
     exit (1);
   
-  // Fixme:
-  EX_init();
-  EX_test();
+  if (cfg_init(cfg)==-1)
+    exit (1);
   
   driver=cfg_get("display",NULL);
   if (driver==NULL || *driver=='\0') {
@@ -479,10 +501,31 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-
   // process_init sets global vars tick, tack
   process_init();
-  lcd_clear(1);
+
+  // maybe go into interactive mode
+  if (interactive) {
+    char line[1024];
+    RESULT result = {0, 0.0, NULL};
+    
+    printf("\neval> ");
+    for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
+      if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
+      Eval(line, &result);
+      if (result.type==R_NUMBER) {
+	printf ("%g\n", R2N(&result));
+      } else if (result.type==R_STRING) {
+	printf ("'%s'\n", R2S(&result));
+      }
+      printf("eval> ");
+    }
+    printf ("\n");
+    lcd_clear(1);
+    lcd_quit();
+    pid_exit(PIDFILE);
+    exit (0);
+  }
   
   if (!quiet && hello()) {
     sleep (3);

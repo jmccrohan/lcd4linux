@@ -18,7 +18,7 @@ pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
 evaluator.c evaluator.h \
-expression.c expression.h \
+client.c client.h \
 system.c system.h \
 isdn.c isdn.h \
 mail.c mail.h \
