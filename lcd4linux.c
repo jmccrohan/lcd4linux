@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.22 2000/04/15 16:56:52 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.23 2000/04/17 05:14:27 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.23  2000/04/17 05:14:27  reinelt
+ *
+ * added README.44780
+ *
  * Revision 1.22  2000/04/15 16:56:52  reinelt
  *
  * moved delay loops to udelay.c
@@ -189,6 +193,22 @@ int lcd_hello (void)
   return flag;
 }
 
+void calibrate (void)
+{
+  int i;
+  unsigned long max=0;
+
+  printf ("%s\n", release);
+  printf ("calibrating delay loop:");
+  fflush(stdout);
+  for (i=0; i<10; i++) {
+    udelay_calibrate();
+    if (loops_per_usec>max)
+      max=loops_per_usec;
+  }
+  printf (" Delay=%ld\n", max);
+}
+
 int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
@@ -205,9 +225,7 @@ int main (int argc, char *argv[])
       }
       break;
     case 'd':
-      printf ("%s\n", release);
-      udelay_calibrate();
-      printf ("calibrating delay loop: Delay=%ld\n", loops_per_usec);
+      calibrate();
       exit(0);
     case 'h':
       usage();
