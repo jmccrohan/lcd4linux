@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.43 2003/09/10 14:01:53 reinelt Exp $
+/* $Id: processor.c,v 1.44 2003/09/10 15:59:39 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.44  2003/09/10 15:59:39  reinelt
+ * minor cleanups
+ *
  * Revision 1.43  2003/09/10 14:01:53  reinelt
  * icons nearly finished\!
  *
@@ -872,9 +875,6 @@ void process (void)
   int i, j, val;
   char *txt;
   
-  // Fixme:
-  static int junk=0;
-  
   // collect data every tick msec
   if (loop_tick==0) {
     collect_data();
@@ -911,10 +911,11 @@ void process (void)
   
   // rotate icon animations
   if (loop_icon==0) {
+    static int sequence=0;
     for (i=1; i<=icons; i++) {
-      lcd_icon (i, junk, 0, 0);
+      lcd_icon (i, sequence, 0, 0);
     }
-    junk++;
+    sequence++;
   }
   
   // flush in every case
