@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.9  2004/06/09 06:40:29  reinelt
+ *
+ * splash screen for T6963 driver
+ *
  * Revision 1.8  2004/06/08 21:46:38  reinelt
  *
  * splash screen for X11 driver (and generic graphic driver)
@@ -162,7 +166,7 @@ static void drv_generic_graphic_resizeFB (int rows, int cols)
 int drv_generic_graphic_clear (void)
 {
   memset(drv_generic_graphic_FB, 0, DCOLS*DROWS*sizeof(*drv_generic_graphic_FB));
-  drv_generic_graphic_real_blit (0, 0, DROWS * YRES, DCOLS * XRES);
+  drv_generic_graphic_real_blit (0, 0, DROWS, DCOLS);
   return 0;
 }
 

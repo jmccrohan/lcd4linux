@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.7 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.8 2004/06/09 06:40:29 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.8  2004/06/09 06:40:29  reinelt
+ *
+ * splash screen for T6963 driver
+ *
  * Revision 1.7  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -345,7 +349,7 @@ static void drv_T6_blit(int row, int col, int height, int width)
   }
   
   // max address
-  m=((row+height)*DCOLS+col+width)/XRES;
+  m=((row+height-1)*DCOLS+col+width)/XRES;
   
   for (i=(row*DCOLS+col)/XRES; i<=m; i++) {
     if (Buffer1[i]==Buffer2[i]) continue;
@@ -419,13 +423,14 @@ static int drv_T6_start (char *section)
   TROWS=DROWS/YRES;  // text rows
   TCOLS=DCOLS/XRES;  // text cols
 
-  Buffer1=malloc(DCOLS*TROWS);
+  Buffer1=malloc(TCOLS*DROWS);
   if (Buffer1==NULL) {
     error ("%s: framebuffer #1 could not be allocated: malloc() failed", Name);
     return -1;
   }
 
-  Buffer2=malloc(DCOLS*TROWS);
+  debug ("malloc buffer 2 (%d*%d)=%d", TCOLS, DROWS, TCOLS*DROWS);
+  Buffer2=malloc(TCOLS*DROWS);
   if (Buffer2==NULL) {
     error ("%s: framebuffer #2 could not be allocated: malloc() failed", Name);
     return -1;
@@ -433,7 +438,6 @@ static int drv_T6_start (char *section)
 
   memset(Buffer1,0,TCOLS*DROWS*sizeof(*Buffer1));
   memset(Buffer2,0,TCOLS*DROWS*sizeof(*Buffer2));
-  
 
   if (drv_generic_parport_open(section, Name) != 0) {
     error ("%s: could not initialize parallel port!", Name);
@@ -536,6 +540,15 @@ int drv_T6_init (char *section, int quiet)
   if ((ret=drv_generic_graphic_init(section, Name))!=0)
     return ret;
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_graphic_greet (buffer, NULL)) {
+      sleep (3);
+      drv_generic_graphic_clear();
+    }
+  }
+
   // register text widget
   wc=Widget_Text;
   wc.draw=drv_generic_graphic_draw;
@@ -561,10 +574,17 @@ int drv_T6_init (char *section, int quiet)
 
 // close driver & display
 int drv_T6_quit (int quiet) {
-
+  
   info("%s: shutting down.", Name);
-  drv_generic_parport_close();
+  
+  drv_generic_graphic_clear();
+  
+  if (!quiet) {
+    drv_generic_graphic_greet ("goodbye!", NULL);
+  }
+  
   drv_generic_graphic_quit();
+  drv_generic_parport_close();
   
   if (Buffer1) {
     free (Buffer1);

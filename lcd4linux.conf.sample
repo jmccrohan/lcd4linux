@@ -101,7 +101,7 @@ Display USBLCD {
 Display T6963-240x64 {
     Driver 'T6963'
     Port '/dev/parports/0'
-    Size '240x128'
+    Size '240x64'
     Wire.CE 'STROBE'
     Wire.CD 'SELECT'
     Wire.RD 'AUTOFD'
@@ -600,8 +600,8 @@ Layout testMySQL {
 #Display 'CF633'
 #Display 'Curses'
 #Display 'USBLCD'
-#Display 'T6963-240x64'
-Display 'XWindow'
+Display 'T6963-240x64'
+#Display 'XWindow'
 #Display 'Image'
 
 Layout  'Default'
