@@ -252,6 +252,15 @@ Layout Default {
     }
 }
 
+Layout L24x8 {
+    Row1 {
+	Col1  'Load'
+	Col11 'BusyBar'
+    }
+    Row2 {
+    }
+}
+
 Layout L16x2 {
     Row1 {
 	Col1  'Busy'

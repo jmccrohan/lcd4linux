@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.3 2004/02/01 19:37:40 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.4 2004/02/15 07:23:04 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.4  2004/02/15 07:23:04  reinelt
+ * bug in netdev parsing fixed
+ *
  * Revision 1.3  2004/02/01 19:37:40  reinelt
  * got rid of every strtok() incarnation.
  *
@@ -90,7 +93,7 @@ static int parse_netdev (void)
   while (!feof(stream)) {
     char buffer[256];
     char header[256], *h, *t;
-    char *head[32];
+    char *head[64];
     char delim[]=" :|\t\n";
     int  col;
     
