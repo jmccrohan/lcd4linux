@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.1 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: parser.c,v 1.2 2000/03/17 09:21:42 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.2  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.1  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -53,9 +57,16 @@ typedef struct {
 static SYMTAB Symtab[] = {{ "%",  T_PERCENT, 0 },
 			  { "$",  T_DOLLAR, 0 },
 			  { "o",  T_OS, 0 },
-			  { "r",  T_RELEASE, 0 },
+			  { "v",  T_RELEASE, 0 },
 			  { "p",  T_CPU, 0 },
-			  { "m",  T_RAM, 0 },
+			  { "r",  T_RAM, 0 },
+			  { "mt", T_MEM_TOTAL, 1 },
+			  { "mu", T_MEM_USED, 1 },
+			  { "mf", T_MEM_FREE, 1 },
+			  { "ms", T_MEM_SHARED, 1 },
+			  { "mb", T_MEM_BUFFER, 1 },
+			  { "mc", T_MEM_CACHE, 1 },
+			  { "ma", T_MEM_APP, 1 },
 			  { "l1", T_LOAD_1, 1 },
 			  { "l2", T_LOAD_2, 1 },
 			  { "l3", T_LOAD_3, 1 },
@@ -128,10 +139,9 @@ char *parse (char *string, int supported_bars)
 
   do {
     switch (*s) {
-
+      
     case '%':
-      if ((token=get_token (s+1, &s, 0))==-1) {
-	s++;
+      if ((token=get_token (++s, &s, 0))==-1) {
 	fprintf (stderr, "WARNING: unknown token <%%%c> in <%s>\n", *s, string);
       } else {
 	*p++='%';
@@ -192,7 +202,7 @@ char *parse (char *string, int supported_bars)
 	  fprintf (stderr, "WARNING: illegal '\\' in <%s>\n", string);
 	} else {
 	  *p++=c;
-	  s+=n;
+	  s+=n-1;
 	}
       }
       break;
@@ -202,7 +212,8 @@ char *parse (char *string, int supported_bars)
     }
     
   } while (*s);
-  
+
+  *p='\0';
   return buffer;
 }
 

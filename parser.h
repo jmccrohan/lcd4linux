@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.1 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: parser.h,v 1.2 2000/03/17 09:21:42 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.2  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.1  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -34,6 +38,7 @@
 typedef enum {
   T_PERCENT=128, T_DOLLAR,
   T_OS, T_RELEASE, T_CPU, T_RAM,
+  T_MEM_TOTAL, T_MEM_USED, T_MEM_FREE, T_MEM_SHARED, T_MEM_BUFFER, T_MEM_CACHE, T_MEM_APP, 
   T_LOAD_1, T_LOAD_2, T_LOAD_3, T_OVERLOAD, 
   T_CPU_USER, T_CPU_NICE, T_CPU_SYSTEM, T_CPU_BUSY, T_CPU_IDLE,
   T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,

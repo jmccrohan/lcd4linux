@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.6 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: display.h,v 1.7 2000/03/17 09:21:42 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.7  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.6  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -56,6 +60,7 @@
 
 #define BAR_H (BAR_L | BAR_R)
 #define BAR_V (BAR_U | BAR_D)
+#define BAR_HV (BAR_H | BAR_V)
 
 typedef struct DISPLAY {
   char name[16];

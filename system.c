@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.5 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: system.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.6  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.5  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -53,6 +57,10 @@
  *
  * int   Memory (void);
  *   returns main memory (Megabytes)
+ *
+ * int Ram (int *total, int *free, int *shared, int *buffer, int *cached)
+ *   sets various usage of ram
+ *   retuns 0 if ok, -1 on error
  *
  * int Load (double *load1, double *load2, double *load3)
  *   sets load average during thwe last 1, 5 and 15 minutes
@@ -94,6 +102,28 @@
 #include "cfg.h"
 #include "filter.h"
 
+#ifdef USE_SYSINFO
+#include <linux/kernel.h>
+#include <linux/sys.h>
+#endif
+
+static unsigned long parse_meminfo (char *tag, char *buffer)
+{
+  char *p;
+  unsigned long val;
+  
+  p=strstr(buffer, tag);
+  if (p==NULL) {
+    fprintf (stderr, "parse(/proc/meminfo) failed: no %s line\n", tag);
+    return -1;
+  }
+  if (sscanf(p+strlen(tag), "%lu", &val)<1) {
+    fprintf (stderr, "scanf(/proc/meminfo) failed\n");
+    return -1;
+  }
+  return val;
+}
+
 char *System(void)
 {
   static char buffer[32]="";
@@ -126,7 +156,6 @@ char *Release(void)
   return buffer;
 }
 
-
 char *Processor(void)
 {
   static char buffer[16]="";
@@ -142,7 +171,6 @@ char *Processor(void)
   }
   return buffer;
 }
-
 
 int Memory(void)
 {
@@ -160,6 +188,69 @@ int Memory(void)
   return value;
 }
 
+int Ram (int *total, int *free, int *shared, int *buffered, int *cached)
+{
+  static int fd=-2;
+  unsigned long v1, v2, v3, v4, v5;
+  char buffer[4096];
+  
+  *total=0;
+  *free=0;
+  *shared=0;
+  *buffered=0;
+  *cached=0;
+
+  if (fd==-1) return -1;
+  
+  if (fd==-2) {
+    fd = open("/proc/meminfo", O_RDONLY | O_NDELAY);
+    if (fd==-1) {
+      perror ("open(/proc/meminfo) failed");
+      return -1;
+    }
+  }
+  
+  if (lseek(fd, 0L, SEEK_SET)!=0) {
+    perror ("lseek(/proc/meminfo) failed");
+    fd=-1;
+    return -1;
+  }
+  if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
+    perror ("read(/proc/meminfo) failed");
+    fd=-1;
+    return -1;
+  }
+  
+  if ((v1=parse_meminfo ("MemTotal:", buffer))<0) {
+    fd=-1;
+    return -1;
+  }
+  if ((v2=parse_meminfo ("MemFree:", buffer))<0) {
+    fd=-1;
+    return -1;
+  }
+  if ((v3=parse_meminfo ("MemShared:", buffer))<0) {
+    fd=-1;
+    return -1;
+  }
+  if ((v4=parse_meminfo ("Buffers:", buffer))<0) {
+    fd=-1;
+    return -1;
+  }
+  if ((v5=parse_meminfo ("Cached:", buffer))<0) {
+    fd=-1;
+    return -1;
+  }
+
+  *total=v1;
+  *free=v2;
+  *shared=v3;
+  *buffered=v4;
+  *cached=v5;
+
+  return 0;
+
+}
 
 int Load (double *load1, double *load2, double *load3)
 {
@@ -169,7 +260,7 @@ int Load (double *load1, double *load2, double *load3)
   static double val2=0;
   static double val3=0;
   static time_t now=0;
-
+  
   *load1=val1;
   *load2=val2;
   *load3=val3;
@@ -208,7 +299,6 @@ int Load (double *load1, double *load2, double *load3)
 
   return 0;
 }
-
 
 int Busy (double *user, double *nice, double *system, double *idle)
 {
@@ -261,7 +351,6 @@ int Busy (double *user, double *nice, double *system, double *idle)
   }
   return 0;
 }
-
 
 int Disk (int *r, int *w)
 {
@@ -322,7 +411,6 @@ int Disk (int *r, int *w)
   return 0;
 }
 
-
 int Net (int *rx, int *tx)
 {
   char buffer[4096], *p, *s;
@@ -368,7 +456,6 @@ int Net (int *rx, int *tx)
 
   return 0;
 }
-
 
 int Sensor (int index, double *val, double *min, double *max)
 {

@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.4 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: system.h,v 1.5 2000/03/17 09:21:42 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.5  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.4  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -32,7 +36,6 @@
  *
  * minor cleanups
  *
- *
  */
 
 #ifndef _SYSTEM_H_
@@ -44,6 +47,7 @@ char *System (void);
 char *Release (void);
 char *Processor (void);
 int   Memory (void);
+int   Ram (int *total, int *free, int *shared, int *buffered, int *cached);
 int   Load (double *load1, double *load2, double *load3);
 int   Busy (double *user, double *nice, double *system, double *idle);
 int   Disk (int *r, int *w);

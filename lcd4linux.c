@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.3 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.4 2000/03/17 09:21:42 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.4  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.3  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -51,6 +55,7 @@ double overload;
 int tick, tack, tau;
 int rows, cols, xres, yres, supported_bars;
 
+struct { int total, used, free, shared, buffer, cache, apps; } ram;
 struct { double load1, load2, load3, overload; } load;
 struct { double user, nice, system, idle; } busy;
 struct { int read, write, total, max, peak; } disk;
@@ -65,8 +70,12 @@ static void usage(void)
 
 static void collect_data (void) 
 {
-  Busy (&busy.user, &busy.nice, &busy.system, &busy.idle);
+  Ram (&ram.total, &ram.free, &ram.shared, &ram.buffer, &ram.cache); 
+  ram.used=ram.total-ram.free;
+  ram.apps=ram.used-ram.buffer-ram.cache;
+
   Load (&load.load1, &load.load2, &load.load3);
+  Busy (&busy.user, &busy.nice, &busy.system, &busy.idle);
 
   Disk (&disk.read, &disk.write);
   disk.total=disk.read+disk.write;
@@ -88,6 +97,21 @@ static double query (int token)
 {
   switch (token) {
     
+  case T_MEM_TOTAL:
+    return ram.total;
+  case T_MEM_USED:
+    return ram.used;
+  case T_MEM_FREE:
+    return ram.free;
+  case T_MEM_SHARED:
+    return ram.shared;
+  case T_MEM_BUFFER:
+    return ram.buffer;
+  case T_MEM_CACHE:
+    return ram.cache;
+  case T_MEM_APP:
+    return ram.apps;
+
   case T_LOAD_1:
     return load.load1;
   case T_LOAD_2:
@@ -151,6 +175,16 @@ static double query_bar (int token)
   double value=query(token);
   
   switch (token) {
+
+  case T_MEM_TOTAL:
+  case T_MEM_USED:
+  case T_MEM_FREE:
+  case T_MEM_SHARED:
+  case T_MEM_BUFFER:
+  case T_MEM_CACHE:
+  case T_MEM_APP:
+    return value/ram.total;
+
   case T_LOAD_1:
   case T_LOAD_2:
   case T_LOAD_3:
@@ -207,6 +241,15 @@ void print_token (int token, char **p)
   case T_OVERLOAD:
     *(*p)++=load.load1>load.overload?'!':' ';
     break;
+  case T_MEM_TOTAL:
+  case T_MEM_USED:
+  case T_MEM_FREE:
+  case T_MEM_SHARED:
+  case T_MEM_BUFFER:
+  case T_MEM_CACHE:
+  case T_MEM_APP:
+    *p+=sprintf (*p, "%6.0f", query(token));
+    break;
   case T_CPU_USER:
   case T_CPU_NICE:
   case T_CPU_SYSTEM:
@@ -247,9 +290,13 @@ char *process_row (int r, char *s)
 	val2=val1;
       lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
 	
-      for (i=0; i<len && p-buffer<cols; i++)
+      if (type & BAR_H) {
+	for (i=0; i<len && p-buffer<cols; i++)
+	  *p++='\t';
+      } else {
 	*p++='\t';
-	
+      }
+      
     } else {
       *p++=*s;
     }

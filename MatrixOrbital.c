@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.5 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
  *
  *  driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.6  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.5  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -29,7 +33,6 @@
  * Revision 1.4  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
- *
  *
  */
 
@@ -246,7 +249,7 @@ static void MO_define_chars (void)
     }
     Segment[i].ascii=c;
     buffer[2]=c;
-    switch (Segment[i].type & (BAR_L | BAR_R | BAR_U | BAR_D)) {
+    switch (Segment[i].type) {
     case BAR_L:
       for (j=0; j<4; j++) {
 	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
@@ -360,7 +363,7 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
   if (len2<1) len2=1;
   else if (len2>max) len2=max;
   
-  switch (type & (BAR_L | BAR_R | BAR_U | BAR_D)) {
+  switch (type) {
   case BAR_L:
     len1=max-len1;
     len2=max-len2;

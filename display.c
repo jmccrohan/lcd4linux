@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.5 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: display.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.6  2000/03/17 09:21:42  reinelt
+ *
+ * various memory statistics added
+ *
  * Revision 1.5  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -127,11 +131,10 @@ int lcd_bar (int type, int row, int col, int max, int len1, int len2)
   if (col<1 || col>Display->cols) return -1;
   if (!(type & (BAR_H2 | BAR_V2))) len2=len1;
   if (type & BAR_LOG) {
-    type &= ~BAR_LOG;
     len1=(double)max*log(len1+1)/log(max); 
     len2=(double)max*log(len2+1)/log(max); 
   }
-  return Display->bar(type, row-1, col-1, max, len1, len2);
+  return Display->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
 }
 
 int lcd_flush (void)
