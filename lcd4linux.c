@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.4 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.5 2000/03/18 08:07:04 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.5  2000/03/18 08:07:04  reinelt
+ *
+ * vertical bars implemented
+ * bar compaction improved
+ * memory information implemented
+ *
  * Revision 1.4  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -33,7 +39,6 @@
  * Revision 1.2  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
- *
  *
  */
 
@@ -250,14 +255,9 @@ void print_token (int token, char **p)
   case T_MEM_APP:
     *p+=sprintf (*p, "%6.0f", query(token));
     break;
-  case T_CPU_USER:
-  case T_CPU_NICE:
-  case T_CPU_SYSTEM:
-  case T_CPU_BUSY:
-  case T_CPU_IDLE:
-    *p+=sprintf (*p, "%3.0f", 100.0*query(token));
-    break;
-  default:
+  case T_LOAD_1:
+  case T_LOAD_2:
+  case T_LOAD_3:
     val=query(token);
     if (val<10.0) {
       *p+=sprintf (*p, "%4.2f", val);
@@ -266,6 +266,25 @@ void print_token (int token, char **p)
     } else {
       *p+=sprintf (*p, "%4.0f", val);
     }
+    break;
+  case T_CPU_USER:
+  case T_CPU_NICE:
+  case T_CPU_SYSTEM:
+  case T_CPU_BUSY:
+  case T_CPU_IDLE:
+    *p+=sprintf (*p, "%3.0f", 100.0*query(token));
+    break;
+  case T_ISDN_IN:
+  case T_ISDN_OUT:
+  case T_ISDN_MAX:
+  case T_ISDN_TOTAL:
+    if (isdn.usage)
+      *p+=sprintf (*p, "%4.0f", query(token));
+    else
+      *p+=sprintf (*p, "----");
+    break;
+  default:
+      *p+=sprintf (*p, "%4.0f", query(token));
   }
 }
 
@@ -283,13 +302,14 @@ char *process_row (int r, char *s)
       int type=*++s;
       int len=*++s;
       double val1=query_bar(*(unsigned char*)++s);
-      double val2;
+      double val2=val1;
       if (type & (BAR_H2 | BAR_V2))
 	val2=query_bar(*(unsigned char*)++s);
+      if (type & BAR_H)
+	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
       else
-	val2=val1;
-      lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
-	
+	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*len*yres);
+      
       if (type & BAR_H) {
 	for (i=0; i<len && p-buffer<cols; i++)
 	  *p++='\t';
@@ -313,7 +333,7 @@ void main (int argc, char *argv[])
   char *display;
   char *row[ROWS];
   int i, smooth;
-  
+
   if (argc>2) {
     usage();
     exit (2);
@@ -360,7 +380,6 @@ void main (int argc, char *argv[])
   }
   
   lcd_clear();
-  
   lcd_put (1, 1, "** LCD4Linux V" VERSION " **");
   lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
@@ -379,6 +398,6 @@ void main (int argc, char *argv[])
     lcd_flush();
     smooth+=tick;
     if (smooth>tack) smooth=0;
-    usleep(1000*tick);
+    usleep(tick*1000);
   }
 }

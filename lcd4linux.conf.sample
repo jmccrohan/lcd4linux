@@ -8,21 +8,15 @@ Contrast 160
 #Row3 "Busy %cu%% $r10cs+cb"
 #Row4 "Load %l1%L$r10l1"
 
-Row1 "CPU  %cu%% $r10cs+cb"
-Row2 "%mf %ms %ma"
-#Row2 "Disk %dm $R10dr+dw"
+Row1 "Load %l1%L$r10cs+cb"
+Row2 "Disk %dm $R10dr+dw"
 Row3 "Net  %nm $R10nr+nw"
 Row4 "ISDN %im $r10ii+io"
 
-#Row1 "CPU $l6cs+cb$R6dr+dw I/O"
-#Row2 "I/O $R16dr+dw"
-#Row3 "LAN $R16nr+nw"
-#Row4 "WAN $r16ii+io"
-
-#Row1 ""
-#Row2 ""
-#Row3 "$u3cs $u3cb "
-#Row4 "CPU I/O LAN WAN"
+#Row1 "$u3l1$u3cb$u3cs $u3mu$u3ma$u3ms $u3dr$u3dw $u3nr$u3nw $u3ii$u3io"
+#Row2 " "
+#Row3 " "
+#Row4 "CPU MEM IO IP"
 
 Tick 100
 Tack 400

@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.7 2000/03/18 08:07:04 reinelt Exp $
  *
  *  driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.7  2000/03/18 08:07:04  reinelt
+ *
+ * vertical bars implemented
+ * bar compaction improved
+ * memory information implemented
+ *
  * Revision 1.6  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -59,8 +65,7 @@
 #define XRES 5
 #define YRES 8
 #define CHARS 8
-#define BARS ( BAR_L | BAR_R | BAR_H2 )
-// Fixme: BAR_U, BAR_D
+#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 static DISPLAY Display;
 static char *Port=NULL;
@@ -86,8 +91,8 @@ static char Txt[4][40];
 static BAR  Bar[4][40];
 
 static int nSegment=2;
-static SEGMENT Segment[256] = {{ len1:   0, len2:   0, type:255, used:0, ascii:32 },
-			       { len1:XRES, len2:XRES, type:255, used:0, ascii:255 }};
+static SEGMENT Segment[256] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
+			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
 static int MO_open (void)
@@ -170,35 +175,49 @@ static void MO_process_bars (void)
   }
 }
 
-#define sqr(x) ((x)*(x))
+static int MO_segment_diff (int i, int j)
+{
+  int RES;
+  int i1, i2, j1, j2;
+  
+  if (i==j) return 65535;
+  if (!(Segment[i].type & Segment[j].type)) return 65535;
+  if (Segment[i].len1==0 && Segment[j].len1!=0) return 65535;
+  if (Segment[i].len2==0 && Segment[j].len2!=0) return 65535;
+  RES=Segment[i].type & BAR_H ? XRES:YRES;
+  if (Segment[i].len1>=RES && Segment[j].len1<RES) return 65535;
+  if (Segment[i].len2>=RES && Segment[j].len2<RES) return 65535;
+  if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) return 65535;
+
+  i1=Segment[i].len1; if (i1>RES) i1=RES;
+  i2=Segment[i].len2; if (i2>RES) i2=RES;
+  j1=Segment[j].len1; if (j1>RES) i1=RES;
+  j2=Segment[j].len2; if (j2>RES) i2=RES;
+  
+  return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
+}
 
 static void MO_compact_bars (void)
 {
   int i, j, r, c, min;
   int pack_i, pack_j;
+  int pass1=1;
   int error[nSegment][nSegment];
   
   if (nSegment>CHARS+2) {
+
     for (i=2; i<nSegment; i++) {
       for (j=0; j<nSegment; j++) {
-	error[i][j]=65535;
-	if (i==j) continue;
-	if (Segment[i].used) continue;
-	if (!(Segment[i].type & Segment[j].type)) continue;
-	if (Segment[i].len1==0 && Segment[j].len1!=0) continue;
-	if (Segment[i].len2==0 && Segment[j].len2!=0) continue;
-	if (Segment[i].len1==XRES && Segment[j].len1!=XRES) continue;
-	if (Segment[i].len2==XRES && Segment[j].len2!=XRES) continue;
-	if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) continue;
-	error[i][j]=sqr(Segment[i].len1-Segment[j].len1)+sqr(Segment[i].len2-Segment[j].len2);
+	error[i][j]=MO_segment_diff(i,j);
       }
     }
-
+    
     while (nSegment>CHARS+2) {
       min=65535;
       pack_i=-1;
       pack_j=-1;
       for (i=2; i<nSegment; i++) {
+	if (pass1 && Segment[i].used) continue;
 	for (j=0; j<nSegment; j++) {
 	  if (error[i][j]<min) {
 	    min=error[i][j];
@@ -208,11 +227,16 @@ static void MO_compact_bars (void)
 	}
       }
       if (pack_i==-1) {
-	fprintf (stderr, "MatrixOrbital: unable to compact bar characters\n");
-	nSegment=CHARS;
-	break;
+	if (pass1) {
+	  pass1=0;
+	  continue;
+	} else {
+	  fprintf (stderr, "MatrixOrbital: unable to compact bar characters\n");
+	  nSegment=CHARS;
+	  break;
+	}
       } 
-
+      
       nSegment--;
       Segment[pack_i]=Segment[nSegment];
       
@@ -220,7 +244,7 @@ static void MO_compact_bars (void)
 	error[pack_i][i]=error[nSegment][i];
 	error[i][pack_i]=error[i][nSegment];
       }
-
+      
       for (r=0; r<Display.rows; r++) {
 	for (c=0; c<Display.cols; c++) {
 	  if (Bar[r][c].segment==pack_i)
@@ -262,6 +286,22 @@ static void MO_define_chars (void)
 	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
 	buffer[j+3]=Pixel[Segment[i].len1];
 	buffer[j+7]=Pixel[Segment[i].len2];
+      }
+      break;
+    case BAR_U:
+      for (j=0; j<Segment[i].len1; j++) {
+	buffer[10-j]=31;
+      }
+      for (; j<YRES; j++) {
+	buffer[10-j]=0;
+      }
+      break;
+    case BAR_D:
+      for (j=0; j<Segment[i].len1; j++) {
+	buffer[j+3]=31;
+      }
+      for (; j<YRES; j++) {
+	buffer[j+3]=0;
       }
       break;
     }
@@ -393,9 +433,31 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
     break;
 
   case BAR_U:
-    break;
-
+    len1=max-len1;
+    len2=max-len2;
+    rev=1;
+    
   case BAR_D:
+    while (max>0 && row<=Display.rows) {
+      Bar[row][col].type=type;
+      Bar[row][col].segment=-1;
+      if (len1>=YRES) {
+	Bar[row][col].len1=rev?0:YRES;
+	len1-=YRES;
+      } else {
+	Bar[row][col].len1=rev?YRES-len1:len1;
+	len1=0;
+      }
+      if (len2>=YRES) {
+	Bar[row][col].len2=rev?0:YRES;
+	len2-=YRES;
+      } else {
+	Bar[row][col].len2=rev?YRES-len2:len2;
+	len2=0;
+      }
+      max-=YRES;
+      row++;
+    }
     break;
 
   }

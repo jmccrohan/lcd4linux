@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: system.c,v 1.7 2000/03/18 08:07:04 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.7  2000/03/18 08:07:04  reinelt
+ *
+ * vertical bars implemented
+ * bar compaction improved
+ * memory information implemented
+ *
  * Revision 1.6  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -107,7 +113,7 @@
 #include <linux/sys.h>
 #endif
 
-static unsigned long parse_meminfo (char *tag, char *buffer)
+static int parse_meminfo (char *tag, char *buffer)
 {
   char *p;
   unsigned long val;
@@ -190,17 +196,25 @@ int Memory(void)
 
 int Ram (int *total, int *free, int *shared, int *buffered, int *cached)
 {
+  static time_t now=0;
   static int fd=-2;
-  unsigned long v1, v2, v3, v4, v5;
+  static int v1=0;
+  static int v2=0;
+  static int v3=0;
+  static int v4=0;
+  static int v5=0;
   char buffer[4096];
   
-  *total=0;
-  *free=0;
-  *shared=0;
-  *buffered=0;
-  *cached=0;
+  *total=v1;
+  *free=v2;
+  *shared=v3;
+  *buffered=v4;
+  *cached=v5;
 
   if (fd==-1) return -1;
+  
+  if (time(NULL)==now) return 0;
+  time(&now);
   
   if (fd==-2) {
     fd = open("/proc/meminfo", O_RDONLY | O_NDELAY);

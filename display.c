@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.6 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: display.c,v 1.7 2000/03/18 08:07:04 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.7  2000/03/18 08:07:04  reinelt
+ *
+ * vertical bars implemented
+ * bar compaction improved
+ * memory information implemented
+ *
  * Revision 1.6  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -141,4 +147,3 @@ int lcd_flush (void)
 {
   return Display->flush();
 }
-
