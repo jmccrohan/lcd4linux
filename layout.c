@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.4 2004/01/12 03:51:01 reinelt Exp $
+/* $Id: layout.c,v 1.5 2004/01/13 08:18:19 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.5  2004/01/13 08:18:19  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.4  2004/01/12 03:51:01  reinelt
  * evaluating the 'Variables' section in the config file
  *
@@ -65,7 +69,8 @@ int layout_addItem (char *name, int row, int col)
 {
   // allocate widget
   widget_add (name);
-  
+
+  return 0;
 }
 
 

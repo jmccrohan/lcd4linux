@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.6 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: widget.c,v 1.7 2004/01/13 08:18:20 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.7  2004/01/13 08:18:20  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.6  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -57,11 +61,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "debug.h"
 #include "cfg.h"
 #include "widget.h"
 
+
+// we use a static array of widgets and not realloc()
+#define MAX_WIDGETS 256
 
 static WIDGET_CLASS *Classes=NULL;
 static int          nClasses=0;
@@ -69,14 +77,23 @@ static int          nClasses=0;
 static WIDGET       *Widgets=NULL;
 static int          nWidgets=0;
 
+static int widget_added=0;
 
 int widget_register (WIDGET_CLASS *widget)
 {
   int i;
 
+  // sanity check: disallow widget registering after at least one
+  // widget has been added, because we use realloc here, and there may 
+  // be pointers to the old memory area
+  if (widget_added) {
+    error ("internal error: register_widget(%s) after add_widget()", widget->name);
+    return -1;
+  }
+    
   for (i=0; i<nClasses; i++) {
     if (strcasecmp(widget->name, Classes[i].name)==0) {
-      error ("internal error: widget '%s' already exists!");
+      error ("internal error: widget '%s' already exists!", widget->name);
       return -1;
     }
   }
@@ -112,6 +129,7 @@ int widget_add (char *name)
   }
   
   // lookup widget class
+  Class=NULL;
   for (i=0; i<nClasses; i++) {
     if (strcasecmp(class, Classes[i].name)==0) {
       Class=&(Classes[i]);
@@ -123,9 +141,24 @@ int widget_add (char *name)
     return -1;
   }
   
+  // do NOT use realloc here because there may be pointers to the old
+  // memory area, which would point to nirvana if realloc moves the area
+  if (Widgets==NULL) {
+    Widgets=malloc(MAX_WIDGETS*sizeof(WIDGET));
+    if (Widgets==NULL) {
+      error ("internal error: allocation of widget buffer failed: %s", strerror(errno));
+      return -1;
+    }
+  }
+
+  // another sanity check
+  if (nWidgets>=MAX_WIDGETS) {
+    error ("internal error: widget buffer full!");
+    return -1;
+  }
+
+  Widget=&(Widgets[nWidgets]);
   nWidgets++;
-  Widgets=realloc(Widgets, nWidgets*sizeof(WIDGET));
-  Widget=&(Widgets[nWidgets-1]);
   
   Widget->name  = name;
   Widget->class = Class;

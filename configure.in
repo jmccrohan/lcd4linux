@@ -140,55 +140,65 @@ RASTER="no"
 PARPORT="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
-   DRIVERS="$DRIVERS BeckmannEgle.lo"
+#  DRIVERS="$DRIVERS BeckmannEgle.lo"
+   DRIVERS="$DRIVERS BeckmannEgle.o"
    AC_DEFINE(WITH_BECKMANNEGLE,1,[junk])
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
-   DRIVERS="$DRIVERS Crystalfontz.lo"
+#  DRIVERS="$DRIVERS Crystalfontz.lo"
+   DRIVERS="$DRIVERS Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[junk])
 fi
 
 if test "$CWLINUX" = "yes"; then
-   DRIVERS="$DRIVERS Cwlinux.lo"
+#  DRIVERS="$DRIVERS Cwlinux.lo"
+   DRIVERS="$DRIVERS Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[junk])
 fi
 
 if test "$HD44780" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS HD44780.lo"
+#  DRIVERS="$DRIVERS HD44780.lo"
+   DRIVERS="$DRIVERS HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[junk])
 fi
 
 if test "$M50530" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS M50530.lo"
+#  DRIVERS="$DRIVERS M50530.lo"
+   DRIVERS="$DRIVERS M50530.o"
    AC_DEFINE(WITH_M50530,1,[junk])
 fi
 
 if test "$T6963" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS T6963.lo"
+#  DRIVERS="$DRIVERS T6963.lo"
+   DRIVERS="$DRIVERS T6963.o"
    AC_DEFINE(WITH_T6963,1,[junk])
 fi
 
 if test "$USBLCD" = "yes"; then
-   DRIVERS="$DRIVERS USBLCD.lo"
+#  DRIVERS="$DRIVERS USBLCD.lo"
+   DRIVERS="$DRIVERS USBLCD.o"
    AC_DEFINE(WITH_USBLCD,1,[junk])
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
-   DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
+#  DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
+   DRIVERS="$DRIVERS MatrixOrbital.o drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[junk])
 fi
 
 if test "$MILINST" = "yes"; then
-   DRIVERS="$DRIVERS MilfordInstruments.lo"
+#  DRIVERS="$DRIVERS MilfordInstruments.lo"
+   DRIVERS="$DRIVERS MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[junk])
 fi
 
 if test "$PALMPILOT" = "yes"; then
-   DRIVERS="$DRIVERS PalmPilot.lo"
+#  DRIVERS="$DRIVERS PalmPilot.lo"
+   DRIVERS="$DRIVERS PalmPilot.o"
    AC_DEFINE(WITH_PALMPILOT,1,[junk])
 fi
 
@@ -212,18 +222,21 @@ if test "$PPM" = "yes"; then
 fi
 
 if test "$SIN" = "yes"; then
-   DRIVERS="$DRIVERS SIN.lo"
+#  DRIVERS="$DRIVERS SIN.lo"
+   DRIVERS="$DRIVERS SIN.o"
    AC_DEFINE(WITH_SIN,1,[junk])
 fi
 
 if test "$SKELETON" = "yes"; then
-   DRIVERS="$DRIVERS Skeleton.lo"
+#  DRIVERS="$DRIVERS Skeleton.lo"
+   DRIVERS="$DRIVERS Skeleton.o"
    AC_DEFINE(WITH_SKELETON,1,[junk])
 fi
 
 if test "$TEXT" = "yes"; then
    if test "$has_curses" = true; then
-      DRIVERS="$DRIVERS Text.lo"
+#     DRIVERS="$DRIVERS Text.lo"
+      DRIVERS="$DRIVERS Text.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
       AC_DEFINE(WITH_TEXT,1,[junk])
@@ -236,7 +249,8 @@ if test "$X11" = "yes"; then
    if test "$no_x" = "yes"; then
       AC_MSG_ERROR(X11 headers or libraries not available: X11 driver disabled)
    else
-      DRIVERS="$DRIVERS XWindow.lo"
+#     DRIVERS="$DRIVERS XWindow.lo"
+      DRIVERS="$DRIVERS XWindow.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
       AC_DEFINE(WITH_X11,1,[junk])
    fi
@@ -247,13 +261,16 @@ if test "$DRIVERS" = ""; then
 fi
    
 # Raster.lo depends on PPM or PNG
+  Raster.lo depends on PPM or NG
 if test "$RASTER" = "yes"; then
-   DRIVERS="$DRIVERS Raster.lo"
+#  DRIVERS="$DRIVERS Raster.lo"
+   DRIVERS="$DRIVERS Raster.o"
 fi
 
 # parport driver
 if test "$PARPORT" = "yes"; then
-   DRIVERS="$DRIVERS parport.lo"
+#  DRIVERS="$DRIVERS parport.lo"
+   DRIVERS="$DRIVERS parport.o"
 fi
 
 AC_SUBST(DRIVERS)

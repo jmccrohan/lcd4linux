@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.5 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: widget.h,v 1.6 2004/01/13 08:18:20 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.6  2004/01/13 08:18:20  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.5  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -70,6 +74,7 @@ typedef struct WIDGET{
 
 
 int widget_register (WIDGET_CLASS *widget);
+int widget_add      (char *name);
 
 
 // some basic widgets

@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.12 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: parport.c,v 1.13 2004/01/13 08:18:20 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.13  2004/01/13 08:18:20  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.12  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -195,7 +199,7 @@ int parport_open (void)
     }
     
 #if 0
-    // Fixme
+    // Fixme: this always fails here...
     if (ioctl(PPfd, PPEXCL)) {
       debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
     } else {

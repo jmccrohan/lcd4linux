@@ -20947,7 +20947,8 @@ RASTER="no"
 PARPORT="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
-   DRIVERS="$DRIVERS BeckmannEgle.lo"
+#  DRIVERS="$DRIVERS BeckmannEgle.lo"
+   DRIVERS="$DRIVERS BeckmannEgle.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_BECKMANNEGLE 1
@@ -20956,7 +20957,8 @@ _ACEOF
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
-   DRIVERS="$DRIVERS Crystalfontz.lo"
+#  DRIVERS="$DRIVERS Crystalfontz.lo"
+   DRIVERS="$DRIVERS Crystalfontz.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CRYSTALFONTZ 1
@@ -20965,7 +20967,8 @@ _ACEOF
 fi
 
 if test "$CWLINUX" = "yes"; then
-   DRIVERS="$DRIVERS Cwlinux.lo"
+#  DRIVERS="$DRIVERS Cwlinux.lo"
+   DRIVERS="$DRIVERS Cwlinux.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CWLINUX 1
@@ -20975,7 +20978,8 @@ fi
 
 if test "$HD44780" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS HD44780.lo"
+#  DRIVERS="$DRIVERS HD44780.lo"
+   DRIVERS="$DRIVERS HD44780.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_HD44780 1
@@ -20985,7 +20989,8 @@ fi
 
 if test "$M50530" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS M50530.lo"
+#  DRIVERS="$DRIVERS M50530.lo"
+   DRIVERS="$DRIVERS M50530.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_M50530 1
@@ -20995,7 +21000,8 @@ fi
 
 if test "$T6963" = "yes"; then
    PARPORT="yes"
-   DRIVERS="$DRIVERS T6963.lo"
+#  DRIVERS="$DRIVERS T6963.lo"
+   DRIVERS="$DRIVERS T6963.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_T6963 1
@@ -21004,7 +21010,8 @@ _ACEOF
 fi
 
 if test "$USBLCD" = "yes"; then
-   DRIVERS="$DRIVERS USBLCD.lo"
+#  DRIVERS="$DRIVERS USBLCD.lo"
+   DRIVERS="$DRIVERS USBLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_USBLCD 1
@@ -21013,7 +21020,8 @@ _ACEOF
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
-   DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
+#  DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
+   DRIVERS="$DRIVERS MatrixOrbital.o drv_MatrixOrbital.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MATRIXORBITAL 1
@@ -21022,7 +21030,8 @@ _ACEOF
 fi
 
 if test "$MILINST" = "yes"; then
-   DRIVERS="$DRIVERS MilfordInstruments.lo"
+#  DRIVERS="$DRIVERS MilfordInstruments.lo"
+   DRIVERS="$DRIVERS MilfordInstruments.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MILINST 1
@@ -21031,7 +21040,8 @@ _ACEOF
 fi
 
 if test "$PALMPILOT" = "yes"; then
-   DRIVERS="$DRIVERS PalmPilot.lo"
+#  DRIVERS="$DRIVERS PalmPilot.lo"
+   DRIVERS="$DRIVERS PalmPilot.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PALMPILOT 1
@@ -21069,7 +21079,8 @@ echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
 fi
 
 if test "$SIN" = "yes"; then
-   DRIVERS="$DRIVERS SIN.lo"
+#  DRIVERS="$DRIVERS SIN.lo"
+   DRIVERS="$DRIVERS SIN.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_SIN 1
@@ -21078,7 +21089,8 @@ _ACEOF
 fi
 
 if test "$SKELETON" = "yes"; then
-   DRIVERS="$DRIVERS Skeleton.lo"
+#  DRIVERS="$DRIVERS Skeleton.lo"
+   DRIVERS="$DRIVERS Skeleton.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_SKELETON 1
@@ -21088,7 +21100,8 @@ fi
 
 if test "$TEXT" = "yes"; then
    if test "$has_curses" = true; then
-      DRIVERS="$DRIVERS Text.lo"
+#     DRIVERS="$DRIVERS Text.lo"
+      DRIVERS="$DRIVERS Text.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
 
@@ -21108,7 +21121,8 @@ if test "$X11" = "yes"; then
 echo "$as_me: error: X11 headers or libraries not available: X11 driver disabled" >&2;}
    { (exit 1); exit 1; }; }
    else
-      DRIVERS="$DRIVERS XWindow.lo"
+#     DRIVERS="$DRIVERS XWindow.lo"
+      DRIVERS="$DRIVERS XWindow.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
 
 cat >>confdefs.h <<\_ACEOF
@@ -21125,13 +21139,16 @@ echo "$as_me: error: You should include at least one driver..." >&2;}
 fi
 
 # Raster.lo depends on PPM or PNG
+  Raster.lo depends on PPM or NG
 if test "$RASTER" = "yes"; then
-   DRIVERS="$DRIVERS Raster.lo"
+#  DRIVERS="$DRIVERS Raster.lo"
+   DRIVERS="$DRIVERS Raster.o"
 fi
 
 # parport driver
 if test "$PARPORT" = "yes"; then
-   DRIVERS="$DRIVERS parport.lo"
+#  DRIVERS="$DRIVERS parport.lo"
+   DRIVERS="$DRIVERS parport.o"
 fi
 
 

@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.2 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: widget_text.c,v 1.3 2004/01/13 08:18:20 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.3  2004/01/13 08:18:20  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.2  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -48,6 +52,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "timer.h"
 #include "widget.h"
 
 
@@ -59,12 +64,18 @@ typedef struct WIDGET_TEXT {
 } WIDGET_TEXT;
 
 
+void widget_text_callback (void *vSelf)
+{
+  WIDGET *Self=(WIDGET*)vSelf;
+  
+   debug ("callback: Self->name=%s", Self->name);
+}
+
+
 int widget_text_init (WIDGET *Self) {
   
   char *section;
   WIDGET_TEXT *data;
-  
-  debug ("Michi: widget_text_init(%s)", Self->name);
   
   // prepare config section
   // strlen("Widget:")=7
@@ -83,6 +94,8 @@ int widget_text_init (WIDGET *Self) {
   free (section);
   Self->data=data;
   
+  debug ("timer_add: Self=%p Self->name=%s", Self, Self->name);
+  timer_add (widget_text_callback, Self, 200, 0);
   
   return 0;
 }

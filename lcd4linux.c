@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.59 2004/01/12 03:51:01 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.60 2004/01/13 08:18:19 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.60  2004/01/13 08:18:19  reinelt
+ * timer queues added
+ * liblcd4linux deactivated turing transformation to new layout
+ *
  * Revision 1.59  2004/01/12 03:51:01  reinelt
  * evaluating the 'Variables' section in the config file
  *
@@ -291,6 +295,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 
 #include "cfg.h"
 #include "debug.h"
@@ -298,7 +303,8 @@
 #include "udelay.h"
 #include "display.h"  // Fixme: remove me...
 #include "drv.h"
-#include "processor.h"
+#include "processor.h" // Fixme: remove me...
+#include "timer.h"
 #include "layout.h"
 #include "plugin.h"
 
@@ -611,6 +617,12 @@ int main (int argc, char *argv[])
     while (got_signal==0) {
       process ();
       usleep(tack*1000);
+    }
+  } else {
+    while (got_signal==0) {
+      struct timespec delay;
+      if (timer_process(&delay)<0) break;
+      nanosleep(&delay, NULL);
     }
   }
   
