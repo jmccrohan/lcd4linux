@@ -332,6 +332,9 @@
 /* HD44780 driver */
 #undef WITH_HD44780
 
+/* LCDTerm driver */
+#undef WITH_LCDTERM
+
 /* M50530 driver */
 #undef WITH_M50530
 

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.23 2004/09/24 21:41:00 reinelt Exp $
+/* $Id: drv.c,v 1.24 2005/01/15 13:10:15 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.24  2005/01/15 13:10:15  reinelt
+ * LCDTerm driver added
+ *
  * Revision 1.23  2004/09/24 21:41:00  reinelt
  * new driver for the BWCT USB LCD interface board.
  *
@@ -177,6 +180,7 @@ extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
+extern DRIVER drv_LCDTerm;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
@@ -213,6 +217,9 @@ DRIVER *Driver[] = {
 #endif
 #if defined (WITH_PNG) || defined(WITH_PPM)
   &drv_Image,
+#endif
+#ifdef WITH_LCDTERM
+  &drv_LCDTerm,
 #endif
 #ifdef WITH_M50530
   &drv_M50530,

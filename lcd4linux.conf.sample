@@ -78,6 +78,7 @@ Display HD44780-generic {
 Display HD44780-winamp {
     Driver 'HD44780'
     Model 'generic'
+    UseBusy 1
     Port '/dev/parports/0'	
     Size '20x4'
     Wire {
@@ -93,6 +94,7 @@ Display HD44780-winamp {
 Display HD44780-kernelconcepts {
     Driver 'HD44780'
     Model 'HD66712'
+    UseBusy 1
     Port '/dev/parports/0'	
     Size '20x4'
     Wire {
