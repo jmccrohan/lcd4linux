@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.32 2004/06/07 06:56:55 reinelt Exp $
+/* $Id: plugin.c,v 1.33 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.33  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.32  2004/06/07 06:56:55  reinelt
  *
  * added test plugin from Andy Baxter
@@ -179,7 +185,7 @@
 #include "plugin.h"
 
 
-// Prototypes
+/* Prototypes */
 int  plugin_init_cfg    (void);
 void plugin_exit_cfg    (void);
 int  plugin_init_math   (void);

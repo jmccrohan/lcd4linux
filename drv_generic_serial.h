@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.h,v 1.6 2004/06/20 10:09:55 reinelt Exp $
+/* $Id: drv_generic_serial.h,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_serial.h,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -64,9 +70,9 @@
 #define _DRV_GENERIC_SERIAL_H_
 
 int   drv_generic_serial_open  (const char *section, const char *driver, const unsigned int flags);
-int   drv_generic_serial_poll  (unsigned char *string, const int len);
-int   drv_generic_serial_read  (unsigned char *string, const int len);
-void  drv_generic_serial_write (const unsigned char *string, const int len);
+int   drv_generic_serial_poll  (char *string, const int len);
+int   drv_generic_serial_read  (char *string, const int len);
+void  drv_generic_serial_write (const char *string, const int len);
 int   drv_generic_serial_close (void);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.10 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: widget_bar.c,v 1.11 2004/06/26 09:27:21 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -106,7 +112,7 @@ void widget_bar_update (void *Self)
   double val1, val2;
   double min, max;
   
-  // evaluate expressions
+  /* evaluate expressions */
   val1 = 0.0;
   if (Bar->tree1 != NULL) {
     Eval(Bar->tree1, &result); 
@@ -121,7 +127,7 @@ void widget_bar_update (void *Self)
     DelResult(&result);
   }
   
-  // minimum: if expression is empty, do auto-scaling
+  /* minimum: if expression is empty, do auto-scaling */
   if (Bar->tree_min!=NULL) {
     Eval(Bar->tree_min, &result); 
     min = R2N(&result); 
@@ -132,7 +138,7 @@ void widget_bar_update (void *Self)
     if (val2 < min) min = val2;
   }
   
-  // maximum: if expression is empty, do auto-scaling
+  /* maximum: if expression is empty, do auto-scaling */
   if (Bar->tree_max!=NULL) {
     Eval(Bar->tree_max, &result); 
     max = R2N(&result); 
@@ -143,7 +149,7 @@ void widget_bar_update (void *Self)
     if (val2 > max) max = val2;
   }
   
-  // calculate bar values
+  /* calculate bar values */
   Bar->min=min;
   Bar->max=max;
   if (max>min) {
@@ -154,7 +160,7 @@ void widget_bar_update (void *Self)
     Bar->val2=0.0;
   }
   
-  // finally, draw it!
+  /* finally, draw it! */
   if (W->class->draw)
     W->class->draw(W);
   
@@ -166,8 +172,8 @@ int widget_bar_init (WIDGET *Self)
   char *section; char *c;
   WIDGET_BAR *Bar;
   
-  // prepare config section
-  // strlen("Widget:")=7
+  /* prepare config section */
+  /* strlen("Widget:")=7 */
   section=malloc(strlen(Self->name)+8);
   strcpy(section, "Widget:");
   strcat(section, Self->name);
@@ -175,30 +181,30 @@ int widget_bar_init (WIDGET *Self)
   Bar=malloc(sizeof(WIDGET_BAR));
   memset (Bar, 0, sizeof(WIDGET_BAR));
 
-  // get raw expressions (we evaluate them ourselves)
+  /* get raw expressions (we evaluate them ourselves) */
   Bar->expression1 = cfg_get_raw (section, "expression",  NULL);
   Bar->expression2 = cfg_get_raw (section, "expression2", NULL);
   
-  // sanity check
+  /* sanity check */
   if (Bar->expression1==NULL || *Bar->expression1=='\0') {
     error ("widget %s has no expression, using '0.0'", Self->name);
     Bar->expression1="0";
   }
   
-  // minimum and maximum value
+  /* minimum and maximum value */
   Bar->expr_min = cfg_get_raw (section, "min", NULL);
   Bar->expr_max = cfg_get_raw (section, "max", NULL);
 
-  // compile all expressions
+  /* compile all expressions */
   Compile (Bar->expression1, &Bar->tree1);
   Compile (Bar->expression2, &Bar->tree2);
   Compile (Bar->expr_min,    &Bar->tree_min);
   Compile (Bar->expr_max,    &Bar->tree_max);
 
-  // bar length, default 1
+  /* bar length, default 1 */
   cfg_number (section, "length", 1,  0, 99999, &(Bar->length));
   
-  // direction: East (default), West, North, South
+  /* direction: East (default), West, North, South */
   c = cfg_get (section, "direction",  "E");
   switch (toupper(*c)) {
   case 'E':
@@ -219,11 +225,8 @@ int widget_bar_init (WIDGET *Self)
   }
   free (c);
   
-  // update interval (msec), default 1 sec
+  /* update interval (msec), default 1 sec */
   cfg_number (section, "update", 1000, 10, 99999, &(Bar->update));
-  
-  // buffer
-  // Bar->buffer=malloc(Bar->width+1);
   
   free (section);
   Self->data=Bar;

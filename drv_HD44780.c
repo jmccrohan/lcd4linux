@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.30 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.31 2004/06/26 09:27:20 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,12 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.31  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.30  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -206,11 +212,11 @@ static int Capabilities;
  * we use the worst-case values.
  */
 
-#define T_CYCLE 1000 // Enable cycle time
-#define T_PW     450 // Enable pulse width
-#define T_AS      60 // Address setup time
-#define T_H       40 // Data hold time
-#define T_AH      20 // Address hold time
+#define T_CYCLE 1000 /* Enable cycle time */
+#define T_PW     450 /* Enable pulse width */
+#define T_AS      60 /* Address setup time */
+#define T_H       40 /* Data hold time */
+#define T_AH      20 /* Address hold time */
 
 
 /* HD44780 execution timings [microseconds]
@@ -218,11 +224,11 @@ static int Capabilities;
  * we use the worst-case values.
  */
 
-#define T_INIT1 4100 // first init sequence:  4.1 msec
-#define T_INIT2  100 // second init sequence: 100 usec
-#define T_EXEC    80 // normal execution time
-#define T_WRCG   120 // CG RAM Write
-#define T_CLEAR 1680 // Clear Display
+#define T_INIT1 4100 /* first init sequence:  4.1 msec */
+#define T_INIT2  100 /* second init sequence: 100 usec */
+#define T_EXEC    80 /* normal execution time */
+#define T_WRCG   120 /* CG RAM Write */
+#define T_CLEAR 1680 /* Clear Display */
 
 
 static int Bits=0;
@@ -241,9 +247,9 @@ static unsigned char SIGNAL_GPO;
 static int UseBusy = 0;
 
 
-// Fixme: GPO's not yet implemented
+/* Fixme: GPO's not yet implemented */
 static int GPOS;
-// static int GPO=0;
+/* static int GPO=0; */
 
 
 typedef struct {
@@ -265,9 +271,9 @@ static MODEL Models[] = {
 };
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void wait_for_busy_flag(int controller)
 {
@@ -294,16 +300,16 @@ static void wait_for_busy_flag(int controller)
       drv_generic_parport_direction(1);
       
       if (Bits==8) {
-        // Set RW, clear RS
+        /* Set RW, clear RS */
         drv_generic_parport_control(SIGNAL_RW|SIGNAL_RS,SIGNAL_RW);
       } else {
         drv_generic_parport_data(SIGNAL_RW);
       }
       
-      // Address set-up time
+      /* Address set-up time */
       ndelay(T_AS);
       
-      // rise ENABLE
+      /* rise ENABLE */
       if (Bits==8) {
         drv_generic_parport_control(enable,enable);
       } else {
@@ -326,7 +332,7 @@ static void wait_for_busy_flag(int controller)
           struct timeval now, end;
 
           if (counter == 5) {
-            // determine the time when the timeout has expired
+            /* determine the time when the timeout has expired */
             gettimeofday (&end, NULL);
             end.tv_usec+=MAX_BUSYFLAG_WAIT;
             while (end.tv_usec>1000000) {
@@ -335,7 +341,7 @@ static void wait_for_busy_flag(int controller)
             }
           }
 
-          // get the current time
+          /* get the current time */
           gettimeofday(&now, NULL);
           if (now.tv_sec==end.tv_sec?now.tv_usec>=end.tv_usec:now.tv_sec>=end.tv_sec) {
             error ("%s: timeout waiting for busy flag on controller %x (%x)", Name, controller, data);
@@ -345,17 +351,17 @@ static void wait_for_busy_flag(int controller)
         }
       }
 
-      // RS=low, RW=low, EN=low
+      /* RS=low, RW=low, EN=low */
       if (Bits==8) {
-        // Lower EN
+        /* Lower EN */
         drv_generic_parport_control(enable,0);
 
-        // Address hold time
+        /* Address hold time */
         ndelay(T_AH);
 
         drv_generic_parport_control(SIGNAL_RW|SIGNAL_RS,0);
       } else {
-        // Lower EN
+        /* Lower EN */
         drv_generic_parport_data(SIGNAL_RW);
         ndelay(T_AH);
         drv_generic_parport_data(0);
@@ -374,42 +380,42 @@ static void drv_HD_nibble(const unsigned char controller, const unsigned char ni
 {
   unsigned char enable;
 
-  // enable signal: 'controller' is a bitmask
-  // bit 0 .. send to controller #0
-  // bit 1 .. send to controller #1
-  // so we can send a byte to both controllers at the same time!
+  /* enable signal: 'controller' is a bitmask */
+  /* bit 0 .. send to controller #0 */
+  /* bit 1 .. send to controller #1 */
+  /* so we can send a byte to both controllers at the same time! */
   enable=0;
   if (controller&0x01) enable|=SIGNAL_ENABLE;
   if (controller&0x02) enable|=SIGNAL_ENABLE2;
   
-  // clear ENABLE
-  // put data on DB1..DB4
-  // nibble already contains RS bit!
+  /* clear ENABLE */
+  /* put data on DB1..DB4 */
+  /* nibble already contains RS bit! */
   drv_generic_parport_data(nibble);
 
-  // Address set-up time
+  /* Address set-up time */
   ndelay(T_AS);
   
-  // rise ENABLE
+  /* rise ENABLE */
   drv_generic_parport_data(nibble | enable);
   
-  // Enable pulse width
+  /* Enable pulse width */
   ndelay(T_PW);
 
-  // lower ENABLE
+  /* lower ENABLE */
   drv_generic_parport_data(nibble);
 }
 
 
 static void drv_HD_byte (const unsigned char controller, const unsigned char data, const unsigned char RS)
 {
-  // send high nibble of the data
+  /* send high nibble of the data */
   drv_HD_nibble (controller, ((data>>4)&0x0f)|RS);
 
-  // Make sure we honour T_CYCLE
+  /* Make sure we honour T_CYCLE */
   ndelay(T_CYCLE-T_AS-T_PW);
 
-  // send low nibble of the data
+  /* send low nibble of the data */
   drv_HD_nibble(controller, (data&0x0f)|RS);
 }
 
@@ -422,24 +428,24 @@ static void drv_HD_command (const unsigned char controller, const unsigned char 
 
   if (Bits==8) {
     
-    // enable signal: 'controller' is a bitmask
-    // bit 0 .. send to controller #0
-    // bit 1 .. send to controller #1
-    // so we can send a byte to both controllers at the same time!
+    /* enable signal: 'controller' is a bitmask */
+    /* bit 0 .. send to controller #0 */
+    /* bit 1 .. send to controller #1 */
+    /* so we can send a byte to both controllers at the same time! */
     enable=0;
     if (controller&0x01) enable|=SIGNAL_ENABLE;
     if (controller&0x02) enable|=SIGNAL_ENABLE2;
     
-    // put data on DB1..DB8
+    /* put data on DB1..DB8 */
     drv_generic_parport_data (cmd);
   
-    // clear RW and RS
+    /* clear RW and RS */
     drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, 0);
     
-    // Address set-up time
+    /* Address set-up time */
     ndelay(T_AS);
 
-    // send command
+    /* send command */
     drv_generic_parport_toggle (enable, 1, T_PW);
     
   } else {
@@ -448,7 +454,7 @@ static void drv_HD_command (const unsigned char controller, const unsigned char 
 
   }
   
-  // wait for command completion
+  /* wait for command completion */
   if (!UseBusy) udelay(delay);
   
 }
@@ -459,23 +465,23 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
   int l = len;
   unsigned char enable;
 
-  // sanity check
+  /* sanity check */
   if (len<=0) return;
 
   if (Bits==8) {
 
-    // enable signal: 'controller' is a bitmask
-    // bit 0 .. send to controller #0
-    // bit 1 .. send to controller #1
-    // so we can send a byte to both controllers at the same time!
+    /* enable signal: 'controller' is a bitmask */
+    /* bit 0 .. send to controller #0 */
+    /* bit 1 .. send to controller #1 */
+    /* so we can send a byte to both controllers at the same time! */
     enable=0;
     if (controller&0x01) enable|=SIGNAL_ENABLE;
     if (controller&0x02) enable|=SIGNAL_ENABLE2;
     
     if (!UseBusy) {
-      // clear RW, set RS
+      /* clear RW, set RS */
       drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
-      // Address set-up time
+      /* Address set-up time */
       ndelay(T_AS);
     }
     
@@ -483,31 +489,31 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
 
       if (UseBusy) {
 	wait_for_busy_flag(controller);
-	// clear RW, set RS
+	/* clear RW, set RS */
 	drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
-	// Address set-up time
+	/* Address set-up time */
 	ndelay(T_AS);
       }
       
-      // put data on DB1..DB8
+      /* put data on DB1..DB8 */
       drv_generic_parport_data (*(string++));
       
-      // send command
+      /* send command */
       drv_generic_parport_toggle (enable, 1, T_PW);
       
-      // wait for command completion
+      /* wait for command completion */
       if (!UseBusy) udelay(delay);
     }
     
-  } else { // 4 bit mode
+  } else { /* 4 bit mode */
     
     while (l--) {
       if (UseBusy) wait_for_busy_flag(controller);
 
-      // send data with RS enabled
+      /* send data with RS enabled */
       drv_HD_byte (controller, *(string++), SIGNAL_RS);
       
-      // wait for command completion
+      /* wait for command completion */
       if (!UseBusy) udelay(delay);
     }
   }
@@ -516,7 +522,7 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
 
 static void drv_HD_clear (void)
 {
-  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  drv_HD_command (allControllers, 0x01, T_CLEAR); /* clear *both* displays */
 }
 
 
@@ -524,7 +530,7 @@ static void drv_HD_goto (int row, int col)
 {
   int pos;
 
-  // handle multiple displays/controllers
+  /* handle multiple displays/controllers */
   if (numControllers>1 && row>=DROWS/2) {
     row -= DROWS/2;
     currController = 2;
@@ -532,17 +538,17 @@ static void drv_HD_goto (int row, int col)
     currController = 1;
   }
    
-  // 16x1 Displays are organized as 8x2 :-(
+  /* 16x1 Displays are organized as 8x2 :-( */
   if (DCOLS==16 && DROWS==1 && col>7) {
     row++;
     col-=8;
   }
   
   if (Capabilities & CAP_HD66712) {
-    // the HD66712 doesn't have a braindamadged RAM layout
+    /* the HD66712 doesn't have a braindamadged RAM layout */
     pos = row*32 + col;
   } else {
-    // 16x4 Displays use a slightly different layout
+    /* 16x4 Displays use a slightly different layout */
     if (DCOLS==16 && DROWS==4) {
       pos = (row%2)*64+(row/2)*16+col;
     } else {  
@@ -553,7 +559,7 @@ static void drv_HD_goto (int row, int col)
 }
 
 
-static void drv_HD_write (const int row, const int col, const unsigned char *data, const int len)
+static void drv_HD_write (const int row, const int col, const char *data, const int len)
 {
   drv_HD_goto (row, col);
   drv_HD_data (currController, data, len, T_EXEC);
@@ -563,13 +569,13 @@ static void drv_HD_write (const int row, const int col, const unsigned char *dat
 static void drv_HD_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
-  unsigned char buffer[8];
+  char buffer[8];
 
   for (i = 0; i < 8; i++) {
     buffer[i] = matrix[i] & 0x1f;
   }
   
-  // define chars on *both* controllers!
+  /* define chars on *both* controllers! */
   drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
   drv_HD_data (allControllers, buffer, 8, T_WRCG);
 }
@@ -586,27 +592,27 @@ static int drv_HD_brightness (int brightness)
 
   cmd='0'+brightness;
   
-  drv_HD_command (allControllers, 0x38, T_EXEC); // enable function
-  drv_HD_data (allControllers, &cmd, 1, T_WRCG); // set brightness
+  drv_HD_command (allControllers, 0x38, T_EXEC); /* enable function */
+  drv_HD_data (allControllers, &cmd, 1, T_WRCG); /* set brightness */
 
   return brightness;
 }
 
   
-// Fixme: GPO's
+/* Fixme: GPO's */
 #if 0
 static void drv_HD_setGPO (const int bits)
 {
   if (Lcd.gpos>0) {
     
-    // put data on DB1..DB8
+    /* put data on DB1..DB8 */
     drv_generic_parport_data (bits);
     
-    // 74HCT573 set-up time
+    /* 74HCT573 set-up time */
     ndelay(20);
     
-    // send data
-    // 74HCT573 enable pulse width = 24ns
+    /* send data */
+    /* 74HCT573 enable pulse width = 24ns */
     drv_generic_parport_toggle (SIGNAL_GPO, 1, 230);
   }
 }
@@ -655,10 +661,10 @@ static int drv_HD_start (const char *section, const int quiet)
   if (cfg_number(section, "Controllers", 1, 1, 2, &numControllers)<0) return -1;
   info ("%s: using display with %d controllers", Name, numControllers);
   
-  // current controller
+  /* current controller */
   currController=1;
   
-  // Bitmask for *all* Controllers
+  /* Bitmask for *all* Controllers */
   allControllers = numControllers==2 ? 3 : 1;
   
   DROWS = rows;
@@ -691,42 +697,42 @@ static int drv_HD_start (const char *section, const int quiet)
     if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
   }
   
-  // clear all signals
+  /* clear all signals */
   if (Bits==8) {
     drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
   } else {
     drv_generic_parport_data (0);
   }
   
-  // set direction: write
+  /* set direction: write */
   drv_generic_parport_direction (0);
   
-  // initialize *both* displays
+  /* initialize *both* displays */
   if (Bits==8) {
-    drv_HD_command (allControllers, 0x30, T_INIT1); // 8 Bit mode, wait 4.1 ms
-    drv_HD_command (allControllers, 0x30, T_INIT2); // 8 Bit mode, wait 100 us
-    drv_HD_command (allControllers, 0x38, T_EXEC);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
+    drv_HD_command (allControllers, 0x30, T_INIT1); /* 8 Bit mode, wait 4.1 ms */
+    drv_HD_command (allControllers, 0x30, T_INIT2); /* 8 Bit mode, wait 100 us */
+    drv_HD_command (allControllers, 0x38, T_EXEC);  /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
   } else {
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT2); // 4 Bit mode, wait 100 us
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
-    drv_HD_nibble  (allControllers, 0x02); udelay(T_INIT2); // 4 Bit mode, wait 100 us
-    drv_HD_command (allControllers, 0x28, T_EXEC);	    // 4 Bit mode, 1/16 duty cycle, 5x8 font
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
+    drv_HD_nibble  (allControllers, 0x02); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
+    drv_HD_command (allControllers, 0x28, T_EXEC);	    /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
   }
 
-  // maybe use busy-flag from now on 
-  // (we can't use the busy flag during the init sequence)
+  /* maybe use busy-flag from now on  */
+  /* (we can't use the busy flag during the init sequence) */
   cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
   
-  // make sure we don't use the busy flag with RW wired to GND
+  /* make sure we don't use the busy flag with RW wired to GND */
   if (UseBusy && !SIGNAL_RW)   {
     error("%s: Busyflag is to be used, but RW is wired to GND", Name);
     UseBusy=0;
   }
 
-  // make sure the display supports busy-flag checking in 4-Bit-Mode
-  // at the moment this is inly possible with Martin Hejl's gpio driver,
-  // which allows to use 4 bits as input and 4 bits as output
+  /* make sure the display supports busy-flag checking in 4-Bit-Mode */
+  /* at the moment this is inly possible with Martin Hejl's gpio driver, */
+  /* which allows to use 4 bits as input and 4 bits as output */
   if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
     error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
     UseBusy=0;
@@ -735,20 +741,20 @@ static int drv_HD_start (const char *section, const int quiet)
   info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
   free(strsize);
 
-  drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
-  drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
-  drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
+  drv_HD_command (allControllers, 0x08, T_EXEC);  /* Display off, cursor off, blink off */
+  drv_HD_command (allControllers, 0x0c, T_CLEAR); /* Display on, cursor off, blink off, wait 1.64 ms */
+  drv_HD_command (allControllers, 0x06, T_EXEC);  /* curser moves to right, no shift */
 
   if ((Capabilities & CAP_HD66712) && DROWS > 2) {
-    drv_HD_command (allControllers, Bits==8?0x3c:0x2c, T_EXEC); // set extended register enable bit
-    drv_HD_command (allControllers, 0x09,              T_EXEC); // set 4-line mode
-    drv_HD_command (allControllers, Bits==8?0x38:0x28, T_EXEC); // clear extended register enable bit
+    drv_HD_command (allControllers, Bits==8?0x3c:0x2c, T_EXEC); /* set extended register enable bit */
+    drv_HD_command (allControllers, 0x09,              T_EXEC); /* set 4-line mode */
+    drv_HD_command (allControllers, Bits==8?0x38:0x28, T_EXEC); /* clear extended register enable bit */
   }
 
-  drv_HD_clear(); // clear *both* displays
-  drv_HD_command (allControllers, 0x03, T_CLEAR); // return home
+  drv_HD_clear(); /* clear *both* displays */
+  drv_HD_command (allControllers, 0x03, T_CLEAR); /* return home */
   
-  // maybe set brightness
+  /* maybe set brightness */
   if (Capabilities & CAP_BRIGHTNESS) {
     int brightness;
     if (cfg_number(section, "Brightness", 0, 0, 3, &brightness)>0) {
@@ -769,9 +775,9 @@ static int drv_HD_start (const char *section, const int quiet)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
 
 static void plugin_brightness (RESULT *result, RESULT *arg1)
@@ -783,22 +789,22 @@ static void plugin_brightness (RESULT *result, RESULT *arg1)
 }
 
 
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
 
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
 
 
-// list models
+/* list models */
 int drv_HD_list (void)
 {
   int i;
@@ -810,66 +816,66 @@ int drv_HD_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_HD_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
   int ret;  
   
-  // display preferences
-  XRES  = 5;      // pixel width of one char 
-  YRES  = 8;      // pixel height of one char 
-  CHARS = 8;      // number of user-defineable characters
-  CHAR0 = 0;      // ASCII of first user-defineable char
-  GOTO_COST = 2;  // number of bytes a goto command requires
+  /* display preferences */
+  XRES  = 5;      /* pixel width of one char  */
+  YRES  = 8;      /* pixel height of one char  */
+  CHARS = 8;      /* number of user-defineable characters */
+  CHAR0 = 0;      /* ASCII of first user-defineable char */
+  GOTO_COST = 2;  /* number of bytes a goto command requires */
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write   = drv_HD_write;
   drv_generic_text_real_defchar = drv_HD_defchar;
 
 
-  // start display
+  /* start display */
   if ((ret=drv_HD_start (section, quiet))!=0)
     return ret;
   
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  // most displays have a full block on ascii 255, but some have kind of 
-  // an 'inverted P'. If you specify 'asc255bug 1 in the config, this
-  // char will not be used, but rendered by the bar driver
+  /* add fixed chars to the bar driver */
+  /* most displays have a full block on ascii 255, but some have kind of  */
+  /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
+  /* char will not be used, but rendered by the bar driver */
   cfg_number(section, "asc255bug", 0, 0, 1, &asc255bug);
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); /* ASCII  32 = blank */
   if (!asc255bug) 
-    drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+    drv_generic_text_bar_add_segment (255,255,255,255); /* ASCII 255 = block */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
+  /* register plugins */
   if (Capabilities & CAP_BRIGHTNESS) {
     AddFunction ("LCD::brightness", 1, plugin_brightness);
   }
@@ -878,22 +884,22 @@ int drv_HD_init (const char *section, const int quiet)
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_HD_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 
   drv_generic_text_quit();
 
-  // clear *both* displays
+  /* clear *both* displays */
   drv_HD_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }
   
-  // clear all signals
+  /* clear all signals */
   if (Bits==8) {
     drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
   } else {

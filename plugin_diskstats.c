@@ -1,4 +1,4 @@
-/* $Id: plugin_diskstats.c,v 1.4 2004/06/17 10:58:58 reinelt Exp $
+/* $Id: plugin_diskstats.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for /proc/diskstats parsing
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_diskstats.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/06/17 10:58:58  reinelt
  *
  * changed plugin_netdev to use the new fast hash model
@@ -70,7 +76,7 @@ static int parse_diskstats (void)
 {
   int age;
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age = hash_age(&DISKSTATS, NULL);
   if (age > 0 && age <= 10) return 0;
   
@@ -86,11 +92,11 @@ static int parse_diskstats (void)
     char buffer[1024];
     char dev[64];
     char *beg, *end;
-    int num, len;
+    unsigned int num, len;
     
     if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
     
-    // fetch device name (3rd column) as key
+    /* fetch device name (3rd column) as key */
     num = 0;
     beg = buffer;
     end = beg;
@@ -101,7 +107,7 @@ static int parse_diskstats (void)
       if (num++ == 2) break;
       beg = end ? end+1 : NULL;
     }
-    len = end ? end - beg : strlen(beg);
+    len = end ? (unsigned)(end - beg) : strlen(beg);
     
     if (len >= sizeof(dev)) len = sizeof(dev)-1;
     strncpy (dev, beg, len);

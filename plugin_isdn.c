@@ -1,4 +1,4 @@
-/* $Id: plugin_isdn.c,v 1.3 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_isdn.c,v 1.4 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for ISDN subsystem
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: plugin_isdn.c,v $
+ * Revision 1.4  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.3  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -96,25 +102,25 @@ static int parse_isdninfo (void)
   FILE *stream;
   long flags;
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age = hash_age(&ISDN_INFO, NULL);
   if (age > 0 && age <= 10) return 0;
 
-  // open file
+  /* open file */
   stream = fopen ("/dev/isdninfo", "r");
   if (stream == NULL) {
     error ("open(/dev/isdninfo) failed: %s", strerror(errno));
     return -1;
   }
   
-  // get flags
+  /* get flags */
   flags = fcntl(fileno(stream), F_GETFL);
   if (flags < 0) {
     error ("fcntl(/dev/isdninfo, F_GETFL) failed: %s", strerror(errno));
     return -1;
   }
   
-  // set O_NONBLOCK
+  /* set O_NONBLOCK */
   if (fcntl (fileno(stream), F_SETFL, flags | O_NONBLOCK) < 0) {
     error ("fcntl(/dev/isdninfo, F_SETFL, O_NONBLOCK) failed: %s", strerror(errno));
     return -1;
@@ -187,7 +193,7 @@ static int get_cps(void)
   CPS cps[ISDN_MAX_CHANNELS];
   CPS sum;
 
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age = hash_age(&ISDN_CPS, NULL);
   if (age > 0 && age <= 10) return 0;
   

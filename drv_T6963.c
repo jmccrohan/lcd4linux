@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.10 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.11 2004/06/26 09:27:21 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -127,25 +133,25 @@ unsigned char *Buffer1, *Buffer2;
 static int bug=0;
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
-// perform normal status check
+/* perform normal status check */
 static void drv_T6_status1 (void)
 {
   int n;
   
-  // turn off data line drivers
+  /* turn off data line drivers */
   drv_generic_parport_direction (1);
   
-  // lower CE and RD
+  /* lower CE and RD */
   drv_generic_parport_control (SIGNAL_CE | SIGNAL_RD, 0);
   
-  // Access Time: 150 ns 
+  /* Access Time: 150 ns  */
   ndelay(150);
   
-  // wait for STA0=1 and STA1=1
+  /* wait for STA0=1 and STA1=1 */
   n=0;
   do {
     rep_nop();
@@ -156,32 +162,32 @@ static void drv_T6_status1 (void)
     }
   } while ((drv_generic_parport_read() & 0x03) != 0x03);
   
-  // rise RD and CE
+  /* rise RD and CE */
   drv_generic_parport_control (SIGNAL_RD | SIGNAL_CE, SIGNAL_RD | SIGNAL_CE);
   
-  // Output Hold Time: 50 ns 
+  /* Output Hold Time: 50 ns  */
   ndelay(50);
   
-  // turn on data line drivers
+  /* turn on data line drivers */
   drv_generic_parport_direction (0);
 }
 
 
-// perform status check in "auto mode"
+/* perform status check in "auto mode" */
 static void drv_T6_status2 (void)
 {
   int n;
 
-  // turn off data line drivers
+  /* turn off data line drivers */
   drv_generic_parport_direction (1);
   
-  // lower RD and CE
+  /* lower RD and CE */
   drv_generic_parport_control (SIGNAL_RD | SIGNAL_CE, 0);
   
-  // Access Time: 150 ns 
+  /* Access Time: 150 ns  */
   ndelay(150);
 
-  // wait for STA3=1
+  /* wait for STA3=1 */
   n=0;
   do {
     rep_nop();
@@ -192,102 +198,102 @@ static void drv_T6_status2 (void)
     }
   } while ((drv_generic_parport_read() & 0x08) != 0x08);
 
-  // rise RD and CE
+  /* rise RD and CE */
   drv_generic_parport_control (SIGNAL_RD | SIGNAL_CE, SIGNAL_RD | SIGNAL_CE);
 
-  // Output Hold Time: 50 ns 
+  /* Output Hold Time: 50 ns  */
   ndelay(50);
 
-  // turn on data line drivers
+  /* turn on data line drivers */
   drv_generic_parport_direction (0);
 }
 
 
 static void drv_T6_write_cmd (const unsigned char cmd)
 {
-  // wait until the T6963 is idle
+  /* wait until the T6963 is idle */
   drv_T6_status1();
 
-  // put data on DB1..DB8
+  /* put data on DB1..DB8 */
   drv_generic_parport_data (cmd);
   
-  // lower WR and CE
+  /* lower WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, 0);
   
-  // Pulse width
+  /* Pulse width */
   ndelay(80);
 
-  // rise WR and CE
+  /* rise WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
 
-  // Data Hold Time
+  /* Data Hold Time */
   ndelay(40);
 }
 
 
 static void drv_T6_write_data (const unsigned char data)
 {
-  // wait until the T6963 is idle
+  /* wait until the T6963 is idle */
   drv_T6_status1();
 
-  // put data on DB1..DB8
+  /* put data on DB1..DB8 */
   drv_generic_parport_data (data);
 
-  // lower C/D
+  /* lower C/D */
   drv_generic_parport_control (SIGNAL_CD, 0);
   
-  // C/D Setup Time
+  /* C/D Setup Time */
   ndelay(20);
 
-  // lower WR and CE
+  /* lower WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, 0);
   
-  // Pulse Width
+  /* Pulse Width */
   ndelay(80);
   
-  // rise WR and CE
+  /* rise WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
   
-  // Data Hold Time
+  /* Data Hold Time */
   ndelay(40);
 
-  // rise CD
+  /* rise CD */
   drv_generic_parport_control (SIGNAL_CD, SIGNAL_CD);
 }
 
 
 static void drv_T6_write_auto (const unsigned char data)
 {
-  // wait until the T6963 is idle
+  /* wait until the T6963 is idle */
   drv_T6_status2();
 
-  // put data on DB1..DB8
+  /* put data on DB1..DB8 */
   drv_generic_parport_data (data);
 
-  // lower C/D
+  /* lower C/D */
   drv_generic_parport_control (SIGNAL_CD, 0);
   
-  // C/D Setup Time
+  /* C/D Setup Time */
   ndelay(20);
 
-  // lower WR and CE
+  /* lower WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, 0);
   
-  // Pulse Width
+  /* Pulse Width */
   ndelay(80);
   
-  // rise WR and CE
+  /* rise WR and CE */
   drv_generic_parport_control (SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
   
-  // Data Hold Time
+  /* Data Hold Time */
   ndelay(40);
 
-  // rise CD
+  /* rise CD */
   drv_generic_parport_control (SIGNAL_CD, SIGNAL_CD);
 }
 
 
-#if 0 // not used
+#if 0 /* not used */
 static void drv_T6_send_byte (const unsigned char cmd, const unsigned char data)
 {
   drv_T6_write_data(data);
@@ -307,8 +313,8 @@ static void drv_T6_clear(const unsigned short addr, const int len)
 {
   int i;
   
-  drv_T6_send_word (0x24, addr);      // Set Adress Pointer
-  drv_T6_write_cmd(0xb0);             // Set Data Auto Write
+  drv_T6_send_word (0x24, addr);      /* Set Adress Pointer */
+  drv_T6_write_cmd(0xb0);             /* Set Data Auto Write */
   for (i=0; i<len; i++) {
     drv_T6_write_auto(0);
     if (bug) {
@@ -317,7 +323,7 @@ static void drv_T6_clear(const unsigned short addr, const int len)
     }
   }
   drv_T6_status2();
-  drv_T6_write_cmd(0xb2);             // Auto Reset
+  drv_T6_write_cmd(0xb2);             /* Auto Reset */
 }
 
 
@@ -325,8 +331,8 @@ static void drv_T6_copy(const unsigned short addr, const unsigned char *data, co
 {
   int i;
   
-  drv_T6_send_word (0x24, 0x0200+addr);  // Set Adress Pointer
-  drv_T6_write_cmd(0xb0);                // Set Data Auto Write
+  drv_T6_send_word (0x24, 0x0200+addr);  /* Set Adress Pointer */
+  drv_T6_write_cmd(0xb0);                /* Set Data Auto Write */
   for (i=0; i<len; i++) {
     drv_T6_write_auto(*(data++));
     if (bug) {
@@ -335,7 +341,7 @@ static void drv_T6_copy(const unsigned short addr, const unsigned char *data, co
     }
   }
   drv_T6_status2();
-  drv_T6_write_cmd(0xb2);  // Auto Reset
+  drv_T6_write_cmd(0xb2);  /* Auto Reset */
 }
 
 
@@ -348,16 +354,16 @@ static void drv_T6_blit(const int row, const int col, const int height, const in
     for (c=col; c<col+width; c++) {
       unsigned char mask = 1<<(XRES-1-c%XRES);
       if (drv_generic_graphic_FB[r*LCOLS+c]) {
-	// set bit
+	/* set bit */
 	Buffer1[(r*DCOLS+c)/XRES] |=  mask;
       } else {
-	// clear bit
+	/* clear bit */
 	Buffer1[(r*DCOLS+c)/XRES] &= ~mask;
       }
     }
   }
   
-  // max address
+  /* max address */
   m=((row+height-1)*DCOLS+col+width)/XRES;
   
   for (i=(row*DCOLS+col)/XRES; i<=m; i++) {
@@ -396,7 +402,7 @@ static int drv_T6_start (const char *section)
     return -1;
   }
 
-  // read display size from config
+  /* read display size from config */
   s=cfg_get(section, "Size", NULL);
   if (s==NULL || *s=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
@@ -423,14 +429,14 @@ static int drv_T6_start (const char *section)
     return -1;
   }
 
-  // Fixme: provider other fonts someday...
+  /* Fixme: provider other fonts someday... */
   if (XRES!=6 && YRES!=8) {
     error ("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
     return -1;
   }
   
-  TROWS=DROWS/YRES;  // text rows
-  TCOLS=DCOLS/XRES;  // text cols
+  TROWS=DROWS/YRES;  /* text rows */
+  TCOLS=DCOLS/XRES;  /* text cols */
 
   Buffer1=malloc(TCOLS*DROWS);
   if (Buffer1==NULL) {
@@ -458,69 +464,69 @@ static int drv_T6_start (const char *section)
   if ((SIGNAL_RD=drv_generic_parport_wire_ctrl ("RD", "AUTOFD"))==0xff) return -1;
   if ((SIGNAL_WR=drv_generic_parport_wire_ctrl ("WR", "INIT")  )==0xff) return -1;
   
-  // rise CE, CD, RD and WR
+  /* rise CE, CD, RD and WR */
   drv_generic_parport_control (SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR,
 			       SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR);
-  // set direction: write
+  /* set direction: write */
   drv_generic_parport_direction (0);
   
 
-  // initialize display
+  /* initialize display */
 
-  drv_T6_send_word (0x40, 0x0000);    // Set Text Home Address
-  drv_T6_send_word (0x41, TCOLS);     // Set Text Area
+  drv_T6_send_word (0x40, 0x0000);    /* Set Text Home Address */
+  drv_T6_send_word (0x41, TCOLS);     /* Set Text Area */
   
-  drv_T6_send_word (0x42, 0x0200);    // Set Graphic Home Address
-  drv_T6_send_word (0x43, TCOLS);     // Set Graphic Area
+  drv_T6_send_word (0x42, 0x0200);    /* Set Graphic Home Address */
+  drv_T6_send_word (0x43, TCOLS);     /* Set Graphic Area */
   
-  drv_T6_write_cmd (0x80);            // Mode Set: OR mode, Internal CG RAM mode
-  drv_T6_send_word (0x22, 0x0002);    // Set Offset Register
-  drv_T6_write_cmd (0x98);            // Set Display Mode: Curser off, Text off, Graphics on
-  drv_T6_write_cmd (0xa0);            // Set Cursor Pattern: 1 line cursor
-  drv_T6_send_word (0x21, 0x0000);    // Set Cursor Pointer to (0,0)
+  drv_T6_write_cmd (0x80);            /* Mode Set: OR mode, Internal CG RAM mode */
+  drv_T6_send_word (0x22, 0x0002);    /* Set Offset Register */
+  drv_T6_write_cmd (0x98);            /* Set Display Mode: Curser off, Text off, Graphics on */
+  drv_T6_write_cmd (0xa0);            /* Set Cursor Pattern: 1 line cursor */
+  drv_T6_send_word (0x21, 0x0000);    /* Set Cursor Pointer to (0,0) */
   
   
-  // clear display
+  /* clear display */
   
-  // upper half
+  /* upper half */
   rows=TROWS>8?8:TROWS;
-  drv_T6_clear(0x0000, TCOLS*rows);    // clear text area 
-  drv_T6_clear(0x0200, TCOLS*rows*8);  // clear graphic area
+  drv_T6_clear(0x0000, TCOLS*rows);    /* clear text area  */
+  drv_T6_clear(0x0200, TCOLS*rows*8);  /* clear graphic area */
   
-  // lower half
+  /* lower half */
   if (TROWS>8) {
     rows=TROWS-8;
-    drv_T6_clear(0x8000, TCOLS*rows);    // clear text area #2
-    drv_T6_clear(0x8200, TCOLS*rows*8);  // clear graphic area #2
+    drv_T6_clear(0x8000, TCOLS*rows);    /* clear text area #2 */
+    drv_T6_clear(0x8200, TCOLS*rows*8);  /* clear graphic area #2 */
   }
 
   return 0;
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/* none at the moment... */
 
 
-// using drv_generic_graphic_draw(W)
-// using drv_generic_graphic_icon_draw(W)
-// using drv_generic_graphic_bar_draw(W)
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_graphic_draw(W) */
+/* using drv_generic_graphic_icon_draw(W) */
+/* using drv_generic_graphic_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_T6_list (void)
 {
   int i;
@@ -532,20 +538,20 @@ int drv_T6_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_T6_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_graphic_real_blit   = drv_T6_blit;
   
-  // start display
+  /* start display */
   if ((ret=drv_T6_start (section))!=0)
     return ret;
   
-  // initialize generic graphic driver
+  /* initialize generic graphic driver */
   if ((ret=drv_generic_graphic_init(section, Name))!=0)
     return ret;
   
@@ -558,30 +564,30 @@ int drv_T6_init (const char *section, const int quiet)
     }
   }
 
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_graphic_draw;
   widget_register(&wc);
 
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_graphic_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_graphic_bar_draw;
   widget_register(&wc);
   
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
 
 
   return 0;
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_T6_quit (const int quiet) {
   
   info("%s: shutting down.", Name);

@@ -1,4 +1,4 @@
-/* $Id: plugin_seti.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_seti.c,v 1.4 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for seti@home status reporting
  *
@@ -27,6 +27,12 @@
  *
  *
  * $Log: plugin_seti.c,v $
+ * Revision 1.4  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.3  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -74,10 +80,10 @@ static int parse_seti (void)
   FILE *stream;
   int age;
   
-  // if a fatal error occured, do nothing
+  /* if a fatal error occured, do nothing */
   if (fatal != 0) return -1;
   
-  // reread every 100 msec only
+  /* reread every 100 msec only */
   age=hash_age(&SETI, NULL);
   if (age>0 && age<=100) return 0;
   
@@ -114,16 +120,16 @@ static int parse_seti (void)
     c=strchr(buffer, '=');
     if (c==NULL) continue;
     key=buffer; val=c+1;
-    // strip leading blanks from key
+    /* strip leading blanks from key */
     while (isspace(*key)) *key++='\0';
-    // strip trailing blanks from key
+    /* strip trailing blanks from key */
     do *c='\0'; while (isspace(*--c));
-    // strip leading blanks from value
+    /* strip leading blanks from value */
     while (isspace(*val)) *val++='\0';
-    // strip trailing blanks from value
+    /* strip trailing blanks from value */
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
-    // add entry to hash table
+    /* add entry to hash table */
     hash_put (&SETI, key, val);
   }
   

@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.12 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: layout.c,v 1.13 2004/06/26 09:27:21 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.13  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.12  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -102,7 +108,7 @@
 
 int layout_addItem (const char *name, const int row, const int col)
 {
-  // allocate widget
+  /* allocate widget */
   widget_add (name, row-1, col-1);
   return 0;
 }
@@ -117,23 +123,23 @@ int layout_init (const char *layout)
   
   info ("initializing layout '%s'", layout);
   
-  // prepare config section
-  // strlen("Layout:")=7
+  /* prepare config section */
+  /* strlen("Layout:")=7 */
   section=malloc(strlen(layout)+8);
   strcpy(section, "Layout:");
   strcat(section, layout);
   
-  // get a list of all keys in this section
+  /* get a list of all keys in this section */
   list=cfg_list(section);
 
-  // map to lower char for scanf()
+  /* map to lower char for scanf() */
   for (l=list; *l!='\0'; l++) *l=tolower(*l);
 
   l=list;
   while (l!=NULL) {
     char *p;
     int i, n;
-    // list is delimited by |
+    /* list is delimited by | */
     while (*l=='|') l++;
     if ((p=strchr(l, '|'))!=NULL) *p='\0';
     i=sscanf (l, "row%d.col%d%n", &row, &col, &n);
@@ -144,7 +150,7 @@ int layout_init (const char *layout)
       }
       free(widget);
     }
-    // next field
+    /* next field */
     l=p?p+1:NULL;
   }
   free (list);

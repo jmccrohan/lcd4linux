@@ -1,4 +1,4 @@
-/* $Id: plugin_uptime.c,v 1.2 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_uptime.c,v 1.3 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for uptime
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_uptime.c,v $
+ * Revision 1.3  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.2  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -64,13 +70,13 @@ static char *itoa(char* buffer, const size_t size, unsigned int value)
 {
   char *p;
  
-  // sanity checks
+  /* sanity checks */
   if (buffer==NULL || size<2) return (NULL);
   
-  // p points to last char
+  /* p points to last char */
   p = buffer+size-1;
   
-  // set terminating zero
+  /* set terminating zero */
   *p='\0';
   
   do {
@@ -93,7 +99,7 @@ char *struptime (const unsigned int uptime, const char *format)
   dst = string;
   len = 0;
   
-  // leave room for terminating zero 
+  /* leave room for terminating zero  */
   size = sizeof(string) - 1;
   
   while (len < size) {
@@ -160,7 +166,7 @@ char *struptime (const unsigned int uptime, const char *format)
     }
   }
   
-  // enforce terminating zero
+  /* enforce terminating zero */
   if (len >= size && *(dst-1) != '\0') {
     len++;
     *dst = '\0';
@@ -185,7 +191,7 @@ double getuptime (void)
 
   buffer[i-1] = '\0';
   
-  // ignore the 2nd value from /proc/uptime
+  /* ignore the 2nd value from /proc/uptime */
   return strtod(buffer, NULL);
 }
 
@@ -206,7 +212,7 @@ static void my_uptime (RESULT *result, const int argc, RESULT *argv[])
   gettimeofday(&now,NULL);
   
   age = (now.tv_sec - last_value.tv_sec)*1000 + (now.tv_usec - last_value.tv_usec)/1000;
-  // reread every 100 msec only
+  /* reread every 100 msec only */
   if (fd == -2 || age == 0 || age > 100) {
     uptime = getuptime();
     if (uptime < 0.0) {

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.15 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: widget.c,v 1.16 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.16  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.15  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -107,7 +113,7 @@
 #endif
 
 
-// we use a static array of widgets and not realloc()
+/* we use a static array of widgets and not realloc() */
 #define MAX_WIDGETS 256
 
 static WIDGET_CLASS *Classes=NULL;
@@ -122,9 +128,9 @@ int widget_register (WIDGET_CLASS *widget)
 {
   int i;
 
-  // sanity check: disallow widget registering after at least one
-  // widget has been added, because we use realloc here, and there may 
-  // be pointers to the old memory area
+  /* sanity check: disallow widget registering after at least one */
+  /* widget has been added, because we use realloc here, and there may  */
+  /* be pointers to the old memory area */
   if (widget_added) {
     error ("internal error: register_widget(%s) after add_widget()", widget->name);
     return -1;
@@ -166,13 +172,13 @@ int widget_add (const char *name, const int row, const int col)
   WIDGET_CLASS *Class;
   WIDGET       *Widget;
   
-  // prepare config section
-  // strlen("Widget:")=7
+  /* prepare config section */
+  /* strlen("Widget:")=7 */
   section=malloc(strlen(name)+8);
   strcpy(section, "Widget:");
   strcat(section, name);
 
-  // get widget class
+  /* get widget class */
   class=cfg_get(section, "class", NULL);
   if (class==NULL || *class=='\0') {
     error ("error: widget '%s' has no class!", name);
@@ -180,7 +186,7 @@ int widget_add (const char *name, const int row, const int col)
     return -1;
   }
   free(section);
-  // lookup widget class
+  /* lookup widget class */
   Class=NULL;
   for (i=0; i<nClasses; i++) {
     if (strcasecmp(class, Classes[i].name)==0) {
@@ -195,8 +201,8 @@ int widget_add (const char *name, const int row, const int col)
   }
   if (class) free (class);
   
-  // do NOT use realloc here because there may be pointers to the old
-  // memory area, which would point to nowhere if realloc moves the area
+  /* do NOT use realloc here because there may be pointers to the old */
+  /* memory area, which would point to nowhere if realloc moves the area */
   if (Widgets==NULL) {
     Widgets=malloc(MAX_WIDGETS*sizeof(WIDGET));
     if (Widgets==NULL) {
@@ -205,7 +211,7 @@ int widget_add (const char *name, const int row, const int col)
     }
   }
 
-  // another sanity check
+  /* another sanity check */
   if (nWidgets>=MAX_WIDGETS) {
     error ("internal error: widget buffer full!");
     return -1;

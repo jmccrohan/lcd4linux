@@ -1,4 +1,4 @@
-/* $Id: plugin_math.c,v 1.4 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: plugin_math.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * math plugin
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin_math.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -124,11 +130,11 @@ static void my_max (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 int plugin_init_math (void)
 {
-  // set some handy constants
+  /* set some handy constants */
   SetVariableNumeric ("Pi", M_PI);
   SetVariableNumeric ("e",  M_E);
   
-  // register some basic math functions
+  /* register some basic math functions */
   AddFunction ("sqrt", 1, my_sqrt);
   AddFunction ("exp",  1, my_exp);
   AddFunction ("ln",   1, my_ln);
@@ -137,7 +143,7 @@ int plugin_init_math (void)
   AddFunction ("cos",  1, my_cos);
   AddFunction ("tan",  1, my_tan);
   
-  // min, max
+  /* min, max */
   AddFunction ("min",  2, my_min);
   AddFunction ("max",  2, my_max);
 

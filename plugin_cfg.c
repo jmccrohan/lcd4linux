@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.9 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.10 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.10  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.9  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -137,29 +143,29 @@ static void my_cfg (RESULT *result, const int argc, RESULT *argv[])
   char *value;
   char *buffer;
   
-  // calculate key length
+  /* calculate key length */
   len=0;
   for (i=0; i<argc; i++) {
     len+=strlen(R2S(argv[i]))+1;
   }
   
-  // allocate key buffer
+  /* allocate key buffer */
   buffer=malloc(len+1);
   
-  // prepare key buffer
+  /* prepare key buffer */
   *buffer='\0';
   for (i=0; i<argc; i++) {
     strcat (buffer, ".");
     strcat (buffer, R2S(argv[i]));
   }
   
-  // buffer starts with '.', so cut off first char
+  /* buffer starts with '.', so cut off first char */
   value=cfg_get("", buffer+1, "");
     
-  // store result
+  /* store result */
   SetResult(&result, R_STRING, value); 
 
-  // free buffer again
+  /* free buffer again */
   free (buffer);
   
   free(value);
@@ -168,10 +174,10 @@ static void my_cfg (RESULT *result, const int argc, RESULT *argv[])
 
 int plugin_init_cfg (void)
 {
-  // load "Variables" section from cfg
+  /* load "Variables" section from cfg */
   load_variables();
 
-  // register plugin
+  /* register plugin */
   AddFunction ("cfg", -1, my_cfg);
   
   return 0;
@@ -179,5 +185,5 @@ int plugin_init_cfg (void)
 
 void plugin_exit_cfg(void) 
 {
-	
+  /* empty */
 }

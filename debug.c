@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.9 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: debug.c,v 1.10 2004/06/26 09:27:20 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.10  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.9  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -91,7 +97,7 @@ void message (const int level, const char *format, ...)
   if (level>verbose_level) return;
 
   va_start(ap, format);
-  (void) vsnprintf(buffer, sizeof(buffer), format, ap);
+  vsnprintf(buffer, sizeof(buffer), format, ap);
   va_end(ap);
   
   if (!running_background) {

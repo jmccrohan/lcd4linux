@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.27 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.28 2004/06/26 09:27:20 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.28  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.27  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -169,30 +175,30 @@ static int Model;
 static int Protocol;
 static int Payload;
 
-// ring buffer for bytes received from the display
-static unsigned char RingBuffer[256];
-static int  RingRPos = 0;
-static int  RingWPos = 0;
+/* ring buffer for bytes received from the display */
+static char RingBuffer[256];
+static unsigned int  RingRPos = 0;
+static unsigned int  RingWPos = 0;
 
-// packet from the display
+/* packet from the display */
 struct {
   unsigned char type;
   unsigned char size;
-  unsigned char data[16+1]; // trailing '\0'
+  unsigned char data[16+1]; /* trailing '\0' */
 } Packet;
 
-// Line Buffer for 633 displays
+/* Line Buffer for 633 displays */
 static char Line[2*16];
 
-// Fan RPM
+/* Fan RPM */
 static double Fan_RPM[4] = {0.0,};
 
-// Temperature sensors
+/* Temperature sensors */
 static double Temperature[32] = {0.0,};
 
 
-// Fixme: GPO's not yet implemented
-// static int GPO[8];
+/* Fixme: GPO's not yet implemented */
+/* static int GPO[8]; */
 static int GPOS;
 
 
@@ -206,8 +212,8 @@ typedef struct {
   int payload;
 } MODEL;
 
-// Fixme #1: number of gpo's should be verified
-// Fixme #2: protocol should be verified
+/* Fixme #1: number of gpo's should be verified */
+/* Fixme #2: protocol should be verified */
 
 static MODEL Models[] = {
   { 626, "626",      2, 16, 0, 1,  0 },
@@ -220,14 +226,14 @@ static MODEL Models[] = {
 };
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
-// x^0 + x^5 + x^12
+/* x^0 + x^5 + x^12 */
 #define CRCPOLY 0x8408 
 
-static unsigned short CRC (const unsigned char *p, size_t len, unsigned short seed)
+static unsigned short CRC (const char *p, size_t len, unsigned short seed)
 {
   int i;
   while (len--) {
@@ -238,22 +244,22 @@ static unsigned short CRC (const unsigned char *p, size_t len, unsigned short se
   return ~seed;
 }
 
-static unsigned char LSB (const unsigned short word)
+static char LSB (const unsigned short word)
 {
   return word & 0xff;
 }
 
-static unsigned char MSB (const unsigned short word)
+static char MSB (const unsigned short word)
 {
   return word >> 8;
 }
 
 
-static unsigned char byte (int pos)
+static char byte (unsigned int pos)
 {
-  pos+=RingRPos;
-  if (pos>=sizeof(RingBuffer))
-    pos-=sizeof(RingBuffer);
+  pos += RingRPos;
+  if (pos >= sizeof(RingBuffer))
+    pos -= sizeof(RingBuffer);
   return RingBuffer[pos];
 }
 
@@ -263,11 +269,11 @@ static void drv_CF_process_packet (void)
 
   switch (Packet.type) {
     
-  case 0x80: // Key Activity
+  case 0x80: /* Key Activity */
     debug ("Key Activity: %d", Packet.data[0]);
     break;
     
-  case 0x81: // Fan Speed Report
+  case 0x81: /* Fan Speed Report */
     if (Packet.data[1] == 0xff) {
       Fan_RPM[Packet.data[0]] = -1.0;
     } else if (Packet.data[1] < 4) {
@@ -277,7 +283,7 @@ static void drv_CF_process_packet (void)
     }
     break;
 
-  case 0x82: // Temperature Sensor Report
+  case 0x82: /* Temperature Sensor Report */
     switch (Packet.data[3]) {
     case 0:
       error ("%s: 1-Wire device #%d: CRC error", Name, Packet.data[0]);
@@ -293,7 +299,7 @@ static void drv_CF_process_packet (void)
     break;
 
   default:
-    // just ignore packet
+    /* just ignore packet */
     break;
   }
   
@@ -306,46 +312,46 @@ static int drv_CF_poll (void)
   unsigned short crc;
   int n, num, size;
   
-  // read into RingBuffer
+  /* read into RingBuffer */
   while (1) {
-    num=drv_generic_serial_poll(buffer, 32);
-    if (num<=0) break;
-    // put result into RingBuffer
-    for (n=0; n<num; n++) {
-      RingBuffer[RingWPos++]=buffer[n];
-      if (RingWPos>=sizeof(RingBuffer)) RingWPos=0;
+    num = drv_generic_serial_poll(buffer, 32);
+    if (num <= 0) break;
+    /* put result into RingBuffer */
+    for (n = 0; n < num; n++) {
+      RingBuffer[RingWPos++] = buffer[n];
+      if (RingWPos >= sizeof(RingBuffer)) RingWPos = 0;
     }
   }
   
-  // process RingBuffer
+  /* process RingBuffer */
   while (1) {
-    // packet size
+    /* packet size */
     num=RingWPos-RingRPos;
     if (num < 0) num+=sizeof(RingBuffer);
-    // minimum packet size=4
+    /* minimum packet size=4 */
     if (num < 4) return 0;
-    // valid response types: 01xxxxx 10.. 11..
-    // therefore: 00xxxxxx is invalid
+    /* valid response types: 01xxxxx 10.. 11.. */
+    /* therefore: 00xxxxxx is invalid */
     if (byte(0)>>6 == 0) goto GARBAGE;
-    // valid command length is 0 to 16
+    /* valid command length is 0 to 16 */
     if (byte(1) > 16) goto GARBAGE;
-    // all bytes available?
+    /* all bytes available? */
     size=byte(1);
     if (num < size+4) return 0;
-    // check CRC
+    /* check CRC */
     for (n=0; n<size+4; n++) buffer[n]=byte(n);
     crc = CRC(buffer, size+2, 0xffff);
     if (LSB(crc) != byte(size+2)) goto GARBAGE;
     if (MSB(crc) != byte(size+3)) goto GARBAGE;
-    // process packet
+    /* process packet */
     Packet.type = buffer[0];
     Packet.size = size;
     memcpy(Packet.data, buffer+2, size);
-    Packet.data[size]='\0'; // trailing zero
-    // increment read pointer
+    Packet.data[size]='\0'; /* trailing zero */
+    /* increment read pointer */
     RingRPos += size+4;
     if (RingRPos >= sizeof(RingBuffer)) RingRPos -= sizeof(RingBuffer);
-    // a packet arrived
+    /* a packet arrived */
     return 1;
   GARBAGE:
     debug ("dropping garbage byte %d", byte(0));
@@ -354,12 +360,12 @@ static int drv_CF_poll (void)
     continue;
   }
   
-  // not reached
+  /* not reached */
   return 0;
 }
 
 
-static void drv_CF_timer (void *notused)
+static void drv_CF_timer (void __attribute__((unused)) *notused)
 {
   while (drv_CF_poll()) {
     drv_CF_process_packet();
@@ -369,7 +375,7 @@ static void drv_CF_timer (void *notused)
 
 static void drv_CF_send (const int cmd, int len, const unsigned char *data)
 {
-  unsigned char buffer[22];
+  char buffer[22];
   unsigned short crc;
   
   if (len > Payload) {
@@ -393,12 +399,12 @@ static void drv_CF_send (const int cmd, int len, const unsigned char *data)
 }
 
 
-static void drv_CF_write1 (const int row, const int col, const unsigned char *data, const int len)
+static void drv_CF_write1 (const int row, const int col, const char *data, const int len)
 {
-  char cmd[3]="\021xy"; // set cursor position
+  char cmd[3]="\021xy"; /* set cursor position */
   
   if (row==0 && col==0) {
-    drv_generic_serial_write ("\001", 1); // cursor home
+    drv_generic_serial_write ("\001", 1); /* cursor home */
   } else {
     cmd[1]=(char)col;
     cmd[2]=(char)row;
@@ -409,34 +415,34 @@ static void drv_CF_write1 (const int row, const int col, const unsigned char *da
 }
 
 
-static void drv_CF_write2 (const int row, const int col, const unsigned char *data, const int len)
+static void drv_CF_write2 (const int row, const int col, const char *data, const int len)
 {
   int l = len;
 
-  // limit length
+  /* limit length */
   if (col + l > 16) l = 16 - col;
   if (l < 0) l = 0;
   
-  // sanity check
+  /* sanity check */
   if (row >= 2 || col + l > 16) {
     error ("%s: internal error: write outside linebuffer bounds!", Name);
     return;
   }
   memcpy (Line + 16 * row + col, data, l);
-  drv_CF_send (7 + row, 16, Line + 16 * row);
+  drv_CF_send (7 + row, 16, (unsigned char *)(Line + 16 * row));
 }
 
 
-static void drv_CF_write3 (const int row, const int col, const unsigned char *data, const int len)
+static void drv_CF_write3 (const int row, const int col, const char *data, const int len)
 {
   int l = len;
-  char cmd[23];
+  unsigned char cmd[23];
 
-  // limit length
+  /* limit length */
   if (col + l > 20) l = 20 - col;
   if (l < 0) l = 0;
 
-  // sanity check
+  /* sanity check */
   if (row >= 2 || col + l > 20) {
     error ("%s: internal error: write outside display bounds!", Name);
     return;
@@ -454,9 +460,9 @@ static void drv_CF_write3 (const int row, const int col, const unsigned char *da
 static void drv_CF_defchar1 (const int ascii, const unsigned char *matrix)
 {
   int i;
-  char cmd[10]="\031n"; // set custom char bitmap
+  char cmd[10]="\031n"; /* set custom char bitmap */
   
-  // user-defineable chars start at 128, but are defined at 0
+  /* user-defineable chars start at 128, but are defined at 0 */
   cmd[1]=(char)(ascii-CHAR0); 
   for (i = 0; i < 8; i++) {
     cmd[i+2] = matrix[i] & 0x3f;
@@ -468,12 +474,12 @@ static void drv_CF_defchar1 (const int ascii, const unsigned char *matrix)
 static void drv_CF_defchar23 (const int ascii, const unsigned char *matrix)
 {
   int i;
-  char buffer[9];
+  unsigned char buffer[9];
   
-  // user-defineable chars start at 128, but are defined at 0
+  /* user-defineable chars start at 128, but are defined at 0 */
   buffer[0] = (char)(ascii-CHAR0); 
   
-  // clear bit 6 and 7 of the bitmap (blinking)
+  /* clear bit 6 and 7 of the bitmap (blinking) */
   for (i = 0; i < 8; i++) {
     buffer[i+1] = matrix[i] & 0x3f;
   }
@@ -487,7 +493,7 @@ static int drv_CF_contrast (int contrast)
   static unsigned char Contrast=0;
   char buffer[2];
 
-  // -1 is used to query the current contrast
+  /* -1 is used to query the current contrast */
   if (contrast == -1) return Contrast;
   
   if (contrast < 0  ) contrast = 0;
@@ -497,21 +503,21 @@ static int drv_CF_contrast (int contrast)
   switch (Protocol) {
 
   case 1:
-    // contrast range 0 to 100
+    /* contrast range 0 to 100 */
     if (Contrast > 100) Contrast = 100;
-    buffer[0] = 15; // Set LCD Contrast
+    buffer[0] = 15; /* Set LCD Contrast */
     buffer[1] = Contrast;
     drv_generic_serial_write (buffer, 2);
     break;
 
   case 2:
-    // contrast range 0 to 50
+    /* contrast range 0 to 50 */
     if (Contrast > 50) Contrast = 50;
     drv_CF_send (13, 1, &Contrast);
     break;
 
   case 3:
-    // contrast range 0 to 255
+    /* contrast range 0 to 255 */
     drv_CF_send (13, 1, &Contrast);
     break;
   }
@@ -525,7 +531,7 @@ static int drv_CF_backlight (int backlight)
   static unsigned char Backlight=0;
   char buffer[2];
 
-  // -1 is used to query the current backlight
+  /* -1 is used to query the current backlight */
   if (backlight == -1) return Backlight;
   
   if (backlight<0  ) backlight=0;
@@ -535,7 +541,7 @@ static int drv_CF_backlight (int backlight)
   switch (Protocol) {
     
   case 1:
-    buffer[0] = 14; // Set LCD Backlight
+    buffer[0] = 14; /* Set LCD Backlight */
     buffer[1] = Backlight;
     drv_generic_serial_write (buffer, 2);
     break;
@@ -555,13 +561,13 @@ static int drv_CF_fan_pwm (int fan, int power)
 {
   static unsigned char PWM[4] = {100,};
   
-  // sanity check
+  /* sanity check */
   if (fan<1 || fan>4) return -1;
   
-  // fan ranges from 1 to 4
+  /* fan ranges from 1 to 4 */
   fan--;
   
-  // -1 is used to query the current power
+  /* -1 is used to query the current power */
   if (power == -1) return PWM[fan];
   
   if (power<0  ) power=0;
@@ -582,30 +588,30 @@ static int drv_CF_autodetect (void)
 {
   int i, m;
   
-  // only autodetect newer displays
+  /* only autodetect newer displays */
   if (Protocol<2) return -1;
     
-  // read display type
+  /* read display type */
   drv_CF_send (1, 0, NULL);
   
   i=0;
   while (1) {
-    // wait 10 msec
+    /* wait 10 msec */
     usleep(10*1000);
-    // packet available?
+    /* packet available? */
     if (drv_CF_poll()) {
-      // display type
+      /* display type */
       if (Packet.type==0x41) {
 	char t[7], c; float h, v;
 	info ("%s: display identifies itself as '%s'", Name, Packet.data); 
-	if (sscanf(Packet.data, "%6s:h%f,%c%f", t, &h, &c, &v)!=4) {
+	if (sscanf((char*)Packet.data, "%6s:h%f,%c%f", t, &h, &c, &v)!=4) {
 	  error ("%s: error parsing display identification string", Name);
 	  return -1;
 	}
 	info ("%s: display type '%s', hardware version %3.1f, firmware version %c%3.1f", Name, t, h, c, v);
 	if (strncmp(t, "CFA", 3)==0) {
 	  for (m=0; Models[m].type!=-1; m++) {
-	    // omit the 'CFA'
+	    /* omit the 'CFA' */
 	    if (strcasecmp(Models[m].name, t+3)==0)
 	      return m;
 	  }
@@ -615,14 +621,14 @@ static int drv_CF_autodetect (void)
       }
       drv_CF_process_packet();
     }
-    // wait no longer than 300 msec
+    /* wait no longer than 300 msec */
     if (++i > 30) {
       error ("%s: display detection timed out", Name);
       return -1;
     }
   }
   
-  // not reached
+  /* not reached */
   return -1;
 }
 
@@ -643,20 +649,20 @@ static int drv_CF_scan_DOW (unsigned char index)
 {
   int i;
   
-  // Read DOW Device Information
+  /* Read DOW Device Information */
   drv_CF_send (18, 1, &index);
   
   i=0;
   while (1) {
-    // wait 10 msec
+    /* wait 10 msec */
     usleep(10*1000);
-    // packet available?
+    /* packet available? */
     if (drv_CF_poll()) {
-      // DOW Device Info
+      /* DOW Device Info */
       if (Packet.type==0x52) {
 	switch (Packet.data[1]) {
 	case 0x00:
-	  // no device found
+	  /* no device found */
 	  return 0;
 	case 0x22:
 	  info ("%s: 1-Wire device #%d: DS1822 temperature sensor found at %s", 
@@ -675,19 +681,19 @@ static int drv_CF_scan_DOW (unsigned char index)
 	drv_CF_process_packet();
       }
     }
-    // wait no longer than 300 msec
+    /* wait no longer than 300 msec */
     if (++i > 30) {
       error ("%s: 1-Wire device #%d detection timed out", Name, index);
       return -1;
     }
   }
   
-  // not reached
+  /* not reached */
   return -1;
 }
 
 
-// clear display
+/* clear display */
 static void drv_CF_clear (void)
 {
   switch (Protocol) {
@@ -702,39 +708,39 @@ static void drv_CF_clear (void)
 }
 
 
-// init sequences for 626, 632, 634, 636 
+/* init sequences for 626, 632, 634, 636  */
 static void drv_CF_start_1 (void)
 {
-  drv_generic_serial_write ("\014", 1);  // Form Feed (Clear Display)
-  drv_generic_serial_write ("\004", 1);  // hide cursor
-  drv_generic_serial_write ("\024", 1);  // scroll off
-  drv_generic_serial_write ("\030", 1);  // wrap off
+  drv_generic_serial_write ("\014", 1);  /* Form Feed (Clear Display) */
+  drv_generic_serial_write ("\004", 1);  /* hide cursor */
+  drv_generic_serial_write ("\024", 1);  /* scroll off */
+  drv_generic_serial_write ("\030", 1);  /* wrap off */
 }
 
 
-// init sequences for 633
+/* init sequences for 633 */
 static void drv_CF_start_2 (void)
 {
   int i;
   unsigned long mask;
-  char buffer[4];
+  unsigned char buffer[4];
 
-  // Clear Display
+  /* Clear Display */
   drv_CF_send ( 6, 0, NULL); 
 
-  // Set LCD Cursor Style
+  /* Set LCD Cursor Style */
   buffer[0] = 0;
   drv_CF_send (12, 1, buffer);
 
-  // enable Fan Reporting
+  /* enable Fan Reporting */
   buffer[0] = 15;
   drv_CF_send (16, 1, buffer);
   
-  // Set Fan Power to 100%
+  /* Set Fan Power to 100% */
   buffer[0] = buffer[1] = buffer[2] = buffer[3] = 100;
   drv_CF_send (17, 4, buffer);
   
-  // Read DOW Device Information
+  /* Read DOW Device Information */
   mask = 0;
   for (i = 0; i < 32; i++) {
     if (drv_CF_scan_DOW(i) == 1) {
@@ -742,7 +748,7 @@ static void drv_CF_start_2 (void)
     }
   }
   
-  // enable Temperature Reporting
+  /* enable Temperature Reporting */
   buffer[0] =  mask      & 0xff;
   buffer[1] = (mask>>8)  & 0xff;
   buffer[2] = (mask>>16) & 0xff;
@@ -751,15 +757,15 @@ static void drv_CF_start_2 (void)
 }
 
 
-// init sequences for 631
+/* init sequences for 631 */
 static void drv_CF_start_3 (void)
 {
-  char buffer[1];
+  unsigned char buffer[1];
 
-  // Clear Display
+  /* Clear Display */
   drv_CF_send ( 6, 0, NULL); 
 
-  // Set LCD Cursor Style
+  /* Set LCD Cursor Style */
   buffer[0] = 0;
   drv_CF_send (12, 1, buffer);
 
@@ -785,17 +791,17 @@ static int drv_CF_start (const char *section)
     info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
     Model    = -1;
-    Protocol =  2; //auto-detect only newer displays
+    Protocol =  2; /*auto-detect only newer displays */
     info ("%s: no '%s.Model' entry from %s, auto-detecting", Name, section, cfg_source());
   }
   
-  // open serial port
+  /* open serial port */
   if (drv_generic_serial_open(section, Name, 0)<0) return -1;
   
-  // Fixme: why such a large delay?
+  /* Fixme: why such a large delay? */
   usleep(350*1000);
   
-  // display autodetection
+  /* display autodetection */
   i=drv_CF_autodetect();
   if (Model==-1) Model=i;
   if (Model==-1) {
@@ -808,7 +814,7 @@ static int drv_CF_start (const char *section)
     return -1;
   }
   
-  // initialize global variables
+  /* initialize global variables */
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
@@ -823,28 +829,28 @@ static int drv_CF_start (const char *section)
     break;
 
   case 2:
-    // regularly process display answers
-    // Fixme: make 100msec configurable
+    /* regularly process display answers */
+    /* Fixme: make 100msec configurable */
     timer_add (drv_CF_timer, NULL, 100, 0);
     drv_CF_start_2();
-    // clear 633 linebuffer
+    /* clear 633 linebuffer */
     memset (Line, ' ', sizeof(Line));
     break;
 
   case 3:
-    // regularly process display answers
-    // Fixme: make 100msec configurable
+    /* regularly process display answers */
+    /* Fixme: make 100msec configurable */
     timer_add (drv_CF_timer, NULL, 100, 0);
     drv_CF_start_3();
     break;
   }
   
-  // set contrast
+  /* set contrast */
   if (cfg_number(section, "Contrast", 0, 0, 255, &i)>0) {
     drv_CF_contrast(i);
   }
 
-  // set backlight
+  /* set backlight */
   if (cfg_number(section, "Backlight", 0, 0, 100, &i)>0) {
     drv_CF_backlight(i);
   }
@@ -853,9 +859,9 @@ static int drv_CF_start (const char *section)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
 
 static void plugin_contrast (RESULT *result, const int argc, RESULT *argv[])
@@ -917,25 +923,25 @@ static void plugin_fan_pwm (RESULT *result, const int argc, RESULT *argv[])
   }
 }
 
-// Fixme: other plugins for Fans, Temperature sensors, ...
+/* Fixme: other plugins for Fans, Temperature sensors, ... */
 
 
 
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
-
-
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_CF_list (void)
 {
   int i;
@@ -947,39 +953,39 @@ int drv_CF_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_CF_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // start display
+  /* start display */
   if ((ret = drv_CF_start (section)) != 0) {
     return ret;
   }
   
-  // display preferences
-  XRES  = 6;      // pixel width of one char 
-  YRES  = 8;      // pixel height of one char 
-  CHARS = 8;      // number of user-defineable characters
+  /* display preferences */
+  XRES  = 6;      /* pixel width of one char  */
+  YRES  = 8;      /* pixel height of one char  */
+  CHARS = 8;      /* number of user-defineable characters */
 
-  // real worker functions
+  /* real worker functions */
   switch (Protocol) {
   case 1:
-    CHAR0 = 128;   // ASCII of first user-defineable char
-    GOTO_COST = 3; // number of bytes a goto command requires
+    CHAR0 = 128;   /* ASCII of first user-defineable char */
+    GOTO_COST = 3; /* number of bytes a goto command requires */
     drv_generic_text_real_write   = drv_CF_write1;
     drv_generic_text_real_defchar = drv_CF_defchar1;
     break;
   case 2:
-    CHAR0 = 0; // ASCII of first user-defineable char
-    GOTO_COST = 999; // there is no goto on 633
+    CHAR0 = 0; /* ASCII of first user-defineable char */
+    GOTO_COST = 999; /* there is no goto on 633 */
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
   case 3:
-    CHAR0 = 0; // ASCII of first user-defineable char
-    GOTO_COST = 3; // number of bytes a goto command requires
+    CHAR0 = 0; /* ASCII of first user-defineable char */
+    GOTO_COST = 3; /* number of bytes a goto command requires */
     drv_generic_text_real_write   = drv_CF_write3;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
@@ -994,39 +1000,39 @@ int drv_CF_init (const char *section, const int quiet)
     }
   }
     
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (0, 0, 255, 32); // ASCII 32 = blank
+  /* add fixed chars to the bar driver */
+  drv_generic_text_bar_add_segment (0, 0, 255, 32); /* ASCII 32 = blank */
   if (Protocol==2)
-    drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+    drv_generic_text_bar_add_segment (255,255,255,255); /* ASCII 255 = block */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
+  /* register plugins */
   AddFunction ("LCD::contrast",  -1, plugin_contrast);
   AddFunction ("LCD::backlight", -1, plugin_backlight);
   if (Protocol == 2) {
@@ -1037,17 +1043,17 @@ int drv_CF_init (const char *section, const int quiet)
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_CF_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 
   drv_generic_text_quit();
 
-  // clear display
+  /* clear display */
   drv_CF_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

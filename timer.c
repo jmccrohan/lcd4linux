@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.8 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: timer.c,v 1.9 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.9  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.8  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -122,18 +128,18 @@ int timer_add (void (*callback)(void *data), void *data, const int interval, con
   
   gettimeofday(&now, NULL);
   
-  // find a free slot
+  /* find a free slot */
   for (i=0; i<nTimers; i++) {
     if (Timers[i].active==0) break;
   }
 
-  // none found, allocate a new slot
+  /* none found, allocate a new slot */
   if (i>=nTimers) {
     nTimers++;
     Timers=realloc(Timers, nTimers*sizeof(*Timers));
   }
   
-  // fill slot
+  /* fill slot */
   Timers[i].callback = callback;
   Timers[i].data     = data;
   Timers[i].when     = now;
@@ -141,7 +147,7 @@ int timer_add (void (*callback)(void *data), void *data, const int interval, con
   Timers[i].one_shot = one_shot;
   Timers[i].active   = 1;
 
-  // if one-shot timer, don't fire now
+  /* if one-shot timer, don't fire now */
   if (one_shot) {
     timer_inc (&Timers[i].when, interval);
   }
@@ -155,26 +161,26 @@ int timer_process (struct timespec *delay)
   int i, flag, min;
   struct timeval now;
   
-  // the current moment
+  /* the current moment */
   gettimeofday(&now, NULL);
 
-  // sanity check
+  /* sanity check */
   if (nTimers==0) {
     error ("huh? not one single timer to process? dazed and confused...");
     return -1;
   }
 
-  // process expired timers
+  /* process expired timers */
   flag=0;
   for (i=0; i<nTimers; i++) {
     if (Timers[i].active == 0) continue;
     if (timercmp(&Timers[i].when, &now, <=)) {
       flag=1;
-      // callback
+      /* callback */
       if (Timers[i].callback!=NULL) {
 	Timers[i].callback(Timers[i].data);
       }
-      // respawn or delete timer
+      /* respawn or delete timer */
       if (Timers[i].one_shot) {
 	Timers[i].active=0;
       } else {
@@ -184,7 +190,7 @@ int timer_process (struct timespec *delay)
     }
   }
 
-  // find next timer
+  /* find next timer */
   flag=1;
   min=-1;
   for (i=0; i<nTimers; i++) {
@@ -200,14 +206,14 @@ int timer_process (struct timespec *delay)
     return -1;
   }
     
-  // delay until next timer event
+  /* delay until next timer event */
   delay->tv_sec   = Timers[min].when.tv_sec  - now.tv_sec;
   delay->tv_nsec  = Timers[min].when.tv_usec - now.tv_usec;
   if (delay->tv_nsec<0) {
     delay->tv_sec--;
     delay->tv_nsec += 1000000;
   }
-  // nanoseconds!!
+  /* nanoseconds!! */
   delay->tv_nsec *= 1000;
 
   return 0;
@@ -219,8 +225,8 @@ void timer_exit(void) {
 
   nTimers=0;
 
-  if (Timers>0) {
+  if (Timers != NULL) {
     free(Timers);;	
-    Timers=NULL;
+    Timers = NULL;
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_wireless.c,v 1.5 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_wireless.c,v 1.6 2004/06/26 09:27:21 reinelt Exp $
  *
  * Wireless Extension plugin
  *
@@ -28,6 +28,12 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.6  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.5  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -91,12 +97,12 @@
 #endif
 
 #define HASH_TTL 100
-
-//#define KILO  1e3
-//#define MEGA  1e6
-//#define GIGA  1e9
-
-
+   
+   /*#define KILO  1e3 */
+   /*#define MEGA  1e6 */
+   /*#define GIGA  1e9 */
+   
+   
 #define KEY_LEVEL "level"
 #define KEY_QUALITY "quality"
 #define KEY_NOISE "noise"
@@ -296,8 +302,11 @@ static int get_op_mode(const char* dev, const char* key) {
     ioctl_error(__LINE__);
     return -1;
   }
-      
-  if((req.u.mode > 6) || (req.u.mode < 0)) {
+     
+  /* Fixme: req.u.mode is unsigned and therefore never < 0 */
+  /* if((req.u.mode > 6) || (req.u.mode < 0)) { */
+  
+  if(req.u.mode > 6) {
     req.u.mode=7; /* mode not available */
   }      
 
@@ -399,7 +408,7 @@ static int get_sens(const char* dev, const char* key) {
     
 
 static int get_sec_mode(const char* dev, const char* key) {
-  // Get encryption information 
+  /* Get encryption information  */
   struct iwreq  req; 
   char key_buffer[32];
   char encrypt_key[IW_ENCODING_TOKEN_MAX+1];
@@ -433,9 +442,9 @@ static int get_sec_mode(const char* dev, const char* key) {
     return(-1);
   }
   
-  // Display encryption information 
-  //if(has_key && (key_flags & IW_ENCODE_INDEX) > 1)
-  //  printf(" [%d]", info->key_flags & IW_ENCODE_INDEX);
+  /* Display encryption information  */
+  /*if(has_key && (key_flags & IW_ENCODE_INDEX) > 1) */
+  /*  printf(" [%d]", info->key_flags & IW_ENCODE_INDEX); */
 
   if(has_key && (key_flags & IW_ENCODE_RESTRICTED))
     hash_put(&wireless,key_buffer, "restricted");
@@ -510,13 +519,13 @@ static int get_stats(const char *dev, const char *key)
 
 static int check_socket() {
   
-  // already handled in a previous run
+  /* already handled in a previous run */
   if (sock==-3) return(-1);
   
-  // socket not initialized
+  /* socket not initialized */
   if (sock==-2) sock = socket(AF_INET, SOCK_DGRAM, 0);  
   
-  // error initilalizing socket
+  /* error initilalizing socket */
   if (sock<=0) {
     error("Error opening socket for reading wireless stats");
     sock=-3;
@@ -549,7 +558,7 @@ static void save_result(RESULT *result, const char* dev, const char* key, const 
 }
 
 /* 
-  functions exported to the evaluator 
+ *functions exported to the evaluator 
 */
 
 static void wireless_quality(RESULT *result, RESULT *arg1) {

@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -123,35 +129,35 @@
 static char *Section=NULL;
 static char *Driver=NULL;
 
-int DROWS, DCOLS; // display size (pixels!)
-int LROWS, LCOLS; // layout size  (pixels!)
-int XRES,  YRES;  // pixels of one char cell
+int DROWS, DCOLS; /* display size (pixels!) */
+int LROWS, LCOLS; /* layout size  (pixels!) */
+int XRES,  YRES;  /* pixels of one char cell */
 
 unsigned char *drv_generic_graphic_FB = NULL;
 
 
-// ****************************************
-// *** generic Framebuffer stuff        ***
-// ****************************************
+/****************************************/
+/*** generic Framebuffer stuff        ***/
+/****************************************/
 
 static void drv_generic_graphic_resizeFB (int rows, int cols)
 {
-  char *newFB;
+  unsigned char *newFB;
   int row, col;
   
-  // Layout FB is large enough
+  /* Layout FB is large enough */
   if (rows<=LROWS && cols<=LCOLS)
     return;
   
-  // get maximum values
+  /* get maximum values */
   if (rows<LROWS) rows=LROWS;
   if (cols<LCOLS) cols=LCOLS;
   
-  // allocate new Layout FB
+  /* allocate new Layout FB */
   newFB = malloc(cols*rows*sizeof(char));
   memset (newFB, 0, rows*cols*sizeof(char));
   
-  // transfer contents
+  /* transfer contents */
   if (drv_generic_graphic_FB!=NULL) {
     for (row=0; row<LROWS; row++) {
       for (col=0; col<LCOLS; col++) {
@@ -175,41 +181,41 @@ int drv_generic_graphic_clear (void)
 }
 
 
-// ****************************************
-// *** generic text handling            ***
-// ****************************************
+/****************************************/
+/*** generic text handling            ***/
+/****************************************/
 
-static void drv_generic_graphic_render (const int row, const int col, const unsigned char *txt)
+static void drv_generic_graphic_render (const int row, const int col, const char *txt)
 {
   int c, r, x, y;
   int len = strlen(txt);
   
-  // maybe grow layout framebuffer
+  /* maybe grow layout framebuffer */
   drv_generic_graphic_resizeFB (row + YRES, col + XRES * len);
   
   r = row;
   c = col;
 
-  // render text into layout FB
+  /* render text into layout FB */
   while (*txt != '\0') {
     for (y = 0; y < YRES; y++) {
       int mask = 1 << XRES;
       for (x = 0; x < XRES; x++) {
 	mask >>= 1;
-	drv_generic_graphic_FB[(r+y) * LCOLS + c + x] = Font_6x8[*txt][y]&mask ? 1:0;
+	drv_generic_graphic_FB[(r+y) * LCOLS + c + x] = Font_6x8[(int)*txt][y]&mask ? 1:0;
       }
     }
     c += XRES;
     txt++;
   }
   
-  // flush area
+  /* flush area */
   drv_generic_graphic_real_blit (row, col, YRES, XRES*len);
 
 }
 
 
-// say hello to the user
+/* say hello to the user */
 int drv_generic_graphic_greet (const char *msg1, const char *msg2)
 {
   char *line1[] = { "* LCD4Linux " VERSION " *",
@@ -228,8 +234,8 @@ int drv_generic_graphic_greet (const char *msg1, const char *msg2)
   int i;
   int flag = 0;
   
-  int cols = DCOLS/XRES;
-  int rows = DROWS/YRES;
+  unsigned int cols = DCOLS/XRES;
+  unsigned int rows = DROWS/YRES;
   
   for (i = 0; line1[i]; i++) {
     if (strlen(line1[i]) <= cols) {
@@ -250,7 +256,7 @@ int drv_generic_graphic_greet (const char *msg1, const char *msg2)
   }
   
   if (msg1 && rows >= 3) {
-    int len = strlen(msg1);
+    unsigned int len = strlen(msg1);
     if ( len <= cols) {
       drv_generic_graphic_render (YRES * 2, XRES * (cols-len)/2, msg1);
       flag = 1;
@@ -258,7 +264,7 @@ int drv_generic_graphic_greet (const char *msg1, const char *msg2)
   }
   
   if (msg2 && rows >= 4) {
-    int len = strlen(msg2);
+    unsigned int len = strlen(msg2);
     if ( len <= cols) {
       drv_generic_graphic_render (YRES * 3, XRES * (cols-len)/2, msg2);
       flag = 1;
@@ -277,9 +283,9 @@ int drv_generic_graphic_draw (WIDGET *W)
 }
 
 
-// ****************************************
-// *** generic icon handling            ***
-// ****************************************
+/****************************************/
+/*** generic icon handling            ***/
+/****************************************/
 
 int drv_generic_graphic_icon_draw (WIDGET *W)
 {
@@ -291,10 +297,10 @@ int drv_generic_graphic_icon_draw (WIDGET *W)
   row = YRES*W->row;
   col = XRES*W->col;
   
-  // maybe grow layout framebuffer
+  /* maybe grow layout framebuffer */
   drv_generic_graphic_resizeFB (row+YRES, col+XRES);
   
-  // render icon
+  /* render icon */
   for (y=0; y<YRES; y++) {
     int mask=1<<XRES;
     for (x=0; x<XRES; x++) {
@@ -308,7 +314,7 @@ int drv_generic_graphic_icon_draw (WIDGET *W)
     }
   }
 
-  // flush area
+  /* flush area */
   drv_generic_graphic_real_blit (row, col, YRES, XRES);
 
   return 0;
@@ -316,9 +322,9 @@ int drv_generic_graphic_icon_draw (WIDGET *W)
 }
 
 
-// ****************************************
-// *** generic bar handling             ***
-// ****************************************
+/****************************************/
+/*** generic bar handling             ***/
+/****************************************/
 
 int drv_generic_graphic_bar_draw (WIDGET *W)
 {
@@ -332,7 +338,7 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
   dir = Bar->direction;
   len = Bar->length;
   
-  // maybe grow layout framebuffer
+  /* maybe grow layout framebuffer */
   if (dir & (DIR_EAST|DIR_WEST)) {
     drv_generic_graphic_resizeFB (row+YRES, col+XRES*len);
   } else {
@@ -382,7 +388,7 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
     break;
   }
   
-  // flush area
+  /* flush area */
   if (dir & (DIR_EAST|DIR_WEST)) {
     drv_generic_graphic_real_blit (row, col, YRES, XRES*len);
   } else {
@@ -393,22 +399,22 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
 }
 
 
-// ****************************************
-// *** generic init/quit                ***
-// ****************************************
+/****************************************/
+/*** generic init/quit                ***/
+/****************************************/
 
 int drv_generic_graphic_init (const char *section, const char *driver)
 {
   Section = (char*)section;
   Driver  = (char*)driver;
   
-  // init layout framebuffer
+  /* init layout framebuffer */
   LROWS = 0;
   LCOLS = 0;
   drv_generic_graphic_FB=NULL;
   drv_generic_graphic_resizeFB (DROWS, DCOLS);
   
-  // sanity check
+  /* sanity check */
   if (drv_generic_graphic_FB==NULL) {
     error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
     return -1;

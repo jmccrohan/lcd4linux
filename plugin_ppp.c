@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.6 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -92,11 +98,11 @@ static int get_ppp_stats (void)
   struct ifpppstatsreq req;
   char key[16], val[16];
 
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age=hash_age(&PPP, NULL);
   if (age>0 && age<=10) return 0;
   
-  // open socket only once
+  /* open socket only once */
   if (fd==-2) {
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd==-1) {

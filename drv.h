@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.6 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv.h,v 1.7 2004/06/26 09:27:20 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.7  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -65,9 +71,10 @@ typedef struct DRIVER {
 } DRIVER;
 
 
-// output file for Raster driver
-// has to be defined here because it's referenced
-// even if the raster driver is not included!
+/* output file for Raster driver
+ * has to be defined here because it's referenced
+ * even if the raster driver is not included! 
+ */
 extern char *output;
 
 int drv_list (void);

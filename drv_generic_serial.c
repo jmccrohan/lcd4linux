@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.13 2004/06/26 06:12:15 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.14 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.14  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.13  2004/06/26 06:12:15  reinelt
  *
  * support for Beckmann+Egle Compact Terminals
@@ -101,15 +107,15 @@
  * int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
  *   opens the serial port
  *
- * int drv_generic_serial_poll (unsigned char *string, int len)
+ * int drv_generic_serial_poll (char *string, int len)
  *   reads from the serial or USB port
  *   without retry
  *
- * int drv_generic_serial_read (unsigned char *string, int len);
+ * int drv_generic_serial_read (char *string, int len);
  *   reads from the serial or USB port
  *   with retry
  *
- * void drv_generic_serial_write (unsigned char *string, int len);
+ * void drv_generic_serial_write (char *string, int len);
  *   writes to the serial or USB port
  *
  * int drv_generic_serial_close (void);
@@ -147,9 +153,9 @@ static int     Device=-1;
 #define LOCK "/var/lock/LCK..%s"
 
 
-// ****************************************
-// *** generic serial/USB communication ***
-// ****************************************
+/****************************************/
+/*** generic serial/USB communication ***/
+/****************************************/
 
 static pid_t drv_generic_serial_lock_port (const char *Port)
 {
@@ -187,7 +193,8 @@ static pid_t drv_generic_serial_lock_port (const char *Port)
   }
   
   snprintf (buffer, sizeof(buffer), "%10d\n", (int)getpid());
-  if (write(fd, buffer, strlen(buffer))!=strlen(buffer)) {
+  len = strlen(buffer);
+  if (write(fd, buffer, len) != len) {
     error ("write(%s) failed: %s", tempfile, strerror(errno));
     close(fd);
     unlink(tempfile);
@@ -205,7 +212,7 @@ static pid_t drv_generic_serial_lock_port (const char *Port)
     }
 
     if ((fd=open(lockfile, O_RDONLY))==-1) {
-      if (errno==ENOENT) continue; // lockfile disappared
+      if (errno==ENOENT) continue; /* lockfile disappared */
       error ("open(%s) failed: %s", lockfile, strerror(errno));
       unlink (tempfile);
       return -1;
@@ -340,7 +347,7 @@ int drv_generic_serial_open (const char *section, const char *driver, const unsi
 }
 
 
-int drv_generic_serial_poll (unsigned char *string, const int len)
+int drv_generic_serial_poll (char *string, const int len)
 {
   int ret;
   if (Device == -1) return -1;
@@ -352,7 +359,7 @@ int drv_generic_serial_poll (unsigned char *string, const int len)
 }
 
 
-int drv_generic_serial_read (unsigned char *string, const int len)
+int drv_generic_serial_read (char *string, const int len)
 {
   int count, run, ret;
   
@@ -373,7 +380,7 @@ int drv_generic_serial_read (unsigned char *string, const int len)
 }
 
 
-void drv_generic_serial_write (const unsigned char *string, const int len)
+void drv_generic_serial_write (const char *string, const int len)
 {
   int run, ret;
   

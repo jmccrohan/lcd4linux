@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.40 2004/06/20 10:09:52 reinelt Exp $^
+/* $Id: cfg.c,v 1.41 2004/06/26 09:27:20 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.41  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.40  2004/06/20 10:09:52  reinelt
  *
  * 'const'ified the whole source
@@ -282,7 +288,7 @@ static ENTRY *Config=NULL;
 static int   nConfig=0;
 
 
-// bsearch compare function for config entries
+/* bsearch compare function for config entries */
 static int c_lookup (const void *a, const void *b)
 {
   char *key=(char*)a;
@@ -292,7 +298,7 @@ static int c_lookup (const void *a, const void *b)
 }
 
 
-// qsort compare function for variables
+/* qsort compare function for variables */
 static int c_sort (const void *a, const void *b)
 {
   ENTRY *ea=(ENTRY*)a;
@@ -302,7 +308,7 @@ static int c_sort (const void *a, const void *b)
 }
 
 
-// remove leading and trailing whitespace
+/* remove leading and trailing whitespace */
 static char *strip (char *s, const int strip_comments)
 {
   char *p;
@@ -321,7 +327,7 @@ static char *strip (char *s, const int strip_comments)
 }
 
 
-// unquote a string
+/* unquote a string */
 static char *dequote (char *string)
 {
   int quote=0;
@@ -358,16 +364,16 @@ static char *dequote (char *string)
 }
 
 
-// which if a string contains only valid chars
-// i.e. start with a char and contains chars and nums
+/* which if a string contains only valid chars */
+/* i.e. start with a char and contains chars and nums */
 static int validchars (const char *string)
 {
   const char *c;
 
   for (c=string; *c; c++) {
-    // first and following chars
+    /* first and following chars */
     if ((*c>='A' && *c<='Z') || (*c>='a' && *c<='z') || (*c=='_')) continue;
-    // only following chars
+    /* only following chars */
     if ((c>string) && ((*c>='0' && *c<='9') || (*c=='.') || (*c=='-'))) continue;
     return 0;
   }
@@ -380,18 +386,18 @@ static void cfg_add (const char *section, const char *key, const char *val, cons
   char *buffer;
   ENTRY *entry;
   
-  // allocate buffer 
+  /* allocate buffer  */
   buffer=malloc(strlen(section)+strlen(key)+2);
   *buffer='\0';
   
-  // prepare section.key
+  /* prepare section.key */
   if (section!=NULL && *section!='\0') {
     strcpy(buffer, section);
     strcat(buffer, ".");
   }
   strcat (buffer, key);
   
-  // does the key already exist?
+  /* does the key already exist? */
   entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
   
   if (entry!=NULL) {
@@ -439,19 +445,19 @@ char *cfg_list (const char *section)
   int i, len;
   char *key, *list;
   
-  // calculate key length
+  /* calculate key length */
   len=strlen(section)+1;
 
-  // prepare search key
+  /* prepare search key */
   key=malloc(len+1);
   strcpy (key, section);
   strcat (key, ".");
   
-  // start with empty string
+  /* start with empty string */
   list=malloc(1);
   *list='\0';
   
-  // search matching entries
+  /* search matching entries */
   for (i=0; i<nConfig; i++) {
     if (strncasecmp(Config[i].key, key, len)==0) {
       list=realloc(list, strlen(list)+strlen(Config[i].key)-len+2);
@@ -471,26 +477,26 @@ static char *cfg_lookup (const char *section, const char *key)
   char *buffer;
   ENTRY *entry;
 
-  // calculate key length
+  /* calculate key length */
   len=strlen(key)+1;
   if (section!=NULL)
     len+=strlen(section)+1;
 
-  // allocate buffer 
+  /* allocate buffer  */
   buffer=malloc(len);
   *buffer='\0';
   
-  // prepare section:key
+  /* prepare section:key */
   if (section!=NULL && *section!='\0') {
     strcpy(buffer, section);
     strcat(buffer, ".");
   }
   strcat (buffer, key);
   
-  // search entry
+  /* search entry */
   entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
 
-  // free buffer again
+  /* free buffer again */
   free (buffer);
   
   if (entry!=NULL)
@@ -540,9 +546,9 @@ int cfg_number (const char *section, const char *key, const int defval, const in
   void *tree = NULL;
   RESULT result = {0, 0, 0, NULL};
    
-  // start with default value
-  // in case of an (uncatched) error, you have the
-  // default value set, which may be handy...
+  /* start with default value */
+  /* in case of an (uncatched) error, you have the */
+  /* default value set, which may be handy... */
   *value=defval;
 
   expression=cfg_get_raw(section, key, NULL);
@@ -635,27 +641,27 @@ static int cfg_read (const char *file)
     return -1;
   }
 
-  // start with empty section
+  /* start with empty section */
   strcpy(section, "");
   
   error=0;
   lineno=0;
   while ((line=fgets(buffer,256,stream))!=NULL) {
 
-    // increment line number
+    /* increment line number */
     lineno++;
   
-    // skip empty lines
+    /* skip empty lines */
     if (*(line=strip(line, 1))=='\0') continue;
 
-    // reset section flags
+    /* reset section flags */
     section_open=0;
     section_close=0;
     
-    // key is first word
+    /* key is first word */
     key=line;
     
-    // search first blank between key and value
+    /* search first blank between key and value */
     for (val=line; *val; val++) {
       if (isblank(*val)) {
 	*val++='\0';
@@ -663,56 +669,56 @@ static int cfg_read (const char *file)
       }
     }
 
-    // strip value
+    /* strip value */
     val=strip(val, 1);
 
-    // search end of value
+    /* search end of value */
     if (*val) for (end=val; *(end+1); end++);
     else end=val;
 
-    // if last char is '{', a section has been opened
+    /* if last char is '{', a section has been opened */
     if (*end=='{') {
       section_open=1;
       *end='\0';
       val=strip(val, 0);
     }
 
-    // provess "value" in double-quotes
+    /* provess "value" in double-quotes */
     if (*val=='"' && *end=='"') {
       *end='\0';
       val++;
     }
 
-    // if key is '}', a section has been closed
+    /* if key is '}', a section has been closed */
     if (strcmp(key, "}")==0) {
       section_close=1;
       *key='\0';
     }
 
-    // sanity check: '}' should be the only char in a line
+    /* sanity check: '}' should be the only char in a line */
     if (section_close && (section_open || *val!='\0')) {
       error ("error in config file '%s' line %d: garbage after '}'", file, lineno);
       error=1;
       break;
     }
     
-    // check key for valid chars
+    /* check key for valid chars */
     if (!validchars(key)) {
       error ("error in config file '%s' line %d: key '%s' is invalid", file, lineno, key);
       error=1;
       break;
     }
 
-    // on section-open, check value for valid chars
+    /* on section-open, check value for valid chars */
     if (section_open && !validchars(val)) {
       error ("error in config file '%s' line %d: section '%s' is invalid", file, lineno, val);
       error=1;
       break;
     }
 
-    // on section-open, append new section name
+    /* on section-open, append new section name */
     if (section_open) {
-      // is the section[] array big enough?
+      /* is the section[] array big enough? */
       if (strlen(section)+strlen(key)+3 > sizeof(section)) {
 	error ("error in config file '%s' line %d: section buffer overflow", file, lineno);
 	error=1;
@@ -727,9 +733,9 @@ static int cfg_read (const char *file)
       continue;
     }
 
-    // on section-close, remove last section name
+    /* on section-close, remove last section name */
     if (section_close) {
-      // sanity check: section already empty?
+      /* sanity check: section already empty? */
       if (*section=='\0') {
 	error ("error in config file '%s' line %d: unmatched closing brace", file, lineno);
 	error=1;
@@ -744,12 +750,12 @@ static int cfg_read (const char *file)
       continue;
     }
 
-    // finally: add key
+    /* finally: add key */
     cfg_add (section, key, val, 0);
     
   }
   
-  // sanity check: are the braces balanced?
+  /* sanity check: are the braces balanced? */
   if (!error && *section!='\0') {
     error ("error in config file '%s' line %d: unbalanced braces", file, lineno);
     error=1;

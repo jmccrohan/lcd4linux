@@ -1,4 +1,4 @@
-/* $Id: pid.c,v 1.6 2004/03/19 06:37:47 reinelt Exp $
+/* $Id: pid.c,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * PID file handling
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/03/19 06:37:47  reinelt
  * asynchronous thread handling started
  *
@@ -104,7 +110,8 @@ int pid_init (const char *pidfile)
   }
   
   qprintf(buffer, sizeof(buffer), "%d\n", (int)getpid());
-  if (write(fd, buffer, strlen(buffer))!=strlen(buffer)) {
+  len = strlen(buffer);
+  if (write(fd, buffer, len) != len) {
     error ("write(%s) failed: %s", tmpfile, strerror(errno));
     close(fd);
     unlink(tmpfile);
@@ -122,7 +129,7 @@ int pid_init (const char *pidfile)
     }
 
     if ((fd=open(pidfile, O_RDONLY))==-1) {
-      if (errno==ENOENT) continue; // pidfile disappared
+      if (errno==ENOENT) continue; /* pidfile disappared */
       error ("open(%s) failed: %s", pidfile, strerror(errno));
       unlink (tmpfile);
       return -1;

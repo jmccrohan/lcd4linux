@@ -1,4 +1,4 @@
-/* $Id: qprintf.c,v 1.4 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: qprintf.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: qprintf.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -64,20 +70,20 @@ static char *itoa(char* buffer, const size_t size, int value)
   char *p;
   int sign;
   
-  // sanity checks
+  /* sanity checks */
   if (buffer==NULL || size<2) return (NULL);
   
-  // remember sign of value
+  /* remember sign of value */
   sign = 0;
   if (value < 0) {
     sign  = 1;
     value = -value;
   }
   
-  // p points to last char
+  /* p points to last char */
   p = buffer+size-1;
   
-  // set terminating zero
+  /* set terminating zero */
   *p='\0';
   
   do {
@@ -96,13 +102,13 @@ static char *utoa(char* buffer, const size_t size, unsigned int value)
 {
   char *p;
  
-  // sanity checks
+  /* sanity checks */
   if (buffer==NULL || size<2) return (NULL);
   
-  // p points to last char
+  /* p points to last char */
   p = buffer+size-1;
   
-  // set terminating zero
+  /* set terminating zero */
   *p='\0';
   
   do {
@@ -119,13 +125,13 @@ static char *utox(char* buffer, const size_t size, unsigned int value)
   char *p;
   int digit;
  
-  // sanity checks
+  /* sanity checks */
   if (buffer==NULL || size<2) return (NULL);
   
-  // p points to last char
+  /* p points to last char */
   p = buffer+size-1;
   
-  // set terminating zero
+  /* set terminating zero */
   *p='\0';
   
   do {
@@ -143,7 +149,7 @@ int qprintf(char *str, const size_t size, const char *format, ...) {
   va_list ap;
   const char *src;
   char *dst;
-  int len;
+  unsigned int len;
   
   src = format;
   dst = str;
@@ -151,7 +157,7 @@ int qprintf(char *str, const size_t size, const char *format, ...) {
   
   va_start(ap, format);
   
-  // use size-1 for terminating zero
+  /* use size-1 for terminating zero */
   while (len < size-1) {
     
     if (*src=='%') {
@@ -207,13 +213,13 @@ int qprintf(char *str, const size_t size, const char *format, ...) {
   
   va_end(ap);
   
-  // enforce terminating zero
+  /* enforce terminating zero */
   if (len>=size-1 && *(dst-1)!='\0') {
     len++;
     *dst='\0';
   }
   
-  // do not count terminating zero
+  /* do not count terminating zero */
   return len-1;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.19 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.20 2004/06/26 09:27:21 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.20  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.19  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -166,10 +172,10 @@ static char *path=NULL;
 static HASH I2Csensors;
 
 static const char *procfs_tokens[4][3] = {
-  {"temp_hyst", "temp_max", "temp_input"},	// for temp#
-  {"in_min", "in_max", "in_input"},		// for in#
-  {"fan_div1", "fan_div2", "fan_div3"},		// for fan_div
-  {"fan_min", "fan_input", ""}			// for fan#
+  {"temp_hyst", "temp_max", "temp_input"},	/* for temp# */
+  {"in_min", "in_max", "in_input"},		/* for in# */
+  {"fan_div1", "fan_div2", "fan_div3"},		/* for fan_div */
+  {"fan_min", "fan_input", ""}			/* for fan# */
 };
 
 static int (*parse_i2c_sensors)(const char *key);
@@ -201,9 +207,9 @@ static int parse_i2c_sensors_sysfs(const char *key)
     return -1;
   }
 
-  // now the formating stuff, depending on the file :
-  // Some values must be divided by 1000, the others
-  // are parsed directly (we just remove the \n).
+  /* now the formating stuff, depending on the file : */
+  /* Some values must be divided by 1000, the others */
+  /* are parsed directly (we just remove the \n). */
   if (!strncmp(key, "temp", 4)  ||
       !strncmp(key, "curr", 4)  ||
       !strncmp(key, "in", 2)    ||
@@ -211,7 +217,7 @@ static int parse_i2c_sensors_sysfs(const char *key)
     snprintf(val, sizeof(val), "%f", strtod(buffer, NULL) / 1000.0);   
   } else {
     qprintf(val, sizeof(val), "%s", buffer); 
-    // we supress this nasty \n at the end
+    /* we supress this nasty \n at the end */
     val[strlen(val)-1]='\0';
   } 
  
@@ -238,7 +244,7 @@ static int parse_i2c_sensors_procfs(const char *key)
   char final_key[32];
   const char *number = &key[strlen(key)-1];
   int tokens_index;
-  // debug("%s  ->  %s", key, number);
+  /* debug("%s  ->  %s", key, number); */
   strcpy(file, path);
 
   if (!strncmp(key, "temp_", 5)) {
@@ -277,13 +283,13 @@ static int parse_i2c_sensors_procfs(const char *key)
   running=strdupa(buffer);
   while(1) {
     value = strsep (&running, delim);
-    // debug("%s pos %i -> %s", file, pos , value);
+    /* debug("%s pos %i -> %s", file, pos , value); */
     if (!value || !strcmp(value, "")) {
-      // debug("%s pos %i -> BREAK", file, pos);
+      /* debug("%s pos %i -> BREAK", file, pos); */
       break;
     } else {
       qprintf (final_key, sizeof(final_key), "%s%s", procfs_tokens[tokens_index][pos], number);
-      // debug ("%s -> %s", final_key, value);
+      /* debug ("%s -> %s", final_key, value); */
       hash_put (&I2Csensors, final_key, value);
       pos++;
     }
@@ -328,7 +334,7 @@ void my_i2c_sensors_path(const char *method)
     base="/sys/bus/i2c/devices/";
   } else if (!strcmp(method, "procfs")) {
     base="/proc/sys/dev/sensors/";
-    //base="/sensors_2.4/";		// fake dir to test without rebooting 2.4 ;)
+    /*base="/sensors_2.4/";		// fake dir to test without rebooting 2.4 ;) */
   } else {
     return; 
   }
@@ -339,14 +345,14 @@ void my_i2c_sensors_path(const char *method)
   }
   
   while((dir = readdir(fd1)))   {
-    // Skip non-directories and '.' and '..'
+    /* Skip non-directories and '.' and '..' */
     if ((dir->d_type!=DT_DIR && dir->d_type!=DT_LNK) ||
        strcmp(dir->d_name, "." )==0 ||
        strcmp(dir->d_name, "..")==0) {
       continue;
     }
 
-    // dname is the absolute path
+    /* dname is the absolute path */
     strcpy(dname, base);		
     strcat(dname, dir->d_name);
     strcat(dname, "/"); 
@@ -354,7 +360,7 @@ void my_i2c_sensors_path(const char *method)
     fd2 = opendir(dname);
     done = 0;
     while((file = readdir(fd2))) {
-      // FIXME : do all sensors have a temp_input1 ?
+      /* FIXME : do all sensors have a temp_input1 ? */
       if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input") || !strcmp(file->d_name, "temp1")) {
 	path = realloc(path, strlen(dname)+1);
 	strcpy(path, dname);			  
@@ -377,7 +383,7 @@ int plugin_init_i2c_sensors (void)
 
   path_cfg = cfg_get(NULL, "i2c_sensors-path", "");
   if (path_cfg == NULL || *path_cfg == '\0') {
-    // debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
+    /* debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()"); */
     my_i2c_sensors_path("sysfs");
     if (!path)
       my_i2c_sensors_path("procfs");
@@ -389,7 +395,7 @@ int plugin_init_i2c_sensors (void)
     }
   } else {
     if (path_cfg[strlen(path_cfg)-1] != '/') {
-      // the headless user forgot the trailing slash :/
+      /* the headless user forgot the trailing slash :/ */
       error("i2c_sensors: please add a trailing slash to %s from %s", path_cfg, cfg_source());
       path_cfg = realloc(path_cfg, strlen(path_cfg)+2);
       strcat(path_cfg, "/");
@@ -400,7 +406,7 @@ int plugin_init_i2c_sensors (void)
   }
   if (path_cfg) free(path_cfg);
   
-  // we activate the function only if there's a possibly path found
+  /* we activate the function only if there's a possibly path found */
   if (path!=NULL) {
     if (strncmp(path, "/sys", 4)==0) {
       parse_i2c_sensors = parse_i2c_sensors_sysfs;

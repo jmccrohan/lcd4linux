@@ -8,7 +8,7 @@ PLUGINS=@PLUGINS@
 bin_PROGRAMS = lcd4linux
 #lib_LTLIBRARIES = liblcd4linux.la
 
-AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
+AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall -W
 
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@

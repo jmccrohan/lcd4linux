@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.17 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.18 2004/06/26 09:27:20 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.18  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.17  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -135,8 +141,8 @@ static char Name[]="Cwlinux";
 static int Model;
 static int Protocol;
 
-// Fixme: GPO's not yet implemented
-// static int GPO[8];
+/* Fixme: GPO's not yet implemented */
+/* static int GPO[8]; */
 static int GPOS;
 
 
@@ -150,7 +156,7 @@ typedef struct {
   int protocol;
 } MODEL;
 
-// Fixme: number of gpo's should be verified
+/* Fixme: number of gpo's should be verified */
 
 static MODEL Models[] = {
   { 0x01, "CW1602",   2, 16,  5,  0,  1 },
@@ -159,11 +165,11 @@ static MODEL Models[] = {
 };
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
-static void drv_CW_write (const int row, const int col, const unsigned char *data, const int len)
+static void drv_CW_write (const int row, const int col, const char *data, const int len)
 {
   char cmd[6]="\376Gxy\375";
   
@@ -186,7 +192,7 @@ static void drv_CW1602_defchar (const int ascii, const unsigned char *buffer)
     cmd[3+i] = buffer[i] & 0x1f;
   }
   drv_generic_serial_write(cmd,12);
-  usleep(20);  // delay for cw1602 to settle the character defined!
+  usleep(20);  /* delay for cw1602 to settle the character defined! */
 }
 
 
@@ -197,8 +203,8 @@ static void drv_CW12232_defchar (const int ascii, const unsigned char *buffer)
   
   cmd[2]=(char)ascii;
   
-  // The CW12232 uses a vertical bitmap layout,
-  // so we have to 'rotate' the bitmap.
+  /* The CW12232 uses a vertical bitmap layout, */
+  /* so we have to 'rotate' the bitmap. */
   
   for (i=0; i<6;i++) {
     cmd[3+i]=0;
@@ -215,14 +221,14 @@ static void drv_CW12232_defchar (const int ascii, const unsigned char *buffer)
 static void drv_CW_clear (void)
 {
 #if 0
-  drv_generic_serial_write("\376X\375",3); // Clear Display
+  drv_generic_serial_write("\376X\375",3); /* Clear Display */
 #else
-  // for some mysterious reason, we have to sleep after 
-  // the command _and_ after the CMD_END...
+  /* for some mysterious reason, we have to sleep after  */
+  /* the command _and_ after the CMD_END... */
   usleep(20);
-  drv_generic_serial_write("\376X",2); // Clear Display
+  drv_generic_serial_write("\376X",2); /* Clear Display */
   usleep(20);
-  drv_generic_serial_write("\375",1);  // Command End
+  drv_generic_serial_write("\375",1);  /* Command End */
   usleep(20);
 #endif
 }
@@ -233,7 +239,7 @@ static int drv_CW_brightness (int brightness)
   static unsigned char Brightness = 0;
   char cmd[5] = "\376A_\375";
 
-  // -1 is used to query the current brightness
+  /* -1 is used to query the current brightness */
   if (brightness == -1) return Brightness;
   
   if (brightness < 0  ) brightness = 0;
@@ -242,15 +248,15 @@ static int drv_CW_brightness (int brightness)
   
   switch (Brightness) {
   case 0:
-    // backlight off
+    /* backlight off */
     drv_generic_serial_write ("\376F\375", 3);
     break;
   case 8:
-    // backlight on
+    /* backlight on */
     drv_generic_serial_write ("\376B\375", 3);
     break;
   default:
-    // backlight level
+    /* backlight level */
     cmd[2] = (char)Brightness;
     drv_generic_serial_write (cmd, 4);
     break;
@@ -281,12 +287,12 @@ static int drv_CW_start (const char *section)
     return -1;
   }
   
-  // open serial port
+  /* open serial port */
   if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
 
-  // this does not work as I'd expect it...
+  /* this does not work as I'd expect it... */
 #if 0
-  // read firmware version
+  /* read firmware version */
   generic_serial_read(buffer,sizeof(buffer));
   usleep(100000);
   generic_serial_write ("\3761", 2);
@@ -299,7 +305,7 @@ static int drv_CW_start (const char *section)
   info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
 #endif
 
-  // initialize global variables
+  /* initialize global variables */
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   XRES     = Models[Model].xres;
@@ -308,12 +314,12 @@ static int drv_CW_start (const char *section)
 
   drv_CW_clear();
 
-  drv_generic_serial_write ("\376D\375", 3); // auto line wrap off
-  drv_generic_serial_write ("\376R\375", 3); // auto scroll off
-  drv_generic_serial_write ("\376K\375", 3); // underline cursor off
-  drv_generic_serial_write ("\376B\375", 3); // backlight on
+  drv_generic_serial_write ("\376D\375", 3); /* auto line wrap off */
+  drv_generic_serial_write ("\376R\375", 3); /* auto scroll off */
+  drv_generic_serial_write ("\376K\375", 3); /* underline cursor off */
+  drv_generic_serial_write ("\376B\375", 3); /* backlight on */
 
-  // set brightness
+  /* set brightness */
   if (cfg_number(section, "Brightness", 0, 0, 8, &i) > 0) {
     drv_CW_brightness(i);
   }
@@ -322,9 +328,9 @@ static int drv_CW_start (const char *section)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
 
 static void plugin_brightness (RESULT *result, const int argc, RESULT *argv[])
@@ -347,21 +353,21 @@ static void plugin_brightness (RESULT *result, const int argc, RESULT *argv[])
 }
 
 
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
-
-
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_CW_list (void)
 {
   int i;
@@ -373,24 +379,24 @@ int drv_CW_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_CW_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // display preferences
-  XRES  = 6;      // pixel width of one char 
-  YRES  = 8;      // pixel height of one char 
-  CHARS = 16;     // number of user-defineable characters
-  CHAR0 = 1;      // ASCII of first user-defineable char
-  GOTO_COST = 3;  // number of bytes a goto command requires
+  /* display preferences */
+  XRES  = 6;      /* pixel width of one char  */
+  YRES  = 8;      /* pixel height of one char  */
+  CHARS = 16;     /* number of user-defineable characters */
+  CHAR0 = 1;      /* ASCII of first user-defineable char */
+  GOTO_COST = 3;  /* number of bytes a goto command requires */
 
-  // start display
+  /* start display */
   if ((ret=drv_CW_start (section))!=0)
     return ret;
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write = drv_CW_write;
 
   switch (Protocol) {
@@ -411,53 +417,53 @@ int drv_CW_init (const char *section, const int quiet)
     }
   }
 
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (0, 0, 255, 32); // ASCII 32 = blank
+  /* add fixed chars to the bar driver */
+  drv_generic_text_bar_add_segment (0, 0, 255, 32); /* ASCII 32 = blank */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
+  /* register plugins */
   AddFunction ("LCD::brightness", -1, plugin_brightness);
   
   return 0;
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_CW_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_text_quit();
 
-  // clear *both* displays
+  /* clear *both* displays */
   drv_CW_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

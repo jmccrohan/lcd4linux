@@ -1,4 +1,4 @@
-/* $Id: plugin_apm.c,v 1.2 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_apm.c,v 1.3 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for APM (battery status)
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: plugin_apm.c,v $
+ * Revision 1.3  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.2  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -61,7 +67,7 @@
 #include "hash.h"
 
 static int fd = -2;
-static HASH APM = { 0, };
+static HASH APM;
 
 /* from /usr/src/linux/arch/i386/kernel/apm.c:
  *
@@ -132,7 +138,7 @@ static int parse_proc_apm (void)
   char buffer[128], *beg, *end; 
   int age, i;
 
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age = hash_age (&APM, NULL);
   if (age > 0 && age <= 10) return 0;
   

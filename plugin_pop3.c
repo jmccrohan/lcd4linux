@@ -1,4 +1,4 @@
-/* $Id: plugin_pop3.c,v 1.4 2004/05/31 21:05:13 reinelt Exp $
+/* $Id: plugin_pop3.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * Plugin to check POP3 mail accounts
  *
@@ -27,6 +27,12 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/05/31 21:05:13  reinelt
  *
  * fixed lots of bugs in the Cwlinux driver
@@ -54,27 +60,26 @@
 #include "plugin.h"
 #include "cfg.h"
 
-//added
+/*added */
 #include <sys/socket.h>
 #include <sys/types.h>
-//#include <netinet/in.h>
+/*#include <netinet/in.h> */
 #include <netdb.h>
 #include <unistd.h>
-//#include <pwd.h>
+/*#include <pwd.h> */
 #include <stdio.h>
-//
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
 
-//POP 3
+   /*POP 3 */
 #define POPERR			"-ERR"
 #define LOCKEDERR		"-ERR account is locked by another session or for maintenance, try again."
 #define BUFSIZE	8192
 #define POP3PORT	110
 #define MAX_NUM_ACCOUNTS	3
-//
+
 
 struct check {
 	int	id;
@@ -86,20 +91,20 @@ struct check {
 	struct check *next;
 };
 
-// ************************ PROTOTYPES  ********************************
-// list
+/************************ PROTOTYPES  ********************************/
+/* list */
 static struct check *check_node_alloc(void);
 static void check_node_add(struct check **head, struct check *new_check);
 static void check_destroy(struct check **head);
-// pop3
+/* pop3 */
 static void pop3_check_messages(struct check *hi,int verbose);
 static void pop3_recv_crlf_terminated(int sockfd, char *buf, int size);
-// socket 
+/* socket  */
 static int tcp_connect(struct check *hi);
-// ************************ GLOBAL ***********************************
+/************************ GLOBAL ***********************************/
 static char Section[] = "Plugin:POP3";
 static struct check	*head = NULL;
-// ********************************************************************
+/********************************************************************/
 static void my_POP3check (RESULT *result, RESULT *check)
 {
 	double value;
@@ -112,7 +117,7 @@ static void my_POP3check (RESULT *result, RESULT *check)
 		if (node->id == param)
 			break;
 	}
-	if (node == NULL) //Inexistent account
+	if (node == NULL) /*Inexistent account */
 		value=-1.0;
 	else
 		pop3_check_messages(node,0);
@@ -180,7 +185,7 @@ static int getConfig (void)
 	return(n);
 }
 
-// ************************ LIST  ***********************************
+/************************ LIST  ***********************************/
 static struct check *check_node_alloc(void)
 {
 	struct check *new_check;
@@ -213,7 +218,7 @@ static void check_destroy(struct check **head)
 	*head = NULL;
 }
 
-// ************************ POP3  ********************************
+/************************ POP3  ********************************/
 static void pop3_check_messages(struct check *hi,int verbose)
 {
 	char				buf[BUFSIZE];
@@ -294,7 +299,7 @@ static void pop3_recv_crlf_terminated(int sockfd, char *buf, int size)
 	*pos = '\0';
 }
 
-// ************************ SOCKET  ********************************
+/************************ SOCKET  ********************************/
 static int tcp_connect(struct check *hi)
 {
 	struct sockaddr_in		addr;
@@ -336,7 +341,7 @@ int plugin_init_pop3(void)
 {
 	
 	int n = getConfig();
-	// by now, head should point to a list of all our accounts
+	/* by now, head should point to a list of all our accounts */
 	if (head)
 	{
 		info("[POP3] %d POP3 accounts have been succesfully defined",n);

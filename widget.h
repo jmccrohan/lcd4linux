@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.9 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: widget.h,v 1.10 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.10  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.9  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -69,7 +75,7 @@
 #define _WIDGET_H_
 
 
-struct WIDGET; // forward declaration
+struct WIDGET; /* forward declaration */
 
 
 typedef struct WIDGET_CLASS {

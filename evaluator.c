@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.20 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: evaluator.c,v 1.21 2004/06/26 09:27:21 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.21  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.20  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -172,10 +178,11 @@
 #include <dmalloc.h>
 #endif
 
-// string buffer chunk size
+/* string buffer chunk size */
 #define CHUNK_SIZE 16
 
 typedef enum {
+  T_UNDEF,
   T_NAME, 
   T_NUMBER, 
   T_STRING,
@@ -185,30 +192,31 @@ typedef enum {
 } TOKEN;
 
 typedef enum {
-  O_LST, // expression lists
-  O_SET, // variable assignements
-  O_CND, // conditional a?b:c
-  O_COL, // colon in a?b:c
-  O_OR,  // logical OR
-  O_AND, // logical AND
-  O_EQ,  // equal
-  O_NE,  // not equal
-  O_LT,  // less than
-  O_LE,  // less or equal
-  O_GT,  // greater than
-  O_GE,  // greater or equal
-  O_ADD, // addition
-  O_SUB, // subtraction
-  O_SGN, // sign '-'
-  O_CAT, // string concatenation
-  O_MUL, // multiplication
-  O_DIV, // division
-  O_MOD, // modulo
-  O_POW, // power
-  O_NOT, // logical NOT
-  O_BRO, // open brace
-  O_COM, // comma (argument seperator)
-  O_BRC  // closing brace
+  O_UNDEF, /* undefined */
+  O_LST,   /* expression lists */
+  O_SET,   /* variable assignements */
+  O_CND,   /* conditional a?b:c */
+  O_COL,   /* colon in a?b:c */
+  O_OR,    /* logical OR */
+  O_AND,   /* logical AND */
+  O_EQ,    /* equal */
+  O_NE,    /* not equal */
+  O_LT,    /* less than */
+  O_LE,    /* less or equal */
+  O_GT,    /* greater than */
+  O_GE,    /* greater or equal */
+  O_ADD,   /* addition */
+  O_SUB,   /* subtraction */
+  O_SGN,   /* sign '-' */
+  O_CAT,   /* string concatenation */
+  O_MUL,   /* multiplication */
+  O_DIV,   /* division */
+  O_MOD,   /* modulo */
+  O_POW,   /* power */
+  O_NOT,   /* logical NOT */
+  O_BRO,   /* open brace */
+  O_COM,   /* comma (argument seperator) */
+  O_BRC    /* closing brace */
 } OPERATOR;
 
 typedef struct {
@@ -240,43 +248,43 @@ typedef struct _NODE {
 
 
 
-// operators
-// IMPORTANT! list must be sorted by length!
+/* operators */
+/* IMPORTANT! list must be sorted by length! */
 static PATTERN Pattern[] = {
-  { ";",  1, O_LST }, // expression lists
-  { "=",  1, O_SET }, // variable assignements
-  { "?",  1, O_CND }, // conditional a?b:c
-  { ":",  1, O_COL }, // colon a?b:c
-  { "|",  1, O_OR  }, // logical OR
-  { "&",  1, O_AND }, // logical AND
-  { "<",  1, O_LT  }, // less than
-  { ">",  1, O_GT  }, // greater than
-  { "+",  1, O_ADD }, // addition
-  { "-",  1, O_SUB }, // subtraction or sign
-  { ".",  1, O_CAT }, // string concatenation
-  { "*",  1, O_MUL }, // multiplication
-  { "/",  1, O_DIV }, // division
-  { "%",  1, O_MOD }, // modulo
-  { "^",  1, O_POW }, // power
-  { "!",  1, O_NOT }, // logical NOT
-  { "(",  1, O_BRO }, // open brace
-  { ",",  1, O_COM }, // comma (argument seperator)
-  { ")",  1, O_BRC }, // closing brace
-  { "==", 2, O_EQ  }, // equal
-  { "!=", 2, O_NE  }, // not equal
-  { "<=", 2, O_LE  }, // less or equal
-  { ">=", 2, O_GE  }  // greater or equal
+  { ";",  1, O_LST }, /* expression lists */
+  { "=",  1, O_SET }, /* variable assignements */
+  { "?",  1, O_CND }, /* conditional a?b:c */
+  { ":",  1, O_COL }, /* colon a?b:c */
+  { "|",  1, O_OR  }, /* logical OR */
+  { "&",  1, O_AND }, /* logical AND */
+  { "<",  1, O_LT  }, /* less than */
+  { ">",  1, O_GT  }, /* greater than */
+  { "+",  1, O_ADD }, /* addition */
+  { "-",  1, O_SUB }, /* subtraction or sign */
+  { ".",  1, O_CAT }, /* string concatenation */
+  { "*",  1, O_MUL }, /* multiplication */
+  { "/",  1, O_DIV }, /* division */
+  { "%",  1, O_MOD }, /* modulo */
+  { "^",  1, O_POW }, /* power */
+  { "!",  1, O_NOT }, /* logical NOT */
+  { "(",  1, O_BRO }, /* open brace */
+  { ",",  1, O_COM }, /* comma (argument seperator) */
+  { ")",  1, O_BRC }, /* closing brace */
+  { "==", 2, O_EQ  }, /* equal */
+  { "!=", 2, O_NE  }, /* not equal */
+  { "<=", 2, O_LE  }, /* less or equal */
+  { ">=", 2, O_GE  }  /* greater or equal */
 };
 
 
-static char *Expression = NULL;
-static char *ExprPtr = NULL;
-static char *Word = NULL;
-static TOKEN Token = -1;
-static OPERATOR Operator = -1;
+static char *Expression  = NULL;
+static char *ExprPtr     = NULL;
+static char *Word        = NULL;
+static TOKEN Token       = T_UNDEF;
+static OPERATOR Operator = O_UNDEF;
 
-static VARIABLE *Variable=NULL;
-static int      nVariable=0;
+static VARIABLE *Variable = NULL;
+static int      nVariable = 0;
 
 static FUNCTION *Function = NULL;
 static int      nFunction = 0;
@@ -362,10 +370,10 @@ RESULT* SetResult (RESULT **result, const int type, const void *value)
     (*result)->type   = R_STRING;
     (*result)->number = 0.0;
     if ((*result)->string == NULL || len > (*result)->length) {
-      // buffer is either empty or too small
+      /* buffer is either empty or too small */
       if ((*result)->string) free((*result)->string);
-      // allocate memory in multiples of CHUNK_SIZE
-      // note that length does not count the trailing \0
+      /* allocate memory in multiples of CHUNK_SIZE */
+      /* note that length does not count the trailing \0 */
       (*result)->length = CHUNK_SIZE*(len/CHUNK_SIZE+1)-1;
       (*result)->string = malloc((*result)->length+1);
     }
@@ -540,24 +548,24 @@ void DeleteFunctions(void)
 
 static void Parse (void)
 {
-  Token = -1;
-  Operator = -1;
+  Token    = T_UNDEF;
+  Operator = O_UNDEF;
 
   if (Word) {
     free (Word);
     Word = NULL;
   }
   
-  // NULL expression?
+  /* NULL expression? */
   if (ExprPtr == NULL) {
     Word = strdup("");
     return;
   }
   
-  // skip leading whitespace
+  /* skip leading whitespace */
   while (is_space(*ExprPtr)) ExprPtr++;
   
-  // names
+  /* names */
   if (is_alpha(*ExprPtr)) {
     char *start = ExprPtr;
     while (is_alnum(*ExprPtr)) ExprPtr++;
@@ -569,7 +577,7 @@ static void Parse (void)
     Token = T_NAME;
   }
   
-  // numbers
+  /* numbers */
   else if (is_digit(*ExprPtr) || (*ExprPtr=='.' && is_digit(*(ExprPtr+1)))) {
     char *start = ExprPtr;
     while (is_digit(*ExprPtr)) ExprPtr++;
@@ -581,7 +589,7 @@ static void Parse (void)
     Token = T_NUMBER;
   }
   
-  // strings
+  /* strings */
   else if (*ExprPtr=='\'') {
     char *start=++ExprPtr;
     while (*ExprPtr!='\0' && *ExprPtr!='\'') ExprPtr++;
@@ -590,7 +598,7 @@ static void Parse (void)
     if (*ExprPtr=='\'') ExprPtr++;
   }
   
-  // operators
+  /* operators */
   else {
     int i;
     for (i=sizeof(Pattern)/sizeof(Pattern[0])-1; i>=0; i--) {
@@ -605,15 +613,15 @@ static void Parse (void)
     }
   }
   
-  // syntax check
-  if (Token == -1 && *ExprPtr != '\0') {
+  /* syntax check */
+  if (Token == T_UNDEF && *ExprPtr != '\0') {
     error ("Evaluator: parse error in <%s>: garbage <%s>", Expression, ExprPtr);
   }
   
-  // skip trailing whitespace
+  /* skip trailing whitespace */
   while (is_space(*ExprPtr)) ExprPtr++;
   
-  // empty token
+  /* empty token */
   if (Word==NULL) Word=strdup("");
 }
 
@@ -664,11 +672,11 @@ static void LinkNode (NODE *Root, NODE *Child)
 }
 
 
-// forward declaration
+/* forward declaration */
 static NODE* Level01 (void);
 
 
-// literal numbers, variables, functions
+/* literal numbers, variables, functions */
 static NODE* Level12 (void)
 {
   NODE *Root = NULL;
@@ -695,7 +703,7 @@ static NODE* Level12 (void)
   
   else if (Token == T_NAME) {
 
-    // look-ahead for opening brace
+    /* look-ahead for opening brace */
     if (*ExprPtr == '(') {
       int argc=0;
       Root = NewNode(NULL);
@@ -704,14 +712,14 @@ static NODE* Level12 (void)
       Root->Function = FindFunction(Word);
       if (Root->Function == NULL) {
 	error ("Evaluator: unknown function '%s' in <%s>", Word, Expression);
-	Root->Token=T_STRING;
+	Root->Token = T_STRING;
 	SetResult (&Root->Result, R_STRING, "");
       }
       
-      // opening brace
+      /* opening brace */
       Parse();
       do { 
-	Parse(); // read argument
+	Parse(); /* read argument */
 	if (Token == T_OPERATOR && Operator == O_BRC) {
 	  break;
 	}
@@ -725,12 +733,12 @@ static NODE* Level12 (void)
 	argc++;
       } while (Token == T_OPERATOR && Operator == O_COM);
 
-      // check for closing brace
+      /* check for closing brace */
       if (Token != T_OPERATOR || Operator != O_BRC) {
 	error ("Evaluator: missing closing brace in <%s>", Expression);
       }
     
-      // check number of arguments
+      /* check number of arguments */
       if (Root->Function != NULL && Root->Function->argc >= 0 && Root->Function->argc != argc) {
 	error ("Evaluator: wrong number of arguments in <%s>", Expression);
 	while (argc < Root->Function->argc) {
@@ -764,11 +772,11 @@ static NODE* Level12 (void)
 }
 
 
-// unary + or - signs or logical 'not'
+/* unary + or - signs or logical 'not' */
 static NODE* Level11 (void)
 {
   NODE *Root;
-  TOKEN sign = -1;
+  TOKEN sign = T_UNDEF;
   
   if (Token == T_OPERATOR && (Operator == O_ADD || Operator == O_SUB || Operator == O_NOT)) {
     sign = Operator;
@@ -788,7 +796,7 @@ static NODE* Level11 (void)
 }
 
 
-// x^y
+/* x^y */
 static NODE* Level10 (void)
 {
   NODE *Root;
@@ -805,7 +813,7 @@ static NODE* Level10 (void)
 }
 
 
-// multiplication, division, modulo
+/* multiplication, division, modulo */
 static NODE* Level09 (void)
 {
   NODE *Root;
@@ -822,7 +830,7 @@ static NODE* Level09 (void)
 }
 
 
-// addition, subtraction, string concatenation
+/* addition, subtraction, string concatenation */
 static NODE* Level08 (void)
 {
   NODE *Root;
@@ -839,7 +847,7 @@ static NODE* Level08 (void)
 }
 
 
-// relational operators
+/* relational operators */
 static NODE* Level07 (void)
 {
   NODE *Root;
@@ -856,7 +864,7 @@ static NODE* Level07 (void)
 }
 
 
-// equal, not equal
+/* equal, not equal */
 static NODE* Level06 (void)
 {
   NODE *Root;
@@ -872,7 +880,7 @@ static NODE* Level06 (void)
   return Root;
 }
 
-// logical 'and'
+/* logical 'and' */
 static NODE* Level05 (void)
 {
   NODE *Root;
@@ -889,7 +897,7 @@ static NODE* Level05 (void)
 }
 
 
-// logical 'or'
+/* logical 'or' */
 static NODE* Level04 (void)
 {
   NODE *Root;
@@ -906,7 +914,7 @@ static NODE* Level04 (void)
 }
 
 
-// conditional expression a?b:c
+/* conditional expression a?b:c */
 static NODE* Level03 (void)
 {
   NODE *Root;
@@ -930,12 +938,12 @@ static NODE* Level03 (void)
 }
 
 
-// variable assignments
+/* variable assignments */
 static NODE* Level02 (void)
 {
   NODE *Root;
   
-  // we have to do a look-ahead if it's really an assignment
+  /* we have to do a look-ahead if it's really an assignment */
   if ((Token == T_NAME) && (*ExprPtr == '=') && (*(ExprPtr+1) != '=')) { 
     char *name = strdup(Word);
     VARIABLE *V = FindVariable (name);
@@ -957,7 +965,7 @@ static NODE* Level02 (void)
 }
 
 
-// expression lists
+/* expression lists */
 static NODE* Level01 (void)
 {
   NODE *Root;
@@ -994,7 +1002,7 @@ static int EvalTree (NODE *Root)
     
   case T_NUMBER:
   case T_STRING:
-    // Root->Result already contains the value
+    /* Root->Result already contains the value */
     return 0;
 
   case T_VARIABLE:
@@ -1004,15 +1012,15 @@ static int EvalTree (NODE *Root)
     
   case T_FUNCTION:
     DelResult (Root->Result);
-    // prepare parameter list
+    /* prepare parameter list */
     argc = Root->Children;
     if (argc>10) argc=10;
     for (i = 0; i < argc; i++) {
       param[i]=Root->Child[i]->Result;
     }
     if (Root->Function->argc < 0) {
-      // Function with variable argument list: 
-      // pass number of arguments as first parameter
+      /* Function with variable argument list:  */
+      /* pass number of arguments as first parameter */
       Root->Function->func(Root->Result, argc, &param); 
     } else {
       Root->Function->func(Root->Result, 
@@ -1024,14 +1032,14 @@ static int EvalTree (NODE *Root)
   case T_OPERATOR:
     switch (Root->Operator) {
 
-    case O_LST: // expression list: result is last expression
+    case O_LST: /* expression list: result is last expression */
       i = Root->Children-1;
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
       string = Root->Child[i]->Result->string;
       break;
 
-    case O_SET: // variable assignment
+    case O_SET: /* variable assignment */
       DelResult(Root->Variable->value);
       Root->Variable->value = DupResult (Root->Child[0]->Result);
       type   = Root->Child[0]->Result->type;
@@ -1039,69 +1047,69 @@ static int EvalTree (NODE *Root)
       string = Root->Child[0]->Result->string;
       break;
 
-    case O_CND: // conditional expression
+    case O_CND: /* conditional expression */
       i = 1+(R2N(Root->Child[0]->Result) == 0.0);
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
       string = Root->Child[i]->Result->string;
       break;
       
-    case O_OR: // logical OR
+    case O_OR: /* logical OR */
       type   =   R_NUMBER;
       number = ((R2N(Root->Child[0]->Result) != 0.0) || (R2N(Root->Child[1]->Result) != 0.0));
       break;
 
-    case O_AND: // logical AND
+    case O_AND: /* logical AND */
       type   =   R_NUMBER;
       number = ((R2N(Root->Child[0]->Result) != 0.0) && (R2N(Root->Child[1]->Result) != 0.0));
       break;
 
-    case O_EQ: // numeric equal
+    case O_EQ: /* numeric equal */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) == R2N(Root->Child[1]->Result));
       break;
 
-    case O_NE: // numeric not equal
+    case O_NE: /* numeric not equal */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) != R2N(Root->Child[1]->Result));
       break;
 
-    case O_LT: // numeric less than
+    case O_LT: /* numeric less than */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) < R2N(Root->Child[1]->Result));
       break;
 
-    case O_LE: // numeric less equal
+    case O_LE: /* numeric less equal */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) <= R2N(Root->Child[1]->Result));
       break;
 
-    case O_GT: // numeric greater than
+    case O_GT: /* numeric greater than */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) > R2N(Root->Child[1]->Result));
       break;
 
-    case O_GE: // numeric greater equal
+    case O_GE: /* numeric greater equal */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) >= R2N(Root->Child[1]->Result));
       break;
 
-    case O_ADD: // addition
+    case O_ADD: /* addition */
       type   = R_NUMBER;
       number = R2N(Root->Child[0]->Result) + R2N(Root->Child[1]->Result);
       break;
 
-    case O_SUB: // subtraction
+    case O_SUB: /* subtraction */
       type   = R_NUMBER;
       number = R2N(Root->Child[0]->Result) - R2N(Root->Child[1]->Result);
       break;
 
-    case O_SGN: // sign
+    case O_SGN: /* sign */
       type   =  R_NUMBER;
       number = -R2N(Root->Child[0]->Result);
       break;
 
-    case O_CAT: // string concatenation
+    case O_CAT: /* string concatenation */
       type   = R_STRING;
       s1     = R2S(Root->Child[0]->Result);
       s2     = R2S(Root->Child[1]->Result);
@@ -1111,12 +1119,12 @@ static int EvalTree (NODE *Root)
       freeme = 1;
       break;
 
-    case O_MUL: // multiplication
+    case O_MUL: /* multiplication */
       type   = R_NUMBER;
       number = R2N(Root->Child[0]->Result) * R2N(Root->Child[1]->Result);
       break;
 
-    case O_DIV: // division
+    case O_DIV: /* division */
       type   = R_NUMBER;
       dummy  = R2N(Root->Child[1]->Result);
       if (dummy == 0) {
@@ -1127,7 +1135,7 @@ static int EvalTree (NODE *Root)
       }
       break;
       
-    case O_MOD: // modulo
+    case O_MOD: /* modulo */
       type   = R_NUMBER;
       dummy  = R2N(Root->Child[1]->Result);
       if (dummy == 0) {
@@ -1138,12 +1146,12 @@ static int EvalTree (NODE *Root)
       }
       break;
 
-    case O_POW: // x^y
+    case O_POW: /* x^y */
       type   = R_NUMBER;
       number = pow(R2N(Root->Child[0]->Result), R2N(Root->Child[1]->Result));
       break;
 
-    case O_NOT: // logical NOT
+    case O_NOT: /* logical NOT */
       type   =  R_NUMBER;
       number = (R2N(Root->Child[0]->Result) == 0.0);
       break;
@@ -1189,7 +1197,7 @@ int Compile (const char* expression, void **tree)
   
   Parse();
   if (*Word=='\0') {
-    // error ("Evaluator: empty expression <%s>", Expression);
+    /* error ("Evaluator: empty expression <%s>", Expression); */
     free (Word);
     Word = NULL;
     return -1;

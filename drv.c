@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.19 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv.c,v 1.20 2004/06/26 09:27:20 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.20  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.19  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -167,9 +173,10 @@ extern DRIVER drv_T6963;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_X11;
 
-// output file for Image driver
-// has to be defined here because it's referenced
-// even if the raster driver is not included!
+/* output file for Image driver
+ * has to be defined here because it's referenced
+ * even if the raster driver is not included!
+ */
 char *output=NULL;
 
 DRIVER *Driver[] = {

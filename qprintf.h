@@ -1,4 +1,4 @@
-/* $Id: qprintf.h,v 1.2 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: qprintf.h,v 1.3 2004/06/26 09:27:21 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: qprintf.h,v $
+ * Revision 1.3  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.2  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -38,7 +44,7 @@
 #ifndef _QPRINTF_H_
 #define _QPRINTF_H_
 
-// size_t
+/* size_t */
 #include <stdio.h>
 
 int qprintf(char *str, size_t size, const char *format, ...);

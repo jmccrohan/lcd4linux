@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.6 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -131,7 +137,7 @@ static void my_loadavg (RESULT *result, RESULT *arg1)
   gettimeofday(&now,NULL);
   
   age = (now.tv_sec - last_value.tv_sec)*1000 + (now.tv_usec - last_value.tv_usec)/1000;
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   if (nelem==-1 || age==0 || age>10) {
   
     nelem=getloadavg(loadavg, 3);

@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.3 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: widget_text.h,v 1.4 2004/06/26 09:27:21 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.4  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.3  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -49,22 +55,22 @@
 typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } ALIGN;
 
 typedef struct WIDGET_TEXT {
-  char *prefix;      // expression for label on the left side
-  void *pretree;     // pre-compiled expression for label on the left side
-  char *preval;      // value for label on the left side
-  char *postfix;     // expression for label on the right side
-  void *posttree;    // pre-compiled expression for label on the right side
-  char *postval;     // value for label on the right side
-  char *expression;  // expression that delivers the value
-  void *tree;        // pre-compiled expression that delivers the value
-  char *value;       // evaluated value from expression
-  char *buffer;      // string with 'width+1' bytes allocated 
-  int   width;       // field width
-  int   precision;   // number of digits after the decimal point
-  ALIGN align;       // alignment: L, C, R, M(arquee)
-  int   update;      // update interval
-  int   scroll;      // marquee starting point
-  int   speed;       // marquee scrolling speed
+  char *prefix;      /* expression for label on the left side */
+  void *pretree;     /* pre-compiled expression for label on the left side */
+  char *preval;      /* value for label on the left side */
+  char *postfix;     /* expression for label on the right side */
+  void *posttree;    /* pre-compiled expression for label on the right side */
+  char *postval;     /* value for label on the right side */
+  char *expression;  /* expression that delivers the value */
+  void *tree;        /* pre-compiled expression that delivers the value */
+  char *value;       /* evaluated value from expression */
+  char *buffer;      /* string with 'width+1' bytes allocated  */
+  int   width;       /* field width */
+  int   precision;   /* number of digits after the decimal point */
+  ALIGN align;       /* alignment: L, C, R, M(arquee) */
+  int   update;      /* update interval */
+  int   scroll;      /* marquee starting point */
+  int   speed;       /* marquee scrolling speed */
 } WIDGET_TEXT;
 
 

@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.7 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: evaluator.h,v 1.8 2004/06/26 09:27:21 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.8  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.7  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -68,7 +74,7 @@
 #define _EVALUATOR_H_
 
 
-// RESULT bitmask
+/* RESULT bitmask */
 #define R_NUMBER 1
 #define R_STRING 2
 

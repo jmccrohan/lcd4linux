@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.19 2004/06/26 06:12:15 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.20 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.20  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.19  2004/06/26 06:12:15  reinelt
  *
  * support for Beckmann+Egle Compact Terminals
@@ -112,12 +118,12 @@
  *
  * exported variables:
  *
- * extern int DROWS, DCOLS; // display size
- * extern int LROWS, LCOLS; // layout size
- * extern int XRES,  YRES;  // pixel width/height of one char 
- * extern int GOTO_COST;    // number of bytes a goto command requires
- * extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
- * extern int ICONS;        // number of user-defineable characters reserved for icons
+ * extern int DROWS, DCOLS;    display size
+ * extern int LROWS, LCOLS;    layout size
+ * extern int XRES,  YRES;     pixel width/height of one char
+ * extern int GOTO_COST;       number of bytes a goto command requires
+ * extern int CHARS, CHAR0;    number of user-defineable characters, ASCII of first char
+ * extern int ICONS;           number of user-defineable characters reserved for icons
  *
  *
  * these functions must be implemented by the real driver:
@@ -204,16 +210,16 @@ static char *Section=NULL;
 static char *Driver=NULL;
 
 
-int DROWS, DCOLS; // display size
-int LROWS, LCOLS; // layout size
-int XRES,  YRES;  // pixels of one char cell
-int GOTO_COST;    // number of bytes a goto command requires
-int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
-int ICONS;        // number of user-defineable characters reserved for icons
+int DROWS, DCOLS; /* display size */
+int LROWS, LCOLS; /* layout size */
+int XRES,  YRES;  /* pixels of one char cell */
+int GOTO_COST;    /* number of bytes a goto command requires */
+int CHARS, CHAR0; /* number of user-defineable characters, ASCII of first char */
+int ICONS;        /* number of user-defineable characters reserved for icons */
 
 
-static unsigned char *LayoutFB    = NULL;
-static unsigned char *DisplayFB   = NULL;
+static char *LayoutFB    = NULL;
+static char *DisplayFB   = NULL;
 
 static int Single_Segments = 0;
 
@@ -224,9 +230,9 @@ static BAR *BarFB = NULL;
 
 
 
-// ****************************************
-// *** generic Framebuffer stuff        ***
-// ****************************************
+/****************************************/
+/*** generic Framebuffer stuff        ***/
+/****************************************/
 
 static void drv_generic_text_resizeFB (int rows, int cols)
 {
@@ -234,19 +240,19 @@ static void drv_generic_text_resizeFB (int rows, int cols)
   BAR *newBar;
   int i, row, col;
   
-  // Layout FB is large enough
+  /* Layout FB is large enough */
   if (rows<=LROWS && cols<=LCOLS)
     return;
   
-  // get maximum values
+  /* get maximum values */
   if (rows<LROWS) rows=LROWS;
   if (cols<LCOLS) cols=LCOLS;
   
-  // allocate new Layout FB
+  /* allocate new Layout FB */
   newFB=malloc(cols*rows*sizeof(char));
   memset (newFB, ' ', rows*cols*sizeof(char));
 
-  // transfer contents
+  /* transfer contents */
   if (LayoutFB!=NULL) {
     for (row=0; row<LROWS; row++) {
       for (col=0; col<LCOLS; col++) {
@@ -258,7 +264,7 @@ static void drv_generic_text_resizeFB (int rows, int cols)
   LayoutFB = newFB;
 
   
-  // resize Bar buffer
+  /* resize Bar buffer */
   if (BarFB) {
 
     newBar=malloc (rows*cols*sizeof(BAR));
@@ -270,7 +276,7 @@ static void drv_generic_text_resizeFB (int rows, int cols)
       newBar[i].segment = -1;
     }
     
-    // transfer contents
+    /* transfer contents */
     for (row=0; row<LROWS; row++) {
       for (col=0; col<LCOLS; col++) {
 	newBar[row*cols+col]=BarFB[row*LCOLS+col];
@@ -286,9 +292,9 @@ static void drv_generic_text_resizeFB (int rows, int cols)
 }
 
 
-// ****************************************
-// *** generic text handling            ***
-// ****************************************
+/****************************************/
+/*** generic text handling            ***/
+/****************************************/
 
 int drv_generic_text_init (const char *section, const char *driver)
 {
@@ -296,17 +302,17 @@ int drv_generic_text_init (const char *section, const char *driver)
   Section = (char*)section;
   Driver  = (char*)driver;
 
-  // init display framebuffer
+  /* init display framebuffer */
   DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
   memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
   
-  // init layout framebuffer
+  /* init layout framebuffer */
   LROWS = 0;
   LCOLS = 0;
   LayoutFB=NULL;
   drv_generic_text_resizeFB (DROWS, DCOLS);
   
-  // sanity check
+  /* sanity check */
   if (LayoutFB==NULL || DisplayFB==NULL) {
     error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
     return -1;
@@ -316,7 +322,7 @@ int drv_generic_text_init (const char *section, const char *driver)
 }
 
 
-// say hello to the user
+/* say hello to the user */
 int drv_generic_text_greet (const char *msg1, const char *msg2)
 {
   int i;
@@ -337,7 +343,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
   
   
   for (i = 0; line1[i]; i++) {
-    if (strlen(line1[i]) <= DCOLS) {
+    if (strlen(line1[i]) <= (unsigned)DCOLS) {
       drv_generic_text_real_write (0, (DCOLS-strlen(line1[i]))/2, line1[i], strlen(line1[i]));
       flag = 1;
       break;
@@ -346,7 +352,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
 
   if (DROWS >= 2) {
     for (i = 0; line2[i]; i++) {
-      if (strlen(line2[i]) <= DCOLS) {
+      if (strlen(line2[i]) <= (unsigned)DCOLS) {
 	drv_generic_text_real_write (1, (DCOLS-strlen(line2[i]))/2, line2[i], strlen(line2[i]));
 	flag = 1;
 	break;
@@ -386,13 +392,13 @@ int drv_generic_text_draw (WIDGET *W)
   len=strlen(txt);
   end=col+len;
   
-  // maybe grow layout framebuffer
+  /* maybe grow layout framebuffer */
   drv_generic_text_resizeFB (row+1, col+len);
 
   fb1 = LayoutFB  + row*LCOLS;
   fb2 = DisplayFB + row*DCOLS;
   
-  // transfer new text into layout buffer
+  /* transfer new text into layout buffer */
   memcpy (fb1+col, txt, len);
   
   if (row<DROWS) {
@@ -402,8 +408,8 @@ int drv_generic_text_draw (WIDGET *W)
       col0 = col;
       for (pos1=col, pos2=pos1, col++, equal=0; col<=end && col<DCOLS; col++) {
 	if (fb1[col]==fb2[col]) {
-	  // If we find just one equal byte, we don't break, because this 
-	  // would require a goto, which takes several bytes, too.
+	  /* If we find just one equal byte, we don't break, because this  */
+	  /* would require a goto, which takes several bytes, too. */
 	  if (++equal>GOTO_COST) break;
 	} else {
 	  pos2=col;
@@ -441,9 +447,9 @@ int drv_generic_text_quit (void) {
 }
 
 
-// ****************************************
-// *** generic icon handling            ***
-// ****************************************
+/****************************************/
+/*** generic icon handling            ***/
+/****************************************/
 
 int drv_generic_text_icon_init (void)
 {
@@ -465,13 +471,13 @@ int drv_generic_text_icon_draw (WIDGET *W)
   row = W->row;
   col = W->col;
   
-  // maybe grow layout framebuffer
+  /* maybe grow layout framebuffer */
   drv_generic_text_resizeFB (row+1, col+1);
   
-  // icon deactivated?
+  /* icon deactivated? */
   if (Icon->ascii==-2) return 0;
   
-  // ASCII already assigned?
+  /* ASCII already assigned? */
   if (Icon->ascii==-1) {
     if (icon_counter>=ICONS) {
       error ("cannot process icon '%s': out of icons", W->name);
@@ -482,18 +488,18 @@ int drv_generic_text_icon_draw (WIDGET *W)
     Icon->ascii=CHAR0+CHARS-icon_counter;
   }
 
-  // maybe redefine icon
+  /* maybe redefine icon */
   if (Icon->curmap!=Icon->prvmap) {
     drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap+YRES*Icon->curmap);
   }
 
-  // use blank if invisible
+  /* use blank if invisible */
   ascii=Icon->visible?Icon->ascii:' ';
 
-  // transfer icon into layout buffer
+  /* transfer icon into layout buffer */
   LayoutFB[row*LCOLS+col]=ascii;
 
-  // maybe send icon to the display
+  /* maybe send icon to the display */
   if (row < DROWS && col < DCOLS && DisplayFB[row*DCOLS+col] != ascii) {
     DisplayFB[row*DCOLS+col]=ascii;
     drv_generic_text_real_write (row, col, DisplayFB+row*DCOLS+col, 1);
@@ -504,9 +510,9 @@ int drv_generic_text_icon_draw (WIDGET *W)
 }
 
 
-// ****************************************
-// *** generic bar handling             ***
-// ****************************************
+/****************************************/
+/*** generic bar handling             ***/
+/****************************************/
 
 static void drv_generic_text_bar_clear(void)
 {
@@ -693,10 +699,10 @@ static void drv_generic_text_bar_pack_segments (void)
 {
   int i, j, n, min;
   int pack_i, pack_j;
-  int pass1=1;
+  int pass1 = 1;
   int error[nSegment][nSegment];
   
-  if (nSegment<=fSegment+CHARS-ICONS) {
+  if (nSegment <= fSegment + CHARS - ICONS) {
     return;
   }
   
@@ -821,8 +827,8 @@ int drv_generic_text_bar_draw (WIDGET *W)
   dir = Bar->direction;
   len = Bar->length;
 
-  // maybe grow layout framebuffer
-  // bars *always* grow heading North or East!
+  /* maybe grow layout framebuffer */
+  /* bars *always* grow heading North or East! */
   if (dir & (DIR_EAST|DIR_WEST)) {
     drv_generic_text_resizeFB (row+1, col+len);
   } else {
@@ -842,36 +848,36 @@ int drv_generic_text_bar_draw (WIDGET *W)
   
   if (Single_Segments) val2 = val1;
   
-  // create this bar
+  /* create this bar */
   drv_generic_text_bar_create_bar (row, col, dir, len, val1, val2);
 
-  // process all bars
+  /* process all bars */
   drv_generic_text_bar_create_segments ();
   drv_generic_text_bar_pack_segments ();
   drv_generic_text_bar_define_chars();
   
-  // reset usage flags
+  /* reset usage flags */
   for (s=0; s<nSegment; s++) {
     Segment[s].used=0;
   }
   
-  // set usage flags
+  /* set usage flags */
   for (n=0; n<LROWS*LCOLS; n++) {
     if ((s=BarFB[n].segment)!=-1) Segment[s].used=1;
   }
 
-  // transfer bars into layout buffer
+  /* transfer bars into layout buffer */
   for (n=0; n<LCOLS*LROWS; n++) {
     s=BarFB[n].segment;
     if (s==-1) continue;
     c=Segment[s].ascii;
     if (c==-1) continue;
-    if (s>=fSegment) c+=CHAR0; // ascii offset for user-defineable chars
+    if (s>=fSegment) c+=CHAR0; /* ascii offset for user-defineable chars */
     if(c==LayoutFB[n]) continue;
     LayoutFB[n]=c;
   }
   
-  // transfer differences to the display
+  /* transfer differences to the display */
   for (row=0; row<DROWS; row++) {
     for (col=0; col<DCOLS; col++) {
       int pos1, pos2, equal;
@@ -879,8 +885,8 @@ int drv_generic_text_bar_draw (WIDGET *W)
       col0 = col;
       for (pos1=col, pos2=pos1, col++, equal=0; col<DCOLS; col++) {
 	if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) {
-	  // If we find just one equal byte, we don't break, because this 
-	  // would require a goto, which takes several bytes, too.
+	  /* If we find just one equal byte, we don't break, because this  */
+	  /* would require a goto, which takes several bytes, too. */
 	  if (++equal>GOTO_COST) break;
 	} else {
 	  pos2=col;

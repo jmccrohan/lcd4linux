@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.10 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.11 2004/06/26 09:27:21 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,12 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -112,24 +118,24 @@ static MODEL Models[] = {
 static int  Model;
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void drv_MI_clear (void)
 {
-  drv_generic_serial_write ("\376\001", 2);  // clear screen
+  drv_generic_serial_write ("\376\001", 2);  /* clear screen */
 }
 
 
-static void drv_MI_write (const int row, const int col, const unsigned char *data, const int len)
+static void drv_MI_write (const int row, const int col, const char *data, const int len)
 {
   char cmd[2] = "\376x";
-  char ddbase = 128;
-  if (row & 1) { // i.e. if row is 1 or 3
+  int ddbase = 128;
+  if (row & 1) { /* i.e. if row is 1 or 3 */
     ddbase += 64;
   }
-  if (row & 2) { // i.e. if row is 0 or 2.
+  if (row & 2) { /* i.e. if row is 0 or 2. */
     ddbase += 20;
   }
   cmd[1] = (char)(ddbase+col);
@@ -177,12 +183,12 @@ static int drv_MI_start (const char *section, const int quiet)
   
   if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
   
-  // initialize global variables
+  /* initialize global variables */
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   
   drv_MI_clear();
-  drv_generic_serial_write ("\376\014", 2);  // cursor off
+  drv_generic_serial_write ("\376\014", 2);  /* cursor off */
 
   if (!quiet) {
     if (drv_generic_text_greet (Models[Model].name, "Milford Instruments")) {
@@ -195,28 +201,28 @@ static int drv_MI_start (const char *section, const int quiet)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
-
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
+/* none at the moment... */
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
+
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_MI_list (void)
 {
   int i;
@@ -228,77 +234,77 @@ int drv_MI_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_MI_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // display preferences
-  XRES  = 5;     // pixel width of one char 
-  YRES  = 8;     // pixel height of one char 
-  CHARS = 8;     // number of user-defineable characters
-  CHAR0 = 0;     // ASCII of first user-defineable char
-  GOTO_COST = 4; // number of bytes a goto command requires
+  /* display preferences */
+  XRES  = 5;     /* pixel width of one char  */
+  YRES  = 8;     /* pixel height of one char  */
+  CHARS = 8;     /* number of user-defineable characters */
+  CHAR0 = 0;     /* ASCII of first user-defineable char */
+  GOTO_COST = 4; /* number of bytes a goto command requires */
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write   = drv_MI_write;
   drv_generic_text_real_defchar = drv_MI_defchar;
 
 
-  // start display
+  /* start display */
   if ((ret=drv_MI_start (section, quiet))!=0)
     return ret;
   
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
-  drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+  /* add fixed chars to the bar driver */
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); /* ASCII  32 = blank */
+  drv_generic_text_bar_add_segment (255,255,255,255); /* ASCII 255 = block */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
 
   return 0;
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_MI_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 
   drv_generic_text_quit();
 
-  // clear display
+  /* clear display */
   drv_MI_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

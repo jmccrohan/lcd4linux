@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.72 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.73 2004/06/26 09:27:21 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.73  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.72  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -435,7 +441,7 @@ int main (int argc, char *argv[])
   int interactive = 0;
   int pid;
 
-  // save arguments for restart
+  /* save arguments for restart */
   my_argv = malloc(sizeof(char*)*(argc+1));
   for (c = 0; c < argc; c++) {
     my_argv[c] = strdup(argv[c]);
@@ -490,7 +496,7 @@ int main (int argc, char *argv[])
     exit(2);
   }
 
-  // do not fork in interactive mode
+  /* do not fork in interactive mode */
   if (interactive) {
     running_foreground=1;
   }
@@ -531,26 +537,26 @@ int main (int argc, char *argv[])
     }
     if (i!=0) exit (0);
     
-    // ignore nasty signals
+    /* ignore nasty signals */
     signal(SIGINT,  SIG_IGN);
     signal(SIGQUIT, SIG_IGN);
 
-    // chdir("/")
+    /* chdir("/") */
     if (chdir("/")!=0) {
       error ("chdir(\"/\") failed: %s", strerror(errno));
       exit (1);
     }
     
-    // we want full control over permissions
+    /* we want full control over permissions */
     umask (0);
     
-    // detach stdin
+    /* detach stdin */
     if (freopen("/dev/null", "r", stdin)==NULL) {
       error ("freopen (/dev/null) failed: %s", strerror(errno));
       exit (1);
     }
 
-    // detach stdout and stderr
+    /* detach stdout and stderr */
     fd=open("/dev/null", O_WRONLY, 0666);
     if (fd==-1) {
       error ("open (/dev/null) failed: %s", strerror(errno));
@@ -562,17 +568,17 @@ int main (int argc, char *argv[])
     dup2(fd, STDERR_FILENO);
     close(fd);
 
-    // create PID file
+    /* create PID file */
     if ((pid = pid_init(PIDFILE)) != 0) {
       error ("lcd4linux already running as process %d", pid);
       exit (1);
     }
 
-    // now we are a daemon
+    /* now we are a daemon */
     running_background=1;
   }
   
-  // go into interactive mode before display initialization
+  /* go into interactive mode before display initialization */
   if (interactive >= 2) {
     interactive_mode();
     pid_exit(PIDFILE);
@@ -580,7 +586,7 @@ int main (int argc, char *argv[])
     exit (0);
   }
   
-  // check the conf to see if quiet startup is wanted 
+  /* check the conf to see if quiet startup is wanted  */
   if (!quiet) {
     cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
   }
@@ -592,7 +598,7 @@ int main (int argc, char *argv[])
   }
   free(driver);
   
-  // go into interactive mode (display has been initialized)
+  /* go into interactive mode (display has been initialized) */
   if (interactive >= 1) {
     interactive_mode();
     drv_quit(quiet);
@@ -601,7 +607,7 @@ int main (int argc, char *argv[])
     exit (0);
   }
 
-  // check for new-style layout
+  /* check for new-style layout */
   layout=cfg_get(NULL, "Layout", NULL);
   if (layout==NULL || *layout=='\0') {
     error ("missing 'Layout' entry in %s!", cfg_source());
@@ -613,7 +619,7 @@ int main (int argc, char *argv[])
 
   debug ("starting main loop");
   
-  // now install our own signal handler
+  /* now install our own signal handler */
   signal(SIGHUP,  handler);
   signal(SIGINT,  handler);
   signal(SIGQUIT, handler);
@@ -636,7 +642,7 @@ int main (int argc, char *argv[])
   if (got_signal==SIGHUP) {
     long fd;
     debug ("restarting...");
-    // close all files on exec
+    /* close all files on exec */
     for (fd=sysconf(_SC_OPEN_MAX); fd>2; fd--) {
       int flag;
       if ((flag=fcntl(fd,F_GETFD,0))!=-1)

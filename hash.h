@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.15 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: hash.h,v 1.16 2004/06/26 09:27:21 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.16  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.15  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -95,7 +101,7 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
-// struct timeval
+/* struct timeval */
 #include <sys/time.h>
 
 

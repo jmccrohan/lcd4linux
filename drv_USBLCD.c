@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.13 2004/06/26 06:12:15 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.14 2004/06/26 09:27:21 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.14  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.13  2004/06/26 06:12:15  reinelt
  *
  * support for Beckmann+Egle Compact Terminals
@@ -135,9 +141,9 @@ static unsigned char *Buffer;
 static unsigned char *BufPtr;
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void drv_UL_send ()
 {
@@ -169,13 +175,13 @@ static void drv_UL_command (const unsigned char cmd)
 
 static void drv_UL_clear (void)
 {
-  drv_UL_command (0x01); // clear display
-  drv_UL_command (0x03); // return home
-  drv_UL_send();         // flush buffer
+  drv_UL_command (0x01); /* clear display */
+  drv_UL_command (0x03); /* return home */
+  drv_UL_send();         /* flush buffer */
 }
 
 
-static void drv_UL_write (const int row, const int col, const unsigned char *data, int len)
+static void drv_UL_write (const int row, const int col, const char *data, int len)
 {
   int pos = (row%2)*64 + (row/2)*20 + col;
   drv_UL_command (0x80|pos);
@@ -242,21 +248,21 @@ static int drv_UL_start (const char *section, const int quiet)
   DROWS = rows;
   DCOLS = cols;
   
-  // Init the command buffer
+  /* Init the command buffer */
   Buffer = (char*)malloc(1024);
   if (Buffer==NULL) {
     error ("%s: coommand buffer could not be allocated: malloc() failed", Name);
     return -1;
   }
   
-  // open port
+  /* open port */
   usblcd_file=open(Port,O_WRONLY);
   if (usblcd_file==-1) {
     error ("%s: open(%s) failed: %s", Name, Port, strerror(errno));
     return -1;
   }
   
-  // get driver version
+  /* get driver version */
   memset(buf,0,sizeof(buf));
   if (ioctl(usblcd_file, IOC_GET_DRV_VERSION, buf)!=0) {
     error ("USBLCD: ioctl() failed, could not get Driver Version!");
@@ -290,16 +296,16 @@ static int drv_UL_start (const char *section, const int quiet)
     return -1;
   }
 
-  // reset coimmand buffer
+  /* reset coimmand buffer */
   BufPtr=Buffer;
 
-  // initialize display
-  drv_UL_command (0x29); // 8 Bit mode, 1/16 duty cycle, 5x8 font
-  drv_UL_command (0x08); // Display off, cursor off, blink off
-  drv_UL_command (0x0c); // Display on, cursor off, blink off
-  drv_UL_command (0x06); // curser moves to right, no shift
+  /* initialize display */
+  drv_UL_command (0x29); /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
+  drv_UL_command (0x08); /* Display off, cursor off, blink off */
+  drv_UL_command (0x0c); /* Display on, cursor off, blink off */
+  drv_UL_command (0x06); /* curser moves to right, no shift */
 
-  drv_UL_clear();        // clear display
+  drv_UL_clear();        /* clear display */
   
   if (!quiet) {
     char buffer[40];
@@ -314,29 +320,29 @@ static int drv_UL_start (const char *section, const int quiet)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/* none at the moment... */
 
 
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_UL_list (void)
 {
   printf ("generic");
@@ -344,88 +350,88 @@ int drv_UL_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_UL_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
   int ret;  
   
-  // display preferences
-  XRES  = 5;      // pixel width of one char 
-  YRES  = 8;      // pixel height of one char 
-  CHARS = 8;      // number of user-defineable characters
-  CHAR0 = 0;      // ASCII of first user-defineable char
-  GOTO_COST = 2;  // number of bytes a goto command requires
+  /* display preferences */
+  XRES  = 5;      /* pixel width of one char  */
+  YRES  = 8;      /* pixel height of one char  */
+  CHARS = 8;      /* number of user-defineable characters */
+  CHAR0 = 0;      /* ASCII of first user-defineable char */
+  GOTO_COST = 2;  /* number of bytes a goto command requires */
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write   = drv_UL_write;
   drv_generic_text_real_defchar = drv_UL_defchar;
 
 
-  // start display
+  /* start display */
   if ((ret=drv_UL_start (section, quiet))!=0)
     return ret;
   
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  // most displays have a full block on ascii 255, but some have kind of 
-  // an 'inverted P'. If you specify 'asc255bug 1 in the config, this
-  // char will not be used, but rendered by the bar driver
+  /* add fixed chars to the bar driver */
+  /* most displays have a full block on ascii 255, but some have kind of  */
+  /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
+  /* char will not be used, but rendered by the bar driver */
   cfg_number(section, "asc255bug", 0, 0, 1, &asc255bug);
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); /* ASCII  32 = blank */
   if (!asc255bug) 
-    drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+    drv_generic_text_bar_add_segment (255,255,255,255); /* ASCII 255 = block */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
 
 
   return 0;
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_UL_quit (const int quiet)
 {
 
   info("%s: shutting down.", Name);
   
-  // flush buffer
+  /* flush buffer */
   drv_UL_send();
   
   drv_generic_text_quit();
   
-  // clear display
+  /* clear display */
   drv_UL_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

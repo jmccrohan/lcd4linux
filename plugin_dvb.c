@@ -1,4 +1,4 @@
-/* $Id: plugin_dvb.c,v 1.5 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_dvb.c,v 1.6 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for DVB status
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_dvb.c,v $
+ * Revision 1.6  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.5  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -92,11 +98,11 @@ static int get_dvb_stats (void)
   unsigned long  ber, ucb;
   char val[16];
   
-  // reread every 1000 msec only
+  /* reread every 1000 msec only */
   age = hash_age(&DVB, NULL);
   if (age > 0 && age <= 1000) return 0;
   
-  // open frontend
+  /* open frontend */
   fd = open(frontend, O_RDONLY);
   if (fd == -1) {
     error ("open(%s) failed: %s", frontend, strerror(errno));

@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.6 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.7 2004/06/26 09:27:20 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.7  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -88,9 +94,9 @@ static WINDOW *e = NULL;
 static int EROWS;
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void drv_Curs_clear (void)
 {
@@ -100,7 +106,7 @@ static void drv_Curs_clear (void)
 }
 
 
-static void drv_Curs_write (const int row, const int col, const unsigned char *data, const int len)
+static void drv_Curs_write (const int row, const int col, const char *data, const int len)
 {
   int l = len;
   char *p;
@@ -118,9 +124,10 @@ static void drv_Curs_write (const int row, const int col, const unsigned char *d
 }
 
 
-static void drv_Curs_defchar (const int ascii, const unsigned char *buffer)
+static void drv_Curs_defchar (const __attribute__((unused)) int ascii,
+			      const __attribute__((unused)) unsigned char *buffer)
 {
-  // empty
+  /* empty */
 }
 
 
@@ -135,7 +142,7 @@ int curses_error(char *buffer)
   
   if (e == NULL) return 0;
   
-  // replace \r, \n with underscores
+  /* replace \r, \n with underscores */
   while ((p = strpbrk(buffer, "\r\n")) != NULL) {
     *p='_';
   }
@@ -221,27 +228,27 @@ static int drv_Curs_start (const char *section, const int quiet)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
-
-// using drv_generic_text_draw(W)
-// using drv_generic_text_bar_draw(W)
+/* none at the moment... */
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
+
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_Curs_list (void)
 {
   printf ("any");
@@ -249,68 +256,68 @@ int drv_Curs_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_Curs_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // display preferences
-  XRES  = 1;     // pixel width of one char 
-  YRES  = 1;     // pixel height of one char 
-  CHARS = 0;     // number of user-defineable characters
-  CHAR0 = 0;     // ASCII of first user-defineable char
-  GOTO_COST = 0; // number of bytes a goto command requires
+  /* display preferences */
+  XRES  = 1;     /* pixel width of one char  */
+  YRES  = 1;     /* pixel height of one char  */
+  CHARS = 0;     /* number of user-defineable characters */
+  CHAR0 = 0;     /* ASCII of first user-defineable char */
+  GOTO_COST = 0; /* number of bytes a goto command requires */
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write   = drv_Curs_write;
   drv_generic_text_real_defchar = drv_Curs_defchar;
 
-  // start display
+  /* start display */
   if ((ret = drv_Curs_start (section, quiet)) != 0) {
     return ret;
   }
   
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret = drv_generic_text_init(section, Name)) != 0)
     return ret;
 
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret = drv_generic_text_bar_init(1)) != 0)
     return ret;
   
-  // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
-  drv_generic_text_bar_add_segment (255,255,255,'*'); // asterisk
+  /* add fixed chars to the bar driver */
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); /* ASCII  32 = blank */
+  drv_generic_text_bar_add_segment (255,255,255,'*'); /* asterisk */
   
-  // register text widget
+  /* register text widget */
   wc = Widget_Text;
   wc.draw = drv_generic_text_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc = Widget_Bar;
   wc.draw = drv_generic_text_bar_draw;
   widget_register(&wc);
 
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
 
   return 0;
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_Curs_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 
   drv_generic_text_quit();
   
-  // clear display
+  /* clear display */
   drv_Curs_clear();
 
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

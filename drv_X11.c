@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.6 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_X11.c,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -95,13 +101,13 @@ static char Name[]="X11";
 
 static char *fg_col,*bg_col,*hg_col;
 
-static int pixel  = -1;	// pointsize in pixel
-static int pgap   =  0;	// gap between points
-static int rgap   =  0;	// row gap between lines
-static int cgap   =  0;	// column gap between characters
-static int border =  0;	// window border
+static int pixel  = -1;	/* pointsize in pixel */
+static int pgap   =  0;	/* gap between points */
+static int rgap   =  0;	/* row gap between lines */
+static int cgap   =  0;	/* column gap between characters */
+static int border =  0;	/* window border */
 
-static int dimx, dimy;	// total window dimension in pixel
+static int dimx, dimy;	/* total window dimension in pixel */
 
 static unsigned char *drv_X11_FB=NULL;
 
@@ -115,9 +121,9 @@ static XColor fg_xc, bg_xc, hg_xc;
 static Pixmap pm;
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void drv_X11_blit(const int row, const int col, const int height, const int width)
 {
@@ -174,7 +180,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 }
 
 
-static void drv_X11_timer (void *notused)
+static void drv_X11_timer (__attribute__((unused)) void *notused)
 {
   XEvent ev;
   
@@ -194,7 +200,7 @@ static int drv_X11_start (const char *section)
   XEvent ev;
 
 
-  // read display size from config
+  /* read display size from config */
   if (sscanf(s=cfg_get(section, "Size", "120x32"), "%dx%d", &DCOLS, &DROWS)!=2 || DCOLS<1 || DROWS<1) {
     error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
     free(s);
@@ -242,7 +248,7 @@ static int drv_X11_start (const char *section)
     return -1;
   }
 
-  // init with 255 so all 'halfground' pixels will be drawn
+  /* init with 255 so all 'halfground' pixels will be drawn */
   memset(drv_X11_FB, 255, DCOLS*DROWS*sizeof(*drv_X11_FB));
 
   if ((dp=XOpenDisplay(NULL))==NULL) {
@@ -314,8 +320,8 @@ static int drv_X11_start (const char *section)
       break;
   }
   
-  // regularly process X events
-  // Fixme: make 20msec configurable
+  /* regularly process X events */
+  /* Fixme: make 20msec configurable */
   timer_add (drv_X11_timer, NULL, 20, 0);
 
   return 0;
@@ -323,29 +329,29 @@ static int drv_X11_start (const char *section)
 
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/* none at the moment... */
 
 
-// using drv_generic_graphic_draw(W)
-// using drv_generic_graphic_icon_draw(W)
-// using drv_generic_graphic_bar_draw(W)
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_graphic_draw(W) */
+/* using drv_generic_graphic_icon_draw(W) */
+/* using drv_generic_graphic_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_X11_list (void)
 {
   printf ("any");
@@ -353,24 +359,24 @@ int drv_X11_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_X11_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_graphic_real_blit = drv_X11_blit;
   
-  // start display
+  /* start display */
   if ((ret=drv_X11_start (section))!=0)
     return ret;
   
-  // initialize generic graphic driver
+  /* initialize generic graphic driver */
   if ((ret=drv_generic_graphic_init(section, Name))!=0)
     return ret;
   
-  // initially expose window
+  /* initially expose window */
   drv_generic_graphic_clear();
   drv_X11_expose (0, 0, dimx+2*border, dimy+2*border);
   
@@ -383,31 +389,31 @@ int drv_X11_init (const char *section, const int quiet)
     }
   }
 
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_graphic_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_graphic_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_graphic_bar_draw;
   widget_register(&wc);
   
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
   
   
   return 0;
 }
 
 
-// close driver & display
-int drv_X11_quit (const int quiet) {
+/* close driver & display */
+int drv_X11_quit (const __attribute__((unused)) int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_graphic_quit();

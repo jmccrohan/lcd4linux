@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.6 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: udelay.h,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * short delays 
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -57,9 +63,9 @@
 
 /* stolen from linux/asm-i386/processor.h */
 /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
-static inline void rep_nop(void)
+static inline void rep_nop (void)
 {
-  __asm__ __volatile__("rep;nop");
+  __asm__ __volatile__("rep; nop");
 }
 
 

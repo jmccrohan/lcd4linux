@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.10 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.11 2004/06/26 09:27:21 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,12 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -108,31 +114,31 @@ static int parse_xmms_info (void)
   FILE *xmms_stream;
   char zeile[200];
   
-  // reread every 100msec only
+  /* reread every 100msec only */
   age=hash_age(&xmms, NULL);
   if (age>=0 && age<=200) return 0;
-  // Open Filestream for '/tmp/xmms-info'
+  /* Open Filestream for '/tmp/xmms-info' */
   xmms_stream = fopen("/tmp/xmms-info","r");
 
-  // Check for File
+  /* Check for File */
   if( !xmms_stream ) {
     error("Error: Cannot open XMMS-Info Stream! Is XMMS started?");
     return -1;
   }
   
-  // Read Lines from the Stream
+  /* Read Lines from the Stream */
   while(fgets(zeile,sizeof(zeile),xmms_stream)) {
     char *c, *key, *val;
     c=strchr(zeile, ':');
     if (c==NULL) continue;
     key=zeile; val=c+1;
-    // strip leading blanks from key
+    /* strip leading blanks from key */
     while (isspace(*key)) *key++='\0';
-    // strip trailing blanks from key
+    /* strip trailing blanks from key */
     do *c='\0'; while (isspace(*--c));
-    // strip leading blanks from value
+    /* strip leading blanks from value */
     while (isspace(*val)) *val++='\0';
-    // strip trailing blanks from value
+    /* strip trailing blanks from value */
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
     hash_put (&xmms, key, val);
@@ -164,7 +170,7 @@ int plugin_init_xmms (void)
 {
   hash_create(&xmms);
 
-  // register xmms info
+  /* register xmms info */
   AddFunction ("xmms", 1, my_xmms);
 
   return 0;

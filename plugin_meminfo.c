@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.8 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.9 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.9  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.8  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -93,7 +99,7 @@ static int parse_meminfo (void)
 {
   int age;
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age=hash_age(&MemInfo, NULL);
   if (age>0 && age<=10) return 0;
   
@@ -111,20 +117,20 @@ static int parse_meminfo (void)
     c=strchr(buffer, ':');
     if (c==NULL) continue;
     key=buffer; val=c+1;
-    // strip leading blanks from key
+    /* strip leading blanks from key */
     while (isspace(*key)) *key++='\0';
-    // strip trailing blanks from key
+    /* strip trailing blanks from key */
     do *c='\0'; while (isspace(*--c));
-    // strip leading blanks from value
+    /* strip leading blanks from value */
     while (isspace(*val)) *val++='\0';
-    // strip trailing blanks from value
+    /* strip trailing blanks from value */
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
-    // skip lines that do not end with " kB"
+    /* skip lines that do not end with " kB" */
     if (*c=='B' && *(c-1)=='k' && *(c-2)==' ') {
-      // strip trailing " kB" from value
+      /* strip trailing " kB" from value */
       *(c-2)='\0';
-      // add entry to hash table
+      /* add entry to hash table */
       hash_put (&MemInfo, key, val);
     }
   }

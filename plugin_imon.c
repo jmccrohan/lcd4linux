@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.11 2004/06/24 20:18:08 nicowallmeier Exp $
+/* $Id: plugin_imon.c,v 1.12 2004/06/26 09:27:21 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.12  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.11  2004/06/24 20:18:08  nicowallmeier
  * minor bugfix
  *
@@ -261,7 +267,7 @@ static int parse_telmon(){
  static char oldanswer[128];
  int age;
    
- // reread every 1 sec only
+ /* reread every 1 sec only */
  age=hash_age(&TELMON, NULL);
  if (age>0 && age<=1000) return 0;
 
@@ -315,7 +321,7 @@ void init(){
 
  if (fd<0){
   err++;
- } else if ((ipass!=NULL) && (*ipass!='\0')) { // Passwort senden
+ } else if ((ipass!=NULL) && (*ipass!='\0')) { /* Passwort senden */
   char buf[40];
   qprintf(buf,sizeof(buf),"pass %s",ipass);
   send_command(fd,buf);
@@ -324,11 +330,11 @@ void init(){
 }
 
 static int parse_imon(const char *cmd){
- // reread every half sec only
+  /* reread every half sec only */
  int age=hash_age(&IMON, cmd);
  if (age>0 && age<=500) return 0;
 
- init(); // establish connection
+ init(); /* establish connection */
 
  if (err) return -1;
  
@@ -339,7 +345,7 @@ static int parse_imon(const char *cmd){
 
 static void my_imon_version (RESULT *result){
  char *val;
- // read only ones
+ /* read only ones */
  int age=hash_age(&IMON, "version");
  if (age<0){
   char *s;
@@ -349,7 +355,7 @@ static void my_imon_version (RESULT *result){
    return;
   }
   s=get_value("version");
-  for (;;){ // interne Versionsnummer killen
+  for (;;){ /* interne Versionsnummer killen */
    if (s[0]==' '){
     s=s+1;
     break;
@@ -371,11 +377,11 @@ static int parse_imon_rates(const char *channel){
   
  qprintf(buf,sizeof(buf),"rate %s in",channel);
  
- // reread every half sec only
+ /* reread every half sec only */
  age=hash_age(&IMON, buf);
  if (age>0 && age<=500) return 0;
 
- init(); // establish connection
+ init(); /* establish connection */
 
  if (err) return -1;
 

@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.7 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_Image.c,v 1.8 2004/06/26 09:27:20 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.8  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.7  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -110,21 +116,21 @@ static enum {PPM, PNG} Format;
 
 static unsigned int fg_col, bg_col, hg_col;
 
-static int pixel  = -1;	// pointsize in pixel
-static int pgap   =  0;	// gap between points
-static int rgap   =  0;	// row gap between lines
-static int cgap   =  0;	// column gap between characters
-static int border =  0;	// window border
+static int pixel  = -1;	/* pointsize in pixel */
+static int pgap   =  0;	/* gap between points */
+static int rgap   =  0;	/* row gap between lines */
+static int cgap   =  0;	/* column gap between characters */
+static int border =  0;	/* window border */
 
-static int dimx, dimy;	// total window dimension in pixel
+static int dimx, dimy;	/* total window dimension in pixel */
 
 static unsigned char *drv_IMG_FB = NULL;
 
 static int dirty = 1;
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 #ifdef WITH_PPM
 static int drv_IMG_flush_PPM (void)
@@ -170,12 +176,12 @@ static int drv_IMG_flush_PPM (void)
   snprintf (path, sizeof(path), output, seq++);
   qprintf(tmp, sizeof(tmp), "%s.tmp", path);
   
-  // remove the file
+  /* remove the file */
   unlink (tmp);
 
-  // avoid symlink security hole: 
-  // open it with O_EXCL will fail if the file exists. 
-  // This should not happen because we just unlinked it.
+  /* avoid symlink security hole:  */
+  /* open it with O_EXCL will fail if the file exists.  */
+  /* This should not happen because we just unlinked it. */
   if ((fd = open(tmp, O_WRONLY | O_CREAT | O_EXCL, 0644))<0) {
     error ("%s: open(%s) failed: %s", Name, tmp, strerror(errno));
     return -1;
@@ -271,12 +277,12 @@ static int drv_IMG_flush_PNG (void)
   snprintf (path, sizeof(path), output, seq++);
   qprintf (tmp, sizeof(tmp), "%s.tmp", path);
   
-  // remove the file
+  /* remove the file */
   unlink (tmp);
 
-  // avoid symlink security hole: 
-  // open it with O_EXCL will fail if the file exists. 
-  // This should not happen because we just unlinked it.
+  /* avoid symlink security hole:  */
+  /* open it with O_EXCL will fail if the file exists.  */
+  /* This should not happen because we just unlinked it. */
   if ((fd = open(tmp, O_WRONLY | O_CREAT | O_EXCL, 0644))<0) {
     error ("%s: open(%s) failed: %s", Name, tmp, strerror(errno));
     return -1;
@@ -326,6 +332,9 @@ static void drv_IMG_flush (void)
 
 static void drv_IMG_timer (void *notused)
 {
+  /* avoid compiler warning */
+  notused = notused;
+
   if (dirty) {
     drv_IMG_flush();
     dirty = 0;
@@ -358,7 +367,7 @@ static int drv_IMG_start (const char *section)
     return -1;
   }
     
-  // read file format from config
+  /* read file format from config */
   s = cfg_get(section, "Format", NULL);
   if (s == NULL || *s == '\0') {
     error ("%s: no '%s.Format' entry from %s", Name, section, cfg_source());
@@ -377,7 +386,7 @@ static int drv_IMG_start (const char *section)
   }
   free(s);
 
-  // read display size from config
+  /* read display size from config */
   if (sscanf(s=cfg_get(section, "Size", "120x32"), "%dx%d", &DCOLS, &DROWS)!=2 || DCOLS<1 || DROWS<1) {
     error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
     free(s);
@@ -445,11 +454,11 @@ static int drv_IMG_start (const char *section)
   dimy = DROWS*pixel + (DROWS-1)*pgap + (DROWS/YRES-1)*rgap;
 
 
-  // initially flush the image to a file
+  /* initially flush the image to a file */
   drv_IMG_flush();
 
-  // regularly flush the image to a file
-  // Fixme: make 100msec configurable
+  /* regularly flush the image to a file */
+  /* Fixme: make 100msec configurable */
   timer_add (drv_IMG_timer, NULL, 100, 0);
 
 
@@ -458,29 +467,29 @@ static int drv_IMG_start (const char *section)
 
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
-// none at the moment...
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/* none at the moment... */
 
 
-// using drv_generic_graphic_draw(W)
-// using drv_generic_graphic_icon_draw(W)
-// using drv_generic_graphic_bar_draw(W)
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
 
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_graphic_draw(W) */
+/* using drv_generic_graphic_icon_draw(W) */
+/* using drv_generic_graphic_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_IMG_list (void)
 {
   printf ("PPM PNG");
@@ -488,48 +497,48 @@ int drv_IMG_list (void)
 }
 
 
-// initialize driver & display
-int drv_IMG_init (const char *section, const int quiet)
+/* initialize driver & display */
+int drv_IMG_init (const char *section, const __attribute__((unused)) int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_graphic_real_blit   = drv_IMG_blit;
   
-  // start display
+  /* start display */
   if ((ret=drv_IMG_start (section))!=0)
     return ret;
   
-  // initialize generic graphic driver
+  /* initialize generic graphic driver */
   if ((ret=drv_generic_graphic_init(section, Name))!=0)
     return ret;
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_graphic_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_graphic_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_graphic_bar_draw;
   widget_register(&wc);
   
-  // register plugins
-  // none at the moment...
+  /* register plugins */
+  /* none at the moment... */
   
   
   return 0;
 }
 
 
-// close driver & display
-int drv_IMG_quit (const int quiet) {
+/* close driver & display */
+int drv_IMG_quit (const __attribute__((unused)) int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_graphic_quit();

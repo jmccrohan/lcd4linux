@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.34 2004/06/26 06:12:15 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.35 2004/06/26 09:27:20 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.35  2004/06/26 09:27:20  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.34  2004/06/26 06:12:15  reinelt
  *
  * support for Beckmann+Egle Compact Terminals
@@ -202,8 +208,8 @@ static char Name[]="MatrixOrbital";
 static int Model;
 static int Protocol;
 
-// Fixme: GPO's not yet implemented
-// static int GPO[8];
+/* Fixme: GPO's not yet implemented */
+/* static int GPO[8]; */
 static int GPOS;
 
 
@@ -216,8 +222,8 @@ typedef struct {
   int protocol;
 } MODEL;
 
-// Fixme #1: number of gpo's should be verified
-// Fixme #2: protocol should be verified
+/* Fixme #1: number of gpo's should be verified */
+/* Fixme #2: protocol should be verified */
 
 static MODEL Models[] = {
   { 0x01, "LCD0821",      2,  8, 0, 1 },
@@ -249,24 +255,24 @@ static MODEL Models[] = {
 };
 
 
-// ****************************************
-// ***  hardware dependant functions    ***
-// ****************************************
+/****************************************/
+/***  hardware dependant functions    ***/
+/****************************************/
 
 static void drv_MO_clear (void)
 {
   switch (Protocol) {
   case 1:
-    drv_generic_serial_write ("\014", 1);  // Clear Screen
+    drv_generic_serial_write ("\014", 1);  /* Clear Screen */
     break;
   case 2:
-    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
+    drv_generic_serial_write ("\376\130", 2);  /* Clear Screen */
     break;
   }
 }
 
 
-static void drv_MO_write (const int row, const int col, const unsigned char *data, const int len)
+static void drv_MO_write (const int row, const int col, const char *data, const int len)
 {
   char cmd[5]="\376Gyx";
 
@@ -296,7 +302,7 @@ static int drv_MO_contrast (int contrast)
   static unsigned char Contrast=0;
   char cmd[3] = "\376Pn";
   
-  // -1 is used to query the current contrast
+  /* -1 is used to query the current contrast */
   if (contrast == -1) return Contrast;
   
   if (contrast < 0  ) contrast = 0;
@@ -316,7 +322,7 @@ static int drv_MO_backlight (int backlight)
   static unsigned char Backlight=0;
   char cmd[3] = "\376Bn";
 
-  // -1 is used to query the current backlight
+  /* -1 is used to query the current backlight */
   if (backlight == -1) return Backlight;
 
   if (backlight < 0  ) backlight = 0;
@@ -324,10 +330,10 @@ static int drv_MO_backlight (int backlight)
   Backlight = backlight;
 
   if (backlight < 0) {
-    // backlight off
+    /* backlight off */
     drv_generic_serial_write ("\376F", 2);
   } else {
-    // backlight on for n minutes
+    /* backlight on for n minutes */
     cmd[2] = Backlight;
     drv_generic_serial_write (cmd, 3);
   }
@@ -344,7 +350,7 @@ static int drv_MO_gpo (int num, int val)
   if (num < 1) num = 1;
   if (num > 6) num = 6;
 
-  // -1 is used to query the current PWM
+  /* -1 is used to query the current PWM */
   if (val == -1) return GPO[num-1];
 
   if (val < 0) val = 0;
@@ -355,9 +361,9 @@ static int drv_MO_gpo (int num, int val)
   case 1:
     if (num == 1) {
       if (val > 0) {
-	drv_generic_serial_write ("\376W", 2);  // GPO on
+	drv_generic_serial_write ("\376W", 2);  /* GPO on */
       } else {
-	drv_generic_serial_write ("\376V", 2);  // GPO off
+	drv_generic_serial_write ("\376V", 2);  /* GPO off */
       }
     } else {
       GPO[num-1] = -1;
@@ -366,9 +372,9 @@ static int drv_MO_gpo (int num, int val)
     
   case 2:
     if (val > 0) {
-      cmd[1] = 'W';  // GPO on
+      cmd[1] = 'W';  /* GPO on */
     } else {
-      cmd[1] = 'V';  // GPO off
+      cmd[1] = 'V';  /* GPO off */
     }
     cmd[2] = (char)num;
     drv_generic_serial_write (cmd, 3);
@@ -387,7 +393,7 @@ static int drv_MO_pwm (int num, int val)
   if (num < 1) num = 1;
   if (num > 6) num = 6;
   
-  // -1 is used to query the current PWM
+  /* -1 is used to query the current PWM */
   if (val == -1) return PWM[num-1];
 
   if (val <   0) val =   0;
@@ -425,7 +431,7 @@ static int drv_MO_rpm (int num)
   debug ("rpm: buffer[5]=0x%01x", buffer[5]);
   debug ("rpm: buffer[6]=0x%01x", buffer[6]);
 
-  // Fixme: RPM calculations???
+  /* Fixme: RPM calculations??? */
   RPM[num-1] = 42;
 
   return RPM[num-1];
@@ -458,7 +464,7 @@ static int drv_MO_start (const char *section, const int quiet)
   if (drv_generic_serial_open(section, Name, 0)<0) return -1;
 
   if (Model == -1 || Models[Model].protocol > 1) {
-    // read module type
+    /* read module type */
     drv_generic_serial_write ("\3767", 2);
     usleep(1000);
     if (drv_generic_serial_read (buffer, 1)==1) {
@@ -468,10 +474,10 @@ static int drv_MO_start (const char *section, const int quiet)
       info ("%s: display reports model '%s' (type 0x%02x)", 
 	    Name, Models[i].name, Models[i].type);
 
-      // auto-dedection
+      /* auto-dedection */
       if (Model==-1) Model=i;
 
-      // auto-dedection matches specified model?
+      /* auto-dedection matches specified model? */
       if (Models[i].type!=0xff && Model!=i) {
 	error ("%s: %s.Model '%s' from %s does not match dedected Model '%s'", 
 	       Name, section, model, cfg_source(), Models[i].name);
@@ -483,21 +489,21 @@ static int drv_MO_start (const char *section, const int quiet)
     }
   }
 
-  // initialize global variables
+  /* initialize global variables */
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
   Protocol = Models[Model].protocol;
 
   if (Protocol > 1) {
-    // read serial number
+    /* read serial number */
     drv_generic_serial_write ("\3765", 2);
     usleep(100000);
     if (drv_generic_serial_read (buffer, 2)==2) {
       info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
     }
   
-    // read version number
+    /* read version number */
     drv_generic_serial_write ("\3766", 2);
     usleep(100000);
     if (drv_generic_serial_read (buffer, 1)==1) {
@@ -507,18 +513,18 @@ static int drv_MO_start (const char *section, const int quiet)
   
   drv_MO_clear();
   
-  drv_generic_serial_write ("\376B", 3);  // backlight on
-  drv_generic_serial_write ("\376K", 2);  // cursor off
-  drv_generic_serial_write ("\376T", 2);  // blink off
-  drv_generic_serial_write ("\376D", 2);  // line wrapping off
-  drv_generic_serial_write ("\376R", 2);  // auto scroll off
+  drv_generic_serial_write ("\376B", 3);  /* backlight on */
+  drv_generic_serial_write ("\376K", 2);  /* cursor off */
+  drv_generic_serial_write ("\376T", 2);  /* blink off */
+  drv_generic_serial_write ("\376D", 2);  /* line wrapping off */
+  drv_generic_serial_write ("\376R", 2);  /* auto scroll off */
 
-  // set contrast
+  /* set contrast */
   if (cfg_number(section, "Contrast", 0, 0, 255, &i)>0) {
     drv_MO_contrast(i);
   }
 
-  // set backlight
+  /* set backlight */
   if (cfg_number(section, "Backlight", 0, 0, 255, &i)>0) {
     drv_MO_backlight(i);
   }
@@ -534,9 +540,9 @@ static int drv_MO_start (const char *section, const int quiet)
 }
 
 
-// ****************************************
-// ***            plugins               ***
-// ****************************************
+/****************************************/
+/***            plugins               ***/
+/****************************************/
 
 
 static void plugin_contrast (RESULT *result, const int argc, RESULT *argv[])
@@ -628,21 +634,21 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
 }
 
 
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
+/****************************************/
+/***        widget callbacks          ***/
+/****************************************/
 
-// using drv_generic_text_draw(W)
-// using drv_generic_text_icon_draw(W)
-// using drv_generic_text_bar_draw(W)
-
-
-// ****************************************
-// ***        exported functions        ***
-// ****************************************
+/* using drv_generic_text_draw(W) */
+/* using drv_generic_text_icon_draw(W) */
+/* using drv_generic_text_bar_draw(W) */
 
 
-// list models
+/****************************************/
+/***        exported functions        ***/
+/****************************************/
+
+
+/* list models */
 int drv_MO_list (void)
 {
   int i;
@@ -654,60 +660,60 @@ int drv_MO_list (void)
 }
 
 
-// initialize driver & display
+/* initialize driver & display */
 int drv_MO_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
   
-  // display preferences
-  XRES=5;      // pixel width of one char 
-  YRES=8;      // pixel height of one char 
-  CHARS=8;     // number of user-defineable characters
-  CHAR0=0;     // ASCII of first user-defineable char
-  GOTO_COST=4; // number of bytes a goto command requires
+  /* display preferences */
+  XRES=5;      /* pixel width of one char  */
+  YRES=8;      /* pixel height of one char  */
+  CHARS=8;     /* number of user-defineable characters */
+  CHAR0=0;     /* ASCII of first user-defineable char */
+  GOTO_COST=4; /* number of bytes a goto command requires */
   
-  // real worker functions
+  /* real worker functions */
   drv_generic_text_real_write   = drv_MO_write;
   drv_generic_text_real_defchar = drv_MO_defchar;
 
 
-  // start display
+  /* start display */
   if ((ret=drv_MO_start (section, quiet))!=0)
     return ret;
   
-  // initialize generic text driver
+  /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
-  // initialize generic icon driver
+  /* initialize generic icon driver */
   if ((ret=drv_generic_text_icon_init())!=0)
     return ret;
   
-  // initialize generic bar driver
+  /* initialize generic bar driver */
   if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
-  // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
-  drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+  /* add fixed chars to the bar driver */
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); /* ASCII  32 = blank */
+  drv_generic_text_bar_add_segment (255,255,255,255); /* ASCII 255 = block */
   
-  // register text widget
+  /* register text widget */
   wc=Widget_Text;
   wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
-  // register icon widget
+  /* register icon widget */
   wc=Widget_Icon;
   wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
-  // register bar widget
+  /* register bar widget */
   wc=Widget_Bar;
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
-  // register plugins
+  /* register plugins */
   AddFunction ("LCD::contrast",  -1, plugin_contrast);
   AddFunction ("LCD::backlight", -1, plugin_backlight);
   AddFunction ("LCD::gpo",       -1, plugin_gpo);
@@ -718,17 +724,17 @@ int drv_MO_init (const char *section, const int quiet)
 }
 
 
-// close driver & display
+/* close driver & display */
 int drv_MO_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 
   drv_generic_text_quit();
 
-  // clear display
+  /* clear display */
   drv_MO_clear();
   
-  // say goodbye...
+  /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }

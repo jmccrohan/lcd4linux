@@ -1,4 +1,4 @@
-/* $Id: plugin_time.c,v 1.1 2004/05/20 07:47:51 reinelt Exp $
+/* $Id: plugin_time.c,v 1.2 2004/06/26 09:27:21 reinelt Exp $
  *
  * time plugin
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_time.c,v $
+ * Revision 1.2  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.1  2004/05/20 07:47:51  reinelt
  * added plugin_time
  *
@@ -67,7 +73,7 @@ static void my_strftime (RESULT *result, RESULT *arg1, RESULT *arg2)
 int plugin_init_time (void)
 {
 
-  // register some basic time functions
+  /* register some basic time functions */
   AddFunction ("time",     0, my_time);
   AddFunction ("strftime", 2, my_strftime);
 
@@ -76,4 +82,5 @@ int plugin_init_time (void)
 
 void plugin_exit_time(void) 
 {
+  /* empty */
 }

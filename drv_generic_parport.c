@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.6 2004/06/20 10:09:55 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.7 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.7  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.6  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -111,7 +117,7 @@ static char *Section="";
 static unsigned short Port=0;
 static char *PPdev=NULL;
 
-// initial value taken from linux/parport_pc.c
+/* initial value taken from linux/parport_pc.c */
 static unsigned char ctr = 0xc;
 
 #ifdef WITH_PPDEV
@@ -165,7 +171,7 @@ int drv_generic_parport_open (const char *section, const char *driver)
     }
     
 #if 0
-    // Fixme: this always fails here...
+    /* Fixme: this always fails here... */
     if (ioctl(PPfd, PPEXCL)) {
       debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
     } else {
@@ -234,7 +240,7 @@ int drv_generic_parport_close (void)
 }
 
 
-unsigned char drv_generic_parport_wire_ctrl (const char *name, const unsigned char *deflt)
+unsigned char drv_generic_parport_wire_ctrl (const char *name, const char *deflt)
 {
   unsigned char w;
   char wire[256];
@@ -279,7 +285,7 @@ unsigned char drv_generic_parport_wire_ctrl (const char *name, const unsigned ch
 }
 
 
-unsigned char drv_generic_parport_wire_data (const char *name, const unsigned char *deflt)
+unsigned char drv_generic_parport_wire_data (const char *name, const char *deflt)
 {
   unsigned char w;
   char wire[256];
@@ -317,7 +323,7 @@ void drv_generic_parport_direction (const int direction)
   } else
 #endif
     {
-      // code stolen from linux/parport_pc.h
+      /* code stolen from linux/parport_pc.h */
       ctr = (ctr & ~0x20) ^ (direction?0x20:0x00);
       outb (ctr, Port+2);
     }
@@ -328,11 +334,11 @@ void drv_generic_parport_control (const unsigned char mask, const unsigned char 
 {
   unsigned char val;
   
-  // any signal affected?
-  // Note: this may happen in case a signal is hardwired to GND
+  /* any signal affected? */
+  /* Note: this may happen in case a signal is hardwired to GND */
   if (mask==0) return;
 
-  // Strobe, Select and AutoFeed are inverted!
+  /* Strobe, Select and AutoFeed are inverted! */
   val = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
 
 #ifdef WITH_PPDEV
@@ -344,7 +350,7 @@ void drv_generic_parport_control (const unsigned char mask, const unsigned char 
   } else
 #endif
     {
-      // code stolen from linux/parport_pc.h
+      /* code stolen from linux/parport_pc.h */
       ctr = (ctr & ~mask) ^ val;
       outb (ctr, Port+2);
     }
@@ -355,15 +361,15 @@ void drv_generic_parport_toggle (const unsigned char bits, const int level, cons
 {
   unsigned char value1, value2;
 
-  // any signal affected?
-  // Note: this may happen in case a signal is hardwired to GND
+  /* any signal affected? */
+  /* Note: this may happen in case a signal is hardwired to GND */
   if (bits==0) return;
 
-  // prepare value
+  /* prepare value */
   value1=level?bits:0;
   value2=level?0:bits;
   
-  // Strobe, Select and AutoFeed are inverted!
+  /* Strobe, Select and AutoFeed are inverted! */
   value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
   value2 = bits & (value2 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
   
@@ -373,27 +379,27 @@ void drv_generic_parport_toggle (const unsigned char bits, const int level, cons
     struct ppdev_frob_struct frob;
     frob.mask=bits;
     
-    // rise
+    /* rise */
     frob.val=value1;
     ioctl (PPfd, PPFCONTROL, &frob);
     
-    // pulse width
+    /* pulse width */
     ndelay(delay);      
     
-    // lower
+    /* lower */
     frob.val=value2;
     ioctl (PPfd, PPFCONTROL, &frob);
   } else
 #endif
     {
-      // rise
+      /* rise */
       ctr = (ctr & ~bits) ^ value1;
       outb (ctr, Port+2);
 
-      // pulse width
+      /* pulse width */
       ndelay(delay);      
       
-      // lower
+      /* lower */
       ctr = (ctr & ~bits) ^ value2;
       outb (ctr, Port+2);
     }

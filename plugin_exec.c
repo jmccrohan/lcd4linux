@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.4 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,12 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -89,18 +95,18 @@ static int max_thread = -1;
 static HASH EXEC;
 
 
-// x^0 + x^5 + x^12
+/* x^0 + x^5 + x^12 */
 #define CRCPOLY 0x8408 
   
-static unsigned short CRC (const unsigned char *s)
+static unsigned short CRC (const char *s)
 {
   int i;
   unsigned short crc;
 
-  // seed value
-  crc=0xffff;
+  /* seed value */
+  crc = 0xffff;
   
-  while (*s!='\0') {
+  while (*s != '\0') {
     crc ^= *s++;
     for (i = 0; i < 8; i++)
       crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY : 0);
@@ -116,10 +122,10 @@ static void exec_thread (void *data)
   char buffer[SHM_SIZE];
   int len;
   
-  // use a safe path
+  /* use a safe path */
   putenv ("PATH=/usr/local/bin:/usr/bin:/bin");
   
-  // forever...
+  /* forever... */
   while (1) {
     pipe = popen(Thread->cmd, "r");
     if (pipe == NULL) {
@@ -134,19 +140,19 @@ static void exec_thread (void *data)
       pclose(pipe);
     }
     
-    // force trailing zero
+    /* force trailing zero */
     buffer[len] = '\0';
     
-    // remove trailing CR/LF
+    /* remove trailing CR/LF */
     while (len>0 && (buffer[len-1]=='\n' || buffer[len-1]=='\r')) {
       buffer[--len]='\0';
     }
     
-    // lock shared memory
+    /* lock shared memory */
     mutex_lock(Thread->mutex);
-    // write data
+    /* write data */
     strncpy(Thread->ret, buffer, SHM_SIZE);
-    // unlock shared memory
+    /* unlock shared memory */
     mutex_unlock(Thread->mutex);
     usleep (Thread->delay);
   }
@@ -187,21 +193,21 @@ static int create_exec_thread (const char *cmd, const char *key, const int delay
   Thread[max_thread].key   = strdup(key);
   Thread[max_thread].ret   = NULL;
     
-  // create communication buffer
+  /* create communication buffer */
   Thread[max_thread].shmid = shm_create ((void**)&Thread[max_thread].ret, SHM_SIZE);
 
-  // catch error
+  /* catch error */
   if (Thread[max_thread].shmid < 0) {
     error ("cannot create exec thread <%s>: shared memory allocation failed!", cmd);
     destroy_exec_thread (max_thread--);
     return -1;
   }
   
-  // create thread
+  /* create thread */
   qprintf(name, sizeof(name), "exec-%s", key); 
   Thread[max_thread].pid = thread_create (name, exec_thread, &Thread[max_thread]);
 
-  // catch error
+  /* catch error */
   if (Thread[max_thread].pid < 0) {
     error ("cannot create exec thread <%s>: fork failed?!", cmd);
     destroy_exec_thread (max_thread--);
@@ -220,7 +226,7 @@ static int do_exec (const char *cmd, const char *key, int delay)
   
   if (age < 0) {
     hash_put (&EXEC, key, "");
-    // first-time call: create thread
+    /* first-time call: create thread */
     if (delay < 10) {
       error ("exec(%s): delay %d is too short! using 10 msec", cmd, delay);
       delay = 10;
@@ -231,17 +237,17 @@ static int do_exec (const char *cmd, const char *key, int delay)
     return 0;
   }
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   if (age > 0 && age <= 10) return 0;
   
-  // find thread
+  /* find thread */
   for (i = 0; i <= max_thread; i++) {
     if (strcmp(key, Thread[i].key) == 0) {
-      // lock shared memory
+      /* lock shared memory */
       mutex_lock(Thread[i].mutex);
-      // copy data
+      /* copy data */
       hash_put (&EXEC, key, Thread[i].ret);
-      // unlock shared memory
+      /* unlock shared memory */
       mutex_unlock(Thread[i].mutex);
       return 0;
     }

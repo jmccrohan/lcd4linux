@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.13 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.14 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.14  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.13  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -87,18 +93,18 @@
 #include "widget.h"
 
 
-extern int DROWS, DCOLS; // display size
-extern int LROWS, LCOLS; // layout size
-extern int XRES,  YRES;  // pixel width/height of one char 
-extern int GOTO_COST;    // number of bytes a goto command requires
-extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
-extern int ICONS;        // number of user-defineable characters reserved for icons
+extern int DROWS, DCOLS; /* display size */
+extern int LROWS, LCOLS; /* layout size */
+extern int XRES,  YRES;  /* pixel width/height of one char  */
+extern int GOTO_COST;    /* number of bytes a goto command requires */
+extern int CHARS, CHAR0; /* number of user-defineable characters, ASCII of first char */
+extern int ICONS;        /* number of user-defineable characters reserved for icons */
 
-// these functions must be implemented by the real driver
-void (*drv_generic_text_real_write)(const int row, const int col, const unsigned char *data, const int len);
-void (*drv_generic_text_real_defchar)(const int ascii, const unsigned char *buffer);
+/* these functions must be implemented by the real driver */
+void (*drv_generic_text_real_write)(const int row, const int col, const char *data, const int len);
+void (*drv_generic_text_real_defchar)(const int ascii, const unsigned char *matrix);
 
-// generic functions and widget callbacks
+/* generic functions and widget callbacks */
 int  drv_generic_text_init            (const char *section, const char *driver);
 int  drv_generic_text_greet           (const char *msg1, const char *msg2);
 int  drv_generic_text_draw            (WIDGET *W);

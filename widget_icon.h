@@ -1,4 +1,4 @@
-/* $Id: widget_icon.h,v 1.5 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: widget_icon.h,v 1.6 2004/06/26 09:27:21 reinelt Exp $
  *
  * icon widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget_icon.h,v $
+ * Revision 1.6  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.5  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -51,17 +57,17 @@
 #define _WIDGET_ICON_H_
 
 typedef struct WIDGET_ICON {
-  char *speed_expr;      // expression for update interval
-  void *speed_tree;      // pre-compiled expression for update interval
-  int   speed;           // update interval (msec)
-  char *visible_expr;    // expression for visibility
-  void *visible_tree;    // pre-compiled expression for visibility
-  int   visible;         // icon visible?
-  int   ascii;           // ascii code of icon (depends on the driver)
-  int   curmap;          // current bitmap sequence
-  int   prvmap;          // previous bitmap sequence 
-  int   maxmap;          // number of bitmap sequences
-  unsigned char *bitmap; // bitmaps of (animated) icon
+  char *speed_expr;      /* expression for update interval */
+  void *speed_tree;      /* pre-compiled expression for update interval */
+  int   speed;           /* update interval (msec) */
+  char *visible_expr;    /* expression for visibility */
+  void *visible_tree;    /* pre-compiled expression for visibility */
+  int   visible;         /* icon visible? */
+  int   ascii;           /* ascii code of icon (depends on the driver) */
+  int   curmap;          /* current bitmap sequence */
+  int   prvmap;          /* previous bitmap sequence  */
+  int   maxmap;          /* number of bitmap sequences */
+  unsigned char *bitmap; /* bitmaps of (animated) icon */
 } WIDGET_ICON;
 
 extern WIDGET_CLASS Widget_Icon;

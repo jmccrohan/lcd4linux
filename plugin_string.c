@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.4 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_string.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
  *
  * string plugin
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.5  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.4  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -70,7 +76,7 @@ static void my_strlen (RESULT *result, RESULT *arg1)
 int plugin_init_string (void)
 {
 
-  // register some basic string functions
+  /* register some basic string functions */
   AddFunction ("strlen", 1, my_strlen);
 
   return 0;
@@ -78,4 +84,5 @@ int plugin_init_string (void)
 
 void plugin_exit_string(void) 
 {
+  /* empty */
 }

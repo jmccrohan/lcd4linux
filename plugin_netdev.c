@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.10 2004/06/17 10:58:58 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.11 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.11  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.10  2004/06/17 10:58:58  reinelt
  *
  * changed plugin_netdev to use the new fast hash model
@@ -101,7 +107,7 @@ static int parse_netdev (void)
   int row, col;
   static int first_time = 1;
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age = hash_age(&NetDev, NULL);
   if (age > 0 && age <= 10) return 0;
   
@@ -118,18 +124,18 @@ static int parse_netdev (void)
     char buffer[256];
     char dev[16];
     char *beg, *end;
-    int len;
+    unsigned int len;
     
     if (fgets (buffer, sizeof(buffer), Stream) == NULL) break;
     
     switch (++row) {
       
     case 1:
-      // skip row 1
+      /* skip row 1 */
       continue;
       
     case 2:
-      // row 2 used for headers
+      /* row 2 used for headers */
       if (first_time) {
 	char *RxTx = strrchr(buffer, '|');
 	first_time = 0;
@@ -148,7 +154,7 @@ static int parse_netdev (void)
       continue;
 
     default:
-      // fetch interface name (1st column) as key
+      /* fetch interface name (1st column) as key */
       beg = buffer;
       while (*beg && *beg == ' ') beg++;
       end = beg + 1;

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.3 2004/06/20 10:09:55 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.4 2004/06/26 09:27:21 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.4  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.3  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -83,8 +89,8 @@
 
 int           drv_generic_parport_open       (const char *section, const char *driver);
 int           drv_generic_parport_close      (void);
-unsigned char drv_generic_parport_wire_ctrl  (const char *name, const unsigned char *deflt);
-unsigned char drv_generic_parport_wire_data  (const char *name, const unsigned char *deflt);
+unsigned char drv_generic_parport_wire_ctrl  (const char *name, const char *deflt);
+unsigned char drv_generic_parport_wire_data  (const char *name, const char *deflt);
 void          drv_generic_parport_direction  (const int direction);
 void          drv_generic_parport_control    (const unsigned char mask, const unsigned char value);
 void          drv_generic_parport_toggle     (const unsigned char bit, const int level, const int delay);

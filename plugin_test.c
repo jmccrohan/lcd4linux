@@ -1,4 +1,4 @@
-/* $Id: plugin_test.c,v 1.1 2004/06/07 06:56:55 reinelt Exp $
+/* $Id: plugin_test.c,v 1.2 2004/06/26 09:27:21 reinelt Exp $
 *
 * Handy functions for testing displays and debugging code.
 *
@@ -26,6 +26,12 @@
 *
 *
 * $Log: plugin_test.c,v $
+* Revision 1.2  2004/06/26 09:27:21  reinelt
+*
+* added '-W' to CFLAGS
+* changed all C++ comments to C ones ('//' => '/* */')
+* cleaned up a lot of signed/unsigned mistakes
+*
 * Revision 1.1  2004/06/07 06:56:55  reinelt
 *
 * added test plugin from Andy Baxter
@@ -49,10 +55,11 @@ int plugin_init_test (void);
 #endif
 
 
-// used for testing bars - keeps values for a series of 10 bars,
-// which are incremented and decremented between 0 and rmax by
-// amount rdelta every time they are read. Starting value is rstart.
-// rbar gives the number of the test bar.
+/* used for testing bars - keeps values for a series of 10 bars,
+ * which are incremented and decremented between 0 and rmax by
+ * amount rdelta every time they are read. Starting value is rstart.
+ * rbar gives the number of the test bar. 
+ */
 static void my_test_bar (RESULT *result, RESULT *rbar, RESULT *rmax,
 			 RESULT *rstart, RESULT *rdelta)
 {
@@ -64,19 +71,19 @@ static void my_test_bar (RESULT *result, RESULT *rbar, RESULT *rmax,
   max=R2N(rmax);
   delta=R2N(rdelta);
 
-  // the maths is just to stop double rounding errors and bad values.
+  /* the maths is just to stop double rounding errors and bad values. */
   bar=((int)floor(R2N(rbar)+0.1)) % 10;
   if ( fabs(delta) > 0.1 ) {
-    // don't move or init the bar if delta=0 (the widget is only browsing)
+    /* don't move or init the bar if delta=0 (the widget is only browsing) */
     if (values[bar] == -1) {
-      // first time called.
+      /* first time called. */
       values[bar]=R2N(rstart);
       deltas[bar]=delta;
     };
     values[bar]+=deltas[bar];
   };
   if (values[bar] < 0 || values[bar] > max ) {
-    // turn around.
+    /* turn around. */
     deltas[bar]= -deltas[bar];
     values[bar]+= deltas[bar];
   };
@@ -85,8 +92,9 @@ static void my_test_bar (RESULT *result, RESULT *rbar, RESULT *rmax,
 }
 
 
-// like above, but just switches a value between 1 and -1. Can use to test
-// visibility of icons.
+/* like above, but just switches a value between 1 and -1. Can use to test
+ * visibility of icons. 
+ */
 static void my_test_onoff (RESULT *result, RESULT *arg1)
 {
   static int on[10] = {1,1,1,1,1,1,1,1,1,1};
@@ -112,5 +120,5 @@ int plugin_init_test (void)
 
 void plugin_exit_test(void)
 {
-  // empty
+  /* empty */
 }

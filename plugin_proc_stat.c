@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.21 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.22 2004/06/26 09:27:21 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.22  2004/06/26 09:27:21  reinelt
+ *
+ * added '-W' to CFLAGS
+ * changed all C++ comments to C ones ('//' => '/* */')
+ * cleaned up a lot of signed/unsigned mistakes
+ *
  * Revision 1.21  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -163,7 +169,7 @@ static int parse_proc_stat (void)
 {
   int age;
   
-  // reread every 10 msec only
+  /* reread every 10 msec only */
   age=hash_age(&Stat, NULL);
   if (age>0 && age<=10) return 0;
   
@@ -187,7 +193,7 @@ static int parse_proc_stat (void)
       
       cpu=buffer;
       
-      // skip "cpu" or "cpu0" block
+      /* skip "cpu" or "cpu0" block */
       if ((end=strpbrk(buffer, delim))!=NULL) *end='\0'; 
       beg=end?end+1:NULL;
       
