@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.20 2001/03/16 16:40:17 ltoetsch Exp $
+# $Id: README,v 1.21 2001/05/27 17:32:35 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -138,7 +138,6 @@ Data-specific options:
             displays a '!' instead of a blank if the current load average 
 	    exceeds this value. 
             load bars are scaled by this value (load=overload gives 100%)
-  fifo: path to fifo for communication with isdnlog (not yet implemented)
   sensor1: path to the 1st temperature file 
            (e.g. /proc/sys/dev/sensors/w83781d-isa-0290/temp1)
            it is important that you use the isa sensors, because the i2c 
@@ -179,6 +178,8 @@ Data-specific options:
      Note: user and pass may not contain a '/' with above syntax, I hope
            that's ok.
    
+  SetiDir: directory where seti@home stores its data files
+
  
 Driver-specific options:
   
@@ -215,51 +216,53 @@ Display options:
 
 Tokens:
 
-  'o',  operating system name ('Linux')
-  'v',  operating system release ('2.0.38')
-  'p',  processor ('i686')
-  'r',  total amount of memory installed (MB)
-  'mt', total memory from /proc/meminfo (kB)
-  'mu', used memory (kB)  
-  'mf', free memory (kB)
-  'ms', shared memory (kB)
-  'mb', buffers (kB)
-  'mc', page cache (kB)  
-  'ma', application memory (kB) = used - buffer - cache
-  'l1', load average for the past 1 minute
-  'l2', load average for the past 5 minutes
-  'l3', load average for the past 15 minutes
-  'L',  '!' if load > overload (from config)   
-  'cu', percentage of CPU in user mode
-  'cn', percentage of CPU in niced tasks
-  'cs', percentage of CPU in system mode
-  'cb', percentage of CPU busy (=100-idle)
-  'ci', percentage of CPU idle
-  'dr', disk blocks read
-  'dw', disk blocks written
-  'dt', disk blocks total (read+write)
-  'dm', disk blocks max (read, write)
-  'nr', network bytes received
-  'nw', network bytes transmitted
-  'nt', network bytes total (receive+transmit)
-  'nm', network bytes max (receive, transmit)
-  'ii', ISDN bytes received
-  'io', ISDN bytes sent
-  'it', ISDN bytes total (received+send)
-  'im', ISDN bytes max (received, send)
-  'ic', ISDN connected (0=offline, 1=online)
-  'ti', PPP bytes received
-  'to', PPP bytes sent
-  'tt', PPP bytes total (received+send)
-  'tm', PPP bytes max (received, send)
-  's1', temperature of sensor 1
-  's2', temperature of sensor 2 (up to s9)
-  'bp', battery percentage (APM by now)
-  'bs', battery status ('=' = online, '+' = charging, '-' discharging)
-  'bd', battery duration in s{econds}, m{ins}, h{ours} or d{ays}
-  'e*', mails in mailbox 1-9, total mail
-  'u*', mails in mailbox 1-9, unseen mail
-  'x*', output of command 1-9
+  'o'  operating system name ('Linux')
+  'v'  operating system release ('2.0.38')
+  'p'  processor ('i686')
+  'r'  total amount of memory installed (MB)
+  'mt' total memory from /proc/meminfo (kB)
+  'mu' used memory (kB)  
+  'mf' free memory (kB)
+  'ms' shared memory (kB)
+  'mb' buffers (kB)
+  'mc' page cache (kB)  
+  'ma' application memory (kB) = used - buffer - cache
+  'l1' load average for the past 1 minute
+  'l2' load average for the past 5 minutes
+  'l3' load average for the past 15 minutes
+  'L'  '!' if load > overload (from config)   
+  'cu' percentage of CPU in user mode
+  'cn' percentage of CPU in niced tasks
+  'cs' percentage of CPU in system mode
+  'cb' percentage of CPU busy (=100-idle)
+  'ci' percentage of CPU idle
+  'dr' disk blocks read
+  'dw' disk blocks written
+  'dt' disk blocks total (read+write)
+  'dm' disk blocks max (read, write)
+  'nr' network bytes received
+  'nw' network bytes transmitted
+  'nt' network bytes total (receive+transmit)
+  'nm' network bytes max (receive, transmit)
+  'ii' ISDN bytes received
+  'io' ISDN bytes sent
+  'it' ISDN bytes total (received+send)
+  'im' ISDN bytes max (received, send)
+  'ic' ISDN connected (0=offline, 1=online)
+  'ti' PPP bytes received
+  'to' PPP bytes sent
+  'tt' PPP bytes total (received+send)
+  'tm' PPP bytes max (received, send)
+  's1' temperature of sensor 1
+  's2' temperature of sensor 2 (up to s9)
+  'bp' battery percentage (APM by now)
+  'bs' battery status ('=' = online, '+' = charging, '-' discharging)
+  'bd' battery duration in s{econds}, m{ins}, h{ours} or d{ays}
+  'hc' seti@home % completed
+  'ht' seti@home time spent on workunit
+  'e*' mails in mailbox 1-9, total mail
+  'u*' mails in mailbox 1-9, unseen mail
+  'x*' output of command 1-9
   
 Please have a look at lcd4linux.conf.sample, where you can find examples
 of all options and there usage.
