@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.6 2000/03/18 10:31:06 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.7 2000/03/19 08:41:28 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.7  2000/03/19 08:41:28  reinelt
+ *
+ * documentation available! README, README.MatrixOrbital, README.Drivers
+ * added Skeleton.c as a starting point for new drivers
+ *
  * Revision 1.6  2000/03/18 10:31:06  reinelt
  *
  * added sensor handling (for temperature etc.)
@@ -69,7 +74,7 @@ int rows, cols, xres, yres, supported_bars;
 
 int token_usage[256]={0,};
 
-struct { int total, used, free, shared, buffer, cache, apps; } ram;
+struct { int total, used, free, shared, buffer, cache, avail; } ram;
 struct { double load1, load2, load3, overload; } load;
 struct { double user, nice, system, idle; } busy;
 struct { int read, write, total, max, peak; } disk;
@@ -90,7 +95,7 @@ static void collect_data (void)
   if (token_usage[C_MEM]) {
     Ram (&ram.total, &ram.free, &ram.shared, &ram.buffer, &ram.cache); 
     ram.used=ram.total-ram.free;
-    ram.apps=ram.used-ram.buffer-ram.cache;
+    ram.avail=ram.free+ram.buffer+ram.cache;
   }
   
   if (token_usage[C_LOAD]) {
@@ -145,8 +150,8 @@ static double query (int token)
     return ram.buffer;
   case T_MEM_CACHE:
     return ram.cache;
-  case T_MEM_APP:
-    return ram.apps;
+  case T_MEM_AVAIL:
+    return ram.avail;
 
   case T_LOAD_1:
     return load.load1;
@@ -220,7 +225,7 @@ static double query_bar (int token)
   case T_MEM_SHARED:
   case T_MEM_BUFFER:
   case T_MEM_CACHE:
-  case T_MEM_APP:
+  case T_MEM_AVAIL:
     return value/ram.total;
 
   case T_LOAD_1:
@@ -296,7 +301,7 @@ void print_token (int token, char **p)
   case T_MEM_SHARED:
   case T_MEM_BUFFER:
   case T_MEM_CACHE:
-  case T_MEM_APP:
+  case T_MEM_AVAIL:
     *p+=sprintf (*p, "%6.0f", query(token));
     break;
   case T_LOAD_1:

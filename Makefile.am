@@ -14,6 +14,7 @@ lcd4linux_SOURCES = \
 	isdn.c isdn.h \
 	filter.c filter.h \
 	display.c display.h \
+	Skeleton.c \
 	MatrixOrbital.c
 
 

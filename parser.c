@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.3 2000/03/18 10:31:06 reinelt Exp $
+/* $Id: parser.c,v 1.4 2000/03/19 08:41:28 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.4  2000/03/19 08:41:28  reinelt
+ *
+ * documentation available! README, README.MatrixOrbital, README.Drivers
+ * added Skeleton.c as a starting point for new drivers
+ *
  * Revision 1.3  2000/03/18 10:31:06  reinelt
  *
  * added sensor handling (for temperature etc.)
@@ -76,7 +81,7 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "ms", T_MEM_SHARED, C_MEM,     1 },
 			  { "mb", T_MEM_BUFFER, C_MEM,     1 },
 			  { "mc", T_MEM_CACHE,  C_MEM,     1 },
-			  { "ma", T_MEM_APP,    C_MEM,     1 },
+			  { "ma", T_MEM_AVAIL,  C_MEM,     1 },
 			  { "l1", T_LOAD_1,     C_LOAD,    1 },
 			  { "l2", T_LOAD_2,     C_LOAD,    1 },
 			  { "l3", T_LOAD_3,     C_LOAD,    1 },

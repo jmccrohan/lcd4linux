@@ -1,6 +1,6 @@
-/* $Id: MatrixOrbital.c,v 1.7 2000/03/18 08:07:04 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.8 2000/03/19 08:41:28 reinelt Exp $
  *
- *  driver for Matrix Orbital serial display modules
+ * driver for Matrix Orbital serial display modules
  *
  * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.8  2000/03/19 08:41:28  reinelt
+ *
+ * documentation available! README, README.MatrixOrbital, README.Drivers
+ * added Skeleton.c as a starting point for new drivers
+ *
  * Revision 1.7  2000/03/18 08:07:04  reinelt
  *
  * vertical bars implemented

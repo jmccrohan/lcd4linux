@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.3 2000/03/18 10:31:06 reinelt Exp $
+/* $Id: parser.h,v 1.4 2000/03/19 08:41:28 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.4  2000/03/19 08:41:28  reinelt
+ *
+ * documentation available! README, README.MatrixOrbital, README.Drivers
+ * added Skeleton.c as a starting point for new drivers
+ *
  * Revision 1.3  2000/03/18 10:31:06  reinelt
  *
  * added sensor handling (for temperature etc.)
@@ -45,7 +50,7 @@
 typedef enum {
   T_PERCENT=128, T_DOLLAR,
   T_OS, T_RELEASE, T_CPU, T_RAM,
-  T_MEM_TOTAL, T_MEM_USED, T_MEM_FREE, T_MEM_SHARED, T_MEM_BUFFER, T_MEM_CACHE, T_MEM_APP, 
+  T_MEM_TOTAL, T_MEM_USED, T_MEM_FREE, T_MEM_SHARED, T_MEM_BUFFER, T_MEM_CACHE, T_MEM_AVAIL, 
   T_LOAD_1, T_LOAD_2, T_LOAD_3, T_OVERLOAD, 
   T_CPU_USER, T_CPU_NICE, T_CPU_SYSTEM, T_CPU_BUSY, T_CPU_IDLE,
   T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,

@@ -26,6 +26,7 @@ Row4 "Net  %nm $R10nr+nw"
 Tick 100
 Tack 400
 Tau 500
+
 Overload 2.0
 
 Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp1
