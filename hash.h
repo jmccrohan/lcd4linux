@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.4 2004/01/16 11:12:26 reinelt Exp $
+/* $Id: hash.h,v 1.5 2004/01/18 09:01:45 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.5  2004/01/18 09:01:45  reinelt
+ * /proc/stat parsing finished
+ *
  * Revision 1.4  2004/01/16 11:12:26  reinelt
  * some bugs in plugin_xmms fixed, parsing moved to own function
  * plugin_proc_stat nearly finished
@@ -46,9 +49,21 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
+
+// struct timeval
+#include <sys/time.h>
+
+
 typedef struct {
-  char *key;
-  char *val;
+  struct timeval time;
+  double val;
+} HASH_SLOT;
+
+
+typedef struct {
+  char      *key;
+  char      *val;
+  HASH_SLOT *Slot;
 } HASH_ITEM;
 
 
@@ -59,19 +74,10 @@ typedef struct {
 } HASH;
 
 
-typedef struct {
-  // struct timeval time;
-  double val;
-} FILTER_SLOT;
-
-typedef struct {
-  char        *key;
-  int         nSlots;
-  FILTER_SLOT *Slots;
-} FILTER_ITEM;
-
-void  hash_set     (HASH *Hash, char *key, char *val);
-char *hash_get     (HASH *Hash, char *key);
-void  hash_destroy (HASH *Hash);
+void   hash_set        (HASH *Hash, char *key, char *val);
+void   hash_set_filter (HASH *Hash, char *key, char *val);
+char  *hash_get        (HASH *Hash, char *key);
+double hash_get_filter (HASH *Hash, char *key, int delay);
+void   hash_destroy    (HASH *Hash);
 
 #endif

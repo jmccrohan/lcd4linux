@@ -35,6 +35,17 @@ Widget RAM {
     update tick
 }
 
+Widget Busy {
+    class 'Text'
+    expression cpu('busy', 500)
+    prefix 'Busy '	
+    postfix '%'	
+    width 10	
+    precision 1
+    align 'R'	
+    update tick	
+}	
+
 Widget Load {
     class 'Text'
     expression loadavg(1)
@@ -56,6 +67,7 @@ Layout Default {
 	Col10 'RAM'
     }
     Row3 {
+	Col1 'Busy'
     }
     Row4 {
 	Col1 'Load'

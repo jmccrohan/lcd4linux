@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.1 2004/01/13 08:18:20 reinelt Exp $
+/* $Id: timer.c,v 1.2 2004/01/18 09:01:45 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.2  2004/01/18 09:01:45  reinelt
+ * /proc/stat parsing finished
+ *
  * Revision 1.1  2004/01/13 08:18:20  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -140,11 +143,6 @@ int timer_process (struct timespec *delay)
 	timer_inc (&Timers[i].when, Timers[i].interval);
       }
     }
-  }
-
-  if (flag) {
-    // Fixme: if at least one timer has been processed, do a flush()
-    
   }
 
   // find next timer

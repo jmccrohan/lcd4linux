@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.4 2004/01/18 06:54:08 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.5 2004/01/18 09:01:45 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.5  2004/01/18 09:01:45  reinelt
+ * /proc/stat parsing finished
+ *
  * Revision 1.4  2004/01/18 06:54:08  reinelt
  * bug in expr.c fixed (thanks to Xavier)
  * some progress with /proc/stat parsing
@@ -67,6 +70,7 @@
 
 static HASH Stat = { 0, 0, NULL };
 
+
 static int renew(int msec)
 {
   static struct timeval end = {0, 0};
@@ -89,12 +93,9 @@ static int renew(int msec)
 
 static void hash_set1 (char *key1, char *val) 
 {
-  double number;
-  
-  number=atof(val);
-  
-  hash_set (&Stat, key1, val);
+  hash_set_filter (&Stat, key1, val);
 }
+
 
 static void hash_set2 (char *key1, char *key2, char *val) 
 {
@@ -103,6 +104,7 @@ static void hash_set2 (char *key1, char *key2, char *val)
   snprintf (key, sizeof(key), "%s.%s", key1, key2);
   hash_set1 (key, val);
 }
+
 
 static void hash_set3 (char *key1, char *key2, char *key3, char *val) 
 {
@@ -120,8 +122,7 @@ static int parse_proc_stat (void)
   // update every 10 msec
   if (!renew(10)) return 0;
   
-  // stream=fopen("/proc/stat", "r");
-  stream=fopen("proc_stat", "r");
+  stream=fopen("/proc/stat", "r");
   if (stream==NULL) {
     error ("fopen(/proc/stat) failed: %s", strerror(errno));
     return -1;
@@ -191,26 +192,71 @@ static int parse_proc_stat (void)
   return 0;
 }
 
-static void my_proc_stat (RESULT *result, RESULT *arg1)
+
+static void my_proc_stat (RESULT *result, int argc, RESULT *argv[])
 {
-  char *key, *val;
-  
+  char  *string;
+  double number;
+
   if (parse_proc_stat()<0) {
     SetResult(&result, R_STRING, ""); 
     return;
   }
 
-  key=R2S(arg1);
-  val=hash_get(&Stat, key);
-  if (val==NULL) val="";
+  switch (argc) {
+  case 1:
+    string=hash_get(&Stat, R2S(argv[0]));
+    if (string==NULL) string="";
+    SetResult(&result, R_STRING, string); 
+    break;
+  case 2:
+    number=hash_get_filter(&Stat, R2S(argv[0]), R2N(argv[1]));
+    SetResult(&result, R_NUMBER, &number); 
+    break;
+  default:
+    error ("proc_stat(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
+}
 
-  SetResult(&result, R_STRING, val); 
+
+static void my_cpu (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  char *key;
+  int delay;
+  double value;
+  double cpu_user, cpu_nice, cpu_system, cpu_idle, cpu_total;
+  
+  if (parse_proc_stat()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+  
+  key   = R2S(arg1);
+  delay = R2N(arg2);
+  
+  cpu_user   = hash_get_filter(&Stat, "cpu.user",   delay);
+  cpu_nice   = hash_get_filter(&Stat, "cpu.nice",   delay);
+  cpu_system = hash_get_filter(&Stat, "cpu.system", delay);
+  cpu_idle   = hash_get_filter(&Stat, "cpu.idle",   delay);
+
+  cpu_total  = cpu_user+cpu_nice+cpu_system+cpu_idle;
+  
+  if      (strcasecmp(key, "user"  )==0) value=cpu_user;
+  else if (strcasecmp(key, "nice"  )==0) value=cpu_nice;
+  else if (strcasecmp(key, "system")==0) value=cpu_system;
+  else if (strcasecmp(key, "idle"  )==0) value=cpu_idle;
+  else if (strcasecmp(key, "busy"  )==0) value=cpu_total-cpu_idle;
+  
+  value = 100*value/cpu_total;
+  
+  SetResult(&result, R_NUMBER, &value); 
 }
 
 
 int plugin_init_proc_stat (void)
 {
-  AddFunction ("stat", 1, my_proc_stat);
+  AddFunction ("proc_stat", -1, my_proc_stat);
+  AddFunction ("cpu", 2, my_cpu);
   return 0;
 }
-
