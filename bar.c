@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.5 2003/08/19 04:28:41 reinelt Exp $
+/* $Id: bar.c,v 1.6 2003/08/20 05:26:43 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.6  2003/08/20 05:26:43  reinelt
+ * small bug in bar compaction fixed
+ *
  * Revision 1.5  2003/08/19 04:28:41  reinelt
  * more Icon stuff, minor glitches fixed
  *
@@ -249,18 +252,17 @@ static int segment_deviation (int i, int j)
 
   i1=Segment[i].len1; if (i1>RES) i1=RES;
   i2=Segment[i].len2; if (i2>RES) i2=RES;
-  j1=Segment[j].len1; if (j1>RES) i1=RES;
-  j2=Segment[j].len2; if (j2>RES) i2=RES;
+  j1=Segment[j].len1; if (j1>RES) j1=RES;
+  j2=Segment[j].len2; if (j2>RES) j2=RES;
   
   if (i1==0   && j1!=0)  return 65535;
   if (i2==0   && j2!=0)  return 65535;
-  if (i1>=RES && j1<RES) return 65535;
-  if (i2>=RES && j2<RES) return 65535;
+  if (i1==RES && j1<RES) return 65535;
+  if (i2==RES && j2<RES) return 65535;
+  if (i1==1   && j1!=1 && i2 > 0)  return 65535;
+  if (i2==1   && j2!=1 && j1 > 0)  return 65535;
   if (i1==i2  && j1!=j2) return 65535;
 
-  if (i1==1   && j1==0)  return 65535;
-  if (i2==1   && j2==0)  return 65535;
-  
   return (i1-j1)*(i1-j1)+(i2-j2)*(i2-j2);
 }
 
@@ -271,7 +273,7 @@ static void pack_segments (void)
   int pack_i, pack_j;
   int pass1=1;
   int deviation[nSegment][nSegment];
-  
+
   if (nSegment<=fSegment+CHARS) {
     return;
   }
