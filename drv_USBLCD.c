@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.20 2005/01/30 06:43:22 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.21 2005/04/02 05:28:58 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.21  2005/04/02 05:28:58  reinelt
+ * fixed gcc4 warnings about signed/unsigned mismatches
+ *
  * Revision 1.20  2005/01/30 06:43:22  reinelt
  * driver for LCD-Linux finished
  *
@@ -165,8 +168,8 @@ static char Name[] = "USBLCD";
 static char *Port = NULL;
 static int use_libusb = 0;
 static int usblcd_file;
-static unsigned char *Buffer;
-static unsigned char *BufPtr;
+static char *Buffer;
+static char *BufPtr;
 
 
 #ifdef HAVE_USB_H

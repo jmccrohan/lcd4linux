@@ -1,4 +1,4 @@
-/* $Id: drv_SimpleLCD.c,v 1.1 2005/02/24 07:06:48 reinelt Exp $
+/* $Id: drv_SimpleLCD.c,v 1.2 2005/04/02 05:28:58 reinelt Exp $
  * 
  * driver for a simple serial terminal.
  * This driver simply send out caracters on the serial port, without any 
@@ -40,6 +40,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_SimpleLCD.c,v $
+ * Revision 1.2  2005/04/02 05:28:58  reinelt
+ * fixed gcc4 warnings about signed/unsigned mismatches
+ *
  * Revision 1.1  2005/02/24 07:06:48  reinelt
  * SimpleLCD driver added
  *
@@ -123,12 +126,12 @@ static void drv_SL_write (const int row, const int col, const char *data, int le
 static int drv_SL_start (const char *section, const int quiet)
 {
   int rows=-1, cols=-1;
-  unsigned int flags=0;
+  int flags=0;
   char *s;
  
   cfg_number(section,"Options",0,0,0xffff,&flags);
  
-  if (drv_generic_serial_open(section, Name, flags) < 0) return -1;
+  if (drv_generic_serial_open(section, Name, (unsigned) flags) < 0) return -1;
 
   s=cfg_get(section, "Size", NULL);
   if (s==NULL || *s=='\0') {

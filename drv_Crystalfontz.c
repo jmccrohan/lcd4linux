@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.32 2005/03/23 12:23:35 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.33 2005/04/02 05:28:58 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.33  2005/04/02 05:28:58  reinelt
+ * fixed gcc4 warnings about signed/unsigned mismatches
+ *
  * Revision 1.32  2005/03/23 12:23:35  reinelt
  * fixed some signed/unsigned char mismatches in the Crystalfontz driver (ticket #12)
  *
@@ -321,22 +324,22 @@ static void drv_CF_process_packet (void)
 
 static int drv_CF_poll (void)
 {
-  unsigned char buffer[32];
-  
   /* read into RingBuffer */
   while (1) {
+    char buffer[32];
     int num, n;
     num = drv_generic_serial_poll(buffer, sizeof(buffer));
     if (num <= 0) break;
     /* put result into RingBuffer */
     for (n = 0; n < num; n++) {
-      RingBuffer[RingWPos++] = buffer[n];
+      RingBuffer[RingWPos++] = (unsigned char)buffer[n];
       if (RingWPos >= sizeof(RingBuffer)) RingWPos = 0;
     }
   }
   
   /* process RingBuffer */
   while (1) {
+    unsigned char buffer[32];
     int n, num, size;
     unsigned short crc;
     /* packet size */
@@ -395,11 +398,11 @@ static void drv_CF_send (const int cmd, int len, const unsigned char *data)
   
   if (len > Payload) {
     error ("%s: internal error: packet length %d exceeds payload size %d", Name, len, Payload);
-    len=sizeof(buffer)-1;
+    len = sizeof(buffer)-1;
   }
   
-  buffer[0]=cmd;
-  buffer[1]=len;
+  buffer[0] = cmd;
+  buffer[1] = len;
   memcpy (buffer+2, data, len);
   crc = CRC(buffer, len+2, 0xffff);
   buffer[len+2] = LSB(crc);
@@ -409,14 +412,14 @@ static void drv_CF_send (const int cmd, int len, const unsigned char *data)
   debug ("Tx Packet %d len=%d", buffer[0], buffer[1]);
 #endif
   
-  drv_generic_serial_write (buffer, len+4);
+  drv_generic_serial_write ((char*)buffer, len+4);
   
 }
 
 
 static void drv_CF_write1 (const int row, const int col, const char *data, const int len)
 {
-  unsigned char cmd[3]="\021xy"; /* set cursor position */
+  char cmd[3]="\021xy"; /* set cursor position */
   
   if (row==0 && col==0) {
     drv_generic_serial_write ("\001", 1); /* cursor home */
@@ -475,7 +478,7 @@ static void drv_CF_write3 (const int row, const int col, const char *data, const
 static void drv_CF_defchar1 (const int ascii, const unsigned char *matrix)
 {
   int i;
-  unsigned char cmd[10]="\031n"; /* set custom char bitmap */
+  char cmd[10]="\031n"; /* set custom char bitmap */
   
   /* user-defineable chars start at 128, but are defined at 0 */
   cmd[1]=(char)(ascii-CHAR0); 
@@ -506,7 +509,7 @@ static void drv_CF_defchar23 (const int ascii, const unsigned char *matrix)
 static int drv_CF_contrast (int contrast)
 {
   static unsigned char Contrast=0;
-  unsigned char buffer[2];
+  char buffer[2];
 
   /* -1 is used to query the current contrast */
   if (contrast == -1) return Contrast;
@@ -544,7 +547,7 @@ static int drv_CF_contrast (int contrast)
 static int drv_CF_backlight (int backlight)
 {
   static unsigned char Backlight=0;
-  unsigned char buffer[2];
+  char buffer[2];
 
   /* -1 is used to query the current backlight */
   if (backlight == -1) return Backlight;
@@ -563,7 +566,6 @@ static int drv_CF_backlight (int backlight)
 
   case 2:
   case 3:
-    buffer[0] = Backlight;
     drv_CF_send (14, 1, &Backlight);
     break;
   }
