@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.5 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.6 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.6  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.5  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -550,9 +554,9 @@ int cryfonflush() {
 }
 
 LCD Crystalfontz[] = {
-	{ "626", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
-	{ "636", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
-	{ "632", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
-	{ "634", 4, 20, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
-	{ NULL }
+  { "626",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
+  { "636",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
+  { "632",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
+  { "634",4,20,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
+  { NULL }
 };

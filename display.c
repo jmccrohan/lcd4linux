@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.21 2000/11/28 16:46:11 reinelt Exp $
+/* $Id: display.c,v 1.22 2001/02/13 09:00:13 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.22  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.21  2000/11/28 16:46:11  reinelt
  *
  * first try to support display of SIN router
@@ -136,6 +140,9 @@
  * int lcd_bar (int type, int row, int col, int max, int len1, int len2)
  *    draws a specified bar at row, col with len
  *
+ * int lcd_gpo (int num, int val)
+ *    sets GPO #num to val
+ *
  * int lcd_flush (void)
  *    flushes the framebuffer to the display
  *
@@ -251,6 +258,13 @@ int lcd_bar (int type, int row, int col, int max, int len1, int len2)
   }
   if (Lcd->put==NULL) return 0;
   return Lcd->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
+}
+
+int lcd_gpo (int num, int val)
+{
+  if (num<1 || num>Lcd->gpos) return -1;
+  if (Lcd->gpo==NULL) return 0;
+  return Lcd->gpo(num-1, val);
 }
 
 int lcd_flush (void)

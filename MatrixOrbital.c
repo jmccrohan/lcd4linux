@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.19 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.20 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.20  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.19  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -536,6 +540,11 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
+int MO_gpo (int num, int val)
+{
+  return 0;
+}
+
 int MO_flush (void)
 {
   char buffer[256]="\376G";
@@ -581,10 +590,10 @@ int MO_quit (void)
 }
 
 LCD MatrixOrbital[] = {
-  { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
-  { "LCD1621", 2, 16, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
-  { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
-  { "LCD2041", 4, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
-  { "LCD4021", 2, 40, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit }, 
+  { "LCD0821",2, 8,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD1621",2,16,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD2021",2,20,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD2041",4,20,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD4021",2,40,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
   { NULL }
 };

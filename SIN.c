@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.5 2000/12/07 20:47:54 reinelt Exp $
+/* $Id: SIN.c,v 1.6 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.6  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.5  2000/12/07 20:47:54  reinelt
  *
  * first try for SIN bars
@@ -255,6 +259,6 @@ int SIN_quit (void)
 }
 
 LCD SIN[] = {
-  { "SIN", 8, 40, XRES, YRES, BARS, SIN_init, SIN_clear, SIN_put, SIN_bar, SIN_flush, SIN_quit },
+  { "SIN",8,40,XRES,YRES,BARS,0,SIN_init,SIN_clear,SIN_put,SIN_bar,NULL,SIN_flush,SIN_quit },
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.5 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: Skeleton.c,v 1.6 2001/02/13 09:00:13 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.6  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.5  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -90,6 +94,11 @@ int Skel_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
+int Skel_gpo (int num, int val)
+{
+  return 0;
+}
+
 int Skel_flush (void)
 {
   return 0;
@@ -97,6 +106,6 @@ int Skel_flush (void)
 
 
 LCD Skeleton[] = {
-  { "Skeleton", 4, 20, 5, 8, BAR_L | BAR_R, Skel_init, Skel_clear, Skel_put, Skel_bar, Skel_flush },
+  { "Skeleton",4,20,5,8,BAR_L|BAR_R,0,Skel_init,Skel_clear,Skel_put,Skel_bar,Skel_gpo,Skel_flush },
   { NULL }
 };

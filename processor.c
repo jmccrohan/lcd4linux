@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.9 2001/02/11 23:34:07 reinelt Exp $
+/* $Id: processor.c,v 1.10 2001/02/13 09:00:13 reinelt Exp $
  *
  * main data processing
  *
@@ -20,12 +20,15 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.10  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.9  2001/02/11 23:34:07  reinelt
  *
- *
- * fixed a small bug where the throughput of an offline ISDN connection is displayed as '----', but the
- * online value is 5 chars long. corrected to ' ----'.
- * thanks to Carsten Nau <info@cnau.de>
+ * fixed a small bug where the throughput of an offline ISDN connection 
+ * is displayed as '----', but the online value is 5 chars long. 
+ * corrected to ' ----'. Thanks to Carsten Nau <info@cnau.de> 
  *
  * Revision 1.8  2000/08/10 09:44:09  reinelt
  *

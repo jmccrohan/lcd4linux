@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.3 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.4 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.4  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.3  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -284,6 +288,6 @@ int Palm_quit (void)
 }
 
 LCD PalmPilot[] = {
-  { "PalmPilot", 0, 0, 0, 0, BARS, Palm_init, Palm_clear, Palm_put, Palm_bar, Palm_flush, Palm_quit },
+  { "PalmPilot",0,0,0,0,BARS,0,Palm_init,Palm_clear,Palm_put,Palm_bar,NULL,Palm_flush,Palm_quit },
   { NULL }
 };

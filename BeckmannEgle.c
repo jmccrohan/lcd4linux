@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.4 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.5 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.5  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.4  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -542,6 +546,6 @@ int BE_quit (void)
 }
 
 LCD BeckmannEgle[] = {
-  { "BLC100x", 0,  0, XRES, YRES, BARS, BE_init, BE_clear, BE_put, BE_bar, BE_flush, BE_quit },
+  { "BLC100x",0,0,XRES,YRES,BARS,0,BE_init,BE_clear,BE_put,BE_bar,NULL,BE_flush,BE_quit },
   { NULL }
 };

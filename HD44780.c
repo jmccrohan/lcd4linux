@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.9 2000/10/20 07:17:07 reinelt Exp $
+/* $Id: HD44780.c,v 1.10 2001/02/13 09:00:13 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.10  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.9  2000/10/20 07:17:07  reinelt
  *
  *
@@ -540,6 +544,6 @@ int HD_quit (void)
 }
 
 LCD HD44780[] = {
-  { "HD44780", 0, 0, XRES, YRES, BARS, HD_init, HD_clear, HD_put, HD_bar, HD_flush, HD_quit },
+  { "HD44780",0,0,XRES,YRES,BARS,0,HD_init,HD_clear,HD_put,HD_bar,HD_gpo,HD_flush,HD_quit },
   { NULL }
 };

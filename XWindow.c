@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.21 2000/08/10 18:42:20 reinelt Exp $
+/* $Id: XWindow.c,v 1.22 2001/02/13 09:00:13 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.22  2001/02/13 09:00:13  reinelt
+ *
+ * prepared framework for GPO's (general purpose outputs)
+ *
  * Revision 1.21  2000/08/10 18:42:20  reinelt
  *
  * fixed some bugs with the new syslog code
@@ -507,7 +511,7 @@ XEvent ev;
 }
 
 LCD XWindow[] = {
-	{ "X11", 0, 0, 0, 0, BARS, xlcdinit, xlcdclear, xlcdput, xlcdbar, xlcdflush, xlcdquit },
+	{ "X11",0,0,0,0,BARS,0,xlcdinit,xlcdclear,xlcdput,xlcdbar,NULL,xlcdflush,xlcdquit },
 	{ NULL }
 };
 
