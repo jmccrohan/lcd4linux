@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.15 2005/04/01 05:16:04 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.16 2005/04/04 20:11:14 nicowallmeier Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.16  2005/04/04 20:11:14  nicowallmeier
+ * to be compatible with gcc 2.95
+ *
  * Revision 1.15  2005/04/01 05:16:04  reinelt
  * moved plugin init stuff to a seperate function called on first use
  *
@@ -426,6 +429,7 @@ static int configure_imon (void)
 static void my_imon_version (RESULT *result)
 {
   char *val;
+  int age;
 
   if (configure_imon() < 0) {
     SetResult(&result, R_STRING, ""); 
@@ -433,7 +437,7 @@ static void my_imon_version (RESULT *result)
   }
 
   /* read only once */
-  int age=hash_age(&IMON, "version");
+  age=hash_age(&IMON, "version");
   if (age<0){
     char *s;
     init();
