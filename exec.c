@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.6 2001/03/15 09:13:22 ltoetsch Exp $
+/* $Id: exec.c,v 1.7 2002/04/29 11:00:28 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.7  2002/04/29 11:00:28  reinelt
+ *
+ * added Toshiba T6963 driver
+ * added ndelay() with nanosecond resolution
+ *
  * Revision 1.6  2001/03/15 09:13:22  ltoetsch
  * delay first exec for faster start
  *
@@ -95,8 +100,10 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     else {
       sprintf(xn, "Delay_x%d", index);
       /* delay in Delay_x* sec ? */
-      if (time(NULL) <= now[index] + atoi(cfg_get(xn)?:"1"))
+      debug ("%s=%s",xn,cfg_get(xn));
+      if (time(NULL) <= now[index] + atoi(cfg_get(xn)?:"1")) {
         return 0;
+      }
     }
   }
   time(&now[index]); 

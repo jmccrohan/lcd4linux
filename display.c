@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.29 2001/09/10 13:55:53 reinelt Exp $
+/* $Id: display.c,v 1.30 2002/04/29 11:00:28 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.30  2002/04/29 11:00:28  reinelt
+ *
+ * added Toshiba T6963 driver
+ * added ndelay() with nanosecond resolution
+ *
  * Revision 1.29  2001/09/10 13:55:53  reinelt
  * M50530 driver
  *
@@ -188,6 +193,7 @@ extern LCD BeckmannEgle[];
 extern LCD Crystalfontz[];
 extern LCD HD44780[];
 extern LCD M50530[];
+extern LCD T6963[];
 extern LCD MatrixOrbital[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
@@ -208,6 +214,9 @@ FAMILY Driver[] = {
 #endif
 #ifdef WITH_M50530
   { "M50530 based", M50530 },
+#endif
+#ifdef WITH_T6963
+  { "T6963 based", T6963 },
 #endif
 #ifdef WITH_MATRIXORBITAL
   { "Matrix Orbital", MatrixOrbital },

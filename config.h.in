@@ -1,41 +1,4 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
-
-/* Define to empty if the keyword does not work.  */
-#undef const
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef gid_t
-
-/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
-#undef HAVE_SYS_WAIT_H
-
-/* Define as __inline if that's what the C compiler calls it.  */
-#undef inline
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef pid_t
-
-/* Define as the return type of signal handlers (int or void).  */
-#undef RETSIGTYPE
-
-/* Define to `unsigned' if <sys/types.h> doesn't define.  */
-#undef size_t
-
-/* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
-
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
-
-/* Define if your <sys/time.h> declares struct tm.  */
-#undef TM_IN_SYS_TIME
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef uid_t
-
-/* Define if the X Window System is missing or not being used.  */
-#undef X_DISPLAY_MISSING
-
 /* Define if you want the Beckmann&Egle driver compiled */
 #undef WITH_BECKMANNEGLE
 
@@ -47,6 +10,9 @@
 
 /* Define if you want the M50530 driver compiled */
 #undef WITH_M50530
+
+/* Define if you want the T6963 driver compiled */
+#undef WITH_T6963
 
 /* Define if you want the Matrix Orbital driver compiled */
 #undef WITH_MATRIXORBITAL
@@ -75,10 +41,12 @@
 /*=== Curses version detection defines ===*/
 /* Found some version of curses that we're going to use */
 #undef HAS_CURSES
-
    
 /* Use SunOS SysV curses? */
 #undef USE_SUNOS_CURSES
+
+/* Use old BSD curses - not used right now */
+#undef USE_BSD_CURSES
 
 /* Use SystemV curses? */
 #undef USE_SYSV_CURSES
@@ -98,96 +66,153 @@
  *   2 = version 4.0/4.1 */
 #undef NCURSES_970530
 
-/* Define if you have the gettimeofday function.  */
-#undef HAVE_GETTIMEOFDAY
-
-/* Define if you have the putenv function.  */
-#undef HAVE_PUTENV
-
-/* Define if you have the select function.  */
-#undef HAVE_SELECT
-
-/* Define if you have the socket function.  */
-#undef HAVE_SOCKET
-
-/* Define if you have the strdup function.  */
-#undef HAVE_STRDUP
-
-/* Define if you have the strerror function.  */
-#undef HAVE_STRERROR
-
-/* Define if you have the strstr function.  */
-#undef HAVE_STRSTR
-
-/* Define if you have the strtol function.  */
-#undef HAVE_STRTOL
-
-/* Define if you have the uname function.  */
-#undef HAVE_UNAME
-
-/* Define if you have the <asm/io.h> header file.  */
+/* Define if you have the <asm/io.h> header file. */
 #undef HAVE_ASM_IO_H
 
-/* Define if you have the <asm/msr.h> header file.  */
+/* Define if you have the <asm/msr.h> header file. */
 #undef HAVE_ASM_MSR_H
 
-/* Define if you have the <dirent.h> header file.  */
+/* Define if you have the <dirent.h> header file, and it defines `DIR'. */
 #undef HAVE_DIRENT_H
 
-/* Define if you have the <fcntl.h> header file.  */
+/* Define if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define if you have the <gd.h> header file.  */
-#undef HAVE_GD_H
-
-/* Define if you have the <gd/gd.h> header file.  */
+/* Define if you have the <gd/gd.h> header file. */
 #undef HAVE_GD_GD_H
 
-/* Define if you have the <limits.h> header file.  */
+/* Define if you have the <gd.h> header file. */
+#undef HAVE_GD_H
+
+/* Define if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
-/* Define if you have the <linux/parport.h> header file.  */
+/* Define if you have the <linux/parport.h> header file. */
 #undef HAVE_LINUX_PARPORT_H
 
-/* Define if you have the <linux/ppdev.h> header file.  */
+/* Define if you have the <linux/ppdev.h> header file. */
 #undef HAVE_LINUX_PPDEV_H
 
-/* Define if you have the <ndir.h> header file.  */
+/* Define if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
 
-/* Define if you have the <net/if_ppp.h> header file.  */
+/* Define if you have the <net/if_ppp.h> header file. */
 #undef HAVE_NET_IF_PPP_H
 
-/* Define if you have the <strings.h> header file.  */
+/* Define if you have the `putenv' function. */
+#undef HAVE_PUTENV
+
+/* Define if you have the `select' function. */
+#undef HAVE_SELECT
+
+/* Define if you have the `socket' function. */
+#undef HAVE_SOCKET
+
+/* Define if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
-/* Define if you have the <sys/dir.h> header file.  */
-#undef HAVE_SYS_DIR_H
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
 
-/* Define if you have the <sys/io.h> header file.  */
-#undef HAVE_SYS_IO_H
+/* Define if you have the `strstr' function. */
+#undef HAVE_STRSTR
 
-/* Define if you have the <sys/ioctl.h> header file.  */
-#undef HAVE_SYS_IOCTL_H
+/* Define if you have the `strtol' function. */
+#undef HAVE_STRTOL
 
-/* Define if you have the <sys/ndir.h> header file.  */
-#undef HAVE_SYS_NDIR_H
-
-/* Define if you have the <sys/time.h> header file.  */
-#undef HAVE_SYS_TIME_H
-
-/* Define if you have the <syslog.h> header file.  */
+/* Define if you have the <syslog.h> header file. */
 #undef HAVE_SYSLOG_H
 
-/* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H
+/* Define if you have the <sys/dir.h> header file, and it defines `DIR'. */
+#undef HAVE_SYS_DIR_H
 
-/* Define if you have the m library (-lm).  */
-#undef HAVE_LIBM
+/* Define if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define if you have the <sys/io.h> header file. */
+#undef HAVE_SYS_IO_H
+
+/* Define if you have the <sys/ndir.h> header file, and it defines `DIR'. */
+#undef HAVE_SYS_NDIR_H
+
+/* Define if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define if you have the `uname' function. */
+#undef HAVE_UNAME
+
+/* Define if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
 
 /* Name of package */
 #undef PACKAGE
 
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* Define if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
+
 /* Version number of package */
 #undef VERSION
 
+/* Define if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef gid_t
+
+/* Define as `__inline' if that's what the C compiler calls it, or to nothing
+   if it is not supported. */
+#undef inline
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to `unsigned' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef uid_t

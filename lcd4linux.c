@@ -1,8 +1,8 @@
-/* $Id: lcd4linux.c,v 1.33 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.34 2002/04/29 11:00:28 reinelt Exp $
  *
  * LCD4Linux
  *
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999-2002 by Michael Reinelt (reinelt@eunet.at)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.34  2002/04/29 11:00:28  reinelt
+ *
+ * added Toshiba T6963 driver
+ * added ndelay() with nanosecond resolution
+ *
  * Revision 1.33  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -196,7 +201,7 @@
 #include "display.h"
 #include "processor.h"
 
-char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
+char *release="LCD4Linux " VERSION " (c) 2002 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
 char *output=NULL;
 int got_signal=0;
@@ -224,7 +229,7 @@ int hello (void)
 		    "L4Linux",
 		    NULL };
   
-  char *line2[] = { "(c) 2000 M.Reinelt",
+  char *line2[] = { "(c) 2002 M.Reinelt",
 		    "(c) M.Reinelt",
 		    NULL };
   

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.6 2001/08/08 05:40:24 reinelt Exp $
+/* $Id: udelay.c,v 1.7 2002/04/29 11:00:28 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.7  2002/04/29 11:00:28  reinelt
+ *
+ * added Toshiba T6963 driver
+ * added ndelay() with nanosecond resolution
+ *
  * Revision 1.6  2001/08/08 05:40:24  reinelt
  *
  * renamed CLK_TCK to CLOCKS_PER_SEC
@@ -102,9 +107,9 @@
 
 unsigned long loops_per_usec;
 
-void udelay (unsigned long usec)
+void ndelay (unsigned long nsec)
 {
-  unsigned long loop=usec*loops_per_usec;
+  unsigned long loop=(nsec*loops_per_usec+999)/1000;
   
   __asm__ (".align 16\n"
 	   "1:\tdecl %0\n"
@@ -112,7 +117,6 @@ void udelay (unsigned long usec)
 	   : /* no result */ 
 	   :"a" (loop));
 }
-
 
 /* adopted from /usr/src/linux/init/main.c */
 
@@ -126,7 +130,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLOCKS_PER_SEC);
+    ndelay(1000000000/CLOCKS_PER_SEC);
     if (clock()>tick)
       break;
   }
@@ -138,7 +142,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLOCKS_PER_SEC);
+    ndelay(1000000000/CLOCKS_PER_SEC);
     if (clock()>tick)
       loops_per_usec&=~bit;
   }
@@ -223,31 +227,33 @@ void udelay_init (void)
   
 }
 
-void udelay (unsigned long usec)
+void ndelay (unsigned long nsec)
 {
   if (ticks_per_usec) {
 
     unsigned int t1, t2;
     
-    usec*=ticks_per_usec;
+    nsec=(nsec*ticks_per_usec+999)/1000;
 
     rdtscl(t1);
     do {
+      rep_nop();
       rdtscl(t2);
-    } while ((t2-t1)<usec);
+    } while ((t2-t1)<nsec);
     
   } else {
 
     struct timeval now, end;
     
     gettimeofday (&end, NULL);
-    end.tv_usec+=usec;
+    end.tv_usec+=(nsec+999)/1000;
     while (end.tv_usec>1000000) {
       end.tv_usec-=1000000;
       end.tv_sec++;
     }
     
     do {
+      rep_nop();
       gettimeofday(&now, NULL);
     } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
   }

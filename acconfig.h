@@ -10,6 +10,9 @@
 /* Define if you want the M50530 driver compiled */
 #undef WITH_M50530
 
+/* Define if you want the T6963 driver compiled */
+#undef WITH_T6963
+
 /* Define if you want the Matrix Orbital driver compiled */
 #undef WITH_MATRIXORBITAL
 

@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.22 2001/09/05 09:38:52 reinelt Exp $
+# $Id: README,v 1.23 2002/04/29 11:00:26 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -80,6 +80,13 @@ SUPPORTED DISPLAYS
 
   I got a real cool display (8 lines by 24 characters!) from 
   Udo Altmann (udo.altmann@web.de) Thanks again!
+  Unfortunately, the driver is not finished yet.
+
+
+* Toshiba T6963
+
+  I got another real cool display (240x128 pixel!) from 
+  Carsten Nau (info@cnau.de). Thanks again!
   Unfortunately, the driver is not finished yet.
 
 

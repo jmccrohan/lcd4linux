@@ -120,3 +120,7 @@ do not disable mail check in first error
 instead use a number of retries
 errors can occur in case of short disconnects, but normal operation 
 should resume 
+
+2002-02-15 Udo Altmann (udo.altmann@web.de)
+support for inversed/blinking text
+don't know if displays support this feature...

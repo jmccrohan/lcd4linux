@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.3 2001/03/12 13:44:58 reinelt Exp $
+/* $Id: udelay.h,v 1.4 2002/04/29 11:00:28 reinelt Exp $
  *
  * short delays 
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.4  2002/04/29 11:00:28  reinelt
+ *
+ * added Toshiba T6963 driver
+ * added ndelay() with nanosecond resolution
+ *
  * Revision 1.3  2001/03/12 13:44:58  reinelt
  *
  * new udelay() using Time Stamp Counters
@@ -41,17 +46,27 @@
 #ifndef _UDELAY_H_
 #define _UDELAY_H_
 
+/* stolen from linux/asm-i386/processor.h */
+/* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
+static inline void rep_nop(void)
+{
+  __asm__ __volatile__("rep;nop");
+}
+
+
 #ifdef USE_OLD_UDELAY
 
 extern unsigned long loops_per_usec;
-
-void udelay (unsigned long usec);
 void udelay_calibrate (void);
 
 #else
 
 void udelay_init (void);
-void udelay (unsigned long usec);
 
 #endif
+
+void ndelay (unsigned long nsec);
+
+#define udelay(usec) ndelay(usec*1000)
+
 #endif
