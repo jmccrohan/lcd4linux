@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.5 2001/03/12 13:44:58 reinelt Exp $
+/* $Id: udelay.c,v 1.6 2001/08/08 05:40:24 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.6  2001/08/08 05:40:24  reinelt
+ *
+ * renamed CLK_TCK to CLOCKS_PER_SEC
+ *
  * Revision 1.5  2001/03/12 13:44:58  reinelt
  *
  * new udelay() using Time Stamp Counters
@@ -122,7 +126,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLK_TCK);
+    udelay(1000000/CLOCKS_PER_SEC);
     if (clock()>tick)
       break;
   }
@@ -134,7 +138,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLK_TCK);
+    udelay(1000000/CLOCKS_PER_SEC);
     if (clock()>tick)
       loops_per_usec&=~bit;
   }
