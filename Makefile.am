@@ -27,6 +27,7 @@ lock.c 	      lock.h        \
 pid.c         pid.h         \
 timer.c       timer.h       \
 udelay.c      udelay.h      \
+qprintf.c     qprintf.h     \
                             \
 widget.c      widget.h      \
 widget_text.c widget_text.h \

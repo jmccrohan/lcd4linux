@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.63 2004/02/10 07:42:35 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.64 2004/02/27 07:06:25 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.64  2004/02/27 07:06:25  reinelt
+ * new function 'qprintf()' (simple but quick snprintf() replacement)
+ *
  * Revision 1.63  2004/02/10 07:42:35  reinelt
  * cut off all old-style files which are no longer used with NextGeneration
  *
@@ -318,6 +321,8 @@
 #include "layout.h"
 #include "plugin.h"
 
+#include "qprintf.h"
+
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -396,6 +401,7 @@ int main (int argc, char *argv[])
   int quiet=0;
   int interactive=0;
   
+
   // save arguments for restart
   my_argv=malloc(sizeof(char*)*(argc+1));
   for (c=0; c<argc; c++) {
