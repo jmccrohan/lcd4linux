@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.15 2001/03/02 10:18:03 ltoetsch Exp $
+/* $Id: Raster.c,v 1.16 2001/03/02 17:18:52 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.16  2001/03/02 17:18:52  reinelt
+ *
+ * let configure find gd.h
+ *
  * Revision 1.15  2001/03/02 10:18:03  ltoetsch
  * added /proc/apm battery stat
  *
@@ -105,8 +109,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef WITH_PNG
-/* #include <gd/gd.h> */
+#ifdef HAVE_GD_GD_H
+#include <gd/gd.h>
+#else
+#ifdef HAVE_GD_H
 #include <gd.h>
+#else
+#error "gd.h not found!"
+#endif
+#endif
 #endif
 
 #include "debug.h"
