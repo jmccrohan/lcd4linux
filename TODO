@@ -61,3 +61,6 @@ There's a reason for forking that early, but I forgot...
 
 2001-03-12 Michael Reinelt <reinelt@eunet.at>
 remove USE_OLD_UDELAY after wide testing of new udelay code
+
+2001-03-12 Michael Reinelt <reinelt@eunet.at>
+create a NEWS file with changes/enhancements of every release

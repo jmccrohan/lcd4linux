@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.13 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: HD44780.c,v 1.14 2001/03/12 13:44:58 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.14  2001/03/12 13:44:58  reinelt
+ *
+ * new udelay() using Time Stamp Counters
+ *
  * Revision 1.13  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -439,6 +443,10 @@ int HD_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
+#ifndef USE_OLD_UDELAY
+  udelay_init();
+#endif
+
   if (HD_open()!=0)
     return -1;
   

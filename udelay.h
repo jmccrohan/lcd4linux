@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.2 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: udelay.h,v 1.3 2001/03/12 13:44:58 reinelt Exp $
  *
  * short delays 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.3  2001/03/12 13:44:58  reinelt
+ *
+ * new udelay() using Time Stamp Counters
+ *
  * Revision 1.2  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -46,6 +50,7 @@ void udelay_calibrate (void);
 
 #else
 
+void udelay_init (void);
 void udelay (unsigned long usec);
 
 #endif

@@ -3,10 +3,10 @@
 #Speed 19200
 #Contrast 160
 
-#Display HD44780
-#Port 0x378
-#Size 24x2
-#Delay 503
+Display HD44780
+Port 0x278
+Size 24x2
+Delay 503
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -31,15 +31,15 @@
 #halfground \#70c000
 #background \#80d000
 
-Display PNG
-size 20x4
-font 5x8
-pixel 2+0
-gap -1x-1
-border 5
-foreground \#102000
-halfground \#70c000
-background \#80d000
+#Display PNG
+#size 20x4
+#font 5x8
+#pixel 2+0
+#gap -1x-1
+#border 5
+#foreground \#102000
+#halfground \#70c000
+#background \#80d000
 
 #Display X11
 #size 20x5

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.4 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: udelay.c,v 1.5 2001/03/12 13:44:58 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.5  2001/03/12 13:44:58  reinelt
+ *
+ * new udelay() using Time Stamp Counters
+ *
  * Revision 1.4  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -52,23 +56,42 @@
  *  This function does busy-waiting! so use only for delays smaller
  *  than 10 msec
  *
- * void udelay_calibrate (void)
+ * void udelay_calibrate (void) (if USE_OLD_UDELAY is defined)
  *   does a binary approximation for 'loops_per_usec'
  *   should be called several times on an otherwise idle machine
  *   the maximum value should be used
  *
+ * void udelay_init (void)
+ *   selects delay method (gettimeofday() ord rdtsc() according
+ *   to processor features
+ *
  */
 
+#include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
 
+
 #ifdef USE_OLD_UDELAY
+
 #include <time.h>
+
 #else
-#include <sys/time.h>
+
+#include <math.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/time.h>
+#ifdef HAVE_ASM_MSR_H
+#include <asm/msr.h>
 #endif
 
+#endif
+
+
+#include "debug.h"
 #include "udelay.h"
 
 #ifdef USE_OLD_UDELAY
@@ -119,20 +142,111 @@ void udelay_calibrate (void)
 
 #else
 
-void udelay (unsigned long usec)
+static unsigned int ticks_per_usec=0;
+
+static void getCPUinfo (int *hasTSC, double *MHz)
 {
-  struct timeval now, end;
+  int fd;
+  char buffer[4096], *p;
   
-  gettimeofday (&end, NULL);
-  end.tv_usec+=usec;
-  while (end.tv_usec>1000000) {
-    end.tv_usec-=1000000;
-    end.tv_sec++;
+  *hasTSC=0;
+  *MHz=-1;
+  
+  fd=open("/proc/cpuinfo", O_RDONLY);
+  if (fd==-1) {
+    error ("open(/proc/cpuinfo) failed: %s", strerror(errno));
+    return;
+  }
+  if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
+    error ("read(/proc/cpuinfo) failed: %s", strerror(errno));
+    close (fd);
+    return;
+  }
+  close (fd);
+
+  p=strstr(buffer, "flags");
+  if (p==NULL) {
+    debug ("/proc/cpuinfo has no 'flags' line");
+  } else {
+    p=strstr(p, "tsc");
+    if (p==NULL) {
+      debug ("CPU does not support Time Stamp Counter");
+    } else {
+      debug ("CPU supports Time Stamp Counter");
+      *hasTSC=1;
+    }
   }
   
-  do {
-    gettimeofday(&now, NULL);
-  } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
+  p=strstr(buffer, "cpu MHz");
+  if (p==NULL) {
+    debug ("/proc/cpuinfo has no 'cpu MHz' line");
+  } else {
+    if (sscanf(p+7, " : %lf", MHz)!=1) {
+      error ("parse(/proc/cpuinfo) failed: unknown 'cpu MHz' format");
+      *MHz=-1;
+    } else {
+      debug ("CPU runs at %f MHz", *MHz);
+    }
+  }
+
+}
+
+
+void udelay_init (void)
+{
+
+#ifdef HAVE_ASM_MSR_H
+  
+  int tsc;
+  double mhz;
+  
+  getCPUinfo (&tsc, &mhz);
+  
+  if (tsc && mhz>0.0) {
+    ticks_per_usec=ceil(mhz);
+    debug ("using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
+  } else {
+    ticks_per_usec=0;
+    debug ("using gettimeofday() delay loop");
+  }
+
+#else
+  
+  debug ("lcd4linux has been compiled without asm/msr.h");
+  debug ("using gettimeofday() delay loop");
+  
+#endif
+  
+}
+
+void udelay (unsigned long usec)
+{
+  if (ticks_per_usec) {
+
+    unsigned int t1, t2;
+    
+    usec*=ticks_per_usec;
+
+    rdtscl(t1);
+    do {
+      rdtscl(t2);
+    } while ((t2-t1)<usec);
+    
+  } else {
+
+    struct timeval now, end;
+    
+    gettimeofday (&end, NULL);
+    end.tv_usec+=usec;
+    while (end.tv_usec>1000000) {
+      end.tv_usec-=1000000;
+      end.tv_sec++;
+    }
+    
+    do {
+      gettimeofday(&now, NULL);
+    } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
+  }
 }
 
 #endif

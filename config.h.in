@@ -99,6 +99,9 @@
 /* Define if you have the <asm/io.h> header file.  */
 #undef HAVE_ASM_IO_H
 
+/* Define if you have the <asm/msr.h> header file.  */
+#undef HAVE_ASM_MSR_H
+
 /* Define if you have the <dirent.h> header file.  */
 #undef HAVE_DIRENT_H
 
