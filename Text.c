@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.6 2002/08/30 03:54:01 reinelt Exp $
+/* $Id: Text.c,v 1.7 2003/02/17 04:27:58 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.7  2003/02/17 04:27:58  reinelt
+ * Text (curses) driver: cosmetic changes
+ *
  * Revision 1.6  2002/08/30 03:54:01  reinelt
  * bug in curses driver fixed
  *
@@ -57,6 +60,7 @@
 
 #define min(x,y) (x)<(y)?x:y
 
+
 #ifdef STANDALONE
 
 int main(int argc, char *argv[]) 
@@ -86,10 +90,9 @@ int main(int argc, char *argv[])
 extern int foreground;
 
 static LCD Lcd;
-static WINDOW *w;
-WINDOW *err_win;
-#define BARS ( BAR_R | BAR_H2 | BAR_T )
-int err_rows;
+static WINDOW *w, *err_win;
+static int err_rows;
+
 
 int Text_clear (void)
 {
@@ -98,10 +101,12 @@ int Text_clear (void)
   return 0;
 }
 
+
 int Text_quit(void) {
   endwin();
   return 0;
 }
+
 
 int Text_init (LCD *Self)
 {
@@ -144,6 +149,7 @@ int Text_init (LCD *Self)
   return w ? 0 : -1;
 }
 
+
 /* ncures scroll SIGSEGVs on my system, so this is a workaroud */
 
 int curs_err(char *buffer) 
@@ -180,16 +186,20 @@ int curs_err(char *buffer)
   return 0;
 }
 
+
 int Text_put (int row, int col, char *text)
 {
   char *p;
   
-  if ((p = strpbrk(text, "\r\n")) != NULL)
+  while ((p = strpbrk(text, "\r\n")) != NULL) {
     *p='\0';
-  if (col < Lcd.cols)
+  }
+  if (col < Lcd.cols) {
     mvwprintw(w, row+1 , col+1, "%.*s", Lcd.cols-col, text);
+  }
   return 0;
 }
+
 
 int Text_bar (int type, int row, int col, int max, int len1, int len2)
 {
@@ -218,10 +228,6 @@ int Text_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
-int Text_gpo (int num, int val)
-{
-  return 0;
-}
 
 int Text_flush (void)
 {
@@ -232,8 +238,21 @@ int Text_flush (void)
 
 
 LCD Text[] = {
-  { "Text",4,20,1,1,BARS,0,
-      Text_init,Text_clear,Text_put,Text_bar,Text_gpo,Text_flush,Text_quit },
+  { name: "Text",
+    rows:  4,
+    cols:  20,
+    xres:  1,
+    yres:  1,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  Text_init,
+    clear: Text_clear,
+    put:   Text_put,
+    bar:   Text_bar,
+    gpo:   NULL,
+    flush: Text_flush,
+    quit:  Text_quit 
+  },
   { NULL }
 };
 
