@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.7 2003/05/14 06:17:39 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.8 2003/05/19 05:55:17 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.8  2003/05/19 05:55:17  reinelt
+ * Cwlinux sleep optimization
+ *
  * Revision 1.7  2003/05/14 06:17:39  reinelt
  * added support for CW1602
  *
@@ -192,7 +195,7 @@ static void CW1602_define_char (int ascii, char *buffer)
     cmd[3+i]=buffer[i];
   }
   CW_write(cmd,12);
-  sleep(1);  // delay for cw1602 to settle the character defined!
+  usleep(20);  // delay for cw1602 to settle the character defined!
 }
 
 
