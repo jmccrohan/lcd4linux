@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.40 2003/09/11 04:09:52 reinelt Exp $
+/* $Id: HD44780.c,v 1.41 2003/09/13 06:20:39 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.41  2003/09/13 06:20:39  reinelt
+ * HD44780 timings changed; deactivated libtool
+ *
  * Revision 1.40  2003/09/11 04:09:52  reinelt
  * minor cleanups
  *
@@ -219,10 +222,22 @@
  * we use the worst-case values.
  */
 
-#define T_CYCLE 600 // Enable cycle time
-#define T_PW    400 // Enable pulse width
-#define T_AS     20 // Address setup time
-#define T_H      40 // Data hold time
+#define T_CYCLE 1000 // Enable cycle time
+#define T_PW     450 // Enable pulse width
+#define T_AS      60 // Address setup time
+#define T_H       40 // Data hold time
+
+
+/* HD44780 execution timings [microseconds]
+ * as these values differ from spec to spec,
+ * we use the worst-case values.
+ */
+
+#define T_INIT1 4100 // first init sequence:  4.1 msec
+#define T_INIT2  100 // second init sequence: 100 usec
+#define T_EXEC    80 // normal execution time
+#define T_WRCG   120 // CG RAM Write
+#define T_CLEAR 1640 // Clear Display
 
 
 static LCD Lcd;
@@ -389,8 +404,8 @@ static void HD_setGPO (int bits)
 static void HD_define_char (int ascii, char *buffer)
 {
   // define chars on *both* controllers!
-  HD_command (0x03, 0x40|8*ascii, 40);
-  HD_write (0x03, buffer, 8, 120); // 120 usec delay for CG RAM write
+  HD_command (0x03, 0x40|8*ascii, T_EXEC);
+  HD_write (0x03, buffer, 8, T_WRCG);
 }
 
 
@@ -406,8 +421,9 @@ int HD_clear (int full)
   
   if (full) {
     memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
-    HD_command (0x03, 0x01, 1640); // clear *both* displays
-    HD_setGPO (GPO);               // all GPO's off
+    HD_command (0x03, 0x01, T_CLEAR); // clear *both* displays
+    HD_command (0x03, 0x03, T_CLEAR); // return home
+    HD_setGPO (GPO);                  // all GPO's off
   }
   
   return 0;
@@ -489,21 +505,20 @@ int HD_init (LCD *Self)
 
   // initialize *both* displays
   if (Bits==8) {
-    HD_command (0x03, 0x30, 4100); // 8 Bit mode, wait 4.1 ms
-    HD_command (0x03, 0x30, 100);  // 8 Bit mode, wait 100 us
-    HD_command (0x03, 0x30, 4100); // 8 Bit mode, wait 4.1 ms
-    HD_command (0x03, 0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+    HD_command (0x03, 0x30, T_INIT1); // 8 Bit mode, wait 4.1 ms
+    HD_command (0x03, 0x30, T_INIT2); // 8 Bit mode, wait 100 us
+    HD_command (0x03, 0x38, T_EXEC);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
   } else {
-    HD_nibble(0x03, 0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
-    HD_nibble(0x03, 0x03); udelay(100);  // 4 Bit mode, wait 100 us
-    HD_nibble(0x03, 0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
-    HD_nibble(0x03, 0x02); udelay(100);  // 4 Bit mode, wait 100 us
-    HD_command (0x03, 0x28, 40);	 // 4 Bit mode, 1/16 duty cycle, 5x8 font
+    HD_nibble(0x03, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x03, 0x03); udelay(T_INIT2); // 4 Bit mode, wait 100 us
+    HD_nibble(0x03, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x03, 0x02); udelay(T_INIT2); // 4 Bit mode, wait 100 us
+    HD_command (0x03, 0x28, T_EXEC);	    // 4 Bit mode, 1/16 duty cycle, 5x8 font
   }
   
-  HD_command (0x03, 0x08, 40);   // Display off, cursor off, blink off
-  HD_command (0x03, 0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
-  HD_command (0x03, 0x06, 40);   // curser moves to right, no shift
+  HD_command (0x03, 0x08, T_EXEC);  // Display off, cursor off, blink off
+  HD_command (0x03, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
+  HD_command (0x03, 0x06, T_EXEC);  // curser moves to right, no shift
 
   if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
@@ -535,7 +550,7 @@ void HD_goto (int row, int col)
   }
    
   pos=(row%2)*64+(row/2)*20+col;
-  HD_command (Controller, (0x80|pos), 40);
+  HD_command (Controller, (0x80|pos), T_EXEC);
 }
 
 
@@ -605,7 +620,7 @@ int HD_flush (void)
 	  equal=0;
 	}
       }
-      HD_write (Controller, FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, 50); // 50 usec delay for write
+      HD_write (Controller, FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, T_EXEC);
     }
   }
 

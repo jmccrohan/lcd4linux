@@ -4,7 +4,9 @@ AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
-lib_LTLIBRARIES = liblcd4linux.la
+# deactivateing shared lib target for the moment until
+# libtool works cleanly...
+#lib_LTLIBRARIES = liblcd4linux.la
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
@@ -54,9 +56,10 @@ Skeleton.c \
 XWindow.c \
 Text.c
 
-liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+# deactivated
+# liblcd4linux_la_LDFLAGS = -version-info 9:11:9
 
-liblcd4linux_la_SOURCES = \
+# liblcd4linux_la_SOURCES = \
 display.c display.h \
 debug.c debug.h \
 cfg.c cfg.h \
