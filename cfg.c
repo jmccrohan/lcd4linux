@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.13 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: cfg.c,v 1.14 2003/08/14 03:47:40 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.14  2003/08/14 03:47:40  reinelt
+ * remove PID file if driver initialisation fails
+ *
  * Revision 1.13  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -273,13 +276,13 @@ int cfg_read (char *file)
 
   if (check_cfg_file(file) == -1) {
     error("config file '%s' is insecure, aborting", file);
-    exit(2);
+    return -1;
   }
   
   stream=fopen (file, "r");
   if (stream==NULL) {
     error ("open(%s) failed: %s", file, strerror(errno));
-    return-1;
+    return -1;
   }
 
   if (Config_File) free (Config_File);

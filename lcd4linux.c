@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.41 2003/08/08 08:05:23 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.42 2003/08/14 03:47:40 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.42  2003/08/14 03:47:40  reinelt
+ * remove PID file if driver initialisation fails
+ *
  * Revision 1.41  2003/08/08 08:05:23  reinelt
  * added PID file handling
  *
@@ -447,6 +450,7 @@ int main (int argc, char *argv[])
   
   debug ("initializing driver %s", driver);
   if (lcd_init(driver)==-1) {
+    pid_exit(PIDFILE);
     exit (1);
   }
 
