@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.1 2000/11/28 16:46:11 reinelt Exp $
+/* $Id: SIN.c,v 1.2 2000/11/28 17:27:19 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.2  2000/11/28 17:27:19  reinelt
+ *
+ * changed decimal values for screen, row, column to ascii values (shame on you!)
+ *
  * Revision 1.1  2000/11/28 16:46:11  reinelt
  *
  * first try to support display of SIN router
@@ -113,7 +117,8 @@ int SIN_clear (void)
     }
   }
   
-  SIN_write ("\033S\000", 3); // select screen #0
+  SIN_write ("\033S0", 3); // select screen #0
+  sleep (1); // FIXME: handshaking
   return 0;
 }
 
@@ -141,6 +146,7 @@ int SIN_init (LCD *Self)
   if (Device==-1) return -1;
 
   SIN_write ("\015", 1);  // send 'Enter'
+  // Fixme: we must read the identifier here....
   SIN_clear();
 
   return 0;
@@ -164,11 +170,11 @@ int SIN_flush (void)
   int  row, col;
   
   for (row=0; row<Lcd.rows; row++) {
-    buffer[2]=row+1;
+    buffer[2]='1'+row;
     for (col=0; col<Lcd.cols; col++) {
       if (Txt[row][col]=='\t') continue;
-      buffer[3]=col+1;
-      for (p=buffer+4; col<Lcd.cols; col++, p++) {
+      sprintf (buffer+3, "%2d", col);
+      for (p=buffer+5; col<Lcd.cols; col++, p++) {
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
