@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.6 2004/01/06 23:01:37 reinelt Exp $
+/* $Id: evaluator.c,v 1.7 2004/01/07 10:15:41 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,11 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.7  2004/01/07 10:15:41  reinelt
+ * small glitch in evaluator fixed
+ * made config table sorted and access with bsearch(),
+ * which should be much faster
+ *
  * Revision 1.6  2004/01/06 23:01:37  reinelt
  * more copyright issues
  *
@@ -302,7 +307,7 @@ static int v_lookup (const void *a, const void *b)
 // qsort compare function for variables
 static int v_sort (const void *a, const void *b)
 {
-  VARIABLE *va=(VARIABLE*)b;
+  VARIABLE *va=(VARIABLE*)a;
   VARIABLE *vb=(VARIABLE*)b;
 
   return strcmp(va->name, vb->name);

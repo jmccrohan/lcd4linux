@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.19 2003/12/19 05:35:14 reinelt Exp $^
+/* $Id: cfg.c,v 1.20 2004/01/07 10:15:41 reinelt Exp $^
  *
  * config file stuff
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.20  2004/01/07 10:15:41  reinelt
+ * small glitch in evaluator fixed
+ * made config table sorted and access with bsearch(),
+ * which should be much faster
+ *
  * Revision 1.19  2003/12/19 05:35:14  reinelt
  * renamed 'client' to 'plugin'
  *
@@ -159,6 +164,26 @@ static ENTRY *Config=NULL;
 static int   nConfig=0;
 
 
+// bsearch compare function for config entries
+static int c_lookup (const void *a, const void *b)
+{
+  char *key=(char*)a;
+  ENTRY *entry=(ENTRY*)b;
+
+  return strcasecmp(key, entry->key);
+}
+
+
+// qsort compare function for variables
+static int c_sort (const void *a, const void *b)
+{
+  ENTRY *ea=(ENTRY*)a;
+  ENTRY *eb=(ENTRY*)b;
+
+  return strcasecmp(ea->key, eb->key);
+}
+
+
 static char *strip (char *s, int strip_comments)
 {
   char *p;
@@ -196,21 +221,25 @@ static char *dequote (char *string)
 
 static void cfg_add (char *key, char *val, int lock)
 {
-  int i;
+  ENTRY *entry;
 
-  for (i=0; i<nConfig; i++) {
-    if (strcasecmp(Config[i].key, key)==0) {
-      if (Config[i].lock>lock) return;
-      if (Config[i].val) free (Config[i].val);
-      Config[i].val=dequote(strdup(val));
-      return;
-    }
+  entry=bsearch(key, Config, nConfig, sizeof(ENTRY), c_lookup);
+  
+  if (entry!=NULL) {
+    if (entry->lock>lock) return;
+    if (entry->val) free (entry->val);
+    entry->val=dequote(strdup(val));
+    return;
   }
+  
   nConfig++;
   Config=realloc(Config, nConfig*sizeof(ENTRY));
-  Config[i].key=strdup(key);
-  Config[i].val=dequote(strdup(val));
-  Config[i].lock=lock;
+  Config[nConfig-1].key=strdup(key);
+  Config[nConfig-1].val=dequote(strdup(val));
+  Config[nConfig-1].lock=lock;
+
+  qsort(Config, nConfig, sizeof(ENTRY), c_sort);
+
 }
 
 
@@ -235,13 +264,13 @@ int l4l_cfg_cmd (char *arg)
 
 char *l4l_cfg_get (char *key, char *defval)
 {
-  int i;
+  ENTRY *entry;
 
-  for (i=0; i<nConfig; i++) {
-    if (strcasecmp(Config[i].key, key)==0) {
-      return Config[i].val;
-    }
-  }
+  entry=bsearch(key, Config, nConfig, sizeof(ENTRY), c_lookup);
+  
+  if (entry!=NULL)
+    return entry->val;
+
   return defval;
 }
 
