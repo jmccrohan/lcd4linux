@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.32 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: display.c,v 1.33 2002/09/11 05:16:33 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.33  2002/09/11 05:16:33  reinelt
+ * added Cwlinux driver
+ *
  * Revision 1.32  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -198,6 +201,7 @@
 
 extern LCD BeckmannEgle[];
 extern LCD Crystalfontz[];
+extern LCD Cwlinux[];
 extern LCD HD44780[];
 extern LCD M50530[];
 extern LCD T6963[];
@@ -216,6 +220,9 @@ FAMILY Driver[] = {
 #endif
 #ifdef WITH_CRYSTALFONTZ
   { "Crystalfontz", Crystalfontz },
+#endif
+#ifdef WITH_CWLINUX
+  { "Cwlinux", Cwlinux },
 #endif
 #ifdef WITH_HD44780
   { "HD 44780 based", HD44780 },

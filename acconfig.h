@@ -4,6 +4,9 @@
 /* Define if you want the Crystalfontz driver compiled */
 #undef WITH_CRYSTALFONTZ
 
+/* Define if you want the Cwlinux driver compiled */
+#undef WITH_CWLINUX
+
 /* Define if you want the HD44780 driver compiled */
 #undef WITH_HD44780
 

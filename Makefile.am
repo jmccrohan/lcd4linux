@@ -36,6 +36,7 @@ EXTRA_lcd4linux_SOURCES= \
 acconfig.h \
 BeckmannEgle.c \
 Crystalfontz.c Crystalfontz.h \
+Cwlinux.c \
 HD44780.c \
 M50530.c \
 T6963.c \

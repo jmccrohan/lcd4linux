@@ -29,8 +29,9 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]	
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, HD44780, M50530, T6963]
-  [                        USBLCD, MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
+  [                        BeckmannEgle, CrystalFontz, Cwlinux, HD44780,]
+  [                        M50530, T6963, USBLCD, MatrixOrbital, PalmPilot]
+  [                        PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
 )
@@ -53,6 +54,7 @@ for driver in $drivers; do
       all)
          BECKMANNEGLE="yes"
          CRYSTALFONTZ="yes"
+         CWLINUX="yes"
          HD44780="yes"
          M50530="yes"
          T6963="yes"
@@ -69,6 +71,9 @@ for driver in $drivers; do
          ;;
       CrystalFontz)
          CRYSTALFONTZ=$val
+         ;;
+      Cwlinux)
+         CWLINUX=$val
          ;;
       HD44780)
          HD44780=$val
@@ -124,6 +129,11 @@ fi
 if test "$CRYSTALFONTZ" = "yes"; then
    DRIVERS="$DRIVERS Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ)
+fi
+
+if test "$CWLINUX" = "yes"; then
+   DRIVERS="$DRIVERS Cwlinux.o"
+   AC_DEFINE(WITH_CWLINUX)
 fi
 
 if test "$HD44780" = "yes"; then
