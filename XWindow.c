@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.9 2000/03/30 16:46:57 reinelt Exp $
+/* $Id: XWindow.c,v 1.10 2000/03/31 04:41:22 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.10  2000/03/31 04:41:22  reinelt
+ *
+ * X11 driver: semaphore bug fixed
+ *
+ * Revision 1.10  2000/03/31 01:42:11  herp
+ *
+ * semaphore bug fixed
+ *
  * Revision 1.9  2000/03/30 16:46:57  reinelt
  *
  * configure now handles '--with-x' and '--without-x' correct
@@ -47,6 +55,7 @@
 
 /*
  *
+ * Fri Mar 31 01:42:11 MET 2000 semaphore bug fixed
  * Sun Mar 26 15:28:23 MET 2000 various rewrites
  * Sat Mar 25 23:58:19 MET 2000 use generic pixmap driver
  * Thu Mar 23 01:05:07 MET 2000 multithreading, synchronization
@@ -75,34 +84,33 @@
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
 
 static LCD Lcd;
-Display *dp;
-int sc;
-Window w,rw;
-Visual *vi;
-int dd;
-Colormap cm;
-GC gc,gcb,gch;
-XColor co[3];
-XColor db;
-Pixmap pmback;
+static Display *dp;
+static int sc;
+static Window w,rw;
+static Visual *vi;
+static int dd;
+static Colormap cm;
+static GC gc,gcb,gch;
+static XColor co[3];
+static Pixmap pmback;
 
-unsigned char *BackupLCDpixmap;
-char *rgbfg,*rgbbg,*rgbhg;
-int pixel=-1;			/*pointsize in pixel*/
-int pgap=0;			/*gap between points */
-int rgap=0;			/*row gap between lines*/
-int cgap=0;			/*column gap between characters*/
-int border=0;			/*window border*/
-int rows=-1,cols=-1;		/*rows+cols without background*/
-int xres=-1,yres=-1;		/*xres+yres (same as self->...)*/
-int dimx,dimy;			/*total window dimension in pixel*/
-int boxw,boxh;			/*box width, box height*/
-void async_update();		/*PROTO*/
-pid_t async_updater_pid=1;
-int semid=-1;
-int shmid=-1;
+static unsigned char *BackupLCDpixmap;
+static char *rgbfg,*rgbbg,*rgbhg;
+static int pixel=-1;			/*pointsize in pixel*/
+static int pgap=0;			/*gap between points */
+static int rgap=0;			/*row gap between lines*/
+static int cgap=0;			/*column gap between characters*/
+static int border=0;			/*window border*/
+static int rows=-1,cols=-1;		/*rows+cols without background*/
+static int xres=-1,yres=-1;		/*xres+yres (same as self->...)*/
+static int dimx,dimy;			/*total window dimension in pixel*/
+static int boxw,boxh;			/*box width, box height*/
+static void async_update();		/*PROTO*/
+static pid_t async_updater_pid=1;
+static int semid=-1;
+static int shmid=-1;
 
-void acquire_lock() {
+static void acquire_lock() {
 struct sembuf sembuf;
 	sembuf.sem_num=0;
 	sembuf.sem_op=-1;
@@ -110,7 +118,7 @@ struct sembuf sembuf;
 	semop(semid,&sembuf,1);		/* get mutex */
 }
 
-void release_lock() {
+static void release_lock() {
 struct sembuf sembuf;
 	sembuf.sem_num=0;
 	sembuf.sem_op=1;
@@ -118,28 +126,27 @@ struct sembuf sembuf;
 	semop(semid,&sembuf,1);		/* free mutex */
 }
 
-void semcleanup() {
+static void semcleanup() {
 union semun arg;
 	if (semid>-1) semctl(semid,0,IPC_RMID,arg);
 }
 
-void shmcleanup() {
+static void shmcleanup() {
 	if (shmid>-1) shmctl(shmid,IPC_RMID,NULL);
 }
 
-void quit(int nsig) {
-	printf("X11: pid %d got signal %d\n",getpid(),nsig);
+static void quit(int nsig) {
 	semcleanup();
 	shmcleanup();
 	exit(0);
 }
 
-void quit_updater() {
+static void quit_updater() {
 	if (async_updater_pid>1)
 		kill(async_updater_pid,15);
 }
 
-void init_signals()  {
+static void init_signals()  {
 unsigned int oksig=(1<<SIGBUS)|(1<<SIGFPE)|(1<<SIGSEGV)|
 		   (1<<SIGTSTP)|(1<<SIGCHLD)|(1<<SIGCONT)|
 		   (1<<SIGTTIN)|(1<<SIGWINCH);
@@ -149,7 +156,7 @@ int i;
 			signal(i,quit);
 }
 
-int init_shm(int nbytes,unsigned char **buf) {
+static int init_shm(int nbytes,unsigned char **buf) {
 
 	shmid=shmget(IPC_PRIVATE,nbytes,SHM_R|SHM_W);
 	if (shmid==-1) {
@@ -164,10 +171,14 @@ int init_shm(int nbytes,unsigned char **buf) {
 	return 0;
 }
 
-int init_thread(int bufsiz) {
+static int init_thread(int bufsiz) {
 union semun semun;
 
-	semid=semget(IPC_PRIVATE,1,0);
+/* acording to SUN-Solaris man-pages: */
+
+#define SEM_ALTER       0200
+
+	semid=semget(IPC_PRIVATE,1,SEM_ALTER);
 	if (semid==-1) {
 		perror("X11: semget() failed");
 		return -1;
@@ -190,7 +201,7 @@ union semun semun;
 	return 0;
 }
 
-int init_x(int rows,int cols,int xres,int yres) {
+static int init_x(int rows,int cols,int xres,int yres) {
 XSetWindowAttributes wa;
 XSizeHints size_hints;
 XColor co_dummy;
@@ -222,11 +233,6 @@ XEvent ev;
 			rgbhg);
 		return -1;
 	}
-	if (XAllocNamedColor(dp,cm,"#e0e0e0",&db,&co_dummy)==False) {
-		fprintf(stderr,"X11: can't alloc db color '%s'\n",
-			"#0000ff");
-		return -1;
-	}
 	boxw=xres*(pixel+pgap)+cgap;
 	boxh=yres*(pixel+pgap)+rgap;
 	dimx=(cols-1)*cgap+cols*xres*(pixel+pgap);
@@ -234,8 +240,6 @@ XEvent ev;
 	wa.event_mask=ExposureMask|ButtonPressMask|ButtonReleaseMask;
 	w=XCreateWindow(dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,
 		InputOutput,vi,CWEventMask,&wa);
-	printf ("XCreateWindow (%p, %ld, %d, %d, %d, %d, %d, %d, %d, %p, %ld, %p) = %ld\n", 
-		dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,InputOutput,vi,CWEventMask,&wa, w);
 	pmback=XCreatePixmap(dp,w,dimx,dimy,dd);
 	size_hints.min_width=size_hints.max_width=dimx+2*border;
 	size_hints.min_height=size_hints.max_height=dimy+2*border;
@@ -289,8 +293,9 @@ char *s;
 	}
 	border=atoi(cfg_get("border")?:"0");
 	rgbfg=cfg_get("foreground")?:"#000000";
-	rgbbg=cfg_get("background")?:"#64b17a";
-	rgbhg=cfg_get("halfground")?:"#44915a";
+        rgbbg=cfg_get("background")?:"#80d000";
+        rgbhg=cfg_get("halfground")?:"#70c000";
+
 
 	if (pix_init(rows,cols,xres,yres)==-1) return -1;
 	if (init_x(rows,cols,xres,yres)==-1) return -1;
@@ -322,11 +327,11 @@ int xlcdbar(int type, int row, int col, int max, int len1, int len2) {
 
 int xlcdflush() {
 int dirty;
-int i,j,pos;
+int i,j,igap,jgap,pos;
 int x,y;
 
 	acquire_lock();
-	dirty=pos=0;
+	dirty=pos=igap=jgap=0;
 	y=border;
 	for(i=0;i<rows*yres;i++) {
 		x=border;
@@ -340,11 +345,11 @@ int x,y;
 				dirty=1;
 			}
 			x+=pixel+pgap;
-			if ((j+1)%xres==0) x+=cgap;
+			if (++jgap==xres) { x+=cgap; jgap=0; }
 			pos++;
 		}
 		y+=pixel+pgap;
-		if ((i+1)%yres==0) y+=rgap;
+		if (++igap==yres) { y+=rgap; igap=0; }
 	}
 	if (dirty) XFlush(dp);
 	release_lock();
@@ -356,8 +361,8 @@ int x,y;
  * no user serviceable parts inside
  */
 
-void update(int x,int y,int width,int height) {
-int i,j,pos,wpos;
+static void update(int x,int y,int width,int height) {
+int i,j,igap,jgap,wjgap,pos,wpos,xpix;
 int xfrom,yfrom;
 int xto,yto;
 int dx,wx,wy;
@@ -369,10 +374,8 @@ int dx,wx,wy;
 	 */
 	x-=border;
 	y-=border;
-	if (x>=dimx || y>=dimy || x+width<0 || y+height<0) {
-		// printf("border only\n");
+	if (x>=dimx || y>=dimy || x+width<0 || y+height<0)
 		return;	/*border doesnt need update*/
-	}
 	if (x<0) x=0;
 	if (y<0) y=0;
 	if (x+width>dimx) width=dimx-x;
@@ -409,25 +412,27 @@ int dx,wx,wy;
 	pos=yfrom*xres*cols+xfrom;
 	wy=border+yfrom*(pixel+pgap)+rgap*(yfrom/yres);
 	wx=border+xfrom*(pixel+pgap)+cgap*(xfrom/xres);
-	wpos=pos;
+	wpos=pos; xpix=xres*cols;
+	igap=yfrom%yres; wjgap=xfrom%xres;
 	for(i=yfrom;i<=yto;i++) {
 		dx=wx;
+		jgap=wjgap;
 		for(j=xfrom;j<=xto;j++) {
 			XFillRectangle(dp,w,
 				BackupLCDpixmap[wpos++]?gc:gch,
 				dx,wy,
 				pixel,pixel);
 			dx+=pixel+pgap;
-			if ((j+1)%xres==0) dx+=cgap;
+			if (++jgap==xres) { dx+=cgap; jgap=0; }
 		}
 		wy+=pixel+pgap;
-		if ((i+1)%yres==0) wy+=rgap;
-		pos+=xres*cols;
+		if (++igap==yres) { wy+=rgap; igap=0; }
+		pos+=xpix;
 		wpos=pos;
 	}
 }
 
-void async_update() {
+static void async_update() {
 XEvent ev;
 
 	for(;;) {
