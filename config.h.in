@@ -236,6 +236,9 @@
 /* cpuinfo plugin */
 #undef PLUGIN_CPUINFO
 
+/* diskstats plugin */
+#undef PLUGIN_DISKSTATS
+
 /* dvb plugin */
 #undef PLUGIN_DVB
 

@@ -221,6 +221,9 @@ Widget Disk {
     # disk.[rw]blk return blocks, we assume a blocksize of 512
     # to get the number in kB/s we would do blk*512/1024, which is blk/2 
     expression (proc_stat::disk('.*', 'rblk', 500)+proc_stat::disk('.*', 'wblk', 500))/2
+    # with kernel 2.6, disk_io disappeared from /proc/stat but moved to /proc/diskstat
+    # therefore you have to use another function called 'diskstats':
+    # expression (diskstats('.*', '.*_sectors', 500)
     prefix 'disk'
     postfix ' '
     width 10	
@@ -233,6 +236,9 @@ Widget DiskBar {
     class 'Bar'
     expression  proc_stat::disk('.*', 'rblk', 500)
     expression2 proc_stat::disk('.*', 'wblk', 500)
+    # for kernel 2.6:
+    # expression  diskstats('.*', 'read_sectors',  500)
+    # expression2 diskstats('.*', 'write_sectors', 500)
     length 14	
     direction 'E'
     update tack

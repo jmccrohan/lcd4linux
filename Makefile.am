@@ -73,6 +73,7 @@ font_6x8.h                  \
                             \
 plugin_apm.c                \
 plugin_cpuinfo.c            \
+plugin_diskstats.c          \
 plugin_dvb.c                \
 plugin_exec.c               \
 plugin_i2c_sensors.c        \

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.30 2004/05/22 18:30:02 reinelt Exp $
+/* $Id: plugin.c,v 1.31 2004/05/29 00:27:23 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.31  2004/05/29 00:27:23  reinelt
+ *
+ * added plugin_diskstats.c
+ *
  * Revision 1.30  2004/05/22 18:30:02  reinelt
  *
  * added plugin 'uptime'
@@ -185,6 +189,8 @@ int  plugin_init_apm (void);
 void plugin_exit_apm (void);
 int  plugin_init_cpuinfo (void);
 void plugin_exit_cpuinfo (void);
+int  plugin_init_diskstats (void);
+void plugin_exit_diskstats (void);
 int  plugin_init_dvb (void);
 void plugin_exit_dvb (void);
 int  plugin_init_exec (void);
@@ -233,6 +239,9 @@ int plugin_init (void)
 #endif
 #ifdef PLUGIN_CPUINFO
   plugin_init_cpuinfo();
+#endif
+#ifdef PLUGIN_DISKSTATS
+  plugin_init_diskstats();
 #endif
 #ifdef PLUGIN_DVB
   plugin_init_dvb();
@@ -296,6 +305,9 @@ void plugin_exit(void) {
 #endif
 #ifdef PLUGIN_CPUINFO
   plugin_exit_cpuinfo();
+#endif
+#ifdef PLUGIN_DISKSTATS
+  plugin_exit_diskstats();
 #endif
 #ifdef PLUGIN_DVB
   plugin_exit_dvb();

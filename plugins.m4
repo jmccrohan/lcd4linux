@@ -32,6 +32,7 @@ for plugin in $plugins; do
       all)
          PLUGIN_APM="yes"
          PLUGIN_CPUINFO="yes"
+         PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
          PLUGIN_I2C_SENSORS="yes"
@@ -55,6 +56,9 @@ for plugin in $plugins; do
          ;;
       cpuinfo)
          PLUGIN_CPUINFO=$val
+         ;;
+      diskstats)
+         PLUGIN_DISKSTATS=$val
          ;;
       dvb)
          PLUGIN_DVB=$val
@@ -121,6 +125,10 @@ fi
 if test "$PLUGIN_CPUINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_cpuinfo.o"
    AC_DEFINE(PLUGIN_CPUINFO,1,[cpuinfo plugin])
+fi
+if test "$PLUGIN_DISKSTATS" = "yes"; then
+   PLUGINS="$PLUGINS plugin_diskstats.o"
+   AC_DEFINE(PLUGIN_DISKSTATS,1,[diskstats plugin])
 fi
 if test "$PLUGIN_DVB" = "yes"; then
    AC_CHECK_HEADERS(linux/dvb/frontend.h, [has_dvb_header=true], [has_dvb_header=false])
