@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.2 2000/04/30 06:40:42 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.3 2000/08/09 09:50:29 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.3  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.2  2000/04/30 06:40:42  reinelt
  *
  * bars for Beckmann+Egle driver
@@ -43,7 +50,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <signal.h>
 #include <termios.h>
 #include <fcntl.h>
 
@@ -346,8 +352,6 @@ int BE_clear (void)
   return 0;
 }
 
-static void BE_quit (int signal); //forward declaration
-
 int BE_init (LCD *Self)
 {
   int i, rows=-1, cols=-1;
@@ -402,10 +406,6 @@ int BE_init (LCD *Self)
   BE_write ("\033&D", 3);  // cursor off
 
   BE_clear();
-
-  signal(SIGINT,  BE_quit);
-  signal(SIGQUIT, BE_quit);
-  signal(SIGTERM, BE_quit);
 
   return 0;
 }
@@ -528,19 +528,15 @@ int BE_flush (void)
   return 0;
 }
 
-int lcd_hello (void); // prototype from lcd4linux.c
-
-static void BE_quit (int signal)
+int BE_quit (void)
 {
-  debug ("got signal %d\n", signal);
-  BE_clear();
-  lcd_hello();
+  debug ("closing port %s\n", Port);
   close (Device);
   unlock_port(Port);
-  exit (0);
+  return 0;
 }
 
 LCD BeckmannEgle[] = {
-  { "BLC100x", 0,  0, XRES, YRES, BARS, BE_init, BE_clear, BE_put, BE_bar, BE_flush },
+  { "BLC100x", 0,  0, XRES, YRES, BARS, BE_init, BE_clear, BE_put, BE_bar, BE_flush, BE_quit },
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.10 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: display.h,v 1.11 2000/08/09 09:50:29 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.11  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.10  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -90,6 +97,7 @@ typedef struct LCD {
   int (*put) (int x, int y, char *text);
   int (*bar) (int type, int x, int y, int max, int len1, int len2);
   int (*flush) (void);
+  int (*quit) (void);
 } LCD;
 
 typedef struct {
@@ -104,5 +112,6 @@ int lcd_clear (void);
 int lcd_put (int row, int col, char *text);
 int lcd_bar (int type, int row, int col, int max, int len1, int len2);
 int lcd_flush (void);
+int lcd_quit (void);
 
 #endif

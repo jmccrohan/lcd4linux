@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.23 2000/04/17 05:14:27 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.24 2000/08/09 09:50:29 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.24  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.23  2000/04/17 05:14:27  reinelt
  *
  * added README.44780
@@ -136,6 +143,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "cfg.h"
 #include "debug.h"
@@ -145,6 +153,7 @@
 
 char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
 char *output=NULL;
+int got_signal=0;
 int debugging=0;
 int tick, tack;
 
@@ -157,7 +166,7 @@ static void usage(void)
   printf ("       lcd4linux [-c key=value] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
-int lcd_hello (void)
+int hello (void)
 {
   int i, x, y, flag;
   char *line1[] = { "* LCD4Linux V" VERSION " *",
@@ -207,6 +216,12 @@ void calibrate (void)
       max=loops_per_usec;
   }
   printf (" Delay=%ld\n", max);
+}
+
+void handler (int signal)
+{
+  debug ("got signal %d\n", signal);
+  got_signal=signal;
 }
 
 int main (int argc, char *argv[])
@@ -279,13 +294,18 @@ int main (int argc, char *argv[])
     exit (1);
   }
 
+  signal(SIGHUP,  handler);
+  signal(SIGINT,  handler);
+  signal(SIGQUIT, handler);
+  signal(SIGTERM, handler);
+  
   tick=atoi(cfg_get("tick")?:"100");
   tack=atoi(cfg_get("tack")?:"500");
 
   process_init();
   lcd_clear();
 
-  if (!quiet && lcd_hello()) {
+  if (!quiet && hello()) {
     sleep (3);
     lcd_clear();
   }
@@ -293,10 +313,21 @@ int main (int argc, char *argv[])
   debug ("starting main loop\n");
 
   smooth=0;
-  while (1) {
+  while (got_signal==0) {
     process (smooth);
     smooth+=tick;
     if (smooth>tack) smooth=0;
     usleep(tick*1000);
   }
+
+  debug ("leaving main loop\n");
+  
+  lcd_clear();
+  if (!quiet) hello();
+  lcd_quit();
+  
+  if (got_signal==SIGHUP) {
+    debug ("restarting\n");
+  }
+  exit (0);
 }

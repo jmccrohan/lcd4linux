@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.18 2000/05/02 23:07:48 herp Exp $
+/* $Id: XWindow.c,v 1.19 2000/08/09 09:50:29 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.19  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.18  2000/05/02 23:07:48  herp
  * Crystalfontz initial coding
  *
@@ -103,7 +110,7 @@
 #include	<sys/sem.h>
 #include	<sys/shm.h>
 #include	<unistd.h>
-#include	<signal.h>
+#include        <signal.h>
 
 #include	"cfg.h"
 #include	"display.h"
@@ -174,27 +181,9 @@ static void shmcleanup() {
 	if (shmid>-1) shmctl(shmid,IPC_RMID,NULL);
 }
 
-static void quit(int nsig) {
-	semcleanup();
-	shmcleanup();
-	if (ppid!=getpid())
-		kill(ppid,nsig);
-	exit(0);
-}
-
 static void quit_updater() {
 	if (async_updater_pid>1)
 		kill(async_updater_pid,15);
-}
-
-static void init_signals()  {
-unsigned int oksig=(1<<SIGBUS)|(1<<SIGFPE)|(1<<SIGSEGV)|
-		   (1<<SIGTSTP)|(1<<SIGCHLD)|(1<<SIGCONT)|
-		   (1<<SIGTTIN)|(1<<SIGWINCH);
-int i;
-	for(i=0;i<NSIG;i++)
-		if (((1<<i)&oksig)==0)
-			signal(i,quit);
 }
 
 static int init_shm(int nbytes,unsigned char **buf) {
@@ -345,7 +334,6 @@ char *s;
 
 	if (pix_init(rows,cols,xres,yres)==-1) return -1;
 	if (init_x(rows,cols,xres,yres)==-1) return -1;
-	init_signals();
 	if (init_shm(rows*cols*xres*yres,&BackupLCDpixmap)==-1) return -1;
 	memset(BackupLCDpixmap,0xff,rows*yres*cols*xres);
 	if (init_thread(rows*cols*xres*yres)==-1) return -1;
@@ -399,6 +387,15 @@ int x,y;
 	}
 	if (dirty) XSync(dp,False);
 	release_lock();
+	return 0;
+}
+
+int xlcdquit(void) {
+	semcleanup();
+	shmcleanup();
+	if (ppid!=getpid())
+	  // FIXME: kill(ppid,nsig);
+	  kill(ppid,SIGTERM);
 	return 0;
 }
 
@@ -499,7 +496,7 @@ XEvent ev;
 }
 
 LCD XWindow[] = {
-	{ "X11", 0, 0, 0, 0, BARS, xlcdinit, xlcdclear, xlcdput, xlcdbar, xlcdflush },
+	{ "X11", 0, 0, 0, 0, BARS, xlcdinit, xlcdclear, xlcdput, xlcdbar, xlcdflush, xlcdquit },
 	{ NULL }
 };
 

@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.6 2000/04/15 16:56:52 reinelt Exp $
+# $Id: README,v 1.7 2000/08/09 09:50:29 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -33,6 +33,7 @@ write picture to 'output' (raster driver only)
 overwrite entries from the config-file with '-c'
 suppress startup splash screen with '-q'
 
+
 SUPPORTED DISPLAYS
 
 * Matrox Orbital: <http://www.matrixorbital.com>
@@ -43,15 +44,36 @@ SUPPORTED DISPLAYS
   "LCD2041": 4 lines by 20 characters (tested)
   "LCD4021": 2 lines by 40 characters
 
+
+* CrystalFontz <http://www.crystalfontz.com>
+
+  any of 626, 632, 634 and 636.
+
+
+* HD44780-based displays
+
+  This driver supports display modules based on the Hitachi HD44780 chip,
+  connected to a parallel port. These displays are made by different 
+  manufactures, and come in various sizes.
+
+
+* PalmOrb
+
+  I was told that lcd4linux works fine with PalmOrb, a small program that 
+  emulates a Matrox Orbital display on the Palm Pilot.
+
+
 * X11
   thanks to Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at> a driver for the 
   X Window System is available. It supports any size at any resolution. A very
   small XLCD4Linux-Window can even swallow on the KDE Panel!
   
+
 * Raster formats:
   a generic raster driver (which is used by the X11-driver, too) is availiable,
   PPM (portable pixmap) is the only output format at the moment. I'm working
   on PNG!
+
 
 * other displays: lcd4linux and especially the display driver code is very modular, 
   so it should be quite easy to write a driver for any display. See README.driver
@@ -81,7 +103,7 @@ Data-specific options:
   overload: load average threshold and bar scaling. The '%L' token (see below) displays 
             a '!' instead of a blank if the current load average exceeds this value. 
             load bars are scaled by this value (load=overload gives 100%)
-  fifo: path to fifo for communication with isdnlog (not implemented)
+  fifo: path to fifo for communication with isdnlog (not yet implemented)
   sensor1: path to the 1st temperature file (e.g. /proc/sys/dev/sensors/w83781d-isa-0290/temp1)
            it is important that you use the isa sensors, because the i2c sensors are very slow!
   sensor1_min: temperature where the corresponding bar starts
@@ -148,12 +170,9 @@ Tokens:
   'io', ISDN bytes sent
   'it', ISDN bytes total (received+send)
   'im', ISDN bytes max (received, send)
-  's1', T_SENSOR_1,   
-  's2', T_SENSOR_2,   
-  's3', T_SENSOR_3,   
-  's4', T_SENSOR_4,   
-  's5', T_SENSOR_5,   
-  's6', T_SENSOR_6,   
-  's7', T_SENSOR_7,   
-  's8', T_SENSOR_8,   
-  's9', T_SENSOR_9,   
+  'ti', PPP bytes received
+  'to', PPP bytes sent
+  'tt', PPP bytes total (received+send)
+  'tm', PPP bytes max (received, send)
+  's1', temperature of sensor 1
+  's2', temperature of sensor 2 (up to s9)

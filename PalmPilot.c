@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.1 2000/05/02 06:05:00 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.2 2000/08/09 09:50:29 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.2  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.1  2000/05/02 06:05:00  reinelt
  *
  * driver for 3Com Palm Pilot added
@@ -38,7 +45,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 #include <errno.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -167,8 +173,6 @@ int Palm_clear (void)
   return Palm_flush();
 }
 
-static void Palm_quit (int signal); //forward declaration
-
 int Palm_init (LCD *Self)
 {
   char *port, *speed, *s;
@@ -253,10 +257,6 @@ int Palm_init (LCD *Self)
 
   pix_clear();
 
-  signal(SIGINT,  Palm_quit);
-  signal(SIGQUIT, Palm_quit);
-  signal(SIGTERM, Palm_quit);
-
   return 0;
 }
 
@@ -270,19 +270,15 @@ int Palm_bar (int type, int row, int col, int max, int len1, int len2)
   return pix_bar (type, row, col, max, len1, len2);
 }
 
-int lcd_hello (void); // prototype from lcd4linux.c
-
-static void Palm_quit (int signal)
+int Palm_quit (void)
 {
-  debug ("got signal %d\n", signal);
-  Palm_clear();
-  lcd_hello();
+  debug ("closing port %s\n", Port);
   close (Device);
   unlock_port (Port);
-  exit (0);
+  return 0;
 }
 
 LCD PalmPilot[] = {
-  { "PalmPilot", 0, 0, 0, 0, BARS, Palm_init, Palm_clear, Palm_put, Palm_bar, Palm_flush },
+  { "PalmPilot", 0, 0, 0, 0, BARS, Palm_init, Palm_clear, Palm_put, Palm_bar, Palm_flush, Palm_quit },
   { NULL }
 };

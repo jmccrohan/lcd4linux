@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.17 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.18 2000/08/09 09:50:29 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.18  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.17  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -106,7 +113,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <signal.h>
 #include <termios.h>
 #include <fcntl.h>
 
@@ -386,8 +392,6 @@ int MO_clear (void)
   return 0;
 }
 
-static void MO_quit (int signal); //forward declaration
-
 int MO_init (LCD *Self)
 {
   char *port;
@@ -441,10 +445,6 @@ int MO_init (LCD *Self)
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
   MO_write ("\376V", 2);  // GPO off
-
-  signal(SIGINT,  MO_quit);
-  signal(SIGQUIT, MO_quit);
-  signal(SIGTERM, MO_quit);
 
   return 0;
 }
@@ -567,23 +567,19 @@ int MO_flush (void)
   return 0;
 }
 
-int lcd_hello (void); // prototype from lcd4linux.c
-
-static void MO_quit (int signal)
+int MO_quit (void)
 {
-  debug ("got signal %d\n", signal);
-  MO_clear();
-  lcd_hello();
+  debug ("closing port %s\n", Port);
   close (Device);
   unlock_port(Port);
-  exit (0);
+  return (0);
 }
 
 LCD MatrixOrbital[] = {
-  { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD1621", 2, 16, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD2041", 4, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
-  { "LCD4021", 2, 40, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush }, 
+  { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
+  { "LCD1621", 2, 16, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
+  { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
+  { "LCD2041", 4, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit },
+  { "LCD4021", 2, 40, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush, MO_quit }, 
   { NULL }
 };

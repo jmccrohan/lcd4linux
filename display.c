@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.18 2000/05/02 23:07:48 herp Exp $
+/* $Id: display.c,v 1.19 2000/08/09 09:50:29 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.19  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.18  2000/05/02 23:07:48  herp
  * Crystalfontz initial coding
  *
@@ -123,6 +130,8 @@
  * int lcd_flush (void)
  *    flushes the framebuffer to the display
  *
+ * int lcd_quit (void)
+ *    de-initializes the driver
  */
 
 #include <stdlib.h>
@@ -181,6 +190,7 @@ int lcd_init (char *driver)
     for (j=0; Driver[i].Model[j].name; j++) {
       if (strcmp (Driver[i].Model[j].name, driver)==0) {
 	Lcd=&Driver[i].Model[j];
+	if (Lcd->init==NULL) return 0;
 	return Lcd->init(Lcd);
       }
     }
@@ -205,6 +215,7 @@ int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
 
 int lcd_clear (void)
 {
+  if (Lcd->clear==NULL) return 0;
   return Lcd->clear();
 }
 
@@ -212,6 +223,7 @@ int lcd_put (int row, int col, char *text)
 {
   if (row<1 || row>Lcd->rows) return -1;
   if (col<1 || col>Lcd->cols) return -1;
+  if (Lcd->put==NULL) return 0;
   return Lcd->put(row-1, col-1, text);
 }
 
@@ -224,10 +236,18 @@ int lcd_bar (int type, int row, int col, int max, int len1, int len2)
     len1=(double)max*log(len1+1)/log(max); 
     len2=(double)max*log(len2+1)/log(max); 
   }
+  if (Lcd->put==NULL) return 0;
   return Lcd->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
 }
 
 int lcd_flush (void)
 {
+  if (Lcd->flush==NULL) return 0;
   return Lcd->flush();
+}
+
+int lcd_quit (void)
+{
+  if (Lcd->quit==NULL) return 0;
+  return Lcd->quit();
 }

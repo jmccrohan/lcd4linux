@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.6 2000/07/31 10:43:44 reinelt Exp $
+/* $Id: HD44780.c,v 1.7 2000/08/09 09:50:29 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.7  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.6  2000/07/31 10:43:44  reinelt
  *
  * some changes to support kernel-2.4 (different layout of various files in /proc)
@@ -70,7 +77,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include <signal.h>
 #include <errno.h>
 #ifdef HAVE_SYS_IO_H
 #include <sys/io.h>
@@ -340,8 +346,6 @@ int HD_clear (void)
   return 0;
 }
 
-static void HD_quit (int signal); //forward declaration
-
 int HD_init (LCD *Self)
 {
   int rows=-1, cols=-1;
@@ -385,10 +389,6 @@ int HD_init (LCD *Self)
     return -1;
   
   HD_clear();
-
-  signal(SIGINT,  HD_quit);
-  signal(SIGQUIT, HD_quit);
-  signal(SIGTERM, HD_quit);
 
   return 0;
 }
@@ -518,17 +518,17 @@ int HD_flush (void)
   return 0;
 }
 
-int lcd_hello (void); // prototype from lcd4linux.c
-
-static void HD_quit (int signal)
+int HD_quit (void)
 {
-  debug ("got signal %d\n", signal);
-  HD_clear();
-  lcd_hello();
-  exit (0);
+  debug ("closing port 0x%x\n", Port);
+  if (ioperm(Port, 3, 0)!=0) {
+    fprintf (stderr, "HD44780: ioperm(0x%x) failed: %s\n", Port, strerror(errno));
+    return -1;
+  }
+  return 0;
 }
 
 LCD HD44780[] = {
-  { "HD44780", 0, 0, XRES, YRES, BARS, HD_init, HD_clear, HD_put, HD_bar, HD_flush },
+  { "HD44780", 0, 0, XRES, YRES, BARS, HD_init, HD_clear, HD_put, HD_bar, HD_flush, HD_quit },
   { NULL }
 };

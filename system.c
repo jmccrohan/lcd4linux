@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.13 2000/07/31 10:43:44 reinelt Exp $
+/* $Id: system.c,v 1.14 2000/08/09 09:50:29 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.14  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.13  2000/07/31 10:43:44  reinelt
  *
  * some changes to support kernel-2.4 (different layout of various files in /proc)
@@ -511,7 +518,7 @@ int Disk (int *r, int *w)
     unsigned long w1, w2, w3, w4;
     p=strstr(buffer, "disk_rblk");
     if (p==NULL) {
-      fprintf (stderr, "parse(/proc/stat) failed: no 'disk_rblk' line\n");
+      fprintf (stderr, "parse(/proc/stat) failed: neither 'disk_io' nor 'disk_rblk' found\n");
       fd=-1;
       return -1;
     }

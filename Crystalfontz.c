@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.3 2000/06/04 21:43:50 herp Exp $
+/* $Id: Crystalfontz.c,v 1.4 2000/08/09 09:50:29 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.4  2000/08/09 09:50:29  reinelt
+ *
+ * opened 0.98 development
+ * removed driver-specific signal-handlers
+ * added 'quit'-function to driver structure
+ * added global signal-handler
+ *
  * Revision 1.3  2000/06/04 21:43:50  herp
  * minor bugfix (zero length)
  *
@@ -31,9 +38,9 @@
 #include	<errno.h>
 #include	<termios.h>
 #include	<unistd.h>
-#include	<signal.h>
 #include	<fcntl.h>
 
+#include        "debug.h"
 #include	"cfg.h"
 #include	"lock.h"
 #include	"display.h"
@@ -56,8 +63,9 @@ static char isTxtDirty;
 static char *isBarDirty;
 static char isAnyBarDirty;
 
-static void cryfonquit() {
+int cryfonquit(void) {
 
+        debug ("closing port %s\n", Port);
 	close(Device);
 	unlock_port(Port);
 	exit(0);
@@ -94,7 +102,7 @@ struct termios portset;
 	return fd;
 }
 
-static int cryfoninit(LCD *Self) {
+int cryfoninit(LCD *Self) {
 char *port;
 char *speed;
 char *backlight;
@@ -139,6 +147,8 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 			speed,cfg_file());
 		return -1;
 	}
+
+	debug ("using port %s at %d baud\n", Port, atoi(speed));
 
 	if ((Device=cryfonopen())==-1)
 		return -1;
@@ -185,10 +195,6 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 	isAnyBarDirty=0;
 	isTxtDirty=0;
 
-	signal(SIGINT,cryfonquit);
-	signal(SIGQUIT,cryfonquit);
-	signal(SIGTERM,cryfonquit);
-
 	usleep(350000);
 	write(Device, CRYFON_HIDE_CURSOR CRYFON_SCROLL_OFF CRYFON_WRAP_OFF,3);
 	backlight=cfg_get("Backlight")?:NULL;
@@ -206,13 +212,13 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 	return 0;
 }
 
-static int cryfonclear() {
+int cryfonclear() {
 	memset(Txtbuf,' ',tdim);
 	memset(Barbuf,0,bdim);
 	return 0;
 }
 
-static int cryfonput(int row,int col,char *text) {
+int cryfonput(int row,int col,char *text) {
 int pos;
 
 	pos=row*Lcd.cols+col;
@@ -254,7 +260,7 @@ static void whiten(int bitfrom,int len,int pos,int startbyte,int endbyte) {
 	}
 }
 
-static int cryfonbar(int type,int row,int col,int max,int len1,int len2) {
+int cryfonbar(int type,int row,int col,int max,int len1,int len2) {
 int endb,maxb;
 int bitfrom;
 int pos;
@@ -529,7 +535,7 @@ int i,j,k1,k2,ci;
 	flushBarCharBuf();
 }
 
-static int cryfonflush() {
+int cryfonflush() {
 
 	if (isTxtDirty) {
 		writeTxtDiff();
@@ -544,9 +550,9 @@ static int cryfonflush() {
 }
 
 LCD Crystalfontz[] = {
-	{ "626", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush },
-	{ "636", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush },
-	{ "632", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush },
-	{ "634", 4, 20, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush },
+	{ "626", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
+	{ "636", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
+	{ "632", 2, 16, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
+	{ "634", 4, 20, XRES, YRES, BARS, cryfoninit, cryfonclear, cryfonput, cryfonbar, cryfonflush, cryfonquit },
 	{ NULL }
 };
