@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.11 2003/04/04 06:02:04 reinelt Exp $
+/* $Id: udelay.c,v 1.12 2003/07/18 04:43:14 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.12  2003/07/18 04:43:14  reinelt
+ * udelay: unnecessary sanity check removed
+ *
  * Revision 1.11  2003/04/04 06:02:04  reinelt
  * new parallel port abstraction scheme
  *
@@ -251,10 +254,6 @@ void ndelay (unsigned long nsec)
     do {
       rep_nop();
       rdtscl(t2);
-      // Fixme
-      if (t2<t1) {
-	debug ("ndelay wrap: t1=%d t2=%d", t1, t2);
-      }
     } while ((t2-t1)<nsec);
     
   } else {
