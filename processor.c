@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.30 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: processor.c,v 1.31 2003/06/13 06:35:56 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.31  2003/06/13 06:35:56  reinelt
+ * added scrolling capability
+ *
  * Revision 1.30  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -161,6 +164,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/time.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -175,25 +179,26 @@
 #include "seti.h"
 #include "exec.h"
 
-#define ROWS 16
+#define ROWS 64
 #define GPOS 16
 
-char *row[ROWS+1];
-int   gpo[GPOS+1];
-int   rows, cols, xres, yres, supported_bars, gpos;
-int   token_usage[256]={0,};
+static char *row[ROWS+1];
+static int   gpo[GPOS+1];
+static int   rows, cols, xres, yres, supported_bars, gpos;
+static int   lines, scroll, turn;
+static int   token_usage[256]={0,};
 
-struct { int total, used, free, shared, buffer, cache, avail; } ram;
-struct { double load1, load2, load3, overload; } load;
-struct { double user, nice, system, idle; } busy;
-struct { int read, write, total, max, peak; } disk;
-struct { int rx, tx, total, max, peak, bytes; } net;
-struct { int usage, in, out, total, max, peak; } isdn;
-struct { int rx, tx, total, max, peak; } ppp;
-struct { int perc, stat; double dur; } batt;
-struct { double perc, cput; } seti;
-struct { int num, unseen;} mail[MAILBOXES+1];
-struct { double val, min, max; } sensor[SENSORS+1];
+static struct { int total, used, free, shared, buffer, cache, avail; } ram;
+static struct { double load1, load2, load3, overload; } load;
+static struct { double user, nice, system, idle; } busy;
+static struct { int read, write, total, max, peak; } disk;
+static struct { int rx, tx, total, max, peak, bytes; } net;
+static struct { int usage, in, out, total, max, peak; } isdn;
+static struct { int rx, tx, total, max, peak; } ppp;
+static struct { int perc, stat; double dur; } batt;
+static struct { double perc, cput; } seti;
+static struct { int num, unseen;} mail[MAILBOXES+1];
+static struct { double val, min, max; } sensor[SENSORS+1];
 
 static double query (int token)
 {
@@ -654,11 +659,34 @@ static int process_gpo (int r)
   return (val > 0.0);
 }
 
+static int Turn (void)
+{
+  struct timeval now;
+  static struct timeval old = {tv_sec:0, tv_usec:0};
+  static struct timeval new = {tv_sec:0, tv_usec:0};
+  
+  if (turn<=0) return 0;
+  
+  gettimeofday (&now, NULL);
+  if (now.tv_sec==new.tv_sec ? now.tv_usec>new.tv_usec : now.tv_sec>new.tv_sec) {
+    old=now;
+    new.tv_sec =old.tv_sec;
+    new.tv_usec=old.tv_usec+turn*1000;
+    while (new.tv_usec>=1000000) {
+      new.tv_usec-=1000000;
+      new.tv_sec++;
+    }
+    return 1;
+  }
+  return 0;
+}
+
 void process_init (void)
 {
   int i;
 
   load.overload=atof(cfg_get("overload","2.0"));
+
 
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &gpos);
   if (rows>ROWS) {
@@ -669,15 +697,49 @@ void process_init (void)
     error ("%d gpos exceeds limit, reducing to %d gpos", gpos, GPOS);
     gpos=GPOS;
   }
-  debug ("%d rows, %d columns, %dx%d pixels, %d GPOs", rows, cols, xres, yres, gpos);
+  debug ("Display: %d rows, %d columns, %dx%d pixels, %d GPOs", rows, cols, xres, yres, gpos);
 
-  for (i=1; i<=rows; i++) {
+
+  lines=atoi(cfg_get("Rows","1"));
+  if (lines<1) {
+    error ("bad 'Rows' entry in %s, ignoring.", cfg_file());
+    lines=1;
+  }
+  if (lines>ROWS) {
+    error ("%d virtual rows exceeds limit, reducing to %d rows", lines, ROWS);
+    lines=ROWS;
+  }
+  if (lines>rows) {
+    scroll=atoi(cfg_get("Scroll","1"));
+    if (scroll<1) {
+      error ("bad 'Scroll' entry in %s, ignoring and using '1'", cfg_file());
+      scroll=1;
+    }
+    if (scroll>rows) {
+      error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_file(), scroll, rows);
+      error ("This may lead to unexpected results!");
+    }
+    turn=atoi(cfg_get("Turn","1000"));
+    if (turn<1) {
+      error ("bad 'Turn' entry in %s, ignoring and using '1000'", cfg_file());
+      turn=1;
+    }
+    debug ("Virtual: %d rows, scroll %d lines every %d msec", lines, scroll, turn);
+  } else {
+    lines=rows;
+    scroll=0;
+    turn=0;
+  }
+
+
+  for (i=1; i<=lines; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
     p=cfg_get(buffer,"");
     debug ("%s: %s", buffer, p);
     row[i]=strdup(parse_row(p, supported_bars, token_usage));
   }
+
 
   for (i=1; i<=gpos; i++) {
     char buffer[8], *p;
@@ -690,12 +752,28 @@ void process_init (void)
 
 void process (int smooth)
 {
-  int i, val;
+  int i, j, val;
   char *txt;
+  static int offset=0;
   
   collect_data();
+
+  if (Turn()) {
+    offset+=scroll;
+    while (offset>=lines) {
+      offset-=lines;
+    }
+    // Fixme: this is ugly!
+    smooth=1;
+    lcd_clear();
+  }
+  
   for (i=1; i<=rows; i++) {
-    txt=process_row (i);
+    j=i+offset;
+    while (j>lines) {
+      j-=lines;
+    }
+    txt=process_row (j);
     if (smooth==0)
       lcd_put (i, 1, txt);
   }
