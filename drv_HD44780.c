@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.43 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.44 2005/01/29 09:30:56 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.44  2005/01/29 09:30:56  reinelt
+ * minor HD44780 cleanups
+ *
  * Revision 1.43  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -891,7 +894,7 @@ static void drv_HD_goto (int row, int col)
   int pos;
 
   /* handle multiple displays/controllers */
-  if (numControllers>1 && row>=DROWS/2) {
+  if (numControllers > 1 && row >= DROWS/2) {
     row -= DROWS/2;
     currController = 2;
   } else {
@@ -899,9 +902,9 @@ static void drv_HD_goto (int row, int col)
   }
    
   /* 16x1 Displays are organized as 8x2 :-( */
-  if (DCOLS==16 && DROWS==1 && col>7) {
+  if (DCOLS == 16 && DROWS == 1 && col > 7) {
     row++;
-    col-=8;
+    col -= 8;
   }
   
   if (Capabilities & CAP_HD66712) {
@@ -909,10 +912,10 @@ static void drv_HD_goto (int row, int col)
     pos = row*32 + col;
   } else {
     /* 16x4 Displays use a slightly different layout */
-    if (DCOLS==16 && DROWS==4) {
-      pos = (row%2)*64+(row/2)*16+col;
+    if (DCOLS == 16 && DROWS == 4) {
+      pos = (row%2)*64 + (row/2)*16 + col;
     } else {  
-      pos = (row%2)*64+(row/2)*20+col;
+      pos = (row%2)*64 + (row/2)*20 + col;
     }
   }
   drv_HD_command (currController, (0x80|pos), T_EXEC);
@@ -1233,7 +1236,7 @@ int drv_HD_init (const char *section, const int quiet)
   YRES  = 8;      /* pixel height of one char  */
   CHARS = 8;      /* number of user-defineable characters */
   CHAR0 = 0;      /* ASCII of first user-defineable char */
-  GOTO_COST = 2;  /* number of bytes a goto command requires */
+  GOTO_COST = 1;  /* number of bytes a goto command requires */
   
   /* real worker functions */
   drv_generic_text_real_write   = drv_HD_write;
