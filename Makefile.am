@@ -30,6 +30,7 @@ MatrixOrbital.c \
 BeckmannEgle.c \
 HD44780.c \
 Crystalfontz.c Crystalfontz.h \
+SIN.c \
 PalmPilot.c \
 Raster.c \
 XWindow.c

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.20 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: display.c,v 1.21 2000/11/28 16:46:11 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.21  2000/11/28 16:46:11  reinelt
+ *
+ * first try to support display of SIN router
+ *
  * Revision 1.20  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -153,6 +157,7 @@ extern LCD MatrixOrbital[];
 extern LCD BeckmannEgle[];
 extern LCD HD44780[];
 extern LCD Crystalfontz[];
+extern LCD SIN[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
 extern LCD XWindow[];
@@ -163,6 +168,7 @@ FAMILY Driver[] = {
   { "Beckmann+Egle",   BeckmannEgle },
   { "HD 44780 based",  HD44780 },
   { "Crystalfontz",    Crystalfontz },
+  { "SIN Router",      SIN },
   { "3Com Palm Pilot", PalmPilot },
   { "Raster",          Raster },
 #ifndef X_DISPLAY_MISSING

@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.9 2000/08/10 09:44:09 reinelt Exp $
+# $Id: README,v 1.10 2000/11/28 16:46:11 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -163,10 +163,10 @@ Tokens:
   'dw', disk blocks written
   'dt', disk blocks total (read+write)
   'dm', disk blocks max (read, write)
-  'nr', network packets received
-  'nw', network packets transmitted
-  'nt', network packets total (receive+transmit)
-  'nm', network packets max (receive, transmit)
+  'nr', network bytes received
+  'nw', network bytes transmitted
+  'nt', network bytes total (receive+transmit)
+  'nm', network bytes max (receive, transmit)
   'ii', ISDN bytes received
   'io', ISDN bytes sent
   'it', ISDN bytes total (received+send)
