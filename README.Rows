@@ -1,0 +1,33 @@
+list of possible directives which will be replaced
+by the appropriate values or will create bars or
+icons extracted from
+http://lcd4linux.sourceforge.net/manual.html 
+
+Directive				Description
+===================================================================================
+\nnn					will write the ASCII-character nnn (octal)
+%token					will be replaced by the value of token
+					for a detailed description of every
+					possible token please refer to
+					http://lcd4linux.sourceforge.net/manual.html or
+					/usr/share/doc/packages/lcd4linux/README.Tokens
+%%					will write a '%'
+%$					will write a '$'
+%&					will write a '&'
+$<direction><length><token>[+<token>]	will create a bar with the specified
+					direction and length (in characters)
+					with the value of token. If the driver
+					supports dual bars, you can specify the
+					second value with '+token'. 'direction' can
+					be 'l' (left), 'r' (right), 'u' (up) or
+					'd'(down). If you specify the direction
+					in upper case, a logarithmic bar will be
+					created. The space occupied by a bar
+					always grows from left to right or from
+					top to bottom, regardless of the direction!
+$t<height><token>,<width>		will create a time series bar. The data
+					is displayed like '$u', but shifted every
+					second 1 pixel to the left. Currently only
+					displays based on the pixel-driver support
+					these type of bars.
+&<num>					will draw the icon 'num' at this position
