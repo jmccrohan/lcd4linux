@@ -121,6 +121,7 @@ done
 AC_MSG_RESULT([done])
 
 RASTER="no"
+PARPORT="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    DRIVERS="$DRIVERS BeckmannEgle.o"
@@ -138,16 +139,19 @@ if test "$CWLINUX" = "yes"; then
 fi
 
 if test "$HD44780" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[junk])
 fi
 
 if test "$M50530" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS M50530.o"
    AC_DEFINE(WITH_M50530,1,[junk])
 fi
 
 if test "$T6963" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS T6963.o"
    AC_DEFINE(WITH_T6963,1,[junk])
 fi
@@ -209,16 +213,20 @@ if test "$X11" = "yes"; then
    fi
 fi
 
+if test "$DRIVERS" = ""; then
+   AC_MSG_ERROR([You should include at least one driver...])
+fi
+   
 # Raster.o depends on PPM or PNG
 if test "$RASTER" = "yes"; then
    DRIVERS="$DRIVERS Raster.o"
 fi
 
-
-if test "$DRIVERS" = ""; then
-   AC_MSG_ERROR([You should include at least one driver...])
+# parport driver
+if test "$PARPORT" = "yes"; then
+   DRIVERS="$DRIVERS parport.o"
 fi
-   
+
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)
 

@@ -4573,6 +4573,7 @@ echo "$as_me:$LINENO: result: done" >&5
 echo "${ECHO_T}done" >&6
 
 RASTER="no"
+PARPORT="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    DRIVERS="$DRIVERS BeckmannEgle.o"
@@ -4602,6 +4603,7 @@ _ACEOF
 fi
 
 if test "$HD44780" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS HD44780.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -4611,6 +4613,7 @@ _ACEOF
 fi
 
 if test "$M50530" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS M50530.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -4620,6 +4623,7 @@ _ACEOF
 fi
 
 if test "$T6963" = "yes"; then
+   PARPORT="yes"
    DRIVERS="$DRIVERS T6963.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -4724,16 +4728,20 @@ _ACEOF
    fi
 fi
 
+if test "$DRIVERS" = ""; then
+   { { echo "$as_me:$LINENO: error: You should include at least one driver..." >&5
+echo "$as_me: error: You should include at least one driver..." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
 # Raster.o depends on PPM or PNG
 if test "$RASTER" = "yes"; then
    DRIVERS="$DRIVERS Raster.o"
 fi
 
-
-if test "$DRIVERS" = ""; then
-   { { echo "$as_me:$LINENO: error: You should include at least one driver..." >&5
-echo "$as_me: error: You should include at least one driver..." >&2;}
-   { (exit 1); exit 1; }; }
+# parport driver
+if test "$PARPORT" = "yes"; then
+   DRIVERS="$DRIVERS parport.o"
 fi
 
 

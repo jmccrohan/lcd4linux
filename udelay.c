@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.10 2003/02/27 07:43:11 reinelt Exp $
+/* $Id: udelay.c,v 1.11 2003/04/04 06:02:04 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.11  2003/04/04 06:02:04  reinelt
+ * new parallel port abstraction scheme
+ *
  * Revision 1.10  2003/02/27 07:43:11  reinelt
  *
  * asm/msr.h: included hard-coded definition of rdtscl() if msr.h cannot be found.
@@ -217,6 +220,7 @@ static void getCPUinfo (int *hasTSC, double *MHz)
 
 }
 
+
 void udelay_init (void)
 {
   int tsc;
@@ -232,6 +236,7 @@ void udelay_init (void)
     debug ("using gettimeofday() delay loop");
   }
 }
+
 
 void ndelay (unsigned long nsec)
 {

@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.26 2003/02/22 07:53:09 reinelt Exp $
+/* $Id: HD44780.c,v 1.27 2003/04/04 06:01:59 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.27  2003/04/04 06:01:59  reinelt
+ * new parallel port abstraction scheme
+ *
  * Revision 1.26  2003/02/22 07:53:09  reinelt
  * cfg_get(key,defval)
  *
@@ -150,38 +153,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <time.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-
-#ifdef HAVE_SYS_IO_H
-#include <sys/io.h>
-#define WITH_OUTB
-#else
-#ifdef HAVE_ASM_IO_H
-#include <asm/io.h>
-#define WITH_OUTB
-#endif
-#endif
-
-#if defined (HAVE_LINUX_PARPORT_H) && defined (HAVE_LINUX_PPDEV_H)
-#define WITH_PPDEV
-#include <linux/parport.h>
-#include <linux/ppdev.h>
-#endif
-
-
-#if !defined(WITH_OUTB) && !defined(WITH_PPDEV)
-#error neither outb() nor ppdev() possible
-#error cannot compile HD44780 driver
-#endif
 
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "parport.h"
 #include "udelay.h"
 
 #define XRES 5
@@ -190,200 +167,72 @@
 
 static LCD Lcd;
 
-
-static unsigned short Port=0;
-
-static char *PPdev=NULL;
-
-#ifdef WITH_PPDEV
-static int PPfd=-1;
-#endif
-
 static char Txt[4][40];
 static int  GPO=0;
 
-#ifdef WITH_PPDEV
-static void HD_toggle (int bit, int inv, int delay)
-{
-  struct ppdev_frob_struct frob;
-  frob.mask=bit;
+static unsigned char SIGNAL_RS;
+static unsigned char SIGNAL_ENABLE;
+static unsigned char SIGNAL_ENABLE_GPO;
 
-  // rise
-  frob.val=inv?0:bit;
-  ioctl (PPfd, PPFCONTROL, &frob);
-  
-  // pulse width
-  ndelay(delay);      
-
-  // lower
-  frob.val=inv?bit:0;
-  ioctl (PPfd, PPFCONTROL, &frob);
-}
-#endif
 
 static void HD_command (unsigned char cmd, int delay)
 {
-#ifdef WITH_PPDEV
-  if (PPdev) {
-
-    struct ppdev_frob_struct frob;
     
-    // put data on DB1..DB8
-    ioctl(PPfd, PPWDATA, &cmd);
+  // put data on DB1..DB8
+  parport_data (cmd);
+  
+  // clear RS
+  parport_control (SIGNAL_RS, 0);
     
-    // clear RS (inverted)
-    frob.mask=PARPORT_CONTROL_AUTOFD;
-    frob.val=PARPORT_CONTROL_AUTOFD;
-    ioctl (PPfd, PPFCONTROL, &frob);
+  // Address set-up time
+  ndelay(40);
+
+  // send command
+  // Enable cycle time = 230ns
+  parport_toggle (SIGNAL_ENABLE, 1, 230);
     
-    // Address set-up time
-    ndelay(40);
+  // wait for command completion
+  udelay(delay);
 
-    // send command
-    // Enable cycle time = 230ns
-    HD_toggle(PARPORT_CONTROL_STROBE, 1, 230);
-    
-    // wait for command completion
-    udelay(delay);
-
-  } else
-
-#endif
-
-    {
-      outb (cmd, Port);    // put data on DB1..DB8
-      outb (0x03, Port+2); // clear RS = bit 2 invertet
-      ndelay(40);          // Address set-up time
-      outb (0x02, Port+2); // set Enable = bit 0 invertet
-      ndelay(230);         // Enable cycle time
-      outb (0x03, Port+2); // clear Enable
-      udelay (delay);      // wait for command completion
-    }
 }
+
 
 static void HD_write (char *string, int len, int delay)
 {
-#ifdef WITH_PPDEV
-  if (PPdev) {
+  // set RS
+  parport_control (SIGNAL_RS, SIGNAL_RS);
 
-    struct ppdev_frob_struct frob;
-
-    // set RS (inverted)
-    frob.mask=PARPORT_CONTROL_AUTOFD;
-    frob.val=0;
-    ioctl (PPfd, PPFCONTROL, &frob);
+  // Address set-up time
+  ndelay(40);
+  
+  while (len--) {
     
-    // Address set-up time
-    ndelay(40);
+    // put data on DB1..DB8
+    parport_data (*(string++));
     
-    while (len--) {
-
-      // put data on DB1..DB8
-      ioctl(PPfd, PPWDATA, string++);
-      
-      // send command
-      HD_toggle(PARPORT_CONTROL_STROBE, 1, 230);
-
-      // wait for command completion
-      udelay(delay);
-    }
+    // send command
+    // Enable cycle time = 230ns
+    parport_toggle (SIGNAL_ENABLE, 1, 230);
     
-  } else
-
-#endif
-
-    {
-      outb (0x01, Port+2); // set RS = bit 2 invertet
-      ndelay(40);          // Address set-up time
-      while (len--) {
-	outb (*string++, Port); // put data on DB1..DB8
-	outb (0x00, Port+2);    // set Enable = bit 0 invertet
-	ndelay(230);            // Enable cycle time
-	outb (0x01, Port+2);    // clear Enable
-	udelay (delay);
-      }
-    }
+    // wait for command completion
+    udelay(delay);
+  }
 }
 
 static void HD_setGPO (int bits)
 {
   if (Lcd.gpos>0) {
-
-#ifdef WITH_PPDEV
-
-
-    if (PPdev) {
-      
-      // put data on DB1..DB8
-      ioctl(PPfd, PPWDATA, &bits);
-
-      // 74HCT573 set-up time
-      ndelay(20);
-      
-      // toggle INIT
-      // 74HCT573 enable pulse width = 24ns
-      HD_toggle(PARPORT_CONTROL_INIT, 0, 24);
-      
-    } else
-      
-#endif
-      
-      {
-	outb (bits, Port);    // put data on DB1..DB8
-	ndelay(20);           // 74HCT573 set-up time
-	outb (0x05, Port+2);  // set INIT = bit 2 invertet
-	ndelay(24);           // 74HCT573 enable pulse width
-	outb (0x03, Port+2);  // clear INIT
-      }
+    
+    // put data on DB1..DB8
+    parport_data (bits);
+    
+    // 74HCT573 set-up time
+    ndelay(20);
+    
+    // send data
+    // 74HCT573 enable pulse width = 24ns
+    parport_toggle (SIGNAL_ENABLE_GPO, 1, 230);
   }
-}
-
-
-static int HD_open (void)
-{
-#ifdef WITH_PPDEV
-
-  if (PPdev) {
-    debug ("using ppdev %s", PPdev);
-    PPfd=open(PPdev, O_RDWR);
-    if (PPfd==-1) {
-      error ("HD44780: open(%s) failed: %s", PPdev, strerror(errno));
-      return -1;
-    }
-
-#if 0
-    if (ioctl(PPfd, PPEXCL)) {
-      debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
-    } else {
-      debug ("ioctl(%s, PPEXCL) succeded.");
-    }
-#endif
-
-    if (ioctl(PPfd, PPCLAIM)) {
-      error ("HD44780: ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
-      return -1;
-    }
-  } else
-
-#endif
-
-    {
-      debug ("using raw port 0x%x", Port);
-      if (ioperm(Port, 3, 1)!=0) {
-	error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
-	return -1;
-      }
-    }
-  
-  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-  HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
-  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-  HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
-  HD_command (0x08, 40);   // Display off, cursor off, blink off
-  HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
-  HD_command (0x06, 40);   // curser moves to right, no shift
-
-  return 0;
 }
 
 
@@ -418,34 +267,6 @@ int HD_init (LCD *Self)
   int rows=-1, cols=-1, gpos=-1;
   char *s, *e;
   
-  s=cfg_get ("Port",NULL);
-  if (s==NULL || *s=='\0') {
-    error ("HD44780: no 'Port' entry in %s", cfg_file());
-    return -1;
-  }
-  PPdev=NULL;
-  if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
-#ifdef WITH_PPDEV
-    Port=0;
-    PPdev=s;
-#else
-    error ("HD44780: bad port '%s' in %s", s, cfg_file());
-    return -1;
-#endif
-  }
-  
-#ifdef USE_OLD_UDELAY
-  s=cfg_get ("Delay",NULL);
-  if (s==NULL || *s=='\0') {
-    error ("HD44780: no 'Delay' entry in %s", cfg_file());
-    return -1;
-  }
-  if ((loops_per_usec=strtol(s, &e, 0))==0 || *e!='\0') {
-    error ("HD44780: bad delay '%s' in %s", s, cfg_file());
-    return -1;
-  }    
-#endif
-  
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Size' entry in %s", cfg_file());
@@ -470,13 +291,24 @@ int HD_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-#ifndef USE_OLD_UDELAY
-  udelay_init();
-#endif
+  SIGNAL_RS=parport_wire ("RS", "AUTOFD");
+  SIGNAL_ENABLE=parport_wire ("ENABLE", "STROBE");
+  SIGNAL_ENABLE_GPO=parport_wire ("ENABLE_GPO", "INIT");
 
-  if (HD_open()!=0)
+  if (parport_open() != 0) {
+    error ("HD44780: could not initialize parallel port!");
     return -1;
-  
+  }
+
+  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+  HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
+  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+  HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  HD_command (0x08, 40);   // Display off, cursor off, blink off
+  HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
+  HD_command (0x06, 40);   // curser moves to right, no shift
+
+
   bar_init(rows, cols, XRES, YRES, CHARS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
@@ -562,26 +394,7 @@ int HD_flush (void)
 
 int HD_quit (void)
 {
-#ifdef WITH_PPDEV
-  if (PPdev) {
-    debug ("closing ppdev %s", PPdev);
-    if (ioctl(PPfd, PPRELEASE)) {
-      error ("HD44780: ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
-    }
-    if (close(PPfd)==-1) {
-      error ("HD44780: close(%s) failed: %s", PPdev, strerror(errno));
-      return -1;
-    }
-  } else 
-#endif    
-   {
-    debug ("closing raw port 0x%x", Port);
-    if (ioperm(Port, 3, 0)!=0) {
-      error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
-      return -1;
-    }
-  }
-  return 0;
+  return parport_close();
 }
 
 

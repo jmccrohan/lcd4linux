@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: USBLCD.c,v 1.9 2003/04/04 06:01:59 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.9  2003/04/04 06:01:59  reinelt
+ * new parallel port abstraction scheme
+ *
  * Revision 1.8  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -79,7 +82,6 @@
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
-#include "udelay.h"
 
 #define GET_HARD_VERSION	1
 #define GET_DRV_VERSION		2

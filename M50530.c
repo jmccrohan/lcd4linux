@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.6 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: M50530.c,v 1.7 2003/04/04 06:01:59 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.7  2003/04/04 06:01:59  reinelt
+ * new parallel port abstraction scheme
+ *
  * Revision 1.6  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -56,25 +59,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <time.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-
-#if defined (HAVE_LINUX_PARPORT_H) && defined (HAVE_LINUX_PPDEV_H)
-#define WITH_PPDEV
-#include <linux/parport.h>
-#include <linux/ppdev.h>
-#else
-#error The M50530 driver needs ppdev
-#error cannot compile M50530 driver
-#endif
 
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "parport.h"
 #include "udelay.h"
 
 #define XRES 5
@@ -83,52 +73,34 @@
 
 static LCD Lcd;
 
-
-static char *PPdev=NULL;
-static int   PPfd=-1;
-
 static char Txt[8][40];
 static int  GPO=0;
 
+static unsigned char SIGNAL_EX;
+static unsigned char SIGNAL_IOC1;
+static unsigned char SIGNAL_IOC2;
+static unsigned char SIGNAL_ENABLE_GPO;
 
 static void M5_command (unsigned int cmd, int delay)
 {
-  unsigned char data;
-  struct ppdev_frob_struct frob;
     
   // put data on DB1..DB8
-  data=cmd&0xff;
-  ioctl(PPfd, PPWDATA, &data);
+  parport_data (cmd&0xff);
     
   // set I/OC1 (Select inverted)
   // set I/OC2 (AutoFeed inverted)
-  frob.mask=PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD;
-  frob.val=0;
-  if (!(cmd & 0x200)) {
-    frob.val|=PARPORT_CONTROL_SELECT;
-  }
-  if (!(cmd & 0x100)) {
-    frob.val|=PARPORT_CONTROL_AUTOFD;
-  }
-  ioctl (PPfd, PPFCONTROL, &frob);
+  parport_control (SIGNAL_IOC1|SIGNAL_IOC2, 
+		   (cmd&0x200?SIGNAL_IOC1:0) | 
+		   (cmd&0x100?SIGNAL_IOC2:0));
 
   // Control data setup time
   ndelay(200);
 
-  // rise EX (Strobe, inverted)
-  frob.mask=PARPORT_CONTROL_STROBE;
-  frob.val=0;
-  ioctl (PPfd, PPFCONTROL, &frob);
-    
-  // EX signal pulse width
+  // send command
+  // EX signal pulse width = 500ns
   // Fixme: why 500 ns? Datasheet says 200ns
-  ndelay(500);
+  parport_toggle (SIGNAL_EX, 1, 500);
 
-  // lower EX (Strobe, inverted)
-  frob.mask=PARPORT_CONTROL_STROBE;
-  frob.val=PARPORT_CONTROL_STROBE;
-  ioctl (PPfd, PPFCONTROL, &frob);
-    
   // wait
   udelay(delay);
 
@@ -150,58 +122,16 @@ static void M5_setGPO (int bits)
 {
   if (Lcd.gpos>0) {
 
-    struct ppdev_frob_struct frob;
-  
     // put data on DB1..DB8
-    ioctl(PPfd, PPWDATA, &bits);
+    parport_data (bits);
 
     // 74HCT573 set-up time
     ndelay(20);
     
-    // toggle INIT
-    frob.mask=PARPORT_CONTROL_INIT;
-    frob.val=PARPORT_CONTROL_INIT; // rise
-    ioctl (PPfd, PPFCONTROL, &frob);
-
-    // 74HCT573 enable pulse width
-    ndelay(24);
-
-    frob.val=0; // lower
-    ioctl (PPfd, PPFCONTROL, &frob);
+    // send data
+    // 74HCT573 enable pulse width = 24ns
+    parport_toggle (SIGNAL_ENABLE_GPO, 1, 24);
   }
-}
-
-
-static int M5_open (void)
-{
-
-  debug ("using ppdev %s", PPdev);
-  PPfd=open(PPdev, O_RDWR);
-  if (PPfd==-1) {
-    error ("open(%s) failed: %s", PPdev, strerror(errno));
-    return -1;
-  }
-
-#if 0
-  if (ioctl(PPfd, PPEXCL)) {
-    debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
-  } else {
-    debug ("ioctl(%s, PPEXCL) succeded.");
-  }
-#endif
-
-  if (ioctl(PPfd, PPCLAIM)) {
-    error ("ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
-    return -1;
-  }
-
-  M5_command (0x00FA, 20); // set function mode
-  M5_command (0x0020, 20); // set display mode
-  M5_command (0x0050, 20); // set entry mode
-  M5_command (0x0030, 20); // set display mode
-  M5_command (0x0001, 1250); // clear display
-
-  return 0;
 }
 
 
@@ -237,18 +167,6 @@ int M5_init (LCD *Self)
   int rows=-1, cols=-1, gpos=-1;
   char *s, *e;
   
-  if (PPdev) {
-    free (PPdev);
-    PPdev=NULL;
-  }
-  
-  s=cfg_get ("Port",NULL);
-  if (s==NULL || *s=='\0') {
-    error ("M50530: no 'Port' entry in %s", cfg_file());
-    return -1;
-  }
-  PPdev=strdup(s);
-  
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
     error ("M50530: no 'Size' entry in %s", cfg_file());
@@ -275,14 +193,25 @@ int M5_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-  udelay_init();
+  SIGNAL_EX=parport_wire ("EX",   "STROBE");
+  SIGNAL_EX=parport_wire ("IOC1", "SELECT");
+  SIGNAL_EX=parport_wire ("IOC2", "AUTOFD");
+  SIGNAL_EX=parport_wire ("ENABLE_GPO", "INIT");
 
-  if (M5_open()!=0)
+  if (parport_open() != 0) {
+    error ("M50530: could not initialize parallel port!");
     return -1;
+  }
+  
+  M5_command (0x00FA, 20); // set function mode
+  M5_command (0x0020, 20); // set display mode
+  M5_command (0x0050, 20); // set entry mode
+  M5_command (0x0030, 20); // set display mode
+  M5_command (0x0001, 1250); // clear display
   
   bar_init(rows, cols, XRES, YRES, CHARS);
   bar_add_segment(0,0,255,32); // ASCII 32 = blank
-
+  
   M5_clear();
   
   return 0;
@@ -366,15 +295,7 @@ int M5_flush (void)
 
 int M5_quit (void)
 {
-  debug ("closing ppdev %s", PPdev);
-  if (ioctl(PPfd, PPRELEASE)) {
-    error ("ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
-  }
-  if (close(PPfd)==-1) {
-    error ("close(%s) failed: %s", PPdev, strerror(errno));
-    return -1;
-  }
-  return 0;
+  return parport_close();
 }
 
 
