@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.11 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: parser.h,v 1.12 2003/06/21 05:46:18 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.12  2003/06/21 05:46:18  reinelt
+ * DVB client integrated
+ *
  * Revision 1.11  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -86,15 +89,15 @@ typedef enum {
   T_ISDN_USED, T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
   T_SETI_PRC, T_SETI_CPU,
   T_BATT_PERC, T_BATT_STAT, T_BATT_DUR,
+  T_DVB_STRENGTH, T_DVB_SNR,
   T_EXTENDED,
   T_MAIL, T_MAIL_UNSEEN,
   T_SENSOR,
-  T_EXEC  
+  T_EXEC
 } TOKEN;
 
 typedef enum {
-  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, 
-  C_BATT,  
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, C_BATT, C_DVB,
   C_MAIL, C_SENSOR, C_EXEC
 } CLASS;
 

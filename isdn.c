@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.9 2001/05/27 07:19:28 reinelt Exp $
+/* $Id: isdn.c,v 1.10 2003/06/21 05:46:18 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.10  2003/06/21 05:46:18  reinelt
+ * DVB client integrated
+ *
  * Revision 1.9  2001/05/27 07:19:28  reinelt
  *
  * fixed a warning in pixmap.c
@@ -154,7 +157,7 @@ int Isdn (int *rx, int *tx, int *usage)
       error ("open(/dev/isdninfo) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open (/proc/isdninfo)=%d", fd);
+    debug ("open (/dev/isdninfo)=%d", fd);
   }
 
   if (ioctl(fd, IIOCGETCPS, &cps)) {

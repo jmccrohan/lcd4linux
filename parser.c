@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.18 2002/12/05 19:23:01 reinelt Exp $
+/* $Id: parser.c,v 1.19 2003/06/21 05:46:18 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.19  2003/06/21 05:46:18  reinelt
+ * DVB client integrated
+ *
  * Revision 1.18  2002/12/05 19:23:01  reinelt
  * fixed undefined operations found by gcc3
  *
@@ -174,6 +177,8 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "bp", T_BATT_PERC,  C_BATT,    1 },
 			  { "bs", T_BATT_STAT,  C_BATT,    0 },
 			  { "bd", T_BATT_DUR,   C_BATT,    0 },
+			  { "ss", T_DVB_STRENGTH, C_DVB,   1 },
+			  { "sn", T_DVB_SNR,    C_DVB,     1 },
 			  { "e*", T_MAIL,       C_MAIL,    0 },
 			  { "u*", T_MAIL_UNSEEN,C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },

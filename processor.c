@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.31 2003/06/13 06:35:56 reinelt Exp $
+/* $Id: processor.c,v 1.32 2003/06/21 05:46:18 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.32  2003/06/21 05:46:18  reinelt
+ * DVB client integrated
+ *
  * Revision 1.31  2003/06/13 06:35:56  reinelt
  * added scrolling capability
  *
@@ -176,6 +179,7 @@
 #include "processor.h"
 #include "mail.h"
 #include "battery.h"
+#include "dvb.h"
 #include "seti.h"
 #include "exec.h"
 
@@ -199,6 +203,7 @@ static struct { int perc, stat; double dur; } batt;
 static struct { double perc, cput; } seti;
 static struct { int num, unseen;} mail[MAILBOXES+1];
 static struct { double val, min, max; } sensor[SENSORS+1];
+static struct { double strength, snr; } dvb;
 
 static double query (int token)
 {
@@ -287,6 +292,11 @@ static double query (int token)
   case T_BATT_DUR:
     return batt.dur;
     
+  case T_DVB_STRENGTH:
+    return dvb.strength;
+  case T_DVB_SNR:
+    return dvb.snr;
+
   case T_MAIL:
     return mail[(token>>8)-'0'].num;
 
@@ -298,6 +308,7 @@ static double query (int token)
 
   case T_EXEC:
     return exec[(token>>8)-'0'].val;
+
   }
   return 0.0;
 }
@@ -363,6 +374,7 @@ static double query_bar (int token)
 	value = 0;
       return value/100;
     }
+
   case T_SENSOR:
     i=(token>>8)-'0';
     return (value-sensor[i].min)/(sensor[i].max-sensor[i].min);
@@ -376,27 +388,35 @@ static void print_token (int token, char **p, char *start, int maxlen)
   int i;
   
   switch (token & 255) {
+
   case T_PERCENT:
     *(*p)++='%';
     break;
+
   case T_DOLLAR:
     *(*p)++='$';
     break;
+
   case T_OS:
     *p+=sprintf (*p, "%s", System());
     break;
+
   case T_RELEASE:
     *p+=sprintf (*p, "%s", Release());
     break;
+
   case T_CPU:
     *p+=sprintf (*p, "%s", Processor());
     break;
+
   case T_RAM:
     *p+=sprintf (*p, "%d", Memory());
     break;
+
   case T_OVERLOAD:
     *(*p)++=load.load1>load.overload?'!':' ';
     break;
+
   case T_MEM_TOTAL:
   case T_MEM_USED:
   case T_MEM_FREE:
@@ -406,6 +426,7 @@ static void print_token (int token, char **p, char *start, int maxlen)
   case T_MEM_AVAIL:
     *p+=sprintf (*p, "%6.0f", query(token));
     break;
+
   case T_LOAD_1:
   case T_LOAD_2:
   case T_LOAD_3:
@@ -418,6 +439,7 @@ static void print_token (int token, char **p, char *start, int maxlen)
     else
       *p+=sprintf (*p, "%5.0f", val);
     break;
+
   case T_CPU_USER:
   case T_CPU_NICE:
   case T_CPU_SYSTEM:
@@ -425,6 +447,7 @@ static void print_token (int token, char **p, char *start, int maxlen)
   case T_CPU_IDLE:
     *p+=sprintf (*p, "%3.0f", 100.0*query(token));
     break;
+
   case T_ETH_RX:
   case T_ETH_TX:
   case T_ETH_MAX:
@@ -434,6 +457,7 @@ static void print_token (int token, char **p, char *start, int maxlen)
       val/=1024.0;
     *p+=sprintf (*p, "%5.0f", val);
     break;
+
   case T_ISDN_IN:
   case T_ISDN_OUT:
   case T_ISDN_MAX:
@@ -443,12 +467,14 @@ static void print_token (int token, char **p, char *start, int maxlen)
     else
       *p+=sprintf (*p, " ----");
     break;
+
   case T_ISDN_USED:
     if (isdn.usage)
       *p+=sprintf (*p, "*");
     else
       *p+=sprintf (*p, " ");
     break;
+
   case T_SETI_PRC:
     val=100.0*query(token);
     if (val<100.0) 
@@ -495,6 +521,11 @@ static void print_token (int token, char **p, char *start, int maxlen)
       }
       *p+=sprintf(*p, "%2.0f%c", val, eh);
     }
+    break;
+
+  case T_DVB_STRENGTH:
+  case T_DVB_SNR:
+    *p+=sprintf (*p, "%5.1f", 100.0*query(token));
     break;
 
   case T_EXEC:
@@ -567,6 +598,10 @@ static void collect_data (void)
     Battery (&batt.perc, &batt.stat, &batt.dur);
   }
   
+  if (token_usage[C_DVB]) {
+    DVB (&dvb.strength, &dvb.snr);
+  }
+  
   for (i=0; i<=MAILBOXES; i++) {
     if (token_usage[T_MAIL]&(1<<i) || token_usage[T_MAIL_UNSEEN]&(1<<i) ) {
       Mail (i, &mail[i].num, &mail[i].unseen);
@@ -584,6 +619,7 @@ static void collect_data (void)
       Exec (i, exec[i].s, &exec[i].val);
     }
   }
+
 }
 
 static char *process_row (int r)
