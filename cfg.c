@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.42 2004/06/26 12:04:59 reinelt Exp $^
+/* $Id: cfg.c,v 1.43 2004/11/29 04:42:06 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.43  2004/11/29 04:42:06  reinelt
+ * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+ *
  * Revision 1.42  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -579,7 +582,7 @@ int cfg_number (const char *section, const char *key, const int defval, const in
     return -1;
   }
   
-  if (*value>max) {
+  if (max > min && max != -1 && *value > max) {
     error ("bad %s value '%d' in %s, maximum is %d", key, *value, cfg_source(), max);
     *value=max;
     return -1;

@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.12 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: widget_bar.c,v 1.13 2004/11/29 04:42:07 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.13  2004/11/29 04:42:07  reinelt
+ * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+ *
  * Revision 1.12  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -206,7 +209,7 @@ int widget_bar_init (WIDGET *Self)
   Compile (Bar->expr_max,    &Bar->tree_max);
 
   /* bar length, default 1 */
-  cfg_number (section, "length", 1,  0, 99999, &(Bar->length));
+  cfg_number (section, "length", 1,  0, -1, &(Bar->length));
   
   /* direction: East (default), West, North, South */
   c = cfg_get (section, "direction",  "E");
@@ -230,7 +233,7 @@ int widget_bar_init (WIDGET *Self)
   free (c);
   
   /* update interval (msec), default 1 sec */
-  cfg_number (section, "update", 1000, 10, 99999, &(Bar->update));
+  cfg_number (section, "update", 1000, 10, -1, &(Bar->update));
   
   free (section);
   Self->data=Bar;

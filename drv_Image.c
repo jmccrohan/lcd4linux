@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.9 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_Image.c,v 1.10 2004/11/29 04:42:07 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.10  2004/11/29 04:42:07  reinelt
+ * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+ *
  * Revision 1.9  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -422,7 +425,7 @@ static int drv_IMG_start (const char *section)
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
   
-  if (cfg_number(section, "border", 0, 0, 1000000, &border)<0) return -1;
+  if (cfg_number(section, "border", 0, 0, -1, &border)<0) return -1;
 
   if (sscanf(s=cfg_get(NULL, "foreground", "#102000"), "#%x", &fg_col)!=1) {
     error ("%s: bad %s.foreground color '%s' from %s", Name, section, s, cfg_source());

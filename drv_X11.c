@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.8 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_X11.c,v 1.9 2004/11/29 04:42:07 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.9  2004/11/29 04:42:07  reinelt
+ * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+ *
  * Revision 1.8  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -236,7 +239,7 @@ static int drv_X11_start (const char *section)
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
   
-  if (cfg_number(section, "border", 0, 0, 1000000, &border)<0) return -1;
+  if (cfg_number(section, "border", 0, 0, -1, &border)<0) return -1;
 
   fg_col = cfg_get(section, "foreground", "#000000");
   bg_col = cfg_get(section, "background", "#80d000");

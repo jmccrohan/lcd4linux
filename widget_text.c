@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.19 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: widget_text.c,v 1.20 2004/11/29 04:42:07 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.20  2004/11/29 04:42:07  reinelt
+ * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+ *
  * Revision 1.19  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -365,7 +368,7 @@ int widget_text_init (WIDGET *Self)
   Compile (Text->expression, &Text->tree);
   
   /* field width, default 10 */
-  cfg_number (section, "width", 10,  0, 99999, &(Text->width));
+  cfg_number (section, "width", 10,  0, -1, &(Text->width));
   
   /* precision: number of digits after the decimal point (default: none) */
   /* Note: this is the *maximum* precision on small values, */
@@ -397,13 +400,13 @@ int widget_text_init (WIDGET *Self)
   free (c);
   
   /* update interval (msec), default 1 sec, 0 stands for never */
-  cfg_number (section, "update", 1000, 0, 99999, &(Text->update));
+  cfg_number (section, "update", 1000, 0, -1, &(Text->update));
   /* limit update interval to min 10 msec */
   if (Text->update > 0 && Text->update < 10) Text->update = 10;
   
   /* marquee scroller speed: interval (msec), default 500msec */
   if (Text->align==ALIGN_MARQUEE) {
-    cfg_number (section, "speed", 500, 10, 99999, &(Text->speed));
+    cfg_number (section, "speed", 500, 10, -1, &(Text->speed));
   }
   
   /* buffer */
