@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.9 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: hash.h,v 1.10 2004/03/03 04:44:16 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.10  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.9  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -102,8 +106,4 @@ char  *hash_get       (HASH *Hash, char *key);
 double hash_get_delta (HASH *Hash, char *key, int delay);
 double hash_get_regex (HASH *Hash, char *key, int delay);
 void   hash_destroy   (HASH *Hash);
-
-int gettimeofday_ex(struct timeval *tv, struct timezone *tz); 
-void gettimeofday_update();
-
 #endif

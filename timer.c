@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: timer.c,v 1.6 2004/03/03 04:44:16 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.6  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.5  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -195,9 +199,13 @@ int timer_process (struct timespec *delay)
   
 }
 
-void timer_exit() {
-  if (nTimers>0) {
-    nTimers=0;
+
+void timer_exit(void) {
+
+  nTimers=0;
+
+  if (Timers>0) {
     free(Timers);;	
+    Timers=NULL;
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.8 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: widget_icon.c,v 1.9 2004/03/03 04:44:16 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.9  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.8  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -73,11 +77,11 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "evaluator.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_icon.h"
-#include "qprintf.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -212,11 +216,9 @@ int widget_icon_init (WIDGET *Self)
 
 int widget_icon_quit (WIDGET *Self) 
 {
-  WIDGET_ICON *Icon;
-  
   if (Self) {
-	Icon = Self->data;
-    if (Icon) {
+    if (Self->data) {
+      WIDGET_ICON *Icon = Self->data;
       if (Icon->bitmap) free (Icon->bitmap); 
       free(Self->data);
       Self->data=NULL;

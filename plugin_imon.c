@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.4 2004/03/03 04:44:16 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.4  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.3  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -41,9 +45,9 @@
 #include "config.h"
 #include "debug.h"
 #include "plugin.h"
+#include "qprintf.h"
 #include "cfg.h"
 #include "hash.h"
-#include "qprintf.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -436,9 +440,9 @@ int plugin_init_imon (void){
 	
  if (telmon=='\1') AddFunction ("telmon", 1, my_telmon);
  if (imon=='\1'){
-  AddFunction ("imon", 1, my_imon);
-  AddFunction ("version", 0, my_imon_version);
-  AddFunction ("rates", 2, my_imon_rates);
+   AddFunction ("imon", 1, my_imon);
+   AddFunction ("version", 0, my_imon_version);
+   AddFunction ("rates", 2, my_imon_rates);
  }
 
  return 0;
@@ -446,6 +450,6 @@ int plugin_init_imon (void){
 
 void plugin_exit_imon(void) 
 {
-	hash_destroy(&TELMON);
-	hash_destroy(&IMON);
+  hash_destroy(&TELMON);
+  hash_destroy(&IMON);
 }

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.65 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.66 2004/03/03 04:44:16 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.66  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.65  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -321,6 +325,7 @@
 
 #include "cfg.h"
 #include "debug.h"
+#include "qprintf.h"
 #include "pid.h"
 #include "udelay.h"
 #include "drv.h"
@@ -328,7 +333,6 @@
 #include "layout.h"
 #include "plugin.h"
 
-#include "qprintf.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>

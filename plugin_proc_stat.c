@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.16 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.17 2004/03/03 04:44:16 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.17  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.16  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -103,8 +107,8 @@
 
 #include "debug.h"
 #include "plugin.h"
-#include "hash.h"
 #include "qprintf.h"
+#include "hash.h"
 
 
 static HASH Stat = { 0, };
@@ -209,7 +213,7 @@ static int parse_proc_stat (void)
 	while (strchr(delim, *beg)) beg++; 
 	if ((end=strpbrk(beg, delim))) *end='\0'; 
 	if (i==0) 
-	  strncpy(num,"sum",sizeof(num));
+	  strcpy(num, "sum");
 	else 
 	  qprintf(num, sizeof(num), "%d", i-1);
 	hash_set2 ("intr", num,  beg);
@@ -353,5 +357,5 @@ int plugin_init_proc_stat (void)
 
 void plugin_exit_proc_stat(void) 
 {
-	hash_destroy(&Stat);
+  hash_destroy(&Stat);
 }

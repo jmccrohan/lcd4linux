@@ -1,4 +1,4 @@
-/* $Id: pid.c,v 1.4 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: pid.c,v 1.5 2004/03/03 04:44:16 reinelt Exp $
  *
  * PID file handling
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.5  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.4  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -70,6 +74,7 @@
 #include "debug.h"
 #include "pid.h"
 #include "qprintf.h"
+
 
 int pid_init (const char *pidfile)
 {

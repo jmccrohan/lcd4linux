@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.4 2004/03/03 04:44:16 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.4  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.3  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -89,10 +93,10 @@
 #endif
 
 #include "debug.h"
+#include "qprintf.h"
 #include "cfg.h"
 #include "udelay.h"
 #include "drv_generic_parport.h"
-#include "qprintf.h"
 
 
 static char *Driver="";

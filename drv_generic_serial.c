@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.7 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.8 2004/03/03 04:44:16 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.8  2004/03/03 04:44:16  reinelt
+ * changes (cosmetics?) to the big patch from Martin
+ * hash patch un-applied
+ *
  * Revision 1.7  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -99,9 +103,9 @@
 #include <sys/stat.h>
 
 #include "debug.h"
+#include "qprintf.h"
 #include "cfg.h"
 #include "drv_generic_serial.h"
-#include "qprintf.h"
 
 
 static char   *Driver;
