@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.22 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: XWindow.c,v 1.23 2001/02/26 00:33:37 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.23  2001/02/26 00:33:37  herp
+ * fixed X11 signal handler
+ *
  * Revision 1.22  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -99,6 +102,7 @@
 
 
 /*
+ * Mon Feb 26 02:07:52 MET 2001 fixed sighandler
  * Tue Apr  4 02:37:38 MET 2000 fixed a bug that caused pixelerrors under h/load
  * Sun Apr  2 22:07:10 MET 2000 fixed a bug that occasionally caused Xlib error
  * Sun Apr  2 01:32:48 MET 2000 geometric correction (too many pixelgaps)
@@ -120,6 +124,7 @@
 #include	<string.h>
 #include	<errno.h>
 #include	<sys/types.h>
+#include	<sys/wait.h>
 #include	<sys/ipc.h>
 #include	<sys/sem.h>
 #include	<sys/shm.h>
@@ -197,8 +202,29 @@ static void shmcleanup() {
 }
 
 static void quit_updater() {
-	if (async_updater_pid>1)
-		kill(async_updater_pid,15);
+int i;
+	if (async_updater_pid>1) {
+		i=async_updater_pid;
+		async_updater_pid=1;
+		kill(i,9);
+		waitpid(i,&i,0);
+	}
+}
+
+static void sig_updater(int sig) {
+	kill(ppid,sig);
+	exit(0);
+}
+
+static void init_signals() {
+unsigned int ignsig=(1<<SIGBUS)|(1<<SIGFPE)|(1<<SIGSEGV)|
+		   (1<<SIGTSTP)|(1<<SIGCHLD)|(1<<SIGCONT)|
+		   (1<<SIGTTIN)|(1<<SIGWINCH);
+int i;
+	for(i=0;i<NSIG;i++)
+		if (((1<<i)&ignsig)==0)
+			signal(i,sig_updater);
+
 }
 
 static int init_shm(int nbytes,unsigned char **buf) {
@@ -244,6 +270,7 @@ union semun semun;
 	default:
 		break;
 	}
+	signal(SIGCHLD,quit_updater);
 	atexit(quit_updater);
 	return 0;
 }
@@ -349,6 +376,7 @@ char *s;
 
 	if (pix_init(rows,cols,xres,yres)==-1) return -1;
 	if (init_x(rows,cols,xres,yres)==-1) return -1;
+	init_signals();
 	if (init_shm(rows*cols*xres*yres,&BackupLCDpixmap)==-1) return -1;
 	memset(BackupLCDpixmap,0xff,rows*yres*cols*xres);
 	if (init_thread(rows*cols*xres*yres)==-1) return -1;
@@ -406,11 +434,10 @@ int x,y;
 }
 
 int xlcdquit(void) {
+	error("xlcdquit");
 	semcleanup();
 	shmcleanup();
-	if (ppid!=getpid())
-	  // FIXME: kill(ppid,nsig);
-	  kill(ppid,SIGTERM);
+	quit_updater();
 	return 0;
 }
 
