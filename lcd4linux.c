@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.46 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.47 2003/09/10 08:37:09 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.47  2003/09/10 08:37:09  reinelt
+ * icons: reorganized tick_* again...
+ *
  * Revision 1.46  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -242,13 +245,12 @@
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
-char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
-char **my_argv;
-int tick;
-int got_signal=0;
+static char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
+static char **my_argv;
+static int got_signal=0;
 
+int tick, tack;
 extern char* output;
-
 
 static void usage(void)
 {
@@ -468,11 +470,8 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  if (cfg_number("Tick", 100, 1, 1000000, &tick)<0) {
-    pid_exit(PIDFILE);
-    exit (1);
-  }
-  
+
+  // process_init sets global vars tick, tack
   process_init();
   lcd_clear(1);
   
@@ -485,7 +484,7 @@ int main (int argc, char *argv[])
   
   while (got_signal==0) {
     process ();
-    usleep(tick*1000);
+    usleep(tack*1000);
   }
   
   debug ("leaving main loop");

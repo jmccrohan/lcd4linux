@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.41 2003/09/10 03:48:23 reinelt Exp $
+/* $Id: processor.c,v 1.42 2003/09/10 08:37:09 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.42  2003/09/10 08:37:09  reinelt
+ * icons: reorganized tick_* again...
+ *
  * Revision 1.41  2003/09/10 03:48:23  reinelt
  * Icons for M50530, new processing scheme (Ticks.Text...)
  *
@@ -216,7 +219,6 @@
 static char *row[ROWS+1];
 static int   gpo[GPOS+1];
 static int   rows, cols, xres, yres, supported_bars, icons, gpos;
-static int   tick_txt, tick_bar, tick_icn, tick_gpo;
 static int   lines, scroll, turn;
 static int   token_usage[256]={0,};
 
@@ -232,6 +234,9 @@ static struct { double perc, cput; } seti;
 static struct { int num, unseen;} mail[MAILBOXES+1];
 static struct { double val, min, max; } sensor[SENSORS+1];
 static struct { double strength, snr; } dvb;
+
+extern int tick, tack;
+static int tick_text, tick_bar, tick_icon, tick_gpo;
 
 
 static double query (int token)
@@ -804,23 +809,33 @@ void process_init (void)
     turn=0;
   }
 
+  if (cfg_number("Tick.Text", 500, 1, 1000000, &tick_text)<0) {
+    tick_text=500;
+    error ("ignoring bad 'Tick.Text' value and using '%d'", tick_text);
+  }
+  if (cfg_number("Tick.Bar", 100, 1, 1000000, &tick_bar)<0) {
+    tick_bar=100;
+    error ("ignoring bad 'Tick.Bar' value and using '%d'", tick_bar);
+  }
+  if (cfg_number("Tick.Icon", 100, 1, 1000000, &tick_icon)<0) {
+    tick_icon=100;
+    error ("ignoring bad 'Tick.Icon' value and using '%d'", tick_icon);
+  }
+  if (cfg_number("Tick.GPO", 100, 1, 1000000, &tick_gpo)<0) {
+    tick_gpo=100;
+    error ("ignoring bad 'Tick.GPO' value and using '%d'", tick_gpo);
+  }
 
-  if (cfg_number("Ticks.Text", 5, 1, 1000, &tick_txt)<0) {
-    tick_txt=5;
-    error ("ignoring bad 'Ticks.Text' value and using '%d'", tick_txt);
-  }
-  if (cfg_number("Ticks.Bar", 1, 1, 1000, &tick_bar)<0) {
-    tick_bar=1;
-    error ("ignoring bad 'Ticks.Bar' value and using '%d'", tick_bar);
-  }
-  if (cfg_number("Ticks.Icon", 1, 1, 1000, &tick_icn)<0) {
-    tick_icn=1;
-    error ("ignoring bad 'Ticks.Icon' value and using '%d'", tick_icn);
-  }
-  if (cfg_number("Ticks.GPO", 1, 1, 1000, &tick_gpo)<0) {
-    tick_gpo=1;
-    error ("ignoring bad 'Ticks.GPO' value and using '%d'", tick_gpo);
-  }
+  // global Tick is minimum of tick_text, _bar, _gpo
+  tick=tick_text;
+  if (tick>tick_bar) tick=tick_bar;
+  if (tick>tick_gpo) tick=tick_gpo;
+  
+  // global Tack is minimum of tick, tick_gpo
+  tack=tick;
+  if (tack>tick_icon) tack=tick_icon;
+
+  debug ("using tick=%d msec, tack=%d msec", tick, tack);
 
   for (i=1; i<=lines; i++) {
     char buffer[8], *p;
@@ -844,10 +859,11 @@ void process_init (void)
 
 void process (void)
 {
-  static int loop_txt=-1;
-  static int loop_bar=-1;
-  static int loop_icn=-1;
-  static int loop_gpo=-1;
+  static int loop_tick=0;
+  static int loop_text=0;
+  static int loop_bar=0;
+  static int loop_icon=0;
+  static int loop_gpo=0;
   static int offset=0;
 
   int i, j, val;
@@ -856,25 +872,13 @@ void process (void)
   // Fixme:
   static int junk=0;
   
-  if (++loop_txt > tick_txt) loop_txt=0;
-  if (++loop_bar > tick_bar) loop_bar=0;
-  if (++loop_icn > tick_icn) loop_icn=0;
-  if (++loop_gpo > tick_gpo) loop_gpo=0;
-
-  // update icon animations
-  if (loop_icn==0) {
-    lcd_icon (1, ++junk, 0, 0);
+  // collect data every tick msec
+  if (loop_tick==0) {
+    collect_data();
   }
   
-  // is there anything to process?
-  if (loop_txt>0 && loop_bar>0 && loop_gpo>0) {
-    // no, there isn't :-)
-    return;
-  }
-  
-  collect_data();
-  
-  if (Turn() && loop_txt==0) {
+  // maybe scroll
+  if (Turn() && loop_text==0) {
     offset+=scroll;
     while (offset>=lines) {
       offset-=lines;
@@ -882,18 +886,19 @@ void process (void)
     lcd_clear(0); // soft clear
   }
   
-  if (loop_txt==0 || loop_bar==0) {
+  if (loop_text==0 || loop_bar==0) {
     for (i=1; i<=rows; i++) {
       j=i+offset;
       while (j>lines) {
 	j-=lines;
       }
       txt=process_row (row[j], i, cols);
-      if (loop_txt==0)
+      if (loop_text==0)
 	lcd_put (i, 1, txt);
     }
   }
   
+  // update GPO's
   if (loop_gpo==0) {
     for (i=1; i<=gpos; i++) {
       val=process_gpo (i);
@@ -901,6 +906,25 @@ void process (void)
     }
   }
   
+  // rotate icon animations
+  if (loop_icon==0) {
+    for (i=1; i<=icons; i++) {
+      lcd_icon (i, junk, 0, 0);
+    }
+    junk++;
+  }
+  
+  // flush in every case
+  // note that we flush too often, but usually
+  // nothing has changed
   lcd_flush();
   
+  
+  // increase loop counters
+  if ((loop_tick+=tack) >= tick     ) loop_tick=0;
+  if ((loop_text+=tack) >= tick_text) loop_text=0;
+  if ((loop_bar +=tack) >= tick_bar ) loop_bar =0;
+  if ((loop_icon+=tack) >= tick_icon) loop_icon=0;
+  if ((loop_gpo +=tack) >= tick_gpo ) loop_gpo =0;
+
 }
