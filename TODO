@@ -15,9 +15,10 @@ show partition information (used, free, ...)
 2000-04-25 Michael Mueller <m.mueller@netsystec.de>
 show process information            
 
-2000-12-03 Ghassan Matar <gmatar@hexapods.com>
-show other sensors than temperature
-we have to use libsensors instead of parsing the proc files directly
+// 2000-12-03 Ghassan Matar <gmatar@hexapods.com>
+// show other sensors than temperature
+// we have to use libsensors instead of parsing the proc files directly
+// Refused 2003-08-01 -mr
 
 // 2000-12-03 Ghassan Matar <gmatar@hexapods.com>
 // show contents of any text file
@@ -105,8 +106,9 @@ e.g. '%nw'  is 'network transmit' for _all_ devices
      '%n0w' is 'network transmit' for eth0
      '%n1w' for eth1
 
-2001-09-11 Michael Reinelt <reinelt@eunet.at>
-remove bar code from drivers and create a common bar library
+// 2001-09-11 Michael Reinelt <reinelt@eunet.at>
+// remove bar code from drivers and create a common bar library
+// done somewhere in 2003 -mr
 
 2001-09-12 Carsten Nau <info@cnau.de>
 make the output for emails shorter (at the moment up to 9999 emails)

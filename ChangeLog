@@ -1,0 +1,927 @@
+2003-08-01  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c, Makefile.am, Makefile.in, README, T6963.c:
+	last cleanups for 0.9.9
+
+2003-07-29  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.in, Raster.c, aclocal.m4, configure, configure.in:
+	disable Raster driver automagically if gd.h not found
+
+2003-07-28  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.Crystalfontz, README.HD44780, README.HD44780.GPO, README.MatrixOrbital, README.Png, README.Raster, README.Text, README.Webinterface, README.X11:
+	several README's moved to web page
+
+2003-07-24  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, HD44780.c, M50530.c, MatrixOrbital.c, PalmPilot.c, Raster.c, SIN.c, Skeleton.c, T6963.c, Text.c, USBLCD.c, XWindow.c, display.c, display.h, lcd4linux.c, processor.c:
+	'soft clear' needed for virtual rows
+
+2003-07-21  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* processor.c: bars on virtual rows fixed
+
+	* processor.c: removed maxlen parameter from process_row()
+
+	* dvb.c: check for HAVE_LINUX_DVB_FRONTEND_H needs config.h
+
+2003-07-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* config.h.in, configure, configure.in, dvb.c:
+	check for dvb/frontend.h and disable DVB client if not found.
+
+2003-07-18  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* udelay.c: udelay: unnecessary sanity check removed
+
+2003-06-26  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* system.c: bug in /proc/net/dev parsing fixed
+
+2003-06-22  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* dvb.c, dvb.h: added dvb.c dvb.h
+
+2003-06-21  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, isdn.c, parser.c, parser.h, processor.c:
+	DVB client integrated
+
+2003-06-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* processor.c: added scrolling capability
+
+	* lcd4linux.c, seti.c, system.c: error message cosmetics
+
+2003-05-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c: Cwlinux sleep optimization
+
+2003-05-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c: added support for CW1602
+
+2003-04-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c: small glitch in XWindow.c (thanks to Moe Wibble)
+
+2003-04-07  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* parport.h, parport.c, lcd4linux.c, T6963.c, M50530.c, HD44780.c:
+	further parallel port abstraction
+
+2003-04-04  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* udelay.c, parport.c, parport.h, configure.in, configure, HD44780.c, M50530.c, USBLCD.c:
+	new parallel port abstraction scheme
+
+2003-02-27  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure, configure.in: changed versioning scheme from 0.99 to 0.9.9
+
+	* configure.in, curses.m4, install-sh, missing, mkinstalldirs, udelay.c, INSTALL, Makefile.in, aclocal.m4, config.h.in, configure:
+	asm/msr.h: included hard-coded definition of rdtscl() if msr.h cannot be found.
+
+	autoconf/automake/autoanything: switched back to 1.4. Hope it works again.
+
+2003-02-24  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c: cwlinux fixes
+
+2003-02-22  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* M50530.c, MatrixOrbital.c, PalmPilot.c, Raster.c, SIN.c, T6963.c, Text.c, USBLCD.c, XWindow.c, cfg.c, cfg.h, exec.c, filter.c, lcd4linux.c, mail.c, mail2.c, processor.c, seti.c, system.c, BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, HD44780.c:
+	cfg_get(key,defval)
+
+	* Cwlinux.c: Cwlinux fixes
+
+2003-02-18  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.X11, XWindow.c: X11 driver fixes and cleanup
+
+2003-02-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c: small bug in X11 driver: omit pixel gap between cahracters
+
+	* Text.c: Text (curses) driver: cosmetic changes
+
+2003-02-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* MatrixOrbital.c, lcd4linux.c:
+	changed "copyright" to "2003"
+	added slightly different protocol for MatrixOrbital "LK202" displays
+
+2003-02-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* exec.c, processor.c:
+	T_EXEC: remove trailing CR/LF
+	T_EXEC: deactivated maxlen calculation (for I don't understand what it is for :-)
+
+2003-01-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* bar.c: fixed bug in bar compaction
+
+2002-12-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure.in, curses.m4, depcomp, AUTHORS, ChangeLog, Makefile.am, Makefile.in, acconfig.h, aclocal.m4, config.h.in, configure:
+	autoconf/automake cleanup
+
+2002-12-06  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.in, aclocal.m4, config.h.in, configure, configure.in, CREDITS:
+	libgd/libpng bugfix: removed '-lpng -lz' from LDFLAGS
+
+2002-12-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* mail2.c, parser.c, processor.c:
+	fixed undefined operations found by gcc3
+
+	* system.c:
+	sensors factor and offset patch from Petri Damsten <petri.damsten@raketti.net>
+
+	* Makefile.am, Makefile.in, configure, configure.in, display.c, socket.c:
+	patches for gcc-3.2
+
+2002-09-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c: code cleanup, character defining for bars
+
+2002-09-11  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Cwlinux.c: changed to use new bar functions
+
+	* display.c, Cwlinux.c, Makefile.am, Makefile.in, acconfig.h, config.h.in, configure, configure.in:
+	added Cwlinux driver
+
+2002-08-30  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Text.c: bug in curses driver fixed
+
+2002-08-22  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c: cosmetic changes
+
+2002-08-21  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* T6963.c, udelay.c: some T6963 fixes, ndelay wrap
+
+2002-08-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, M50530.c:
+	M50530 driver using new generic bar functions
+
+	* BeckmannEgle.c: BeckmannEgle using new generic bar functions
+
+	* MatrixOrbital.c: MatrixOrbital uses generic bar funnctions
+
+	* HD44780.c, USBLCD.c: changed HD44780 to use generic bar functions
+
+	* USBLCD.c, bar.c, bar.h: corrected type declaration of (*defchar)()
+
+	* BeckmannEgle.c, HD44780.c, M50530.c, MatrixOrbital.c, USBLCD.c, bar.c, bar.h:
+	finished bar.c, USBLCD is the first driver that uses the generic bar functions
+
+	* BeckmannEgle.c, Crystalfontz.c, HD44780.c, M50530.c, Makefile.am, Makefile.in, MatrixOrbital.c, PalmPilot.c, Raster.c, T6963.c, Text.c, USBLCD.c, XWindow.c, bar.c, bar.h, display.c, display.h, parser.c, pixmap.c, processor.c:
+	introduced bar.c, moved bar stuff from display.h to bar.h
+
+2002-08-18  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* USBLCD.c: USBLCD buffered I/O
+
+2002-08-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, USBLCD.c, udelay.c:
+	USBLCD fixes
+
+	* configure.in, display.c, lcd4linux.conf.sample, Makefile.am, Makefile.in, USBLCD.c, acconfig.h, config.h.in, configure:
+	USBLCD driver added
+
+	* T6963.c: minor T6963 changes
+
+2002-04-30  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, M50530.c:
+	implemented the new ndelay(nanoseconds) in all parallel port drivers
+
+2002-04-29  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure.in, display.c, exec.c, lcd4linux.c, udelay.c, udelay.h, acconfig.h, aclocal.m4, config.h.in, configure, README, T6963.c, TODO, Makefile.in:
+	added Toshiba T6963 driver
+	added ndelay() with nanosecond resolution
+
+2001-09-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO: *** empty log message ***
+
+2001-09-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO: TODO update
+
+2001-09-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO, mail2.c: *** empty log message ***
+
+	* mail.c, mail2.c, socket.c: fixed bug in mail2.c
+
+	* debug.h, mail.c, seti.c, socket.c:
+	fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
+
+	improved socket debugging
+
+2001-09-11  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO: TODO items
+
+	* M50530.c: M50530 driver
+
+2001-09-10  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.in, Raster.c, acconfig.h, config.h.in, configure, configure.in, display.c:
+	M50530 driver
+
+2001-09-09  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c: GPO bug: INIT is _not_ inverted
+
+2001-09-07  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.HD44780.GPO: wrong Pin numbers
+
+2001-09-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* NEWS, README: *** empty log message ***
+
+2001-08-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* udelay.c:
+	renamed CLK_TCK to CLOCKS_PER_SEC
+
+2001-08-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c, battery.c, filter.c, mail.c, seti.c, system.c:
+	cleaned up inlude of sys/time.h and time.h
+
+2001-06-04  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure, configure.in:
+	configure for X11 modified
+
+2001-05-31  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* Makefile.in, TODO, acconfig.h, config.h.in, configure, configure.in, curses.m4:
+	added tests for X and ncurses
+
+2001-05-27  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README:
+	updated README with the seti@home client stuff
+
+	* configure, configure.in, isdn.c, pixmap.c:
+	fixed a warning in pixmap.c
+	temporarily fixed a bug in isdn.c (ISDN_MAX_CHANNELS is no longer defined?)
+	fixed a bug in configure.in (--with-drivers=xyz did not work)
+
+2001-05-26  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO: added TODO entry
+
+2001-05-06  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* processor.c:
+	fixed a bug which prevented extendet tokens to be used for GPO's
+	many thanks to Carsten Nau!
+
+2001-04-27  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, Crystalfontz.c, MatrixOrbital.c, PalmPilot.c, SIN.c, configure, lcd4linux.c, lock.c, pixmap.c:
+	replaced OPEN_MAX with sysconf()
+	replaced mktemp() with mkstemp()
+	unlock serial port if open() fails
+
+2001-03-24  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO: new TODO item
+
+2001-03-17  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* pixmap.c: allow more then 1 BAR_T
+
+	* processor.c: bugfix: max for BAR_T
+
+2001-03-16  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* NEWS, PalmPilot.c, README, Raster.c, TODO, Text.c, XWindow.c, display.c, display.h, parser.c, pixmap.c, processor.c:
+	implemented time bar
+
+	* README.Text, TODO, Text.c, mail2.c, processor.c: bugfixes
+
+2001-03-15  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* mail.c, processor.c, HD44780.c: fixed compile HD44780.c, cosmetics
+
+	* CREDITS, NEWS, README, TODO, configure, display.c, lcd4linux.conf.sample, mail.c, mail.h, mail2.c, socket.c:
+	added unread/total news
+
+	* mail2.c: added quit/logout to pop/imap
+
+2001-03-15  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, lcd4linux.conf.sample, processor.c:
+	some fixes to ppdef
+	off-by-one bug in processor.c fixed
+
+2001-03-15  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* exec.c: delay first exec for faster start
+
+2001-03-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* CREDITS, HD44780.c, TODO: minor cleanups
+
+	* HD44780.c:
+	make ppdev compatible to earlier kernels
+
+	* HD44780.c, NEWS, README.HD44780, TODO, config.h.in, configure, configure.in, lcd4linux.conf.sample:
+	added ppdev parallel port access
+
+2001-03-14  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, NEWS, README, TODO, configure, debug.h, lcd4linux.conf.sample, mail.c, mail.h, mail2.c, parser.c, parser.h, processor.c, socket.c, socket.h:
+	Added pop3/imap4 mail support
+
+2001-03-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* exec.c, lcd4linux.conf.sample, mail.c, parser.c, processor.c, system.c:
+	corrected a off-by-one bug with sensors
+
+	* Makefile.am, Makefile.in, acconfig.h:
+	added missing autoheader files
+
+	* Makefile.am, Makefile.in:
+	added several files for the distribution
+
+	* NEWS, README, lcd4linux.c:
+	added NEWS file
+
+2001-03-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, TODO, config.h.in, configure, configure.in, lcd4linux.conf.sample, udelay.c, udelay.h:
+	new udelay() using Time Stamp Counters
+
+	* configure, configure.in:
+	even better configure handling...
+
+	* HD44780.c, Makefile.in, Raster.c, TODO, aclocal.m4, config.h.in, configure, configure.in, debug.c, display.c, lcd4linux.c, system.c, udelay.c, udelay.h:
+	reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+
+2001-03-09  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* configure, configure.in: disable driver in configure
+
+2001-03-09  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO, Text.c, configure:
+	rename 'raster' to 'Text in Text.c
+	added TOTO item
+
+	* TODO:
+	new ideas for TODO
+
+2001-03-09  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* README, exec.c, lcd4linux.conf.sample: exec: Scale_x ->Min/Max_x
+
+	* Makefile.am, Makefile.in, README, README.Drivers, README.Text, Skeleton.c, Text.c, configure, configure.in, debug.c, display.c, lcd4linux.conf.sample:
+	Added Text driver
+
+2001-03-09  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO, cfg.c, lcd4linux.conf.sample, system.c:
+	minor cleanups
+
+2001-03-08  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* README, TODO, cfg.c, exec.c, exec.h, lcd4linux.c, lcd4linux.conf.sample, parser.c, processor.c:
+	improved exec
+
+2001-03-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* mail.c, mail.h, seti.c, seti.h:
+	seti client cleanup
+
+	* processor.c, exec.c:
+	fixed two typos
+
+2001-03-07  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, README, cfg.c, configure, exec.c, exec.h, parser.c, parser.h, processor.c:
+	added e(x)ec commands
+
+2001-03-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO, lcd4linux.conf.sample:
+	TOTO list update
+
+2001-03-04  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* README.Raster: Added PNG
+
+2001-03-02  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure, configure.in, system.c:
+	allow compile on systems without net/if_ppp.h
+
+	* README.Png:
+	README for PNG added
+
+	* Raster.c, configure, configure.in:
+	let configure find gd.h
+
+	* battery.c, battery.h:
+	cosmetic cleanups (comment headers)
+
+2001-03-02  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, README, lcd4linux.conf.sample, Raster.c, TODO, battery.c, battery.h, parser.c, parser.h, processor.c:
+	added /proc/apm battery stat
+
+2001-03-01  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Raster.c, lcd4linux.conf.sample, udelay.c:
+	renamed Raster_flush() to PPM_flush()
+
+2001-03-01  ltoetsch  <ltoetsch@lizard.reinelt>
+
+	* README.Webinterface, Raster.c, nph-png, png.html:
+	added PNG,Webinterface
+
+2001-03-01  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, Raster.c, XWindow.c, aclocal.m4, configure, configure.in, display.c:
+	reworked configure to allow selection of drivers
+
+2001-02-26  herp  <herp@lizard.reinelt>
+
+	* XWindow.c: fixed X11 signal handler
+
+2001-02-21  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* mail.c:
+	big mailbox patch from Axel Ehnert
+	thanks to herp for his idea to check mtime of mailbox
+
+2001-02-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, lcd4linux.conf.sample, mail.c, parser.c, parser.h, processor.c, seti.c, seti.h:
+	integrated mail and seti client
+	major rewrite of parser and tokenizer to support double-byte tokens
+
+2001-02-18  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* mail.c, mail.h, seti.c: *** empty log message ***
+
+	* Makefile.am, Makefile.in, TODO, seti.c, seti.h:
+	added setiathome client
+
+	* CREDITS, Makefile.am, Makefile.in: *** empty log message ***
+
+2001-02-16  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.HD44780.GPO, processor.c:
+	fixed type in processor.c
+	GPO documentation update from Carsten
+
+	* README, parser.c, parser.h, processor.c, system.c:
+	new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
+
+2001-02-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, MatrixOrbital.c, display.c, display.h, lcd4linux.c, parser.c, parser.h, processor.c:
+	first (incomplete) GPO implementation
+
+	* README.HD44780.GPO:
+	added README from Carsten Nau
+
+2001-02-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c:
+	HD_gpo() was missing
+
+	* BeckmannEgle.c, Crystalfontz.c, HD44780.c, MatrixOrbital.c, PalmPilot.c, Raster.c, SIN.c, Skeleton.c, XWindow.c, display.c, display.h, processor.c:
+	prepared framework for GPO's (general purpose outputs)
+
+2001-02-11  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* TODO, processor.c:
+
+	fixed a small bug where the throughput of an offline ISDN connection is displayed as '----', but the
+	online value is 5 chars long. corrected to ' ----'.
+	thanks to Carsten Nau <info@cnau.de>
+
+2000-12-07  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* SIN.c, TODO, lcd4linux.conf.sample:
+	first try for SIN bars
+
+2000-12-01  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* SIN.c, lcd4linux.conf.sample:
+	added debugging of SIN driver output, probably found the positioning bug (format %02x instead of %2x)
+
+	* SIN.c:
+	modified text positioning: row starts with 0, column is hexadecimal
+
+2000-11-28  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* debug.c:
+	added debug.c
+	things like that should not hapen. debug.c exists for a few months now, but was never added to CVS. Shit happens....
+
+	* SIN.c:
+	changed decimal values for screen, row, column to ascii values (shame on you!)
+
+	* Makefile.am, Makefile.in, README, SIN.c, display.c:
+	first try to support display of SIN router
+
+2000-11-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* system.c:
+	fixed parsing of /proc/net/dev for 2.0 kernels
+
+2000-10-25  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* lcd4linux.c:
+	added restart funnctionality
+	(lots of this code was stolen from sendmail.c)
+
+2000-10-20  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c:
+
+	corrected a bug in HD_goto()
+	Thanks to Gregor Szaktilla <gregor@szaktilla.de>
+
+2000-10-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* system.c:
+
+	Linux-2.4.0-test9 changed the layout of /proc/stat (especially the disk_io line)
+	rearranged parsing of some /proc files and (hopefully) made it more robust in concerns of format changes
+
+2000-08-10  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c, configure, configure.in, isdn.c, lcd4linux.c:
+	fixed some bugs with the new syslog code
+
+	* BeckmannEgle.c, Crystalfontz.c, HD44780.c, Makefile.am, Makefile.in, MatrixOrbital.c, PalmPilot.c, README, Raster.c, Skeleton.c, XWindow.c, cfg.c, debug.h, display.c, fontmap.c, isdn.c, lcd4linux.c, lock.c, parser.c, processor.c, system.c:
+	new debugging scheme: error(), info(), debug()
+	uses syslog if in daemon mode
+
+2000-08-09  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README, lcd4linux.c:
+	new switch -F (do not fork)
+	added automatic forking if -F not specified
+
+	* system.c:
+	fixed a bug in system.c where the format of /proc/net/dev was not correctly
+	detected and parsed with different kernels
+
+	* BeckmannEgle.c, Crystalfontz.c, HD44780.c, MatrixOrbital.c, PalmPilot.c, README, XWindow.c, configure, configure.in, display.c, display.h, lcd4linux.c, system.c:
+	opened 0.98 development
+	removed driver-specific signal-handlers
+	added 'quit'-function to driver structure
+	added global signal-handler
+
+2000-07-31  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, configure, configure.in, lcd4linux.conf.sample, processor.c, system.c, system.h, udelay.c:
+	some changes to support kernel-2.4 (different layout of various files in /proc)
+
+	* HD44780.c, Makefile.am, Makefile.in, cfg.c:
+	eliminated some compiler warnings with glibc
+
+2000-06-04  herp  <herp@lizard.reinelt>
+
+	* Crystalfontz.c: minor bugfix (zero length)
+
+2000-05-21  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.Drivers, lcd4linux.conf.sample, parser.c, parser.h, processor.c, system.c, system.h:
+	added ppp throughput
+	token is '%t[iomt]' at the moment, but this will change in the near future
+
+2000-05-03  herp  <herp@lizard.reinelt>
+
+	* Crystalfontz.c, Crystalfontz.h, README.Crystalfontz:
+	*** empty log message ***
+
+2000-05-02  herp  <herp@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, XWindow.c, display.c:
+	Crystalfontz initial coding
+
+2000-05-02  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, PalmPilot.c, display.c, lcd4linux.conf.sample:
+	driver for 3Com Palm Pilot added
+
+2000-04-30  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, lcd4linux.conf.sample:
+	bars for Beckmann+Egle driver
+
+2000-04-28  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, Makefile.am, Makefile.in, TODO, display.c:
+	first release of the Beckmann+Egle driver
+
+2000-04-20  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in:
+	added documentation to EXTRA_DIST so that they go into the tarball
+
+2000-04-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.HD44780:
+	README for HD44780 driver
+
+2000-04-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.HD44780, lcd4linux.c, lcd4linux.conf.sample:
+	added README.44780
+
+2000-04-15  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, Makefile.am, Makefile.in, README, lcd4linux.c, udelay.c, udelay.h:
+	moved delay loops to udelay.c
+	renamed -d (debugging) switch to -v (verbose)
+	new switch -d to calibrate delay loop
+	'Delay' entry for HD44780 back again
+	delay loops will not calibrate automatically, because this will fail with hich CPU load
+
+	* isdn.c, lcd4linux.c, processor.c, system.c:
+	more debug messages
+
+	* HD44780.c, Makefile.am, Makefile.in, MatrixOrbital.c, README, cfg.c, debug.h, lcd4kde.conf, lcd4linux.c, processor.c:
+	added '-d' (debugging) switch
+	added several debugging messages
+	removed config entry 'Delay' for HD44780 driver
+	delay loop for HD44780 will be calibrated automatically
+
+2000-04-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, MatrixOrbital.c, lcd4linux.conf.sample, system.c, system.h:
+	added BogoMips() to system.c (not used by now, maybe sometimes we can
+	calibrate our delay loop with this value)
+
+	added delay loop to HD44780 driver. It seems to be quite fast now. Hopefully
+	no compiler will optimize away the delay loop!
+
+2000-04-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, Makefile.am, Makefile.in, MatrixOrbital.c, display.c, lcd4linux.conf.sample:
+	first version of the HD44780 driver
+
+2000-04-10  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* MatrixOrbital.c, README, configure, configure.in, lcd4linux.c:
+	minor changes and cleanups
+
+2000-04-07  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, MatrixOrbital.c, lcd4linux.c, lock.c, lock.h:
+	UUCP style lockfiles for the serial port
+
+2000-04-05  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.in, XWindow.c, configure, configure.in:
+	fixed bug in XWindow.c: union semun isn't defined with glibc-2.1
+
+	* TODO:
+	TODO added
+
+2000-04-03  herp  <herp@lizard.reinelt>
+
+	* XWindow.c:
+	fixed a bug that caused pixel-errors ("fliegendreck") under high load
+
+2000-04-03  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* display.c, lcd4linux.c, lcd4linux.kdelnk, lcd4linux.xpm:
+	suppress welcome message if display is smaller than 20x2
+	change lcd4linux.ppm to 32 pixel high so KDE won't stretch the icon
+
+	* lcd4linux.kdelnk:
+	KDE application link
+
+	* README.KDE, lcd4kde.conf, lcd4linux.conf.sample, lcd4linux.xpm:
+	releasing 0.96
+	annoying X11 bugs hopefully fixed
+	KDE integration
+
+	* README, README.Raster, README.X11, cfg.c, cfg.h, lcd4linux.c, lcd4linux.conf.sample:
+	added '-c key=val' option
+
+	* Raster.c, XWindow.c, lcd4linux.conf.sample:
+	if 'gap' is specified as -1, a gap of (pixelsize+pixelgap) is selected automatically
+
+2000-04-02  herp  <herp@lizard.reinelt>
+
+	* XWindow.c: fixded a bug that occasionally caused Xlib errors
+
+2000-04-01  herp  <herp@lizard.reinelt>
+
+	* XWindow.c, lcd4linux.c: geometric correction (too many pixelgaps)
+	lcd4linux main should return int, not void
+
+	* XWindow.c:
+	colors in format \#RRGGBB in config-file now understood
+
+2000-04-01  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c, configure, configure.in, lcd4linux.conf.sample, processor.c:
+	bug that caused a segfault in processor.c fixed (thanks to herp)
+
+2000-03-31  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* XWindow.c:
+	X11 driver: semaphore bug fixed
+
+2000-03-30  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, XWindow.c, aclocal.m4, configure, configure.in, display.c, lcd4linux.conf.sample, lcd4linux.lsm:
+	configure now handles '--with-x' and '--without-x' correct
+
+2000-03-28  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.X11, XWindow.c:
+	README.X11 added
+
+	* Makefile.am, Makefile.in, Raster.c, XWindow.c, cfg.c, configure, configure.in, lcd4linux.conf.sample, system.c:
+	version 0.95 released
+	X11 driver up and running
+	minor bugs fixed
+
+2000-03-26  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* README.Raster, Raster.c, cfg.c, lcd4linux.conf.sample:
+	README.Raster added
+
+	* README, Raster.c, XWindow.c, cfg.c, pixmap.h:
+	more Pixmap renaming
+	quoting of '#' in config file
+
+	* MatrixOrbital.c, README.Drivers, Raster.c, Skeleton.c, XWindow.c, display.c, display.h, lcd4linux.c, lcd4linux.conf.sample, pixmap.c:
+	bug in pixmap.c that leaded to empty bars fixed
+	name conflicts with X11 resolved
+
+	* Raster.c, lcd4linux.c, lcd4linux.conf.sample:
+	enhancements to the PPM driver
+
+2000-03-25  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* MatrixOrbital.c, Raster.c, Skeleton.c, XWindow.c, display.c, display.h, fontmap.c, lcd4linux.c, lcd4linux.conf.sample, pixmap.c:
+	memory leak in Raster_flush closed
+	driver family logic changed
+
+2000-03-24  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* fontmap.h:
+	fontmap.h added
+
+	* Raster.c, XWindow.c, fontmap.c, lcd4linux.c, lcd4linux.conf.sample, parser.c, pixmap.c, pixmap.h:
+	new syntax for raster configuration
+	changed XRES and YRES to be configurable
+	PPM driver works nice
+
+2000-03-23  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, MatrixOrbital.c, Raster.c, XWindow.c, display.c, filter.c, lcd4linux.c, lcd4linux.conf.sample, pixmap.c, processor.c, system.c:
+	PPM driver up and running (but slow!)
+
+2000-03-22  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, XWindow.c, display.c, display.h, fontmap.c, lcd4linux.c, lcd4linux.conf.sample, pixmap.c, pixmap.h:
+	added '-l' switch (list drivers)
+	generic pixmap driver added
+	X11 Framework done
+
+	* FAQ, Makefile.am, Makefile.in, MatrixOrbital.c, README.MatrixOrbital, Skeleton.c, configure, configure.in, filter.c, lcd4linux.c, lcd4linux.conf.sample, processor.c, processor.h:
+	FAQ added
+	new modules 'processor.c' contains all data processing
+
+2000-03-19  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, MatrixOrbital.c, README, README.Drivers, README.MatrixOrbital, Skeleton.c, display.c, lcd4linux.c, lcd4linux.conf.sample, parser.c, parser.h:
+	documentation available! README, README.MatrixOrbital, README.Drivers
+	added Skeleton.c as a starting point for new drivers
+
+2000-03-18  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure, configure.in, lcd4linux.c, lcd4linux.conf.sample, parser.c, parser.h:
+	added sensor handling (for temperature etc.)
+	made data collecting happen only if data is used
+	(reading /proc/meminfo takes a lot of CPU!)
+	released lcd4linux-0.92
+
+	* MatrixOrbital.c, display.c, lcd4linux.c, lcd4linux.conf.sample, system.c:
+	vertical bars implemented
+	bar compaction improved
+	memory information implemented
+
+2000-03-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* MatrixOrbital.c, configure, configure.in, display.c, display.h, lcd4linux.c, lcd4linux.conf.sample, parser.c, parser.h, system.c, system.h:
+	various memory statistics added
+
+2000-03-13  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, MatrixOrbital.c, configure, configure.in, display.c, display.h, isdn.c, isdn.h, lcd4linux.c, lcd4linux.conf.sample, lcd4linux.h, parser.c, parser.h:
+	release 0.9
+	moved row parsing to parser.c
+	all basic work finished
+
+2000-03-10  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile, Makefile.am, Makefile.in, MatrixOrbital.c, cfg.c, configure, display.c, display.h, isdn.c, isdn.h, lcd4linux.c, lcd4linux.conf.sample, system.c, system.h:
+	first unstable but running release
+
+	* COPYING, INSTALL, Makefile.am, Makefile.in, aclocal.m4, configure.in, install-sh, lcd2041.c, lcd2041.h, missing, mkinstalldirs:
+	autoconf/automake
+
+	* Makefile, cfg.c, cfg.h, config.c, config.h: *** empty log message ***
+
+	* Makefile, MatrixOrbital.c, display.c, display.h, system.c:
+	MatrixOrbital driver finished
+
+2000-03-07  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile, config.c, isdn.c, isdn.h, lcd4linux.conf.sample, lcd4linux.h, system.c, system.h:
+	system.c cleanup
+
+2000-03-06  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* MatrixOrbital.c, config.c, config.h, display.c, display.h, filter.c, filter.h, isdn.c, isdn.h, lcd2041.c, lcd4linux.h, system.c, system.h:
+	minor cleanups
+
+2000-01-16  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* display.h: *** empty log message ***
+
+	* display.c, display.h:
+	Release 0.5
+	project moved to SourceForge
+	started working with CVS
+
+
+	* display.c, display.h: New file.
+
+	* Makefile:
+	Release 0.5
+	project moved to SourceForge
+	started working with CVS
+
+	* MatrixOrbital.c:
+	Release 0.5
+	project moved to SourceForge
+	started working with CVS
+
+
+	* MatrixOrbital.c: New file.
+
+	* lcd4linux.c, lcd2041.c, lcd2041.h, Makefile:
+	Release 0.4
+
+	* system.c, lcd4linux.c, filter.c, isdn.c, isdn.h, Makefile:
+	Release 0.3
+
+	* system.c, system.h, lcd4linux.c, isdn.c, isdn.h, lcd2041.c, lcd2041.h:
+	Release 0.2
+
+	* filter.c, filter.h:
+	Release 0.2
+
+
+	* filter.c, filter.h: New file.
+
+	* Makefile, config.c:
+	Release 0.2
+
+	* system.c, system.h:
+
+	* system.c, system.h: New file.
+
+	* lcd4linux.c, lcd4linux.h:
+
+	* lcd4linux.c, lcd4linux.h: New file.
+
+	* isdn.c, isdn.h, lcd2041.c, lcd2041.h:
+
+	* isdn.c, isdn.h, lcd2041.c, lcd2041.h: New file.
+
+	* Makefile, config.c, config.h:
+
+	* Makefile, config.c, config.h: New file.
+

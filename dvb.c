@@ -43,6 +43,7 @@
 #include <sys/types.h>
 
 #include "config.h"
+#include "debug.h"
 
 #ifndef HAVE_LINUX_DVB_FRONTEND_H
 
@@ -68,10 +69,7 @@ int DVB (double *strength, double *snr)
 #else
 
 #include <linux/dvb/frontend.h>
-
-#include "debug.h"
 #include "dvb.h"
-#include "filter.h"
 
 int DVB (double *strength, double *snr)
 {
