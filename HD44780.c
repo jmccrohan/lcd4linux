@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.32 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: HD44780.c,v 1.33 2003/08/19 04:28:41 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.33  2003/08/19 04:28:41  reinelt
+ * more Icon stuff, minor glitches fixed
+ *
  * Revision 1.32  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -372,10 +375,13 @@ int HD_init (LCD *Self)
   if (s==NULL) {
     gpos=0;
   }
-  else if ((gpos=strtol(s, &e, 0))==0 || *e!='\0' || gpos<0 || gpos>8) {
-    error ("HD44780: bad GPOs '%s' in %s", s, cfg_file());
-    return -1;
-  }    
+  else {
+    gpos=strtol(s, &e, 0);
+    if (*e!='\0' || gpos<0 || gpos>8) {
+      error ("HD44780: bad GPOs '%s' in %s", s, cfg_file());
+      return -1;
+    }    
+  }
   
   Self->rows=rows;
   Self->cols=cols;
@@ -391,7 +397,8 @@ int HD_init (LCD *Self)
   }
 
   s=cfg_get("Bits", "8");
-  if ((Bits=strtol(s, &e, 0))==0 || *e!='\0' || (Bits!=4 && Bits!=8)) {
+  Bits=strtol(s, &e, 0);
+  if (*e!='\0' || (Bits!=4 && Bits!=8)) {
     error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_file());
     return -1;
   }    

@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.11 2003/08/17 06:57:04 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.12 2003/08/19 04:28:41 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.12  2003/08/19 04:28:41  reinelt
+ * more Icon stuff, minor glitches fixed
+ *
  * Revision 1.11  2003/08/17 06:57:04  reinelt
  * complete rewrite of the Crystalfontz driver
  *
@@ -162,7 +165,7 @@ static void CF_define_char (int ascii, char *buffer)
 {
   char cmd[3]="031"; // set custom char bitmap
 
-  cmd[1]=(char)ascii;
+  cmd[1]=128+(char)ascii;
   CF_write (cmd, 2);
   CF_write (buffer, 8);
 }
@@ -176,8 +179,7 @@ static int CF_clear (int full)
   
   if (full) {
     memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
-    // Fixme: is there a "clear screen" command?
-    // CF_write ("\000", 1);  // Clear Screen
+    CF_write ("\014", 1);  // Form Feed (Clear Display)
   }
   
   return 0;
@@ -299,6 +301,7 @@ static int CF_flush (void)
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
+	if (c!=32) c+=128; //blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }

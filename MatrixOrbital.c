@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.30 2003/08/17 16:37:39 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.31 2003/08/19 04:28:41 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.31  2003/08/19 04:28:41  reinelt
+ * more Icon stuff, minor glitches fixed
+ *
  * Revision 1.30  2003/08/17 16:37:39  reinelt
  * more icon framework
  *
@@ -346,8 +349,10 @@ static int MO_init (LCD *Self, int protocol)
   if (Device==-1) return -1;
 
   s=cfg_get("Icons", "0");
-  if ((Icons=strtol(s, &e, 0))==0 || *e!='\0' || (Icons<0 && Icons>8)) {
-    error ("MatrixOrbital: bad Iconss '%s' in %s, must be between 0 and 8", s, cfg_file());
+  Icons=strtol(s, &e, 0);
+  if (*e!='\0' || Icons<0 || Icons>8) {
+    debug ("Icons=%d e=<%s>", Icons, e);
+    error ("MatrixOrbital: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_file());
     return -1;
   }    
   if (Icons>0) {

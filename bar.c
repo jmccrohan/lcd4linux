@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.4 2003/01/12 06:51:27 reinelt Exp $
+/* $Id: bar.c,v 1.5 2003/08/19 04:28:41 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.5  2003/08/19 04:28:41  reinelt
+ * more Icon stuff, minor glitches fixed
+ *
  * Revision 1.4  2003/01/12 06:51:27  reinelt
  * fixed bug in bar compaction
  *
@@ -241,17 +244,22 @@ static int segment_deviation (int i, int j)
   
   if (i==j) return 65535;
   if (!(Segment[i].type & Segment[j].type)) return 65535;
-  if (Segment[i].len1==0 && Segment[j].len1!=0) return 65535;
-  if (Segment[i].len2==0 && Segment[j].len2!=0) return 65535;
+
   RES=Segment[i].type & BAR_H ? XRES:YRES;
-  if (Segment[i].len1>=RES && Segment[j].len1<RES) return 65535;
-  if (Segment[i].len2>=RES && Segment[j].len2<RES) return 65535;
-  if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) return 65535;
 
   i1=Segment[i].len1; if (i1>RES) i1=RES;
   i2=Segment[i].len2; if (i2>RES) i2=RES;
   j1=Segment[j].len1; if (j1>RES) i1=RES;
   j2=Segment[j].len2; if (j2>RES) i2=RES;
+  
+  if (i1==0   && j1!=0)  return 65535;
+  if (i2==0   && j2!=0)  return 65535;
+  if (i1>=RES && j1<RES) return 65535;
+  if (i2>=RES && j2<RES) return 65535;
+  if (i1==i2  && j1!=j2) return 65535;
+
+  if (i1==1   && j1==0)  return 65535;
+  if (i2==1   && j2==0)  return 65535;
   
   return (i1-j1)*(i1-j1)+(i2-j2)*(i2-j2);
 }
