@@ -19,18 +19,20 @@ AC_ARG_WITH(
   drivers, 
   [  --with-drivers=<list>   compile driver for displays in <list>,]
   [                        drivers may be separated with commas,]	
-  [                        'all' compiles all avvailable drivers.]	
+  [                        'all' (default) compiles all available drivers.]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, HD44780,]
-  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11],
+  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
 )
 if test "$drivers" = "all"; then
-
 drivers=[BeckmannEgle,CrystalFontz,HD44780,MatrixOrbital,PalmPilot,PNG,PPM,X11,Text]
 fi
+
+RASTER=0
 drivers=`echo $drivers|sed 's/,/ /g'`
+
 for driver in $drivers; do
    case "$driver" in
       BeckmannEgle)
@@ -54,12 +56,12 @@ for driver in $drivers; do
          AC_DEFINE(WITH_PALMPILOT)
          ;;
       PNG)
-         RASTER="Raster.o"
+         RASTER=$(($RASTER + 1))
          AC_DEFINE(WITH_PNG)
 	 DRVLIBS="$DRVLIBS -lgd -lpng -lz"
          ;;
       PPM)
-         RASTER="Raster.o"
+         RASTER=$(($RASTER + 1))
          AC_DEFINE(WITH_PPM)
          ;;
       SIN)
@@ -86,7 +88,86 @@ for driver in $drivers; do
    esac
 done
 
-DRIVERS="$DRIVERS $RASTER"
+dnl delete drivers, mainly if all wa chosen above
+
+AC_ARG_WITH(
+  notdrivers, 
+  [  --with-notdrivers=<list> do not compile driver for displays in <list>,]
+  [                        drivers may be separated with commas,]	
+  [                        mainly useful if above all drivers were selected.]	
+  [                        possible drivers are:]	
+  [                        BeckmannEgle, CrystalFontz, HD44780,]
+  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
+  notdrivers=$withval, 
+  notdrivers="no"
+)
+
+AC_DEFUN(AC_UNDEFINE,
+mv confdefs.h confdefs.h~
+grep -v $1 < confdefs.h~ > confdefs.h
+)
+
+notdrivers=`echo $notdrivers|sed 's/,/ /g'`
+for driver in $notdrivers; do
+   case "$driver" in
+      BeckmannEgle)
+         DRIVERS=${DRIVERS/ BeckmannEgle.o/}
+         AC_UNDEFINE(WITH_BECKMANNEGLE)
+         ;;
+      CrystalFontz)
+         DRIVERS=${DRIVERS/ Crystalfontz.o/}
+         AC_UNDEFINE(WITH_CRYSTALFONTZ)
+         ;;
+      HD44780)
+         DRIVERS=${DRIVERS/ HD44780.o/}
+         AC_UNDEFINE(WITH_HD44780)
+         ;;
+      MatrixOrbital)
+         DRIVERS=${DRIVERS/ MatrixOrbital/}
+         AC_UNDEFINE(WITH_MATRIXORBITAL)
+         ;;
+      PalmPilot)
+         DRIVERS=${DRIVERS/ PalmPilot/}
+         AC_UNDEFINE(WITH_PALMPILOT)
+         ;;
+      PNG)
+         RASTER=$(($RASTER - 1))
+         AC_UNDEFINE(WITH_PNG)
+	 DRVLIBS=${DRVLIBS/ -lgd -lpng -lz/}
+         ;;
+      PPM)
+         RASTER=$(($RASTER - 1))
+         AC_UNDEFINE(WITH_PPM)
+         ;;
+      SIN)
+         DRIVERS=${DRIVERS/ SIN.o/}
+         AC_UNDEFINE(WITH_SIN)
+         ;;
+      Skeleton)
+         DRIVERS=${DRIVERS/ Skeleton.o/}
+         AC_UNDEFINE(WITH_Skeleton)
+         ;;
+      X11)
+         DRIVERS=${DRIVERS/ XWindow.o/}
+	 DRVLIBS=${DRVLIBS/ -lX11/}
+         AC_UNDEFINE(WITH_X11)
+         ;;
+      Text)
+         DRIVERS=${DRIVERS/ Text.o/}
+	 DRVLIBS=${DRVLIBS/ -lncurses/}
+         AC_UNDEFINE(WITH_Text)
+         ;;
+      no)
+         ;;
+      *) 	
+         AC_MSG_ERROR([Unknown driver '$driver'])
+         ;;
+   esac
+done
+
+test $RASTER -gt 0 && RASTERDRIVER="Raster.o"
+
+DRIVERS="$DRIVERS $RASTERDRIVER"
 
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)
