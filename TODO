@@ -137,3 +137,11 @@ of the full block configurable...
 2003-09-14 Markus <markus@norad.de>
 change %t tokens from Byte/sec to kB/sec, ith one decimal places. 
 Either make it configurabel, or add new tokens.
+
+2003-10-29 Matt Thrailkill <xwred1@modestolan.com>
+> To go off on another tangent... have you at all considered some sort of
+> marquee support?  I toyed with the row scrolling support which was
+> recently added, and it is nifty.  But marquees would be handy for doing
+> something like horizontally scrolling, say, the title of the currently
+> playing mp3.  I've toyed with trying to dive in and add it, but I'm a
+> pretty lazy guy and haven't done it.  What do you think?

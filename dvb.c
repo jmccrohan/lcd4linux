@@ -1,4 +1,4 @@
-/* $Id: dvb.c,v 1.6 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: dvb.c,v 1.7 2003/11/11 04:30:41 reinelt Exp $
  *
  * DVB specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: dvb.c,v $
+ * Revision 1.7  2003/11/11 04:30:41  reinelt
+ * very minor changes
+ *
  * Revision 1.6  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -106,13 +109,13 @@ int DVB (double *strength, double *snr)
     debug ("open (/dev/dvb/adapter0/frontend0)=%d", fd);
   }
 
-  if (ioctl(fd, FE_READ_SIGNAL_STRENGTH, &raw_strength)) {
+  if (ioctl(fd, FE_READ_SIGNAL_STRENGTH, &raw_strength)!=0) {
     error("ioctl(FE_READ_SIGNAL_STRENGTH) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
   
-  if (ioctl(fd, FE_READ_SNR, &raw_snr)) {
+  if (ioctl(fd, FE_READ_SNR, &raw_snr)!=0) {
     error("ioctl(FE_READ_SNR) failed: %s", strerror(errno));
     fd=-1;
     return -1;
