@@ -72,7 +72,7 @@ BeckmannEgle.c \
 drv_Crystalfontz.c \
 drv_Cwlinux.c \
 HD44780.c \
-M50530.c \
+drv_M50530.c \
 T6963.c \
 USBLCD.c \
 drv_MatrixOrbital.c \

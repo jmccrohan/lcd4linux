@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.8 2004/02/14 10:09:50 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.9 2004/02/14 11:56:17 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.9  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.8  2004/02/14 10:09:50  reinelt
  * I2C Sensors for 2.4 kernels (/proc instead of /sysfs)
  *
@@ -143,8 +147,8 @@ static int parse_i2c_sensors_sysfs(RESULT *arg)
 		  
   } else {
     sprintf(val, "%s", buffer); 
-	// we supress this nasty \n at the end
-	val[strlen(val)-1]='\0';
+    // we supress this nasty \n at the end
+    val[strlen(val)-1]='\0';
   } 
   
   hash_set (&I2Csensors, key, val);
@@ -160,8 +164,7 @@ void my_i2c_sensors_sysfs(RESULT *result, RESULT *arg)
   
   age=hash_age(&I2Csensors, key, &val);
   // refresh every 100msec
-  if (age<0 || age>100)
-  {
+  if (age<0 || age>100) {
     parse_i2c_sensors_sysfs(arg);
     val=hash_get(&I2Csensors, key);
   }
@@ -209,7 +212,7 @@ static int parse_i2c_sensors_procfs(RESULT *arg)
   running=strdupa(buffer);
   while(1) {
     value = strsep (&running, delim);
-//    debug("%s pos %i -> %s", key, pos , value);
+    //    debug("%s pos %i -> %s", key, pos , value);
     if (!value) {
       break;
     } else {
@@ -242,8 +245,7 @@ void my_i2c_sensors_procfs(RESULT *result, int argc, RESULT *argv[])
   age=hash_age(&I2Csensors, key, &val);
 
   // refresh every 100msec
-  if (age<0 || age>100)
-  {
+  if (age<0 || age>100) {
     parse_i2c_sensors_procfs(argv[0]);
     val=hash_get(&I2Csensors, key);
   }
@@ -289,8 +291,9 @@ void my_i2c_sensors_path(char *method)
   }
   
   while((dir = readdir(fd1)))   {
-    // Skip '.' and '..'
-    if (strcmp(dir->d_name, "." )==0 ||
+    // Skip non-directories and '.' and '..'
+    if (dir->d_type!=DT_DIR || 
+	strcmp(dir->d_name, "." )==0 ||
 	strcmp(dir->d_name, "..")==0) {
       continue;
     }
@@ -335,7 +338,7 @@ int plugin_init_i2c_sensors (void)
     }
 	
   } else {
-	if (path_cfg[strlen(path_cfg)-1] != '/') {
+    if (path_cfg[strlen(path_cfg)-1] != '/') {
       // the headless user forgot the trailing slash :/
       debug("adding a trailing slash at the end of the path");
       path_cfg = realloc(path_cfg, strlen(path_cfg)+2);
@@ -345,17 +348,17 @@ int plugin_init_i2c_sensors (void)
     debug("if i2c_sensors doesn't work, double check this value !");
     path = realloc(path, strlen(path_cfg)+1);
     strcpy(path, path_cfg);
-	free(path_cfg);
+    free(path_cfg);
   }
 
   // we activate the function only if there's a possibly path found
   if (!path) {
-  free(path);
+    free(path);
   } else {
     if (!strncmp(path, "/sys", 4)) {
-    AddFunction ("i2c_sensors", 1, my_i2c_sensors_sysfs);
+      AddFunction ("i2c_sensors", 1, my_i2c_sensors_sysfs);
     } else if (!strncmp(path, "/proc", 5)) {
-    AddFunction ("i2c_sensors", -1, my_i2c_sensors_procfs);
+      AddFunction ("i2c_sensors", -1, my_i2c_sensors_procfs);
     }
   }
  

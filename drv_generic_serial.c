@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.5 2004/02/04 19:10:51 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.6 2004/02/14 11:56:17 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.6  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.5  2004/02/04 19:10:51  reinelt
  * Crystalfontz driver nearly finished
  *
@@ -57,15 +61,15 @@
  * int  drv_generic_serial_open    (char *driver, char *port, speed_t speed);
  *   opens the serial port
  *
- * int drv_generic_serial_poll (char *string, int len)
+ * int drv_generic_serial_poll (unsigned char *string, int len)
  *   reads from the serial or USB port
  *   without retry
  *
- * int  drv_generic_serial_read    (char *string, int len);
+ * int  drv_generic_serial_read    (unsigned char *string, int len);
  *   reads from the serial or USB port
  *   with retry
  *
- * void drv_generic_serial_write   (char *string, int len);
+ * void drv_generic_serial_write   (unsigned char *string, int len);
  *   writes to the serial or USB port
  *
  * int  drv_generic_serial_close   (void);
@@ -291,7 +295,7 @@ int drv_generic_serial_open (char *section, char *driver)
 }
 
 
-int drv_generic_serial_poll (char *string, int len)
+int drv_generic_serial_poll (unsigned char *string, int len)
 {
   int ret;
   if (Device==-1) return -1;
@@ -303,7 +307,7 @@ int drv_generic_serial_poll (char *string, int len)
 }
 
 
-int drv_generic_serial_read (char *string, int len)
+int drv_generic_serial_read (unsigned char *string, int len)
 {
   int run, ret;
   
@@ -322,7 +326,7 @@ int drv_generic_serial_read (char *string, int len)
 }
 
 
-void drv_generic_serial_write (char *string, int len)
+void drv_generic_serial_write (unsigned char *string, int len)
 {
   int run, ret;
   

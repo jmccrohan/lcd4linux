@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.10 2004/02/05 07:10:23 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.11 2004/02/14 11:56:17 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.11  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.10  2004/02/05 07:10:23  reinelt
  * evaluator function names are no longer case-sensitive
  * Crystalfontz Fan PWM control, Fan RPM monitoring, temperature monitoring
@@ -315,13 +319,13 @@ static void drv_CF_send (int cmd, int len, char *data)
 }
 
 
-static void drv_CF_write1 (char *string, int len)
+static void drv_CF_write1 (unsigned char *string, int len)
 {
   drv_generic_serial_write (string, len);
 }
 
 
-static void drv_CF_write2 (char *string, int len)
+static void drv_CF_write2 (unsigned char *string, int len)
 {
   // limit length
   if (Col+len>16) len=16-Col;
@@ -337,7 +341,7 @@ static void drv_CF_write2 (char *string, int len)
 }
 
 
-static void drv_CF_write3 (char *string, int len)
+static void drv_CF_write3 (unsigned char *string, int len)
 {
   debug ("write3(<%.*s>,%d)", len, string, len);
 }
@@ -366,7 +370,7 @@ static void drv_CF_goto23 (int row, int col)
 }
 
 
-static void drv_CF_defchar1 (int ascii, char *buffer)
+static void drv_CF_defchar1 (int ascii, unsigned char *buffer)
 {
   char cmd[2]="\031n"; // set custom char bitmap
   
@@ -377,7 +381,7 @@ static void drv_CF_defchar1 (int ascii, char *buffer)
 }
 
 
-static void drv_CF_defchar23 (int ascii, char *matrix)
+static void drv_CF_defchar23 (int ascii, unsigned char *matrix)
 {
   char buffer[9];
   

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.4 2004/01/23 07:04:24 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.5 2004/02/14 11:56:17 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.5  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.4  2004/01/23 07:04:24  reinelt
  * icons finished!
  *
@@ -64,8 +68,8 @@ extern int ICONS;        // number of user-defineable characters reserved for ic
 
 // these functions must be implemented by the real driver
 void (*drv_generic_text_real_goto)(int row, int col);
-void (*drv_generic_text_real_write)(char *buffer, int len);
-void (*drv_generic_text_real_defchar)(int ascii, char *buffer);
+void (*drv_generic_text_real_write)(unsigned char *buffer, int len);
+void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
 
 
 int  drv_generic_text_init            (char *section, char *driver);

@@ -51,6 +51,18 @@ Display HD44780-20x4 {
 }
 
 
+Display M50530-24x8 {
+    Driver 'M50530'
+    Port '/dev/parports/0'	
+    Port '0x378'
+    Size '24x8'
+    Wire.EX   'STROBE'
+    Wire.IOC1 'SELECT'
+    Wire.IOC2 'AUTOFD'
+    Wire.GPO  'INIT'
+}
+
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
@@ -258,12 +270,13 @@ Layout L16x2 {
 
 #Display 'LK204'
 #Display 'HD44780-20x4'
+Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
-Display 'CF633'
+#Display 'CF633'
 
-#Layout  'Default'
-Layout  'L16x2'
+Layout  'Default'
+#Layout  'L16x2'
 
 Variables {
    tick 500

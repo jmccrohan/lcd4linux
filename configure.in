@@ -176,8 +176,8 @@ fi
 
 if test "$M50530" = "yes"; then
    PARPORT="yes"
-#  DRIVERS="$DRIVERS M50530.lo"
-#  DRIVERS="$DRIVERS M50530.o"
+#  DRIVERS="$DRIVERS drv_M50530.lo"
+   DRIVERS="$DRIVERS drv_M50530.o"
    AC_DEFINE(WITH_M50530,1,[M50530 driver])
 fi
 

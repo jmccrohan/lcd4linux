@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.5 2004/01/27 06:34:14 reinelt Exp $
+/* $Id: drv.c,v 1.6 2004/02/14 11:56:17 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.6  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.5  2004/01/27 06:34:14  reinelt
  * Cwlinux driver portet to NextGeneration (compiles, but not tested!)
  *
@@ -126,10 +130,10 @@ DRIVER *Driver[] = {
 #ifdef WITH_HD44780
   &drv_HD44780,
 #endif
+#ifdef WITH_M50530
+  &drv_M50530,
+#endif
   /* Fixme
-     #ifdef WITH_M50530
-     &M50530,
-     #endif
      #ifdef WITH_T6963
      &T6963,
      #endif

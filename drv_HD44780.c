@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.11 2004/02/04 19:10:51 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.12 2004/02/14 11:56:17 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.12  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.11  2004/02/04 19:10:51  reinelt
  * Crystalfontz driver nearly finished
  *
@@ -449,13 +453,13 @@ static void drv_HD_goto (int row, int col)
 }
 
 
-static void drv_HD_write (char *string, int len)
+static void drv_HD_write (unsigned char *string, int len)
 {
   drv_HD_data (currController, string, len, T_EXEC);
 }
 
 
-static void drv_HD_defchar (int ascii, char *buffer)
+static void drv_HD_defchar (int ascii, unsigned char *buffer)
 {
   // define chars on *both* controllers!
   drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
@@ -506,7 +510,7 @@ static int drv_HD_start (char *section)
   char *model, *s;
   int rows=-1, cols=-1, gpos=-1;
   
-  model=cfg_get(section, "Model", NULL);
+  model=cfg_get(section, "Model", "generic");
   if (model!=NULL && *model!='\0') {
     int i;
     for (i=0; Models[i].type!=0xff; i++) {
@@ -520,7 +524,7 @@ static int drv_HD_start (char *section)
     Capabilities=Models[Model].capabilities;
     info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
-    error ("%s: no '%s.Model' entry from %s", Name, section, cfg_source());
+    error ("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());
     return -1;
   }
 

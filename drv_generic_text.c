@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.9 2004/02/07 13:45:23 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.10 2004/02/14 11:56:17 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.10  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.9  2004/02/07 13:45:23  reinelt
  * icon visibility patch #2 from Xavier
  *
@@ -244,7 +248,7 @@ int drv_generic_text_icon_draw (WIDGET *W)
   static int icon_counter=0;
   WIDGET_ICON *Icon = W->data;
   int row, col;
-  char ascii;
+  unsigned char ascii;
   
   row = W->row;
   col = W->col;
@@ -510,7 +514,7 @@ static void drv_generic_text_bar_pack_segments (void)
 static void drv_generic_text_bar_define_chars(void)
 {
   int c, i, j;
-  char buffer[8];
+  unsigned char buffer[8];
   
   for (i=fSegment; i<nSegment; i++) {
     if (Segment[i].used) continue;

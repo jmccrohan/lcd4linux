@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.3 2004/02/14 11:56:17 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.3  2004/02/14 11:56:17  reinelt
+ * M50530 driver ported
+ * changed lots of 'char' to 'unsigned char'
+ *
  * Revision 1.2  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -100,7 +104,7 @@ static void drv_CW_goto (int row, int col)
 }
 
 
-static void drv_CW1602_defchar (int ascii, char *buffer)
+static void drv_CW1602_defchar (int ascii, unsigned char *buffer)
 {
   int i;
   char cmd[12]="\376Nn12345678\375";
@@ -115,7 +119,7 @@ static void drv_CW1602_defchar (int ascii, char *buffer)
 }
 
 
-static void drv_CW12232_defchar (int ascii, char *buffer)
+static void drv_CW12232_defchar (int ascii, unsigned char *buffer)
 {
   int i, j;
   char cmd[10]="\376Nn123456\375";
