@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.9 2004/02/01 11:51:22 hejl Exp $
+/* $Id: drv_HD44780.c,v 1.10 2004/02/02 05:22:16 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.10  2004/02/02 05:22:16  reinelt
+ * Brightness fpr Noritake Displays avaliable as a plugin
+ *
  * Revision 1.9  2004/02/01 11:51:22  hejl
  * Fixes for busy flag
  *
@@ -637,6 +640,15 @@ static int drv_HD_start (char *section)
 // ****************************************
 
 
+static void plugin_brightness (RESULT *result, RESULT *arg1)
+{
+  double brightness;
+  
+  brightness=drv_HD_brightness(R2N(arg1));
+  SetResult(&result, R_NUMBER, &brightness); 
+}
+
+
 // ****************************************
 // ***        widget callbacks          ***
 // ****************************************
@@ -725,7 +737,8 @@ int drv_HD_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  // Fixme: plugins for HD44780?
+  if (Capabilities & CAP_BRIGHTNESS)
+    AddFunction ("brightness", 1, plugin_brightness);
   
   return 0;
 }
