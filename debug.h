@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.7 2004/04/12 04:55:59 reinelt Exp $
+/* $Id: debug.h,v 1.8 2004/06/20 10:09:54 reinelt Exp $
  *
  * debug messages
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.8  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.7  2004/04/12 04:55:59  reinelt
  * emitted a BIG FAT WARNING if msr.h could not be found (and therefore
  * the gettimeofday() delay loop would be used)
@@ -62,7 +66,7 @@ extern int running_foreground;
 extern int running_background;
 extern int verbose_level;
 
-void message (int level, const char *format, ...);
+void message (const int level, const char *format, ...);
 
 #define debug(args...) message (2, __FILE__ ": " args)
 #define info(args...)  message (1, args)

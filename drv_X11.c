@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.5 2004/06/08 21:46:38 reinelt Exp $
+/* $Id: drv_X11.c,v 1.6 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.6  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.5  2004/06/08 21:46:38  reinelt
  *
  * splash screen for X11 driver (and generic graphic driver)
@@ -115,7 +119,7 @@ static Pixmap pm;
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_X11_blit(int row, int col, int height, int width)
+static void drv_X11_blit(const int row, const int col, const int height, const int width)
 {
   int r, c;
   int dirty = 0;
@@ -138,7 +142,7 @@ static void drv_X11_blit(int row, int col, int height, int width)
 }
 
 
-static void drv_X11_expose(int x, int y, int width, int height)
+static void drv_X11_expose(const int x, const int y, const int width, const int height)
 {
   /*
    * theory of operation:
@@ -181,7 +185,7 @@ static void drv_X11_timer (void *notused)
 }
 
 
-static int drv_X11_start (char *section)
+static int drv_X11_start (const char *section)
 {
   char *s;
   XSetWindowAttributes wa;
@@ -350,7 +354,7 @@ int drv_X11_list (void)
 
 
 // initialize driver & display
-int drv_X11_init (char *section, int quiet)
+int drv_X11_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -403,7 +407,7 @@ int drv_X11_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_X11_quit (int quiet) {
+int drv_X11_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_graphic_quit();

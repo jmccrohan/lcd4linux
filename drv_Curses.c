@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.5 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.6 2004/06/20 10:09:54 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.6  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.5  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -96,8 +100,9 @@ static void drv_Curs_clear (void)
 }
 
 
-static void drv_Curs_write (int row, int col, unsigned char *data, int len)
+static void drv_Curs_write (const int row, const int col, const unsigned char *data, const int len)
 {
+  int l = len;
   char *p;
   
   while ((p = strpbrk(data, "\r\n")) != NULL) {
@@ -105,15 +110,15 @@ static void drv_Curs_write (int row, int col, unsigned char *data, int len)
   }
   
   if (col < DCOLS) {
-    if (DCOLS-col < len ) len = DCOLS-col;
-    mvwprintw(w, row+1 , col+1, "%.*s", DCOLS-col, data);
+    if (DCOLS-col < l ) l = DCOLS-col;
+    mvwprintw(w, row+1 , col+1, "%.*s", l, data);
     wmove(w, DROWS+1, 0);
     wrefresh(w);  
   }
 }
 
 
-static void drv_Curs_defchar (int ascii, unsigned char *buffer)
+static void drv_Curs_defchar (const int ascii, const unsigned char *buffer)
 {
   // empty
 }
@@ -161,7 +166,7 @@ int curses_error(char *buffer)
 }
 
 
-static int drv_Curs_start (char *section, int quiet)
+static int drv_Curs_start (const char *section, const int quiet)
 {
   char *s;
   
@@ -245,7 +250,7 @@ int drv_Curs_list (void)
 
 
 // initialize driver & display
-int drv_Curs_init (char *section, int quiet)
+int drv_Curs_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -296,7 +301,7 @@ int drv_Curs_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_Curs_quit (int quiet) {
+int drv_Curs_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

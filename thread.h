@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.3 2004/04/08 10:48:25 reinelt Exp $
+/* $Id: thread.h,v 1.4 2004/06/20 10:09:56 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.4  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.3  2004/04/08 10:48:25  reinelt
  * finished plugin_exec
  * modified thread handling
@@ -44,13 +48,13 @@
 #define _THREAD_H_
 
 int  mutex_create  (void);
-void mutex_lock    (int semid);
-void mutex_unlock  (int semid);
-void mutex_destroy (int semid);
+void mutex_lock    (const int semid);
+void mutex_unlock  (const int semid);
+void mutex_destroy (const int semid);
 
-int  shm_create    (void **buffer, int size);
-void shm_destroy   (int shmid, void *buffer) ;
+int  shm_create    (void **buffer, const int size);
+void shm_destroy   (const int shmid, const void *buffer);
 
-int thread_create (char *name, void (*thread)(void *data), void *data);
+int thread_create  (const char *name, void (*thread)(void *data), void *data);
 
 #endif

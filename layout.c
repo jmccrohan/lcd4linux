@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.11 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: layout.c,v 1.12 2004/06/20 10:09:56 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.12  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.11  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -96,7 +100,7 @@
 #endif
 
 
-int layout_addItem (char *name, int row, int col)
+int layout_addItem (const char *name, const int row, const int col)
 {
   // allocate widget
   widget_add (name, row-1, col-1);
@@ -104,7 +108,7 @@ int layout_addItem (char *name, int row, int col)
 }
 
 
-int layout_init (char *layout)
+int layout_init (const char *layout)
 {
   char *section;
   char *list, *l;

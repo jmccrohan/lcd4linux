@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.4 2004/06/08 21:46:38 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.5 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.5  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.4  2004/06/08 21:46:38  reinelt
  *
  * splash screen for X11 driver (and generic graphic driver)
@@ -60,12 +64,12 @@ extern int XRES,  YRES;  // pixel width/height of one char
 extern unsigned char *drv_generic_graphic_FB;
 
 // these functions must be implemented by the real driver
-void (*drv_generic_graphic_real_blit)(int row, int col, int height, int width);
+void (*drv_generic_graphic_real_blit)(const int row, const int col, const int height, const int width);
 
 // generic functions and widget callbacks
-int drv_generic_graphic_init      (char *section, char *driver);
+int drv_generic_graphic_init      (const char *section, const char *driver);
 int drv_generic_graphic_clear     (void);
-int drv_generic_graphic_greet     (char *msg1, char *msg2);
+int drv_generic_graphic_greet     (const char *msg1, const char *msg2);
 int drv_generic_graphic_draw      (WIDGET *W);
 int drv_generic_graphic_icon_draw (WIDGET *W);
 int drv_generic_graphic_bar_draw  (WIDGET *W);

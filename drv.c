@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.18 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv.c,v 1.19 2004/06/20 10:09:54 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.19  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.18  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -230,7 +234,7 @@ int drv_list (void)
 }
 
 
-int drv_init (char *section, char *driver, int quiet)
+int drv_init (const char *section, const char *driver, const int quiet)
 {
   int i;
   for (i = 0; Driver[i]; i++) {
@@ -245,7 +249,7 @@ int drv_init (char *section, char *driver, int quiet)
 }
 
 
-int drv_quit (int quiet)
+int drv_quit (const int quiet)
 {
   if (Drv->quit == NULL) return 0;
   return Drv->quit(quiet);

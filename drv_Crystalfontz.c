@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.26 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.27 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.27  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.26  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -223,7 +227,7 @@ static MODEL Models[] = {
 // x^0 + x^5 + x^12
 #define CRCPOLY 0x8408 
 
-static unsigned short CRC (unsigned char *p, size_t len, unsigned short seed)
+static unsigned short CRC (const unsigned char *p, size_t len, unsigned short seed)
 {
   int i;
   while (len--) {
@@ -234,12 +238,12 @@ static unsigned short CRC (unsigned char *p, size_t len, unsigned short seed)
   return ~seed;
 }
 
-static unsigned char LSB (unsigned short word)
+static unsigned char LSB (const unsigned short word)
 {
   return word & 0xff;
 }
 
-static unsigned char MSB (unsigned short word)
+static unsigned char MSB (const unsigned short word)
 {
   return word >> 8;
 }
@@ -363,7 +367,7 @@ static void drv_CF_timer (void *notused)
 }
 
 
-static void drv_CF_send (int cmd, int len, char *data)
+static void drv_CF_send (const int cmd, int len, const unsigned char *data)
 {
   unsigned char buffer[22];
   unsigned short crc;
@@ -389,7 +393,7 @@ static void drv_CF_send (int cmd, int len, char *data)
 }
 
 
-static void drv_CF_write1 (int row, int col, unsigned char *data, int len)
+static void drv_CF_write1 (const int row, const int col, const unsigned char *data, const int len)
 {
   char cmd[3]="\021xy"; // set cursor position
   
@@ -405,46 +409,49 @@ static void drv_CF_write1 (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_CF_write2 (int row, int col, unsigned char *data, int len)
+static void drv_CF_write2 (const int row, const int col, const unsigned char *data, const int len)
 {
+  int l = len;
+
   // limit length
-  if (col+len>16) len=16-col;
-  if (len<0) len=0;
+  if (col + l > 16) l = 16 - col;
+  if (l < 0) l = 0;
   
   // sanity check
-  if (row>=2 || col+len>16) {
+  if (row >= 2 || col + l > 16) {
     error ("%s: internal error: write outside linebuffer bounds!", Name);
     return;
   }
-  memcpy (Line+16*row+col, data, len);
-  drv_CF_send (7+row, 16, Line+16*row);
+  memcpy (Line + 16 * row + col, data, l);
+  drv_CF_send (7 + row, 16, Line + 16 * row);
 }
 
 
-static void drv_CF_write3 (int row, int col, unsigned char *data, int len)
+static void drv_CF_write3 (const int row, const int col, const unsigned char *data, const int len)
 {
+  int l = len;
   char cmd[23];
 
   // limit length
-  if (col + len > 20) len = 20 - col;
-  if (len < 0) len = 0;
+  if (col + l > 20) l = 20 - col;
+  if (l < 0) l = 0;
 
   // sanity check
-  if (row >= 2 || col + len > 20) {
+  if (row >= 2 || col + l > 20) {
     error ("%s: internal error: write outside display bounds!", Name);
     return;
   }
 
   cmd[0] = col;
   cmd[1] = row;
-  memcpy (cmd+2, data, len);
+  memcpy (cmd+2, data, l);
 
-  drv_CF_send (31, len+2, cmd);
+  drv_CF_send (31, l+2, cmd);
   
 }
 
 
-static void drv_CF_defchar1 (int ascii, unsigned char *matrix)
+static void drv_CF_defchar1 (const int ascii, const unsigned char *matrix)
 {
   int i;
   char cmd[10]="\031n"; // set custom char bitmap
@@ -458,7 +465,7 @@ static void drv_CF_defchar1 (int ascii, unsigned char *matrix)
 }
 
 
-static void drv_CF_defchar23 (int ascii, unsigned char *matrix)
+static void drv_CF_defchar23 (const int ascii, const unsigned char *matrix)
 {
   int i;
   char buffer[9];
@@ -759,7 +766,7 @@ static void drv_CF_start_3 (void)
 }
 
 
-static int drv_CF_start (char *section)
+static int drv_CF_start (const char *section)
 {
   int i;  
   char *model;
@@ -851,7 +858,7 @@ static int drv_CF_start (char *section)
 // ****************************************
 
 
-static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
+static void plugin_contrast (RESULT *result, const int argc, RESULT *argv[])
 {
   double contrast;
   
@@ -871,7 +878,7 @@ static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
 }
 
 
-static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
+static void plugin_backlight (RESULT *result, const int argc, RESULT *argv[])
 {
   double backlight;
   
@@ -891,7 +898,7 @@ static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
 }
 
 
-static void plugin_fan_pwm (RESULT *result, int argc, RESULT *argv[])
+static void plugin_fan_pwm (RESULT *result, const int argc, RESULT *argv[])
 {
   double pwm;
   
@@ -941,7 +948,7 @@ int drv_CF_list (void)
 
 
 // initialize driver & display
-int drv_CF_init (char *section, int quiet)
+int drv_CF_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -1031,7 +1038,7 @@ int drv_CF_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_CF_quit (int quiet) {
+int drv_CF_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.8 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: debug.c,v 1.9 2004/06/20 10:09:54 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.9  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.8  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -78,7 +82,7 @@ int running_background = 0;
 
 int verbose_level = 0;
 
-void message (int level, const char *format, ...)
+void message (const int level, const char *format, ...)
 {
   va_list ap;
   char buffer[256];

@@ -1,4 +1,4 @@
-/* $Id: plugin_isdn.c,v 1.2 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_isdn.c,v 1.3 2004/06/20 10:09:56 reinelt Exp $
  *
  * plugin for ISDN subsystem
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: plugin_isdn.c,v $
+ * Revision 1.3  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.2  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -78,7 +82,7 @@ static HASH ISDN_INFO;
 static HASH ISDN_CPS;
 
 
-static void hash_put_info (char *name, int channel, char *val)
+static void hash_put_info (const char *name, const int channel, const char *val)
 {
   char key[16];
 
@@ -162,7 +166,7 @@ static void my_isdn_info (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 #ifdef HAVE_LINUX_ISDN_H
 
-static void hash_put_cps (int channel, CPS *cps)
+static void hash_put_cps (const int channel, const CPS *cps)
 {
   char key[16], val[16];
 

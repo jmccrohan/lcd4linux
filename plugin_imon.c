@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.9 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.10 2004/06/20 10:09:56 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.10  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.9  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -101,7 +105,7 @@ static int err=0;
  *  service_connect (host_name, port)       - connect to tcp-service
  *----------------------------------------------------------------------------
  */
-static int service_connect (char * host_name, int port){
+static int service_connect (const char * host_name, const int port){
     struct sockaddr_in  addr;
     struct hostent *    host_p;
     int                 fd;
@@ -150,7 +154,7 @@ static int service_connect (char * host_name, int port){
  *----------------------------------------------------------------------------
  */
 static void
-send_command (int fd, char * str)
+send_command (const int fd, const char * str)
 {
     char    buf[256];
     int     len = strlen (str);
@@ -167,7 +171,7 @@ send_command (int fd, char * str)
  *----------------------------------------------------------------------------
  */
 static char *
-get_answer (int fd)
+get_answer (const int fd)
 {
     static char buf[8192];
     int         len;
@@ -207,7 +211,7 @@ get_answer (int fd)
  *----------------------------------------------------------------------------
  */
 static char *
-get_value (char * cmd)
+get_value (const char * cmd)
 {
     char *  answer;
 
@@ -316,7 +320,7 @@ void init(){
  }
 }
 
-static int parse_imon(char *cmd){
+static int parse_imon(const char *cmd){
  // reread every half sec only
  int age=hash_age(&IMON, cmd);
  if (age>0 && age<=500) return 0;
@@ -357,7 +361,7 @@ static void my_imon_version (RESULT *result){
  SetResult(&result, R_STRING, val); 
 }
 
-static int parse_imon_rates(char *channel){
+static int parse_imon_rates(const char *channel){
  char buf[128],in[25],out[25];
  char *s;
  int age;

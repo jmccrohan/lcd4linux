@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.h,v 1.5 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_generic_serial.h,v 1.6 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_serial.h,v $
+ * Revision 1.6  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.5  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -59,10 +63,10 @@
 #ifndef _DRV_GENERIC_SERIALH_
 #define _DRV_GENERIC_SERIAL_H_
 
-int   drv_generic_serial_open  (char *section, char *driver, unsigned int flags);
-int   drv_generic_serial_poll  (unsigned char *string, int len);
-int   drv_generic_serial_read  (unsigned char *string, int len);
-void  drv_generic_serial_write (unsigned char *string, int len);
+int   drv_generic_serial_open  (const char *section, const char *driver, const unsigned int flags);
+int   drv_generic_serial_poll  (unsigned char *string, const int len);
+int   drv_generic_serial_read  (unsigned char *string, const int len);
+void  drv_generic_serial_write (const unsigned char *string, const int len);
 int   drv_generic_serial_close (void);
 
 #endif

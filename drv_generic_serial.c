@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.11 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.12 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.12  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.11  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -125,6 +129,7 @@
 #include "drv_generic_serial.h"
 
 
+static char   *Section;
 static char   *Driver;
 static char   *Port;
 static speed_t Speed;
@@ -138,7 +143,7 @@ static int     Device=-1;
 // *** generic serial/USB communication ***
 // ****************************************
 
-static pid_t drv_generic_serial_lock_port (char *Port)
+static pid_t drv_generic_serial_lock_port (const char *Port)
 {
   char lockfile[256];
   char tempfile[256];
@@ -236,7 +241,7 @@ static pid_t drv_generic_serial_lock_port (char *Port)
 }
 
 
-static pid_t drv_generic_serial_unlock_port (char *Port)
+static pid_t drv_generic_serial_unlock_port (const char *Port)
 {
   char lockfile[256];
   char *port, *p;
@@ -259,13 +264,14 @@ static pid_t drv_generic_serial_unlock_port (char *Port)
 }
 
 
-int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
+int drv_generic_serial_open (const char *section, const char *driver, const unsigned int flags)
 {
   int i, fd;
   pid_t pid;
   struct termios portset;
   
-  Driver = driver;
+  Section = (char*)section;
+  Driver  = (char*)driver;
 
   Port=cfg_get(section, "Port", NULL);
   if (Port==NULL || *Port=='\0') {
@@ -326,7 +332,7 @@ int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
 }
 
 
-int drv_generic_serial_poll (unsigned char *string, int len)
+int drv_generic_serial_poll (unsigned char *string, const int len)
 {
   int ret;
   if (Device == -1) return -1;
@@ -338,7 +344,7 @@ int drv_generic_serial_poll (unsigned char *string, int len)
 }
 
 
-int drv_generic_serial_read (unsigned char *string, int len)
+int drv_generic_serial_read (unsigned char *string, const int len)
 {
   int run, ret;
   
@@ -357,7 +363,7 @@ int drv_generic_serial_read (unsigned char *string, int len)
 }
 
 
-void drv_generic_serial_write (unsigned char *string, int len)
+void drv_generic_serial_write (const unsigned char *string, const int len)
 {
   int run, ret;
   

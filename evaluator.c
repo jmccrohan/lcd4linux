@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.19 2004/04/12 11:12:25 reinelt Exp $
+/* $Id: evaluator.c,v 1.20 2004/06/20 10:09:56 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.20  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.19  2004/04/12 11:12:25  reinelt
  * added plugin_isdn, removed old ISDN client
  * fixed some real bad bugs in the evaluator
@@ -337,7 +341,7 @@ static RESULT* DupResult (RESULT *result)
 }
 
 
-RESULT* SetResult (RESULT **result, int type, void *value)
+RESULT* SetResult (RESULT **result, const int type, const void *value)
 {
   if (*result == NULL) {
     if ((*result = NewResult()) == NULL) 
@@ -422,7 +426,7 @@ char* R2S (RESULT *result)
   
 }
 
-static VARIABLE *FindVariable (char *name)
+static VARIABLE *FindVariable (const char *name)
 {
   int i;
 
@@ -435,7 +439,7 @@ static VARIABLE *FindVariable (char *name)
 }
 
 
-int SetVariable (char *name, RESULT *value)
+int SetVariable (const char *name, RESULT *value)
 {
   VARIABLE *V;
 
@@ -455,7 +459,7 @@ int SetVariable (char *name, RESULT *value)
 }
 
 
-int SetVariableNumeric (char *name, double value)
+int SetVariableNumeric (const char *name, const double value)
 {
   RESULT result = {0, 0, 0, NULL};
   RESULT *rp = &result;
@@ -466,7 +470,7 @@ int SetVariableNumeric (char *name, double value)
 }
 
 
-int SetVariableString (char *name, char *value)
+int SetVariableString (const char *name, const char *value)
 {
   RESULT result = {0, 0, 0, NULL};
   RESULT *rp = &result;
@@ -491,7 +495,7 @@ void DeleteVariables(void)
 }
 
 
-static FUNCTION* FindFunction (char *name)
+static FUNCTION* FindFunction (const char *name)
 {
   int i;
 
@@ -504,7 +508,7 @@ static FUNCTION* FindFunction (char *name)
 }
 
 
-int AddFunction (char *name, int argc, void (*func)())
+int AddFunction (const char *name, const int argc, void (*func)())
 {
   nFunction++;
   Function = realloc(Function, nFunction*sizeof(FUNCTION));
@@ -1174,13 +1178,13 @@ static int EvalTree (NODE *Root)
 }
 
 
-int Compile (char* expression, void **tree)
+int Compile (const char* expression, void **tree)
 {
   NODE *Root;
   
   *tree = NULL;
   
-  Expression = expression;
+  Expression = (char*) expression;
   ExprPtr    = Expression;
   
   Parse();

@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.3 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.4 2004/06/20 10:09:54 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.4  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.3  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -63,26 +67,26 @@
 #include "drv_generic_text.h"
 
 
-static char Name[]="NULL";
+static char Name[] = "NULL";
 
 
 // ****************************************
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_NULL_write (int row, int col, unsigned char *data, int len)
+static void drv_NULL_write (const int row, const int col, const unsigned char *data, const int len)
 {
   // empty
 }
 
 
-static void drv_NULL_defchar (int ascii, unsigned char *matrix)
+static void drv_NULL_defchar (const int ascii, const unsigned char *matrix)
 {
   // empty
 }
 
 
-static int drv_NULL_start (char *section)
+static int drv_NULL_start (const char *section)
 {
   char *s;
   
@@ -132,7 +136,7 @@ int drv_NULL_list (void)
 
 
 // initialize driver & display
-int drv_NULL_init (char *section, int quiet)
+int drv_NULL_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -182,7 +186,7 @@ int drv_NULL_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_NULL_quit (int quiet) {
+int drv_NULL_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_text_quit();

@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.10  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.9  2004/06/09 06:40:29  reinelt
  *
  * splash screen for T6963 driver
@@ -175,7 +179,7 @@ int drv_generic_graphic_clear (void)
 // *** generic text handling            ***
 // ****************************************
 
-static void drv_generic_graphic_render (int row, int col, unsigned char *txt)
+static void drv_generic_graphic_render (const int row, const int col, const unsigned char *txt)
 {
   int c, r, x, y;
   int len = strlen(txt);
@@ -206,7 +210,7 @@ static void drv_generic_graphic_render (int row, int col, unsigned char *txt)
 
 
 // say hello to the user
-int drv_generic_graphic_greet (char *msg1, char *msg2)
+int drv_generic_graphic_greet (const char *msg1, const char *msg2)
 {
   char *line1[] = { "* LCD4Linux " VERSION " *",
 		    "LCD4Linux " VERSION,
@@ -393,10 +397,10 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
 // *** generic init/quit                ***
 // ****************************************
 
-int drv_generic_graphic_init (char *section, char *driver)
+int drv_generic_graphic_init (const char *section, const char *driver)
 {
-  Section=section;
-  Driver=driver;
+  Section = (char*)section;
+  Driver  = (char*)driver;
   
   // init layout framebuffer
   LROWS = 0;

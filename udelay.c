@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.16 2004/04/12 05:14:42 reinelt Exp $
+/* $Id: udelay.c,v 1.17 2004/06/20 10:09:56 reinelt Exp $
  *
  * short delays
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.17  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.16  2004/04/12 05:14:42  reinelt
  * another BIG FAT WARNING on the use of raw ports instead of ppdev
  *
@@ -146,7 +150,7 @@
 
 unsigned long loops_per_usec;
 
-void ndelay (unsigned long nsec)
+void ndelay (const unsigned long nsec)
 {
   unsigned long loop=(nsec*loops_per_usec+999)/1000;
   
@@ -265,7 +269,7 @@ void udelay_init (void)
 }
 
 
-void ndelay (unsigned long nsec)
+void ndelay (const unsigned long nsec)
 {
 
 #ifdef HAVE_ASM_MSR_H
@@ -273,14 +277,15 @@ void ndelay (unsigned long nsec)
   if (ticks_per_usec) {
 
     unsigned int t1, t2;
-    
-    nsec=(nsec*ticks_per_usec+999)/1000;
+    unsigned long tsc;
+
+    tsc=(nsec*ticks_per_usec+999)/1000;
 
     rdtscl(t1);
     do {
       rep_nop();
       rdtscl(t2);
-    } while ((t2-t1)<nsec);
+    } while ((t2-t1)<tsc);
     
   } else
 

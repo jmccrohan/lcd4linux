@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.14 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: hash.h,v 1.15 2004/06/20 10:09:56 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.15  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.14  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -131,12 +135,12 @@ void   hash_create        (HASH *Hash);
 
 int    hash_age           (HASH *Hash, const char *key);
 
-void   hash_set_column    (HASH *Hash, int number, const char *column);
+void   hash_set_column    (HASH *Hash, const int number, const char *column);
 void   hash_set_delimiter (HASH *Hash, const char *delimiter);
 
 char  *hash_get           (HASH *Hash, const char *key, const char *column);
-double hash_get_delta     (HASH *Hash, const char *key, const char *column, int delay);
-double hash_get_regex     (HASH *Hash, const char *key, const char *column, int delay);
+double hash_get_delta     (HASH *Hash, const char *key, const char *column, const int delay);
+double hash_get_regex     (HASH *Hash, const char *key, const char *column, const int delay);
 
 void   hash_put           (HASH *Hash, const char *key, const char *value);
 void   hash_put_delta     (HASH *Hash, const char *key, const char *value);

@@ -1,4 +1,4 @@
-/* $Id: qprintf.c,v 1.3 2004/04/12 11:12:26 reinelt Exp $
+/* $Id: qprintf.c,v 1.4 2004/06/20 10:09:56 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: qprintf.c,v $
+ * Revision 1.4  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.3  2004/04/12 11:12:26  reinelt
  * added plugin_isdn, removed old ISDN client
  * fixed some real bad bugs in the evaluator
@@ -55,11 +59,11 @@
 #include <stdarg.h>
 #include <string.h>
 
-static char *itoa(char* buffer, size_t size, int value)
+static char *itoa(char* buffer, const size_t size, int value)
 {
   char *p;
   int sign;
- 
+  
   // sanity checks
   if (buffer==NULL || size<2) return (NULL);
   
@@ -88,7 +92,7 @@ static char *itoa(char* buffer, size_t size, int value)
 } 
 
 
-static char *utoa(char* buffer, size_t size, unsigned int value)
+static char *utoa(char* buffer, const size_t size, unsigned int value)
 {
   char *p;
  
@@ -110,7 +114,7 @@ static char *utoa(char* buffer, size_t size, unsigned int value)
 } 
 
 
-static char *utox(char* buffer, size_t size, unsigned int value)
+static char *utox(char* buffer, const size_t size, unsigned int value)
 {
   char *p;
   int digit;
@@ -134,7 +138,7 @@ static char *utox(char* buffer, size_t size, unsigned int value)
 } 
 
 
-int qprintf(char *str, size_t size, const char *format, ...) {
+int qprintf(char *str, const size_t size, const char *format, ...) {
 
   va_list ap;
   const char *src;
@@ -145,12 +149,10 @@ int qprintf(char *str, size_t size, const char *format, ...) {
   dst = str;
   len = 0;
   
-  // leave room for terminating zero 
-  size--;
-  
   va_start(ap, format);
   
-  while (len < size) {
+  // use size-1 for terminating zero
+  while (len < size-1) {
     
     if (*src=='%') {
       char buf[12], *s;
@@ -160,7 +162,7 @@ int qprintf(char *str, size_t size, const char *format, ...) {
       case 's':
 	src++;
 	s = va_arg(ap, char *);
-	while (len < size && *s != '\0') {
+	while (len < size-1 && *s != '\0') {
 	  len++;
 	  *dst++ = *s++;
 	}
@@ -178,7 +180,7 @@ int qprintf(char *str, size_t size, const char *format, ...) {
 	src++;
 	u = va_arg(ap, unsigned int);
 	s = utoa (buf, sizeof(buf), u);
-	while (len < size && *s != '\0') {
+	while (len < size-1 && *s != '\0') {
 	  len++;
 	  *dst++ = *s++;
 	}
@@ -187,7 +189,7 @@ int qprintf(char *str, size_t size, const char *format, ...) {
 	src++;
 	u = va_arg(ap, unsigned int);
 	s = utox (buf, sizeof(buf), u);
-	while (len < size && *s != '\0') {
+	while (len < size-1 && *s != '\0') {
 	  len++;
 	  *dst++ = *s++;
 	}
@@ -206,7 +208,7 @@ int qprintf(char *str, size_t size, const char *format, ...) {
   va_end(ap);
   
   // enforce terminating zero
-  if (len>=size && *(dst-1)!='\0') {
+  if (len>=size-1 && *(dst-1)!='\0') {
     len++;
     *dst='\0';
   }

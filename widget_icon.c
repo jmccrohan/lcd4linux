@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.11 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: widget_icon.c,v 1.12 2004/06/20 10:09:56 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.12  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.11  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -104,7 +108,7 @@
 // icons always are 8 pixels high 
 #define YRES 8
 
-static void widget_icon_read_bitmap (char *section, WIDGET_ICON *Icon)
+static void widget_icon_read_bitmap (const char *section, WIDGET_ICON *Icon)
 {
   int row, n;
   char  key[15];

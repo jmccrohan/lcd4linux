@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.11 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.12 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.12  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.11  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -138,7 +142,7 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_M5_command (unsigned int cmd, int delay)
+static void drv_M5_command (const unsigned int cmd, const int delay)
 {
     
   // put data on DB1..DB8
@@ -170,23 +174,24 @@ static void drv_M5_clear (void)
 }
 
 
-static void drv_M5_write (int row, int col, unsigned char *data, int len)
+static void drv_M5_write (const int row, const int col, const unsigned char *data, const int len)
 {
+  int l = len;
   unsigned int cmd;
   unsigned int pos;
   
-  pos=row*48+col;
-  if (row>3) pos-=168;
-  drv_M5_command (0x300|pos, 20);
+  pos = row * 48 + col;
+  if (row > 3) pos -= 168;
+  drv_M5_command (0x300 | pos, 20);
   
-  while (len--) {
-    cmd=*data++;
-    drv_M5_command (0x100|cmd, 20);
+  while (l--) {
+    cmd = *data++;
+    drv_M5_command (0x100 | cmd, 20);
   }
 }
 
 
-static void drv_M5_defchar (int ascii, unsigned char *matrix)
+static void drv_M5_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   
@@ -202,7 +207,7 @@ static void drv_M5_defchar (int ascii, unsigned char *matrix)
 
 // Fixme: GPO's
 #if 0
-static void drv_M5_setGPO (int bits)
+static void drv_M5_setGPO (const int bits)
 {
   if (Lcd.gpos>0) {
 
@@ -220,7 +225,7 @@ static void drv_M5_setGPO (int bits)
 #endif
 
 
-static int drv_M5_start (char *section, int quiet)
+static int drv_M5_start (const char *section, const int quiet)
 {
   char *model, *s;
   int rows=-1, cols=-1, gpos=-1;
@@ -329,7 +334,7 @@ int drv_M5_list (void)
 
 
 // initialize driver & display
-int drv_M5_init (char *section, int quiet)
+int drv_M5_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -388,7 +393,7 @@ int drv_M5_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_M5_quit (int quiet) {
+int drv_M5_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

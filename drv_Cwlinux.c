@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.16 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.17 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.17  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.16  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -159,7 +163,7 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_CW_write (int row, int col, unsigned char *data, int len)
+static void drv_CW_write (const int row, const int col, const unsigned char *data, const int len)
 {
   char cmd[6]="\376Gxy\375";
   
@@ -171,7 +175,7 @@ static void drv_CW_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_CW1602_defchar (int ascii, unsigned char *buffer)
+static void drv_CW1602_defchar (const int ascii, const unsigned char *buffer)
 {
   int i;
   char cmd[12]="\376Nn12345678\375";
@@ -186,7 +190,7 @@ static void drv_CW1602_defchar (int ascii, unsigned char *buffer)
 }
 
 
-static void drv_CW12232_defchar (int ascii, unsigned char *buffer)
+static void drv_CW12232_defchar (const int ascii, const unsigned char *buffer)
 {
   int i, j;
   char cmd[10]="\376Nn123456\375";
@@ -256,7 +260,7 @@ static int drv_CW_brightness (int brightness)
 }
 
 
-static int drv_CW_start (char *section)
+static int drv_CW_start (const char *section)
 {
   int i;  
   char *model;
@@ -323,7 +327,7 @@ static int drv_CW_start (char *section)
 // ****************************************
 
 
-static void plugin_brightness (RESULT *result, int argc, RESULT *argv[])
+static void plugin_brightness (RESULT *result, const int argc, RESULT *argv[])
 {
   double brightness;
   
@@ -370,7 +374,7 @@ int drv_CW_list (void)
 
 
 // initialize driver & display
-int drv_CW_init (char *section, int quiet)
+int drv_CW_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -445,7 +449,7 @@ int drv_CW_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_CW_quit (int quiet) {
+int drv_CW_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_text_quit();

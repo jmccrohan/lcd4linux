@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.12 2004/06/05 06:41:40 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.13 2004/06/20 10:09:56 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.13  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.12  2004/06/05 06:41:40  reinelt
  *
  * chancged splash screen again
@@ -91,20 +95,19 @@ extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first
 extern int ICONS;        // number of user-defineable characters reserved for icons
 
 // these functions must be implemented by the real driver
-void (*drv_generic_text_real_write)(int row, int col, unsigned char *data, int len);
-void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
+void (*drv_generic_text_real_write)(const int row, const int col, const unsigned char *data, const int len);
+void (*drv_generic_text_real_defchar)(const int ascii, const unsigned char *buffer);
 
 // generic functions and widget callbacks
-int  drv_generic_text_init            (char *section, char *driver);
-int  drv_generic_text_greet           (char *msg1, char *msg2);
+int  drv_generic_text_init            (const char *section, const char *driver);
+int  drv_generic_text_greet           (const char *msg1, const char *msg2);
 int  drv_generic_text_draw            (WIDGET *W);
 int  drv_generic_text_icon_init       (void);
 int  drv_generic_text_icon_draw       (WIDGET *W);
-int  drv_generic_text_bar_init        (int single_segments);
-void drv_generic_text_bar_add_segment (int val1, int val2, DIRECTION dir, int ascii);
+int  drv_generic_text_bar_init        (const int single_segments);
+void drv_generic_text_bar_add_segment (const int val1, const int val2, const DIRECTION dir, const int ascii);
 int  drv_generic_text_bar_draw        (WIDGET *W);
 int  drv_generic_text_quit            (void);
-
 
 
 #endif

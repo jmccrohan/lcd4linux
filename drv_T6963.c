@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.9 2004/06/17 06:23:39 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.10 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.10  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.9  2004/06/17 06:23:39  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -199,7 +203,7 @@ static void drv_T6_status2 (void)
 }
 
 
-static void drv_T6_write_cmd (unsigned char cmd)
+static void drv_T6_write_cmd (const unsigned char cmd)
 {
   // wait until the T6963 is idle
   drv_T6_status1();
@@ -221,7 +225,7 @@ static void drv_T6_write_cmd (unsigned char cmd)
 }
 
 
-static void drv_T6_write_data (unsigned char data)
+static void drv_T6_write_data (const unsigned char data)
 {
   // wait until the T6963 is idle
   drv_T6_status1();
@@ -252,7 +256,7 @@ static void drv_T6_write_data (unsigned char data)
 }
 
 
-static void drv_T6_write_auto (unsigned char data)
+static void drv_T6_write_auto (const unsigned char data)
 {
   // wait until the T6963 is idle
   drv_T6_status2();
@@ -284,14 +288,14 @@ static void drv_T6_write_auto (unsigned char data)
 
 
 #if 0 // not used
-static void drv_T6_send_byte (unsigned char cmd, unsigned char data)
+static void drv_T6_send_byte (const unsigned char cmd, const unsigned char data)
 {
   drv_T6_write_data(data);
   drv_T6_write_cmd(cmd);
 }
 #endif
 
-static void drv_T6_send_word (unsigned char cmd, unsigned short data)
+static void drv_T6_send_word (const unsigned char cmd, const unsigned short data)
 {
   drv_T6_write_data(data&0xff);
   drv_T6_write_data(data>>8);
@@ -299,7 +303,7 @@ static void drv_T6_send_word (unsigned char cmd, unsigned short data)
 }
 
 
-static void drv_T6_clear(unsigned short addr, int len)
+static void drv_T6_clear(const unsigned short addr, const int len)
 {
   int i;
   
@@ -317,7 +321,7 @@ static void drv_T6_clear(unsigned short addr, int len)
 }
 
 
-static void drv_T6_copy(unsigned short addr, unsigned char *data, int len)
+static void drv_T6_copy(const unsigned short addr, const unsigned char *data, const int len)
 {
   int i;
   
@@ -335,7 +339,7 @@ static void drv_T6_copy(unsigned short addr, unsigned char *data, int len)
 }
 
 
-static void drv_T6_blit(int row, int col, int height, int width)
+static void drv_T6_blit(const int row, const int col, const int height, const int width)
 {
   int i, j, e, m;
   int r, c;
@@ -370,7 +374,7 @@ static void drv_T6_blit(int row, int col, int height, int width)
   }
 }
 
-static int drv_T6_start (char *section)
+static int drv_T6_start (const char *section)
 {
   char *model, *s;
   int rows, TROWS, TCOLS;
@@ -529,7 +533,7 @@ int drv_T6_list (void)
 
 
 // initialize driver & display
-int drv_T6_init (char *section, int quiet)
+int drv_T6_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -578,7 +582,7 @@ int drv_T6_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_T6_quit (int quiet) {
+int drv_T6_quit (const int quiet) {
   
   info("%s: shutting down.", Name);
   

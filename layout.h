@@ -1,4 +1,4 @@
-/* $Id: layout.h,v 1.1 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: layout.h,v 1.2 2004/06/20 10:09:56 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.h,v $
+ * Revision 1.2  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.1  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -34,6 +38,6 @@
 #ifndef _LAYOUT_H_
 #define _LAYOUT_H_
 
-int layout_init(char *section);
+int layout_init(const char *section);
 
 #endif

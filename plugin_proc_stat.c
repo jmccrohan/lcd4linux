@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.20 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.21 2004/06/20 10:09:56 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.21  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.20  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -131,13 +135,13 @@ static HASH Stat;
 static FILE *stream = NULL;
 
 
-static void hash_put1 (char *key1, char *val) 
+static void hash_put1 (const char *key1, const char *val) 
 {
   hash_put_delta (&Stat, key1, val);
 }
 
 
-static void hash_put2 (char *key1, char *key2, char *val) 
+static void hash_put2 (const char *key1, const char *key2, const char *val) 
 {
   char key[32];
   
@@ -146,7 +150,7 @@ static void hash_put2 (char *key1, char *key2, char *val)
 }
 
 
-static void hash_put3 (char *key1, char *key2, char *key3, char *val) 
+static void hash_put3 (const char *key1, const char *key2, const char *key3, const char *val) 
 {
   char key[32];
   
@@ -276,7 +280,7 @@ static int parse_proc_stat (void)
 }
 
 
-static void my_proc_stat (RESULT *result, int argc, RESULT *argv[])
+static void my_proc_stat (RESULT *result, const int argc, RESULT *argv[])
 {
   char  *string;
   double number;

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.17 2004/06/05 06:41:40 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.18 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.18  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.17  2004/06/05 06:41:40  reinelt
  *
  * chancged splash screen again
@@ -278,11 +282,11 @@ static void drv_generic_text_resizeFB (int rows, int cols)
 // *** generic text handling            ***
 // ****************************************
 
-int drv_generic_text_init (char *section, char *driver)
+int drv_generic_text_init (const char *section, const char *driver)
 {
 
-  Section=section;
-  Driver=driver;
+  Section = (char*)section;
+  Driver  = (char*)driver;
 
   // init display framebuffer
   DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
@@ -305,7 +309,7 @@ int drv_generic_text_init (char *section, char *driver)
 
 
 // say hello to the user
-int drv_generic_text_greet (char *msg1, char *msg2)
+int drv_generic_text_greet (const char *msg1, const char *msg2)
 {
   int i;
   int flag = 0;
@@ -513,7 +517,7 @@ static void drv_generic_text_bar_clear(void)
 }
 
 
-int drv_generic_text_bar_init (int single_segments)
+int drv_generic_text_bar_init (const int single_segments)
 {
   if (BarFB) free (BarFB);
   
@@ -533,7 +537,7 @@ int drv_generic_text_bar_init (int single_segments)
 }
 
 
-void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int ascii)
+void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRECTION dir, const int ascii)
 {
   Segment[fSegment].val1=val1;
   Segment[fSegment].val2=val2;
@@ -546,7 +550,7 @@ void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int asc
 }
 
 
-static void drv_generic_text_bar_create_bar (int row, int col, DIRECTION dir, int len, int val1, int val2)
+static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION dir, int len, int val1, int val2)
 {
   int rev=0;
 
@@ -650,7 +654,7 @@ static void drv_generic_text_bar_create_segments (void)
 }
 
 
-static int drv_generic_text_bar_segment_error (int i, int j)
+static int drv_generic_text_bar_segment_error (const int i, const int j)
 {
   int res;
   int i1, i2, j1, j2;

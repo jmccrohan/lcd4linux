@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.6 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: evaluator.h,v 1.7 2004/06/20 10:09:56 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.7  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.6  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -76,22 +80,22 @@ typedef struct {
 } RESULT;
 
 
-int  SetVariable        (char *name, RESULT *value);
-int  SetVariableNumeric (char *name, double  value);
-int  SetVariableString  (char *name, char   *value);
+int  SetVariable        (const char *name, RESULT *value);
+int  SetVariableNumeric (const char *name, const double  value);
+int  SetVariableString  (const char *name, const char   *value);
 
-int  AddFunction        (char *name, int argc, void (*func)());
+int  AddFunction        (const char *name, const int argc, void (*func)());
 
 void DeleteVariables    (void);
 void DeleteFunctions    (void);
 
 void    DelResult (RESULT *result);
-RESULT* SetResult (RESULT **result, int type, void *value);
+RESULT* SetResult (RESULT **result, const int type, const void *value);
 
 double R2N (RESULT *result);
 char*  R2S (RESULT *result);
 
-int  Compile (char *expression, void **tree);
+int  Compile (const char *expression, void **tree);
 int  Eval    (void *tree, RESULT *result);
 void DelTree (void *tree);
 

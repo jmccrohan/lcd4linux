@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.4 2004/06/20 10:09:56 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,10 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.4  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.3  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -88,7 +92,7 @@ static HASH EXEC;
 // x^0 + x^5 + x^12
 #define CRCPOLY 0x8408 
   
-static unsigned short CRC (unsigned char *s)
+static unsigned short CRC (const unsigned char *s)
 {
   int i;
   unsigned short crc;
@@ -149,7 +153,7 @@ static void exec_thread (void *data)
 }
 
 
-static void destroy_exec_thread (int n)
+static void destroy_exec_thread (const int n)
 {
   if (Thread[n].mutex != 0) mutex_destroy(Thread[n].mutex); 
   if (Thread[n].cmd) free (Thread[n].cmd);
@@ -166,7 +170,7 @@ static void destroy_exec_thread (int n)
 }
 
 
-static int create_exec_thread (char *cmd, char *key, int delay)
+static int create_exec_thread (const char *cmd, const char *key, const int delay)
 {
   char name[10];
 
@@ -208,7 +212,7 @@ static int create_exec_thread (char *cmd, char *key, int delay)
 }    
 
 
-static int do_exec (char *cmd, char *key, int delay)
+static int do_exec (const char *cmd, const char *key, int delay)
 {
   int i, age;
   

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.4 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: thread.c,v 1.5 2004/06/20 10:09:56 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.5  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.4  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -123,7 +127,7 @@ int mutex_create (void)
 }
 
 
-void mutex_lock (int semid) 
+void mutex_lock (const int semid) 
 {
   struct sembuf sembuf;
   sembuf.sem_num =  0;
@@ -133,7 +137,7 @@ void mutex_lock (int semid)
 }
 
 
-void mutex_unlock (int semid) 
+void mutex_unlock (const int semid) 
 {
   struct sembuf sembuf;
   sembuf.sem_num = 0;
@@ -143,14 +147,14 @@ void mutex_unlock (int semid)
 }
 
 
-void mutex_destroy (int semid)
+void mutex_destroy (const int semid)
 {
   union semun arg;
   semctl(semid, 0, IPC_RMID, arg);
 }
 
 
-int shm_create (void **buffer, int size) 
+int shm_create (void **buffer, const int size) 
 {
   int shmid;
   
@@ -170,14 +174,14 @@ int shm_create (void **buffer, int size)
 }
 
 
-void shm_destroy (int shmid, void *buffer) 
+void shm_destroy (const int shmid, const void *buffer) 
 {
   shmdt (buffer);
   shmctl(shmid, IPC_RMID, NULL);
 }
 
 
-int thread_create (char *name, void (*thread)(void *data), void *data)
+int thread_create (const char *name, void (*thread)(void *data), void *data)
 {
   pid_t pid, ppid;
 

@@ -1,4 +1,4 @@
-/* $Id: plugin_wireless.c,v 1.4 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_wireless.c,v 1.5 2004/06/20 10:09:56 reinelt Exp $
  *
  * Wireless Extension plugin
  *
@@ -28,6 +28,10 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.5  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.4  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -123,13 +127,13 @@ static char *operation_mode[] = {
         };
 
 
-static void ioctl_error(int line) {
+static void ioctl_error(const int line) {
 	error("IOCTL call to wireless extensions in line %d returned error", line);	
 }
 
-int do_ioctl(int  sock,    /* Socket to the kernel */
-     char *    ifname,     /* Device name */
-     int      request,     /* WE ID */
+int do_ioctl(const int  sock,    /* Socket to the kernel */
+     const char *    ifname,     /* Device name */
+     const int      request,     /* WE ID */
      struct iwreq *  pwrq) /* Fixed part of the request */
 {
   /* Set device name */
@@ -139,8 +143,8 @@ int do_ioctl(int  sock,    /* Socket to the kernel */
   return(ioctl(sock, request, pwrq));
 }
 
-int get_range_info(  int    sock,
-          char *  ifname,
+int get_range_info(const int    sock,
+          const char *  ifname,
           struct iw_range *range)
 {
   struct iwreq    req;
@@ -167,7 +171,7 @@ int get_range_info(  int    sock,
 
 
 
-static int get_ifname(struct iwreq *preq, char *dev) {
+static int get_ifname(struct iwreq *preq, const char *dev) {
   /* do not cache this call !!! */
   struct iwreq req;
   char key_buffer[32];
@@ -190,7 +194,7 @@ static int get_ifname(struct iwreq *preq, char *dev) {
 
 }
 
-static int get_frequency(char* dev,char* key) {    
+static int get_frequency(const char* dev,const char* key) {    
   /* Get frequency / channel */
   struct iwreq  req; 
   char qprintf_buffer[1024];
@@ -235,7 +239,7 @@ static int get_frequency(char* dev,char* key) {
   
 }
 
-static int get_essid(char* dev,char* key) {    
+static int get_essid(const char* dev, const char* key) {    
   /* Get ESSID */
   struct iwreq  req; 
   char key_buffer[32];
@@ -270,7 +274,7 @@ static int get_essid(char* dev,char* key) {
   
 }
 
-static int get_op_mode(char* dev,char* key) {    
+static int get_op_mode(const char* dev, const char* key) {    
   /* Get operation mode */
   struct iwreq  req; 
   char key_buffer[32];
@@ -302,7 +306,7 @@ static int get_op_mode(char* dev,char* key) {
       
 }
 
-static int get_bitrate(char* dev,char* key) {    
+static int get_bitrate(const char* dev, const char* key) {    
   /* Get bit rate */
   struct iwreq  req; 
   char key_buffer[32];
@@ -344,7 +348,7 @@ static int get_bitrate(char* dev,char* key) {
   return(0);
 }
     
-static int get_sens(char* dev,char* key) {
+static int get_sens(const char* dev, const char* key) {
   /* Get sensitivity */
   struct iwreq  req; 
   struct iw_range range;
@@ -394,7 +398,7 @@ static int get_sens(char* dev,char* key) {
 }
     
 
-static int get_sec_mode(char* dev,char* key) {
+static int get_sec_mode(const char* dev, const char* key) {
   // Get encryption information 
   struct iwreq  req; 
   char key_buffer[32];
@@ -441,7 +445,7 @@ static int get_sec_mode(char* dev,char* key) {
     return(0);
 }
 
-static int get_stats(char *dev, char *key)
+static int get_stats(const char *dev, const char *key)
 {
   struct iw_statistics stats;
   struct iwreq  req; 
@@ -523,7 +527,7 @@ static int check_socket() {
   
 }
 
-static void save_result(RESULT *result, char* dev, char* key, int res) {
+static void save_result(RESULT *result, const char* dev, const char* key, const int res) {
   char key_buffer[64];
   char* val=NULL;
   qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev,key);

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.2 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.3 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.3  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.2  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -77,14 +81,14 @@
 #ifndef _DRV_GENERIC_PARPORT_H_
 #define _DRV_GENERIC_PARPORT_H_
 
-int           drv_generic_parport_open       (char *section, char *driver);
+int           drv_generic_parport_open       (const char *section, const char *driver);
 int           drv_generic_parport_close      (void);
-unsigned char drv_generic_parport_wire_ctrl  (char *name, unsigned char *deflt);
-unsigned char drv_generic_parport_wire_data  (char *name, unsigned char *deflt);
-void          drv_generic_parport_direction  (int direction);
-void          drv_generic_parport_control    (unsigned char mask, unsigned char value);
-void          drv_generic_parport_toggle     (unsigned char bit, int level, int delay);
-void          drv_generic_parport_data       (unsigned char data);
+unsigned char drv_generic_parport_wire_ctrl  (const char *name, const unsigned char *deflt);
+unsigned char drv_generic_parport_wire_data  (const char *name, const unsigned char *deflt);
+void          drv_generic_parport_direction  (const int direction);
+void          drv_generic_parport_control    (const unsigned char mask, const unsigned char value);
+void          drv_generic_parport_toggle     (const unsigned char bit, const int level, const int delay);
+void          drv_generic_parport_data       (const unsigned char data);
 unsigned char drv_generic_parport_read       (void);
 void          drv_generic_parport_debug      (void);
 

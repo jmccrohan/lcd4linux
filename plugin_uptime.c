@@ -1,4 +1,4 @@
-/* $Id: plugin_uptime.c,v 1.1 2004/05/22 18:30:02 reinelt Exp $
+/* $Id: plugin_uptime.c,v 1.2 2004/06/20 10:09:56 reinelt Exp $
  *
  * plugin for uptime
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_uptime.c,v $
+ * Revision 1.2  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.1  2004/05/22 18:30:02  reinelt
  *
  * added plugin 'uptime'
@@ -56,7 +60,7 @@
 static int fd = -2;
 
 
-static char *itoa(char* buffer, size_t size, unsigned int value)
+static char *itoa(char* buffer, const size_t size, unsigned int value)
 {
   char *p;
  
@@ -78,7 +82,7 @@ static char *itoa(char* buffer, size_t size, unsigned int value)
 } 
 
 
-char *struptime (unsigned int uptime, char *format) 
+char *struptime (const unsigned int uptime, const char *format) 
 {
   static char string[256];
   const char *src;
@@ -186,7 +190,7 @@ double getuptime (void)
 }
 
 
-static void my_uptime (RESULT *result, int argc, RESULT *argv[])
+static void my_uptime (RESULT *result, const int argc, RESULT *argv[])
 {
   int age;
   static double uptime = 0.0;

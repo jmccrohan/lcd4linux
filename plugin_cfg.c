@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.8 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.9 2004/06/20 10:09:56 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.9  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.8  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -127,7 +131,7 @@ static void load_variables (void)
 }
 
 
-static void my_cfg (RESULT *result, int argc, RESULT *argv[])
+static void my_cfg (RESULT *result, const int argc, RESULT *argv[])
 {
   int i, len;
   char *value;

@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.21 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: hash.c,v 1.22 2004/06/20 10:09:56 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.22  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.21  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -227,7 +231,7 @@ static int hash_sort_column (const void *a, const void *b)
 // split a value into columns and 
 // return the nth column in a string
 // WARNING: does return a pointer to a static string!!
-static char* split (const char *val, int column, const char *delimiter)
+static char* split (const char *val, const int column, const char *delimiter)
 {
   static char buffer[256];
   int num, len;
@@ -261,7 +265,7 @@ static char* split (const char *val, int column, const char *delimiter)
 // If the table is flagged "sorted", the entry is looked
 // up using the bsearch function. If the table is 
 // unsorted, it will be searched in a linear way
-static HASH_ITEM* hash_lookup (HASH *Hash, const char *key, int do_sort)
+static HASH_ITEM* hash_lookup (HASH *Hash, const char *key, const int do_sort)
 {
   HASH_ITEM *Item = NULL;
   
@@ -318,7 +322,7 @@ int hash_age (HASH *Hash, const char *key)
 
 
 // add an entry to the column header table
-void hash_set_column (HASH *Hash, int number, const char *column)
+void hash_set_column (HASH *Hash, const int number, const char *column)
 {
   if (Hash == NULL) return;
   
@@ -369,7 +373,7 @@ char *hash_get (HASH *Hash, const char *key, const char *column)
 
 
 // get a delta value from the delta table
-double hash_get_delta (HASH *Hash, const char *key, const char *column, int delay)
+double hash_get_delta (HASH *Hash, const char *key, const char *column, const int delay)
 {
   HASH_ITEM *Item;
   HASH_SLOT *Slot1, *Slot2;  
@@ -432,7 +436,7 @@ double hash_get_delta (HASH *Hash, const char *key, const char *column, int dela
 // get a delta value from the delta table
 // key may contain regular expressions, and the sum 
 // of all matching entries is returned.
-double hash_get_regex (HASH *Hash, const char *key, const char *column, int delay)
+double hash_get_regex (HASH *Hash, const char *key, const char *column, const int delay)
 {
   double sum;
   regex_t preg;
@@ -467,7 +471,7 @@ double hash_get_regex (HASH *Hash, const char *key, const char *column, int dela
 // Otherwise, the entry is appended at the end, and 
 // the table will be flagged 'unsorted' afterwards
 
-static HASH_ITEM* hash_set (HASH *Hash, const char *key, const char *value, int delta)
+static HASH_ITEM* hash_set (HASH *Hash, const char *key, const char *value, const int delta)
 {
   HASH_ITEM *Item;
   HASH_SLOT *Slot;

@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.7 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.8 2004/06/20 10:09:54 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,10 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.8  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.7  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -116,7 +120,7 @@ static int  Model;
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_BE_write (int row, int col, unsigned char *data, int len)
+static void drv_BE_write (const int row, const int col, const unsigned char *data, const int len)
 {
   char cmd[] = "\033[y;xH";
 
@@ -128,7 +132,7 @@ static void drv_BE_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_BE_defchar (int ascii, unsigned char *matrix)
+static void drv_BE_defchar (const int ascii, const unsigned char *matrix)
 {
   int  i;
   char cmd[32];
@@ -156,7 +160,7 @@ static void drv_BE_clear (void)
 }
 
 
-static int drv_BE_start (char *section, int quiet)
+static int drv_BE_start (const char *section, const int quiet)
 {
   int i;  
   char *model;
@@ -235,7 +239,7 @@ int drv_BE_list (void)
 
 
 // initialize driver & display
-int drv_BE_init (char *section, int quiet)
+int drv_BE_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -295,7 +299,7 @@ int drv_BE_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_BE_quit (int quiet) {
+int drv_BE_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

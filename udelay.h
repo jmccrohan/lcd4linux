@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.5 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: udelay.h,v 1.6 2004/06/20 10:09:56 reinelt Exp $
  *
  * short delays 
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.6  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.5  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -70,7 +74,7 @@ void udelay_init (void);
 
 #endif
 
-void ndelay (unsigned long nsec);
+void ndelay (const unsigned long nsec);
 
 #define udelay(usec) ndelay(usec*1000)
 

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.29 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.30 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.30  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.29  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -366,7 +370,7 @@ static void wait_for_busy_flag(int controller)
 }
 
 
-static void drv_HD_nibble(unsigned char controller, unsigned char nibble)
+static void drv_HD_nibble(const unsigned char controller, const unsigned char nibble)
 {
   unsigned char enable;
 
@@ -397,7 +401,7 @@ static void drv_HD_nibble(unsigned char controller, unsigned char nibble)
 }
 
 
-static void drv_HD_byte (unsigned char controller, unsigned char data, unsigned char RS)
+static void drv_HD_byte (const unsigned char controller, const unsigned char data, const unsigned char RS)
 {
   // send high nibble of the data
   drv_HD_nibble (controller, ((data>>4)&0x0f)|RS);
@@ -410,7 +414,7 @@ static void drv_HD_byte (unsigned char controller, unsigned char data, unsigned 
 }
 
 
-static void drv_HD_command (unsigned char controller, unsigned char cmd, int delay)
+static void drv_HD_command (const unsigned char controller, const unsigned char cmd, const int delay)
 {
   unsigned char enable;
 
@@ -450,8 +454,9 @@ static void drv_HD_command (unsigned char controller, unsigned char cmd, int del
 }
 
 
-static void drv_HD_data (unsigned char controller, char *string, int len, int delay)
+static void drv_HD_data (const unsigned char controller, const char *string, const int len, const int delay)
 {
+  int l = len;
   unsigned char enable;
 
   // sanity check
@@ -474,7 +479,7 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
       ndelay(T_AS);
     }
     
-    while (len--) {
+    while (l--) {
 
       if (UseBusy) {
 	wait_for_busy_flag(controller);
@@ -496,7 +501,7 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
     
   } else { // 4 bit mode
     
-    while (len--) {
+    while (l--) {
       if (UseBusy) wait_for_busy_flag(controller);
 
       // send data with RS enabled
@@ -548,14 +553,14 @@ static void drv_HD_goto (int row, int col)
 }
 
 
-static void drv_HD_write (int row, int col, unsigned char *data, int len)
+static void drv_HD_write (const int row, const int col, const unsigned char *data, const int len)
 {
   drv_HD_goto (row, col);
   drv_HD_data (currController, data, len, T_EXEC);
 }
 
 
-static void drv_HD_defchar (int ascii, unsigned char *matrix)
+static void drv_HD_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   unsigned char buffer[8];
@@ -590,7 +595,7 @@ static int drv_HD_brightness (int brightness)
   
 // Fixme: GPO's
 #if 0
-static void drv_HD_setGPO (int bits)
+static void drv_HD_setGPO (const int bits)
 {
   if (Lcd.gpos>0) {
     
@@ -608,7 +613,7 @@ static void drv_HD_setGPO (int bits)
 #endif
 
 
-static int drv_HD_start (char *section, int quiet)
+static int drv_HD_start (const char *section, const int quiet)
 {
   char *model, *strsize;
   int rows=-1, cols=-1, gpos=-1;
@@ -806,7 +811,7 @@ int drv_HD_list (void)
 
 
 // initialize driver & display
-int drv_HD_init (char *section, int quiet)
+int drv_HD_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
@@ -874,7 +879,7 @@ int drv_HD_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_HD_quit (int quiet) {
+int drv_HD_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

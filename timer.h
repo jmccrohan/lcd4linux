@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.3 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: timer.h,v 1.4 2004/06/20 10:09:56 reinelt Exp $
  *
  * generic timer handling
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: timer.h,v $
+ * Revision 1.4  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.3  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -45,7 +49,7 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-int timer_add (void(*callback)(void *data), void *data, int interval, int one_shot);
+int timer_add (void(*callback)(void *data), void *data, const int interval, const int one_shot);
 int timer_process (struct timespec *delay);
 void timer_exit();
 

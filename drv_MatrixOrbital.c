@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.32 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.33 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.33  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.32  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -254,7 +258,7 @@ static void drv_MO_clear (void)
 }
 
 
-static void drv_MO_write (int row, int col, unsigned char *data, int len)
+static void drv_MO_write (const int row, const int col, const unsigned char *data, const int len)
 {
   char cmd[5]="\376Gyx";
 
@@ -266,7 +270,7 @@ static void drv_MO_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_MO_defchar (int ascii, unsigned char *matrix)
+static void drv_MO_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   char cmd[11]="\376N";
@@ -420,7 +424,7 @@ static int drv_MO_rpm (int num)
 }
 
 
-static int drv_MO_start (char *section, int quiet)
+static int drv_MO_start (const char *section, const int quiet)
 {
   int i;  
   char *model;
@@ -527,7 +531,7 @@ static int drv_MO_start (char *section, int quiet)
 // ****************************************
 
 
-static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
+static void plugin_contrast (RESULT *result, const int argc, RESULT *argv[])
 {
   double contrast;
   
@@ -547,7 +551,7 @@ static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
 }
 
 
-static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
+static void plugin_backlight (RESULT *result, const int argc, RESULT *argv[])
 {
   double backlight;
   
@@ -567,7 +571,7 @@ static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
 }
 
 
-static void plugin_gpo (RESULT *result, int argc, RESULT *argv[])
+static void plugin_gpo (RESULT *result, const int argc, RESULT *argv[])
 {
   double gpo;
   
@@ -587,7 +591,7 @@ static void plugin_gpo (RESULT *result, int argc, RESULT *argv[])
 }
 
 
-static void plugin_pwm (RESULT *result, int argc, RESULT *argv[])
+static void plugin_pwm (RESULT *result, const int argc, RESULT *argv[])
 {
   double pwm;
   
@@ -643,7 +647,7 @@ int drv_MO_list (void)
 
 
 // initialize driver & display
-int drv_MO_init (char *section, int quiet)
+int drv_MO_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -707,7 +711,7 @@ int drv_MO_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_MO_quit (int quiet) {
+int drv_MO_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
 

@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.18 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.19 2004/06/20 10:09:56 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.19  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.18  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -168,13 +172,13 @@ static const char *procfs_tokens[4][3] = {
   {"fan_min", "fan_input", ""}			// for fan#
 };
 
-static int (*parse_i2c_sensors)(char *key);
+static int (*parse_i2c_sensors)(const char *key);
 
 	/***********************************************\
 	* Parsing for new 2.6 kernels 'sysfs' interface *
 	\***********************************************/
 
-static int parse_i2c_sensors_sysfs(char *key)
+static int parse_i2c_sensors_sysfs(const char *key)
 {
   char val[32];
   char buffer[32];
@@ -221,7 +225,7 @@ static int parse_i2c_sensors_sysfs(char *key)
 	* Parsing for old 2.4 kernels 'procfs' interface *
 	\************************************************/
 
-static int parse_i2c_sensors_procfs(char *key)
+static int parse_i2c_sensors_procfs(const char *key)
 {
   char file[64];
   FILE *stream;
@@ -232,7 +236,7 @@ static int parse_i2c_sensors_procfs(char *key)
   int pos=0;
   const char delim[3]=" \n";
   char final_key[32];
-  char *number = &key[strlen(key)-1];
+  const char *number = &key[strlen(key)-1];
   int tokens_index;
   // debug("%s  ->  %s", key, number);
   strcpy(file, path);
@@ -310,7 +314,7 @@ void my_i2c_sensors(RESULT *result, RESULT *arg)
 }
 
 
-void my_i2c_sensors_path(char *method)
+void my_i2c_sensors_path(const char *method)
 {
   struct dirent *dir;
   struct dirent *file;

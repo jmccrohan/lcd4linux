@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.6 2004/06/19 08:20:19 reinelt Exp $
+/* $Id: drv_Image.c,v 1.7 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.7  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.6  2004/06/19 08:20:19  reinelt
  *
  * compiler warning in image driver fixed
@@ -329,7 +333,7 @@ static void drv_IMG_timer (void *notused)
 }
 
 
-static void drv_IMG_blit(int row, int col, int height, int width)
+static void drv_IMG_blit(const int row, const int col, const int height, const int width)
 {
   int r, c;
 
@@ -345,7 +349,7 @@ static void drv_IMG_blit(int row, int col, int height, int width)
 }
 
 
-static int drv_IMG_start (char *section)
+static int drv_IMG_start (const char *section)
 {
   char *s;
 
@@ -485,7 +489,7 @@ int drv_IMG_list (void)
 
 
 // initialize driver & display
-int drv_IMG_init (char *section, int quiet)
+int drv_IMG_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
@@ -525,7 +529,7 @@ int drv_IMG_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_IMG_quit (int quiet) {
+int drv_IMG_quit (const int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_graphic_quit();

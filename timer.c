@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.7 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: timer.c,v 1.8 2004/06/20 10:09:56 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.8  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.7  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -99,7 +103,7 @@ TIMER *Timers=NULL;
 int   nTimers=0;
 
 
-static void timer_inc (struct timeval *tv, int msec)
+static void timer_inc (struct timeval *tv, const int msec)
 {
   tv->tv_sec  +=  msec                     / 1000;
   tv->tv_usec += (msec - 1000*(msec/1000)) * 1000;
@@ -111,7 +115,7 @@ static void timer_inc (struct timeval *tv, int msec)
 }
 
 
-int timer_add (void (*callback)(void *data), void *data, int interval, int one_shot)
+int timer_add (void (*callback)(void *data), void *data, const int interval, const int one_shot)
 {
   int i;
   struct timeval now;

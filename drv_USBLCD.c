@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.11 2004/06/19 08:20:19 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.12 2004/06/20 10:09:54 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.12  2004/06/20 10:09:54  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.11  2004/06/19 08:20:19  reinelt
  *
  * compiler warning in image driver fixed
@@ -148,7 +152,7 @@ static void drv_UL_send ()
 }
 
 
-static void drv_UL_command (unsigned char cmd)
+static void drv_UL_command (const unsigned char cmd)
 {
   *BufPtr++='\0';
   *BufPtr++=cmd;
@@ -163,7 +167,7 @@ static void drv_UL_clear (void)
 }
 
 
-static void drv_UL_write (int row, int col, unsigned char *data, int len)
+static void drv_UL_write (const int row, const int col, const unsigned char *data, int len)
 {
   int pos = (row%2)*64 + (row/2)*20 + col;
   drv_UL_command (0x80|pos);
@@ -176,7 +180,7 @@ static void drv_UL_write (int row, int col, unsigned char *data, int len)
   drv_UL_send();
 }
 
-static void drv_UL_defchar (int ascii, unsigned char *matrix)
+static void drv_UL_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   
@@ -191,7 +195,7 @@ static void drv_UL_defchar (int ascii, unsigned char *matrix)
 }
 
 
-static int drv_UL_start (char *section, int quiet)
+static int drv_UL_start (const char *section, const int quiet)
 {
   int rows=-1, cols=-1;
   int major, minor;
@@ -331,7 +335,7 @@ int drv_UL_list (void)
 
 
 // initialize driver & display
-int drv_UL_init (char *section, int quiet)
+int drv_UL_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
@@ -398,7 +402,7 @@ int drv_UL_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_UL_quit (int quiet) 
+int drv_UL_quit (const int quiet)
 {
 
   info("%s: shutting down.", Name);

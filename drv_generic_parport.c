@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.5 2004/04/12 05:14:42 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.6 2004/06/20 10:09:55 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.6  2004/06/20 10:09:55  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.5  2004/04/12 05:14:42  reinelt
  * another BIG FAT WARNING on the use of raw ports instead of ppdev
  *
@@ -115,12 +119,12 @@ static int PPfd=-1;
 #endif
 
 
-int drv_generic_parport_open (char *section, char *driver)
+int drv_generic_parport_open (const char *section, const char *driver)
 {
   char *s, *e;
   
-  Section=section;
-  Driver=driver;
+  Section = (char*)section;
+  Driver  = (char*)driver;
   
   udelay_init();
   
@@ -230,7 +234,7 @@ int drv_generic_parport_close (void)
 }
 
 
-unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
+unsigned char drv_generic_parport_wire_ctrl (const char *name, const unsigned char *deflt)
 {
   unsigned char w;
   char wire[256];
@@ -275,7 +279,7 @@ unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
 }
 
 
-unsigned char drv_generic_parport_wire_data (char *name, unsigned char *deflt)
+unsigned char drv_generic_parport_wire_data (const char *name, const unsigned char *deflt)
 {
   unsigned char w;
   char wire[256];
@@ -305,7 +309,7 @@ unsigned char drv_generic_parport_wire_data (char *name, unsigned char *deflt)
 }
 
 
-void drv_generic_parport_direction (int direction)
+void drv_generic_parport_direction (const int direction)
 {
 #ifdef WITH_PPDEV
   if (PPdev) {
@@ -320,32 +324,34 @@ void drv_generic_parport_direction (int direction)
 }
 
 
-void drv_generic_parport_control (unsigned char mask, unsigned char value)
+void drv_generic_parport_control (const unsigned char mask, const unsigned char value)
 {
+  unsigned char val;
+  
   // any signal affected?
   // Note: this may happen in case a signal is hardwired to GND
   if (mask==0) return;
 
   // Strobe, Select and AutoFeed are inverted!
-  value = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+  val = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
 
 #ifdef WITH_PPDEV
   if (PPdev) {
     struct ppdev_frob_struct frob;
     frob.mask=mask;
-    frob.val=value;
+    frob.val=val;
     ioctl (PPfd, PPFCONTROL, &frob);
   } else
 #endif
     {
       // code stolen from linux/parport_pc.h
-      ctr = (ctr & ~mask) ^ value;
+      ctr = (ctr & ~mask) ^ val;
       outb (ctr, Port+2);
     }
 }
 
 
-void drv_generic_parport_toggle (unsigned char bits, int level, int delay)
+void drv_generic_parport_toggle (const unsigned char bits, const int level, const int delay)
 {
   unsigned char value1, value2;
 
@@ -394,7 +400,7 @@ void drv_generic_parport_toggle (unsigned char bits, int level, int delay)
 }
 
 
-void drv_generic_parport_data (unsigned char data)
+void drv_generic_parport_data (const unsigned char data)
 {
 #ifdef WITH_PPDEV
   if (PPdev) {

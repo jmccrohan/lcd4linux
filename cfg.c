@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.39 2004/03/11 06:39:58 reinelt Exp $^
+/* $Id: cfg.c,v 1.40 2004/06/20 10:09:52 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.40  2004/06/20 10:09:52  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.39  2004/03/11 06:39:58  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -299,7 +303,7 @@ static int c_sort (const void *a, const void *b)
 
 
 // remove leading and trailing whitespace
-static char *strip (char *s, int strip_comments)
+static char *strip (char *s, const int strip_comments)
 {
   char *p;
   
@@ -356,9 +360,9 @@ static char *dequote (char *string)
 
 // which if a string contains only valid chars
 // i.e. start with a char and contains chars and nums
-static int validchars (char *string)
+static int validchars (const char *string)
 {
-  char *c;
+  const char *c;
 
   for (c=string; *c; c++) {
     // first and following chars
@@ -371,7 +375,7 @@ static int validchars (char *string)
 }
 
 
-static void cfg_add (char *section, char *key, char *val, int lock)
+static void cfg_add (const char *section, const char *key, const char *val, const int lock)
 {
   char *buffer;
   ENTRY *entry;
@@ -410,7 +414,7 @@ static void cfg_add (char *section, char *key, char *val, int lock)
 }
 
 
-int l4l_cfg_cmd (char *arg)
+int cfg_cmd (const char *arg)
 {
   char *key, *val;
   char buffer[256];
@@ -430,7 +434,7 @@ int l4l_cfg_cmd (char *arg)
 }
 
 
-char *l4l_cfg_list (char *section)
+char *cfg_list (const char *section)
 {
   int i, len;
   char *key, *list;
@@ -461,7 +465,7 @@ char *l4l_cfg_list (char *section)
 }
 
 
-static char *cfg_lookup (char *section, char *key)
+static char *cfg_lookup (const char *section, const char *key)
 {
   int len;
   char *buffer;
@@ -496,16 +500,16 @@ static char *cfg_lookup (char *section, char *key)
 }
 
 
-char *l4l_cfg_get_raw (char *section, char *key, char *defval)
+char *cfg_get_raw (const char *section, const char *key, const char *defval)
 {
   char *val=cfg_lookup(section, key);
   
   if (val!=NULL) return val;
-  return defval;
+  return (char *)defval;
 }
 
 
-char *l4l_cfg_get (char *section, char *key, char *defval)
+char *cfg_get (const char *section, const char *key, const char *defval)
 {
   char *expression;
   char *retval;
@@ -530,7 +534,7 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
 }
 
 
-int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int *value) 
+int cfg_number (const char *section, const char *key, const int defval, const int min, const int max, int *value) 
 {
   char *expression;
   void *tree = NULL;
@@ -575,7 +579,7 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
 }
 
 
-static int cfg_check_source(char *file)
+static int cfg_check_source(const char *file)
 {
   /* as passwords and commands are stored in the config file,
    * we will check that:
@@ -616,7 +620,7 @@ static int cfg_check_source(char *file)
 }
 
 
-static int cfg_read (char *file)
+static int cfg_read (const char *file)
 {
   FILE *stream;
   char buffer[256];
@@ -757,7 +761,7 @@ static int cfg_read (char *file)
 }
 
 
-int l4l_cfg_init (char *file)
+int cfg_init (const char *file)
 {
   if (cfg_check_source(file) == -1) {
     error("config file '%s' is insecure, aborting", file);
@@ -773,7 +777,7 @@ int l4l_cfg_init (char *file)
 }
 
 
-char *l4l_cfg_source (void)
+char *cfg_source (void)
 {
   if (Config_File)
     return Config_File;
@@ -782,7 +786,7 @@ char *l4l_cfg_source (void)
 }
 
 
-int l4l_cfg_exit (void)
+int cfg_exit (void)
 {
   int i;
   for (i=0; i<nConfig; i++) {	  
@@ -803,13 +807,3 @@ int l4l_cfg_exit (void)
   return 0;
 }
 
-
-int   (*cfg_init)    (char *source)                           = l4l_cfg_init;
-char *(*cfg_source)  (void)                                   = l4l_cfg_source;
-int   (*cfg_cmd)     (char *arg)                              = l4l_cfg_cmd;
-char *(*cfg_list)    (char *section)                          = l4l_cfg_list;
-char *(*cfg_get_raw) (char *section, char *key, char *defval) = l4l_cfg_get_raw;
-char *(*cfg_get)     (char *section, char *key, char *defval) = l4l_cfg_get;
-int   (*cfg_number)  (char *section, char *key, int   defval, 
-		      int min, int max, int *value)           = l4l_cfg_number;
-int   (*cfg_exit)    (void)                                   = l4l_cfg_exit;

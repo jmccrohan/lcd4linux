@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.10 2004/01/30 20:57:55 reinelt Exp $
+/* $Id: cfg.h,v 1.11 2004/06/20 10:09:53 reinelt Exp $
  *
  * config file stuff
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.11  2004/06/20 10:09:53  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.10  2004/01/30 20:57:55  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -69,24 +73,14 @@
 #ifndef _CFG_H_
 #define _CFG_H_
 
-extern int   (*cfg_init)    (char *source);
-extern char *(*cfg_source)  (void);
-extern int   (*cfg_cmd)     (char *arg);
-extern char *(*cfg_list)    (char *section);
-extern char *(*cfg_get_raw) (char *section, char *key, char *defval);
-extern char *(*cfg_get)     (char *section, char *key, char *defval);
-extern int   (*cfg_number)  (char *section, char *key, int   defval, 
-			     int min, int max, int *value);
-extern int   (*cfg_exit)    (void);
-
-int   l4l_cfg_init    (char *file);
-char *l4l_cfg_source  (void);
-int   l4l_cfg_cmd     (char *arg);
-char *l4l_cfg_list    (char *section);
-char *l4l_cfg_get_raw (char *section, char *key, char *defval);
-char *l4l_cfg_get     (char *section, char *key, char *defval);
-int   l4l_cfg_number  (char *section, char *key, int   defval, 
-		       int min, int max, int *value);
-int   l4l_cfg_exit    (void);
+int   cfg_init    (const char *file);
+char *cfg_source  (void);
+int   cfg_cmd     (const char *arg);
+char *cfg_list    (const char *section);
+char *cfg_get_raw (const char *section, const char *key, const char *defval);
+char *cfg_get     (const char *section, const char *key, const char *defval);
+int   cfg_number  (const char *section, const char *key, const int   defval, 
+		   const int min, const int max, int *value);
+int   cfg_exit    (void);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.14 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: widget.c,v 1.15 2004/06/20 10:09:56 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.15  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.14  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -153,7 +157,7 @@ void widget_unregister(void) {
   nClasses=0;
 }
 
-int widget_add (char *name, int row, int col)
+int widget_add (const char *name, const int row, const int col)
 {
   int i;
   char *section;
@@ -210,7 +214,7 @@ int widget_add (char *name, int row, int col)
   Widget=&(Widgets[nWidgets]);
   nWidgets++;
   
-  Widget->name  = name;
+  Widget->name  = (char*)name;
   Widget->class = Class;
   Widget->row   = row;
   Widget->col   = col;

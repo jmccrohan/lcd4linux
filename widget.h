@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.8 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: widget.h,v 1.9 2004/06/20 10:09:56 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.9  2004/06/20 10:09:56  reinelt
+ *
+ * 'const'ified the whole source
+ *
  * Revision 1.8  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -86,8 +90,8 @@ typedef struct WIDGET{
 
 
 
-int widget_register (WIDGET_CLASS *widget);
+int  widget_register   (WIDGET_CLASS *widget);
 void widget_unregister (void);
-int widget_add      (char *name, int row, int col);
+int  widget_add        (const char *name, const int row, const int col);
 
 #endif
