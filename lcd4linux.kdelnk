@@ -1,0 +1,14 @@
+# KDE Config File
+[KDE Desktop Entry]
+Comment[C]=LCD4Linux
+SwallowTitle=XLCD4Linux
+SwallowExec=lcd4linux -f /etc/lcd4kde.conf
+BinaryPattern=
+Name=LCD4Linux
+Name[C]=LCD4Linux
+MimeType=
+Comment=LCD4Linux
+Exec=lcd4linux -f /etc/lcd4X11.conf
+Icon=lcd4linux.xpm
+Type=Application
+Terminal=0
