@@ -31,7 +31,7 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
   [                        MilfordInstruments, NULL, PNG, PPM, RouterBoard,]
-  [                        T6963, USBLCD, X11],
+  [                        SimpleLCD, T6963, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -70,6 +70,7 @@ for driver in $drivers; do
          T6963="yes"
          USBLCD="yes"
          X11="yes"
+         SIMPLELCD="yes"
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
@@ -115,6 +116,9 @@ for driver in $drivers; do
          ;;
       RouterBoard)
          ROUTERBOARD=$val
+         ;;
+      SimpleLCD)
+         SIMPLELCD=$val
          ;;
       T6963)
          T6963=$val
@@ -250,6 +254,13 @@ if test "$ROUTERBOARD" = "yes"; then
    TEXT="yes"
    DRIVERS="$DRIVERS drv_RouterBoard.o"
    AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
+fi
+
+if test "$SIMPLELCD" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_SimpleLCD.o"
+   AC_DEFINE(WITH_SIMPLELCD,1,[SimpleLCD driver])
 fi
 
 if test "$T6963" = "yes"; then

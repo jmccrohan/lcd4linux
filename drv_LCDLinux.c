@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.3 2005/02/24 06:51:40 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.4 2005/02/24 07:06:48 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.4  2005/02/24 07:06:48  reinelt
+ * SimpleLCD driver added
+ *
  * Revision 1.3  2005/02/24 06:51:40  reinelt
  * LCD-Linux driver GOTO_COST corrected
  *
@@ -149,7 +152,7 @@ static void drv_LL_defchar (const int ascii, const unsigned char *matrix)
 }
 
 
-static int drv_LL_start (const char *section, const int quiet)
+static int drv_LL_start (const int quiet)
 {
   struct lcd_driver buf;
 
@@ -230,7 +233,7 @@ int drv_LL_init (const char *section, const int quiet)
   YRES  = 8;      /* pixel height of one char  */
   CHARS = 8;      /* number of user-defineable characters */
   CHAR0 = 0;      /* ASCII of first user-defineable char */
-  GOTO_COST = 1;  /* number of bytes a goto command requires */
+  GOTO_COST = -1; /* number of bytes a goto command requires */
   
   /* real worker functions */
   drv_generic_text_real_write   = drv_LL_write;
@@ -238,7 +241,7 @@ int drv_LL_init (const char *section, const int quiet)
 
 
   /* start display */
-  if ((ret=drv_LL_start (section, quiet))!=0)
+  if ((ret=drv_LL_start (quiet))!=0)
     return ret;
   
   /* initialize generic text driver */

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.27 2005/01/30 06:43:22 reinelt Exp $
+/* $Id: drv.c,v 1.28 2005/02/24 07:06:48 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.28  2005/02/24 07:06:48  reinelt
+ * SimpleLCD driver added
+ *
  * Revision 1.27  2005/01/30 06:43:22  reinelt
  * driver for LCD-Linux finished
  *
@@ -196,6 +199,7 @@ extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_NULL;
 extern DRIVER drv_RouterBoard;
+extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_X11;
@@ -249,6 +253,9 @@ DRIVER *Driver[] = {
 #ifdef WITH_ROUTERBOARD
   &drv_RouterBoard,
 #endif
+#ifdef WITH_SIMPLELCD
+  &drv_SimpleLCD,
+#endif
 #ifdef WITH_T6963
   &drv_T6963,
 #endif
@@ -258,6 +265,7 @@ DRIVER *Driver[] = {
 #ifdef WITH_X11
   &drv_X11,
 #endif
+
   NULL,
 };
 

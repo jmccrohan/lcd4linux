@@ -99,7 +99,7 @@ lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         deb
 
 #liblcd4linux_la_SOURCES =
 
-EXTRA_lcd4linux_SOURCES =  drv_generic_text.c          drv_generic_text.h          drv_generic_graphic.c       drv_generic_graphic.h       drv_generic_serial.c        drv_generic_serial.h        drv_generic_parport.c       drv_generic_parport.h       drv_BeckmannEgle.c          drv_BWCT.c                  drv_Crystalfontz.c          drv_Curses.c                drv_Cwlinux.c               drv_HD44780.c               drv_Image.c                 drv_LCDLinux.c              drv_LCDTerm.c               drv_M50530.c                drv_MatrixOrbital.c         drv_MilfordInstruments.c    drv_NULL.c                  drv_RouterBoard.c           drv_T6963.c                 drv_USBLCD.c                drv_X11.c                                               font_6x8.h                                              plugin_apm.c                plugin_cpuinfo.c            plugin_diskstats.c          plugin_dvb.c                plugin_exec.c               plugin_i2c_sensors.c        plugin_imon.c               plugin_isdn.c               plugin_loadavg.c            plugin_meminfo.c            plugin_mysql.c              plugin_netdev.c             plugin_pop3.c               plugin_ppp.c                plugin_proc_stat.c          plugin_seti.c               plugin_uname.c              plugin_uptime.c             plugin_wireless.c           plugin_xmms.c
+EXTRA_lcd4linux_SOURCES =  drv_generic_text.c          drv_generic_text.h          drv_generic_graphic.c       drv_generic_graphic.h       drv_generic_serial.c        drv_generic_serial.h        drv_generic_parport.c       drv_generic_parport.h       drv_BeckmannEgle.c          drv_BWCT.c                  drv_Crystalfontz.c          drv_Curses.c                drv_Cwlinux.c               drv_HD44780.c               drv_Image.c                 drv_LCDLinux.c              drv_LCDTerm.c               drv_M50530.c                drv_MatrixOrbital.c         drv_MilfordInstruments.c    drv_NULL.c                  drv_RouterBoard.c           drv_SimpleLCD.c             drv_T6963.c                 drv_USBLCD.c                drv_X11.c                                               font_6x8.h                                              plugin_apm.c                plugin_cpuinfo.c            plugin_diskstats.c          plugin_dvb.c                plugin_exec.c               plugin_i2c_sensors.c        plugin_imon.c               plugin_isdn.c               plugin_loadavg.c            plugin_meminfo.c            plugin_mysql.c              plugin_netdev.c             plugin_pop3.c               plugin_ppp.c                plugin_proc_stat.c          plugin_seti.c               plugin_uname.c              plugin_uptime.c             plugin_wireless.c           plugin_xmms.c
 
 
 EXTRA_DIST =  lcd4linux.conf.sample       lcd4kde.conf                lcd4linux.kdelnk            lcd4linux.xpm               lcd4linux.lsm               curses.m4                   AUTHORS                     CREDITS                     FAQ                         NEWS                        TODO                        README                      README.Drivers              README.Plugins              README.KDE                  plugin_sample.c
@@ -142,22 +142,22 @@ DEP_FILES =  .deps/cfg.P .deps/debug.P .deps/drv.P .deps/drv_BWCT.P \
 .deps/drv_Cwlinux.P .deps/drv_HD44780.P .deps/drv_Image.P \
 .deps/drv_LCDLinux.P .deps/drv_LCDTerm.P .deps/drv_M50530.P \
 .deps/drv_MatrixOrbital.P .deps/drv_MilfordInstruments.P \
-.deps/drv_NULL.P .deps/drv_RouterBoard.P .deps/drv_T6963.P \
-.deps/drv_USBLCD.P .deps/drv_X11.P .deps/drv_generic_graphic.P \
-.deps/drv_generic_parport.P .deps/drv_generic_serial.P \
-.deps/drv_generic_text.P .deps/evaluator.P .deps/hash.P .deps/layout.P \
-.deps/lcd4linux.P .deps/pid.P .deps/plugin.P .deps/plugin_apm.P \
-.deps/plugin_cfg.P .deps/plugin_cpuinfo.P .deps/plugin_diskstats.P \
-.deps/plugin_dvb.P .deps/plugin_exec.P .deps/plugin_i2c_sensors.P \
-.deps/plugin_imon.P .deps/plugin_isdn.P .deps/plugin_loadavg.P \
-.deps/plugin_math.P .deps/plugin_meminfo.P .deps/plugin_mysql.P \
-.deps/plugin_netdev.P .deps/plugin_pop3.P .deps/plugin_ppp.P \
-.deps/plugin_proc_stat.P .deps/plugin_seti.P .deps/plugin_string.P \
-.deps/plugin_test.P .deps/plugin_time.P .deps/plugin_uname.P \
-.deps/plugin_uptime.P .deps/plugin_wireless.P .deps/plugin_xmms.P \
-.deps/qprintf.P .deps/thread.P .deps/timer.P .deps/udelay.P \
-.deps/widget.P .deps/widget_bar.P .deps/widget_icon.P \
-.deps/widget_text.P
+.deps/drv_NULL.P .deps/drv_RouterBoard.P .deps/drv_SimpleLCD.P \
+.deps/drv_T6963.P .deps/drv_USBLCD.P .deps/drv_X11.P \
+.deps/drv_generic_graphic.P .deps/drv_generic_parport.P \
+.deps/drv_generic_serial.P .deps/drv_generic_text.P .deps/evaluator.P \
+.deps/hash.P .deps/layout.P .deps/lcd4linux.P .deps/pid.P \
+.deps/plugin.P .deps/plugin_apm.P .deps/plugin_cfg.P \
+.deps/plugin_cpuinfo.P .deps/plugin_diskstats.P .deps/plugin_dvb.P \
+.deps/plugin_exec.P .deps/plugin_i2c_sensors.P .deps/plugin_imon.P \
+.deps/plugin_isdn.P .deps/plugin_loadavg.P .deps/plugin_math.P \
+.deps/plugin_meminfo.P .deps/plugin_mysql.P .deps/plugin_netdev.P \
+.deps/plugin_pop3.P .deps/plugin_ppp.P .deps/plugin_proc_stat.P \
+.deps/plugin_seti.P .deps/plugin_string.P .deps/plugin_test.P \
+.deps/plugin_time.P .deps/plugin_uname.P .deps/plugin_uptime.P \
+.deps/plugin_wireless.P .deps/plugin_xmms.P .deps/qprintf.P \
+.deps/thread.P .deps/timer.P .deps/udelay.P .deps/widget.P \
+.deps/widget_bar.P .deps/widget_icon.P .deps/widget_text.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.24 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.25 2005/02/24 07:06:48 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.25  2005/02/24 07:06:48  reinelt
+ * SimpleLCD driver added
+ *
  * Revision 1.24  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -431,7 +434,7 @@ int drv_generic_text_draw (WIDGET *W)
 	if (fb1[col] == fb2[col]) {
 	  /* If we find just one equal byte, we don't break, because this  */
 	  /* would require a goto, which takes several bytes, too. */
-	  if (++equal > GOTO_COST) break;
+	  if (GOTO_COST >= 0 && ++equal > GOTO_COST) break;
 	} else {
 	  pos2 = col;
 	  equal = 0;

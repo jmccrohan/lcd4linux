@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.30 2005/01/18 06:30:22 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.31 2005/02/24 07:06:48 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.31  2005/02/24 07:06:48  reinelt
+ * SimpleLCD driver added
+ *
  * Revision 1.30  2005/01/18 06:30:22  reinelt
  * added (C) to all copyright statements
  *
@@ -986,7 +989,7 @@ int drv_CF_init (const char *section, const int quiet)
     break;
   case 2:
     CHAR0 = 0; /* ASCII of first user-defineable char */
-    GOTO_COST = 999; /* there is no goto on 633 */
+    GOTO_COST = -1; /* there is no goto on 633 */
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;

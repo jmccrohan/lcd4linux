@@ -359,6 +359,9 @@
 /* RouterBoard driver */
 #undef WITH_ROUTERBOARD
 
+/* SimpleLCD driver */
+#undef WITH_SIMPLELCD
+
 /* T6963 driver */
 #undef WITH_T6963
 

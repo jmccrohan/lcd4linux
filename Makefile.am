@@ -71,6 +71,7 @@ drv_MatrixOrbital.c         \
 drv_MilfordInstruments.c    \
 drv_NULL.c                  \
 drv_RouterBoard.c           \
+drv_SimpleLCD.c             \
 drv_T6963.c                 \
 drv_USBLCD.c                \
 drv_X11.c                   \

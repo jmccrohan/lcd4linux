@@ -870,7 +870,7 @@ Optional Packages:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,
                           MilfordInstruments, NULL, PNG, PPM, RouterBoard,
-                          T6963, USBLCD, X11
+                          SimpleLCD, T6963, USBLCD, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -5419,6 +5419,7 @@ for driver in $drivers; do
          T6963="yes"
          USBLCD="yes"
          X11="yes"
+         SIMPLELCD="yes"
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
@@ -5464,6 +5465,9 @@ for driver in $drivers; do
          ;;
       RouterBoard)
          ROUTERBOARD=$val
+         ;;
+      SimpleLCD)
+         SIMPLELCD=$val
          ;;
       T6963)
          T6963=$val
@@ -5663,6 +5667,17 @@ if test "$ROUTERBOARD" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_ROUTERBOARD 1
+_ACEOF
+
+fi
+
+if test "$SIMPLELCD" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_SimpleLCD.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_SIMPLELCD 1
 _ACEOF
 
 fi
