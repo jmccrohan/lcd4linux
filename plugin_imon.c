@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.10 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.11 2004/06/24 20:18:08 nicowallmeier Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.11  2004/06/24 20:18:08  nicowallmeier
+ * minor bugfix
+ *
  * Revision 1.10  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -421,11 +424,11 @@ static void my_imon (RESULT *result, RESULT *arg1){
 
 int plugin_init_imon (void){
  char telmon='\1',imon='\1';	
+ char *s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
 
  hash_create(&TELMON);
  hash_create(&IMON);
 
- char *s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
  if (*s=='\0') {
   error ("[Telmon] no 'Host' entry in %s", cfg_source());
   telmon='\0';
