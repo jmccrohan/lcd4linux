@@ -55,7 +55,11 @@ for driver in $drivers; do
          PNG="yes"
          PPM="yes"
          TEXT="yes"
-         X11="yes"
+         if test "$no_x" = "yes"; then
+            X11="no"
+         else
+            X11="yes"
+         fi
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
