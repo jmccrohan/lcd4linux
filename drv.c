@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.9 2004/02/24 05:55:04 reinelt Exp $
+/* $Id: drv.c,v 1.10 2004/05/25 14:26:29 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.10  2004/05/25 14:26:29  reinelt
+ *
+ * added "Image" driver (was: Raster.c) for PPM and PNG creation
+ * fixed some glitches in the X11 driver
+ *
  * Revision 1.9  2004/02/24 05:55:04  reinelt
  *
  * X11 driver ported
@@ -112,17 +117,17 @@ extern DRIVER drv_BeckmannEgle;
 extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
+extern DRIVER drv_Image;
 extern DRIVER drv_M50530;
 extern DRIVER drv_T6963;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_PalmPilot;
-extern DRIVER drv_Raster;
 extern DRIVER drv_X11;
 extern DRIVER drv_Text;
 
-// output file for Raster driver
+// output file for Image driver
 // has to be defined here because it's referenced
 // even if the raster driver is not included!
 char *output=NULL;
@@ -145,6 +150,9 @@ DRIVER *Driver[] = {
 #ifdef WITH_HD44780
   &drv_HD44780,
 #endif
+#if defined (WITH_PNG) || defined(WITH_PPM)
+  &drv_Image,
+#endif
 #ifdef WITH_M50530
   &drv_M50530,
 #endif
@@ -163,9 +171,6 @@ DRIVER *Driver[] = {
      #endif
      #ifdef WITH_PALMPILOT
      &PalmPilot,
-     #endif
-     #if defined (WITH_PNG) || defined(WITH_PPM)
-     &Raster,
      #endif
   */
 #ifdef WITH_X11

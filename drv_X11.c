@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.1 2004/02/24 05:55:04 reinelt Exp $
+/* $Id: drv_X11.c,v 1.2 2004/05/25 14:26:29 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.2  2004/05/25 14:26:29  reinelt
+ *
+ * added "Image" driver (was: Raster.c) for PPM and PNG creation
+ * fixed some glitches in the X11 driver
+ *
  * Revision 1.1  2004/02/24 05:55:04  reinelt
  *
  * X11 driver ported
@@ -57,7 +62,6 @@
 #include "debug.h"
 #include "cfg.h"
 #include "timer.h"
-#include "udelay.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -93,21 +97,6 @@ static Colormap cm;
 static XColor fg_xc, bg_xc, hg_xc;
 static Pixmap pm;
 
-
-#if 0
-static LCD Lcd;
-
-static unsigned char *LCDpixmap2;
-static int DROWS=-1,DCOLS=-1;		/*DROWS+DCOLS without background*/
-static int XRES=-1,YRES=-1;		/*XRES+YRES (same as self->...)*/
-static int icons;                       /* number of user-defined icons */
-static int async_update();		/*PROTO*/
-static pid_t async_updater_pid=1;
-static int semid=-1;
-static int shmid=-1;
-static int ppid;			/*parent pid*/
-
-#endif
 
 // ****************************************
 // ***  hardware dependant functions    ***
@@ -190,32 +179,41 @@ static int drv_X11_start (char *section)
 
   // read display size from config
   if (sscanf(s=cfg_get(section, "Size", "120x32"), "%dx%d", &DCOLS, &DROWS)!=2 || DCOLS<1 || DROWS<1) {
-    error ("%s: bad Size '%s' from %s", Name, s, cfg_source());
+    error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
+    free(s);
     return -1;
   }
+  free(s);
   
   if (sscanf(s=cfg_get(section, "font", "5x8"), "%dx%d", &XRES, &YRES)!=2 || XRES<1|| YRES<1) {
-    error ("%s: bad font '%s' from %s", Name, s, cfg_source());
+    error ("%s: bad %s.font '%s' from %s", Name, section, s, cfg_source());
+    free(s);
     return -1;
   }
+  free(s);
   
   if (sscanf(s=cfg_get(section, "pixel", "4+1"), "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
-    error ("%s: bad pixel '%s' from %s", Name, s, cfg_source());
+    error ("%s: bad %s.pixel '%s' from %s", Name, section, s, cfg_source());
+    free(s);
     return -1;
   }
+  free(s);
   
   if (sscanf(s=cfg_get(section, "gap", "-1x-1"), "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
-    error ("%s: bad gap '%s' from %s", Name, s, cfg_source());
+    error ("%s: bad %s.gap '%s' from %s", Name, section, s, cfg_source());
+    free(s);
     return -1;
   }
+  free(s);
+
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
   
   if (cfg_number(section, "border", 0, 0, 1000000, &border)<0) return -1;
 
-  fg_col=cfg_get(section, "foreground", "#000000");
-  bg_col=cfg_get(section, "background", "#80d000");
-  hg_col=cfg_get(section, "halfground", "#70c000");
+  fg_col = cfg_get(section, "foreground", "#000000");
+  bg_col = cfg_get(section, "background", "#80d000");
+  hg_col = cfg_get(section, "halfground", "#70c000");
   if (*fg_col=='\\') fg_col++;
   if (*bg_col=='\\') bg_col++;
   if (*hg_col=='\\') hg_col++;
@@ -306,161 +304,6 @@ static int drv_X11_start (char *section)
   return 0;
 }
 
-
-#if 0
-static int init_x(int rows,int cols,int XRES,int YRES) 
-{
-  return 0;
-}
-
-
-int xlcdinit(LCD *Self) 
-{
-  char *s;
-
-  if (sscanf(s=cfg_get(NULL, "size", "20x4"),"%dx%d",&DCOLS,&DROWS)!=2
-      || DROWS<1 || DCOLS<1) {
-    error ("X11: bad size '%s'",s);
-    return -1;
-  }
-  if (sscanf(s=cfg_get(NULL, "font", "5x8"),"%dx%d",&XRES,&YRES)!=2
-      || XRES<5 || YRES>10) {
-    error ("X11: bad font '%s'",s);
-    return -1;
-  }
-  if (sscanf(s=cfg_get(NULL, "pixel", "4+1"),"%d+%d",&pixel,&pgap)!=2
-      || pixel<1 || pgap<0) {
-    error ("X11: bad pixel '%s'",s);
-    return -1;
-  }
-  if (sscanf(s=cfg_get(NULL, "gap", "-1x-1"),"%dx%d",&cgap,&rgap)!=2
-      || cgap<-1 || rgap<-1) {
-    error ("X11: bad gap '%s'",s);
-    return -1;
-  }
-  if (rgap<0) rgap=pixel+pgap;
-  if (cgap<0) cgap=pixel+pgap;
-
-  if (cfg_number(NULL, "border", 0, 0, 1000000, &border)<0) return -1;
-
-  fg_col=cfg_get(NULL, "foreground", "#000000");
-  bg_col=cfg_get(NULL, "background", "#80d000");
-  hg_col=cfg_get(NULL, "halfground", "#70c000");
-  if (*fg_col=='\\') fg_col++;
-  if (*bg_col=='\\') bg_col++;
-  if (*hg_col=='\\') hg_col++;
-
-  if (pix_init(DROWS,DCOLS,XRES,YRES)==-1) return -1;
-
-  if (cfg_number(NULL, "Icons", 0, 0, 8, &icons) < 0) return -1;
-  if (icons>0) {
-    info ("allocating %d icons", icons);
-    icon_init(DROWS, DCOLS, XRES, YRES, 8, icons, pix_icon);
-  }
-  
-  if (init_x(DROWS,DCOLS,XRES,YRES)==-1) return -1;
-  init_signals();
-  if (init_shm(DROWS*DCOLS*XRES*YRES,&LCDpixmap2)==-1) return -1;
-  memset(LCDpixmap2,0xff,DROWS*YRES*DCOLS*XRES);
-  if (init_thread(DROWS*DCOLS*XRES*YRES)==-1) return -1;
-  Self->DROWS=DROWS;
-  Self->DCOLS=DCOLS;
-  Self->XRES=XRES;
-  Self->YRES=YRES;
-  Self->icons=icons;
-  Lcd=*Self;
-
-  pix_clear();
-  return 0;
-}
-
-
-int xlcdflush() {
-  int dirty;
-  int row,col;
-  
-  acquire_lock();
-  dirty=0;
-  for(row=0;row<DROWS*YRES;row++) {
-    int y=border+(row/YRES)*rgap+row*(pixel+pgap);
-    for(col=0;col<DCOLS*XRES;col++) {
-      int x=border+(col/XRES)*cgap+col*(pixel+pgap);
-      int p=row*DCOLS*XRES+col;
-      if (LCDpixmap[p]^LCDpixmap2[p]) {
-	XFillRectangle(dp,w,LCDpixmap[p]?fg_gc:hg_gc,x,y,pixel,pixel);
-	LCDpixmap2[p]=LCDpixmap[p];
-	dirty=1;
-      }
-    }
-  }
-  if (dirty) XSync(dp,False);
-  release_lock();
-  return 0;
-}
-
-
-/*
- * this one should only be called from the updater-thread
- * no user serviceable parts inside
- */
-
-static void update(int x,int y,int width,int height)
-{
-  /*
-   * theory of operation:
-   * instead of the old, fully-featured but complicated update
-   * region calculation, we do an update of the whole display,
-   * but check before every pixel if the pixel region is inside
-   * the update region.
-   */
-
-  int x0, y0;
-  int x1, y1;
-  int row, col;
-  int dirty;
-  
-  x0=x-pixel;
-  y0=y-pixel;
-  x1=x+pixel+width;
-  y1=y+pixel+height;
-  
-  dirty=0;
-  for(row=0; row<DROWS; row++) {
-    int y = border + (row/YRES)*rgap + row*(pixel+pgap);
-    if (y<y0 || y>y1) continue;
-    for(col=0; col<DCOLS; col++) {
-      int x = border + (col/XRES)*cgap + col*(pixel+pgap);
-      int p;
-      if (x<x0 || x>x1) continue;
-      p=row*DCOLS*XRES+col;
-      XFillRectangle(dp,w,LCDpixmap2[p]?fg_gc:hg_gc,x,y,pixel,pixel);
-      dirty=1;
-    }
-  }
-  if (dirty) XSync(dp,False);
-}
-
-
-static int async_update() 
-{
-  XSetWindowAttributes wa;
-  XEvent ev;
-
-  if ((dp=XOpenDisplay(NULL))==NULL)
-    return -1;
-  wa.event_mask=ExposureMask;
-  XChangeWindowAttributes(dp,w,CWEventMask,&wa);
-  for(;;) {
-    XWindowEvent(dp,w,ExposureMask,&ev);
-    if (ev.type==Expose) {
-      acquire_lock();
-      update(ev.xexpose.x,ev.xexpose.y,
-	     ev.xexpose.width,ev.xexpose.height);
-      release_lock();
-    }
-  }
-}
-#endif
 
 
 // ****************************************

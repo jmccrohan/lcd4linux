@@ -101,6 +101,7 @@ PARPORT="no"
 SERIAL="no"
 TEXT="no"
 GRAPHIC="no"
+IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
 #  DRIVERS="$DRIVERS BeckmannEgle.lo"
@@ -190,6 +191,7 @@ fi
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
+      IMAGE="yes"
       AC_DEFINE(WITH_PNG,1,[ driver])
       DRVLIBS="$DRVLIBS -lgd"
    else
@@ -198,12 +200,14 @@ if test "$PNG" = "yes"; then
 fi
 
 if test "$PPM" = "yes"; then
-   if test "$has_gd" = "true"; then
-      GRAPHIC="yes"
-      AC_DEFINE(WITH_PPM,1,[ driver])
-   else
-      AC_MSG_WARN(gd.h not found: PNG driver disabled)
-   fi
+   GRAPHIC="yes"
+   IMAGE="yes"
+   AC_DEFINE(WITH_PPM,1,[ driver])
+fi
+
+if test "$IMAGE" = "yes"; then
+#  DRIVERS="$DRIVERS drv_Image.lo"
+   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 if test "$X11" = "yes"; then
@@ -231,7 +235,7 @@ fi
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
 :
-#  DRIVERS="$DRIVERS 
+#  DRIVERS="$DRIVERS drv_generic_graphic.lo"
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 

@@ -5482,6 +5482,7 @@ PARPORT="no"
 SERIAL="no"
 TEXT="no"
 GRAPHIC="no"
+IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
 #  DRIVERS="$DRIVERS BeckmannEgle.lo"
@@ -5616,6 +5617,7 @@ fi
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
+      IMAGE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PNG 1
@@ -5629,17 +5631,18 @@ echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
 fi
 
 if test "$PPM" = "yes"; then
-   if test "$has_gd" = "true"; then
-      GRAPHIC="yes"
+   GRAPHIC="yes"
+   IMAGE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PPM 1
 _ACEOF
 
-   else
-      { echo "$as_me:$LINENO: WARNING: gd.h not found: PNG driver disabled" >&5
-echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
-   fi
+fi
+
+if test "$IMAGE" = "yes"; then
+#  DRIVERS="$DRIVERS drv_Image.lo"
+   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 if test "$X11" = "yes"; then
@@ -5674,7 +5677,7 @@ fi
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
 :
-#  DRIVERS="$DRIVERS
+#  DRIVERS="$DRIVERS drv_generic_graphic.lo"
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 

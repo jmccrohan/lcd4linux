@@ -97,6 +97,19 @@ Display XWindow {
     Halfground '#70c000'
 }
 
+Display Image {
+    Driver 'Image'
+#   Format 'PPM'
+    Format 'PNG'
+    Size   '120x32'
+    Font   '6x8'
+    Pixel  '4+1'
+    Gap    '-1x-1'
+    Border 20
+    Foreground '#000000'
+    Background '#80d000'
+    Halfground '#70c000'
+}
 
 Plugin Seti {
     Directory '/root/setiathome-3.08.i686-pc-linux-gnu'
@@ -474,9 +487,10 @@ Layout testMySQL {
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
-Display 'USBLCD'
+#Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'
+Display 'Image'
 
 Layout  'Default'
 #ayout  'L16x2'

@@ -101,7 +101,7 @@ lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         deb
 
 #liblcd4linux_la_SOURCES =
 
-EXTRA_lcd4linux_SOURCES =  drv_generic_text.c          drv_generic_text.h          drv_generic_graphic.c       drv_generic_graphic.h       drv_generic_serial.c        drv_generic_serial.h        drv_generic_parport.c       drv_generic_parport.h       BeckmannEgle.c              drv_Crystalfontz.c          drv_Cwlinux.c               drv_HD44780.c               drv_M50530.c                drv_T6963.c                 drv_USBLCD.c                drv_MatrixOrbital.c         MilfordInstruments.c        PalmPilot.c                 Raster.c                    drv_X11.c                   Text.c                      font_6x8.h                                              plugin_apm.c                plugin_cpuinfo.c            plugin_dvb.c                plugin_exec.c               plugin_i2c_sensors.c        plugin_imon.c               plugin_isdn.c               plugin_loadavg.c            plugin_meminfo.c            plugin_mysql.c              plugin_netdev.c             plugin_pop3.c               plugin_ppp.c                plugin_proc_stat.c          plugin_seti.c               plugin_uname.c              plugin_uptime.c             plugin_wireless.c           plugin_xmms.c
+EXTRA_lcd4linux_SOURCES =  drv_generic_text.c          drv_generic_text.h          drv_generic_graphic.c       drv_generic_graphic.h       drv_generic_serial.c        drv_generic_serial.h        drv_generic_parport.c       drv_generic_parport.h       BeckmannEgle.c              drv_Crystalfontz.c          drv_Cwlinux.c               drv_HD44780.c               drv_Image.c                 drv_M50530.c                drv_T6963.c                 drv_USBLCD.c                drv_MatrixOrbital.c         MilfordInstruments.c        PalmPilot.c                 drv_X11.c                   Text.c                      font_6x8.h                                              plugin_apm.c                plugin_cpuinfo.c            plugin_dvb.c                plugin_exec.c               plugin_i2c_sensors.c        plugin_imon.c               plugin_isdn.c               plugin_loadavg.c            plugin_meminfo.c            plugin_mysql.c              plugin_netdev.c             plugin_pop3.c               plugin_ppp.c                plugin_proc_stat.c          plugin_seti.c               plugin_uname.c              plugin_uptime.c             plugin_wireless.c           plugin_xmms.c
 
 
 EXTRA_DIST =  lcd4linux.conf.sample       lcd4kde.conf                lcd4linux.kdelnk            lcd4linux.xpm               lcd4linux.lsm               curses.m4                   AUTHORS                     CREDITS                     FAQ                         NEWS                        TODO                        README                      README.Rows                 README.Tokens               README.Drivers              README.Plugins              README.KDE                  plugin_sample.c
@@ -140,9 +140,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/BeckmannEgle.P .deps/MilfordInstruments.P \
-.deps/PalmPilot.P .deps/Raster.P .deps/Text.P .deps/cfg.P .deps/debug.P \
-.deps/drv.P .deps/drv_Crystalfontz.P .deps/drv_Cwlinux.P \
-.deps/drv_HD44780.P .deps/drv_M50530.P .deps/drv_MatrixOrbital.P \
+.deps/PalmPilot.P .deps/Text.P .deps/cfg.P .deps/debug.P .deps/drv.P \
+.deps/drv_Crystalfontz.P .deps/drv_Cwlinux.P .deps/drv_HD44780.P \
+.deps/drv_Image.P .deps/drv_M50530.P .deps/drv_MatrixOrbital.P \
 .deps/drv_T6963.P .deps/drv_USBLCD.P .deps/drv_X11.P \
 .deps/drv_generic_graphic.P .deps/drv_generic_parport.P \
 .deps/drv_generic_serial.P .deps/drv_generic_text.P .deps/evaluator.P \

@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.14 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.15 2004/05/25 14:26:29 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.15  2004/05/25 14:26:29  reinelt
+ *
+ * added "Image" driver (was: Raster.c) for PPM and PNG creation
+ * fixed some glitches in the X11 driver
+ *
  * Revision 1.14  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -695,7 +700,7 @@ static int drv_CF_start (char *section)
   Protocol = Models[Model].protocol;
 
   // regularly process display answers
-  // Fixme: make 20msec configurable
+  // Fixme: make 100msec configurable
   timer_add (drv_CF_timer, NULL, 100, 0);
 
   switch (Protocol) {
