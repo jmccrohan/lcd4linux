@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.8 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: cfg.h,v 1.9 2004/01/14 11:33:00 reinelt Exp $
  *
  * config file stuff
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.9  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.8  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -60,20 +65,22 @@
 #ifndef _CFG_H_
 #define _CFG_H_
 
-extern int   (*cfg_init)   (char *source);
-extern char *(*cfg_source) (void);
-extern int   (*cfg_cmd)    (char *arg);
-extern char *(*cfg_list)   (char *section);
-extern char *(*cfg_get)    (char *section, char *key, char *defval);
-extern int   (*cfg_number) (char *section, char *key, int   defval, 
-			    int min, int max, int *value);
+extern int   (*cfg_init)    (char *source);
+extern char *(*cfg_source)  (void);
+extern int   (*cfg_cmd)     (char *arg);
+extern char *(*cfg_list)    (char *section);
+extern char *(*cfg_get_raw) (char *section, char *key, char *defval);
+extern char *(*cfg_get)     (char *section, char *key, char *defval);
+extern int   (*cfg_number)  (char *section, char *key, int   defval, 
+			     int min, int max, int *value);
 
-int   l4l_cfg_init   (char *file);
-char *l4l_cfg_source (void);
-int   l4l_cfg_cmd    (char *arg);
-char *l4l_cfg_list   (char *section);
-char *l4l_cfg_get    (char *section, char *key, char *defval);
-int   l4l_cfg_number (char *section, char *key, int   defval, 
-		      int min, int max, int *value);
+int   l4l_cfg_init    (char *file);
+char *l4l_cfg_source  (void);
+int   l4l_cfg_cmd     (char *arg);
+char *l4l_cfg_list    (char *section);
+char *l4l_cfg_get_raw (char *section, char *key, char *defval);
+char *l4l_cfg_get     (char *section, char *key, char *defval);
+int   l4l_cfg_number  (char *section, char *key, int   defval, 
+		       int min, int max, int *value);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.10 2004/01/13 10:03:01 reinelt Exp $
+/* $Id: plugin.c,v 1.11 2004/01/14 11:33:00 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.11  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.10  2004/01/13 10:03:01  reinelt
  * new util 'hash' for associative arrays
  * new plugin 'cpuinfo'
@@ -101,6 +106,7 @@
 int plugin_init_math (void);
 int plugin_init_string (void);
 int plugin_init_cfg (void);
+int plugin_init_uname (void);
 int plugin_init_cpuinfo (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
@@ -111,6 +117,7 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_cfg();
+  plugin_init_uname();
   plugin_init_cpuinfo();
   // MR: segfaults here
   // plugin_init_i2c_sensors();

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.6 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.7 2004/01/14 11:33:00 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.7  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.6  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -75,6 +80,7 @@
 #include "bar.h"
 #include "icon.h"
 #include "widget.h"
+#include "widget_text.h"
 
 
 // these values are hardcoded
@@ -87,11 +93,12 @@ static speed_t Speed;
 static int Device=-1;
 static int Model;
 
-static int ROWS, COLS, GPOS;
-static int ICONS, PROTOCOL;
+static int DROWS, DCOLS; // display size
+static int LROWS, LCOLS; // layout size
+static int GPOS, ICONS, PROTOCOL;
 
-static char *FrameBuffer1=NULL;
-static char *FrameBuffer2=NULL;
+static char *LayoutFB=NULL;
+static char *DisplayFB=NULL;
 static int GPO[8];
 
 
@@ -239,18 +246,27 @@ static void drv_MO_define_char (int ascii, char *buffer)
 }
 
 
+static void drv_MO_goto (int row, int col)
+{
+  char cmd[5]="\376Gyx";
+  cmd[2]=(char)col+1;
+  cmd[3]=(char)row+1;
+  drv_MO_write(cmd,4);
+}
+
+
 static int drv_MO_clear (int full)
 {
   int gpo;
   
-  memset (FrameBuffer1, ' ', ROWS*COLS*sizeof(char));
+  memset (LayoutFB, ' ', LROWS*LCOLS*sizeof(char));
   
   icon_clear();
   bar_clear();
   memset(GPO, 0, sizeof(GPO));
 
   if (full) {
-    memset (FrameBuffer2, ' ', ROWS*COLS*sizeof(char));
+    memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
     switch (PROTOCOL) {
     case 1:
       drv_MO_write ("\014",  1);  // Clear Screen
@@ -273,21 +289,12 @@ static int drv_MO_clear (int full)
   return 0;
 }
 
-static void drv_MO_goto (int row, int col)
-{
-  char cmd[5]="\376Gyx";
-  cmd[2]=(char)col+1;
-  cmd[3]=(char)row+1;
-  drv_MO_write(cmd,4);
-}
-
-
 static int drv_MO_put (int row, int col, char *text)
 {
-  char *p=FrameBuffer1+row*COLS+col;
+  char *p=LayoutFB+row*DCOLS+col;
   char *t=text;
   
-  while (*t && col++<=COLS) {
+  while (*t && col++<=DCOLS) {
     *p++=*t++;
   }
   return 0;
@@ -383,65 +390,62 @@ static int drv_MO_start (char *section)
   // read module type
   drv_MO_write ("\3767", 2);
   usleep(1000);
-  drv_MO_read (buffer, 1);
-  for (i=0; Models[i].type!=0xff; i++) {
-    if (Models[i].type == (int)*buffer) break;
-  }
-  info ("MatrixOrbital: display identifies itself as a '%s' (type 0x%02x)", 
-	Models[i].name, Models[i].type);
-  
-  // auto-dedection
-  if (Model==-1) Model=i;
-  
-  // auto-dedection matches specified model?
-  if (Model!=i) {
-    error ("MatrixOrbital: %s.Model '%s' from %s does not match dedected Model '%s'", 
-	   section, model, cfg_source(), Models[i].name);
-    return -1;
-  }
+  if (drv_MO_read (buffer, 1)==1) {
+    for (i=0; Models[i].type!=0xff; i++) {
+      if (Models[i].type == (int)*buffer) break;
+    }
+    info ("MatrixOrbital: display reports model '%s' (type 0x%02x)", 
+	  Models[i].name, Models[i].type);
 
+    // auto-dedection
+    if (Model==-1) Model=i;
+
+    // auto-dedection matches specified model?
+    if (Models[i].type!=0xff && Model!=i) {
+      error ("MatrixOrbital: %s.Model '%s' from %s does not match dedected Model '%s'", 
+	     section, model, cfg_source(), Models[i].name);
+      return -1;
+    }
+
+  } else {
+    info ("MatrixOrbital: display detection failed.");
+  }
+  
   // read serial number
   drv_MO_write ("\3765", 2);
   usleep(100000);
-  drv_MO_read (buffer, 2);
-  info ("MatrixOrbital: display reports serial number 0x%x", *(short*)buffer);
-  
+  if (drv_MO_read (buffer, 2)==2) {
+    info ("MatrixOrbital: display reports serial number 0x%x", *(short*)buffer);
+  }
+
   // read version number
   drv_MO_write ("\3766", 2);
   usleep(100000);
-  drv_MO_read (buffer, 1);
-  info ("MatrixOrbital: display reports firmware version 0x%x", *buffer);
-
+  if (drv_MO_read (buffer, 1)==1) {
+    info ("MatrixOrbital: display reports firmware version 0x%x", *buffer);
+  }
   
   // initialize global variables
-  ROWS     = Models[Model].rows;
-  COLS     = Models[Model].cols;
+  DROWS    = Models[Model].rows;
+  DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
   PROTOCOL = Models[Model].protocol;
 
-
-  // init the framebuffers
-  FrameBuffer1 = (char*)malloc(COLS*ROWS*sizeof(char));
-  FrameBuffer2 = (char*)malloc(COLS*ROWS*sizeof(char));
-  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
-    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
-    return -1;
-  }
-  
   // init Icons
   if (cfg_number(NULL, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
   if (ICONS>0) {
     debug ("reserving %d of %d user-defined characters for icons", ICONS, CHARS);
-    icon_init(ROWS, COLS, XRES, YRES, CHARS, ICONS, drv_MO_define_char);
+    icon_init(DROWS, DCOLS, XRES, YRES, CHARS, ICONS, drv_MO_define_char);
   }
   
   // init Bars
-  bar_init(ROWS, COLS, XRES, YRES, CHARS-ICONS);
+  bar_init(DROWS, DCOLS, XRES, YRES, CHARS-ICONS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
   
   
-  drv_MO_clear(1);
+  // Fixme: get rid of this function
+  // drv_MO_clear(1);
   // Fixme: where to init contrast?
   drv_MO_contrast(160);
 
@@ -463,19 +467,19 @@ static int drv_MO_flush (void)
   
   bar_process(drv_MO_define_char);
   
-  for (row=0; row<ROWS; row++) {
-    for (col=0; col<COLS; col++) {
+  for (row=0; row<DROWS; row++) {
+    for (col=0; col<DCOLS; col++) {
       c=bar_peek(row, col);
       if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
-	FrameBuffer1[row*COLS+col]=(char)c;
+	LayoutFB[row*DCOLS+col]=(char)c;
       }
     }
-    for (col=0; col<COLS; col++) {
-      if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) continue;
+    for (col=0; col<DCOLS; col++) {
+      if (LayoutFB[row*DCOLS+col]==DisplayFB[row*DCOLS+col]) continue;
       drv_MO_goto (row, col);
-      for (pos1=col++, pos2=pos1, equal=0; col<COLS; col++) {
-	if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) {
+      for (pos1=col++, pos2=pos1, equal=0; col<DCOLS; col++) {
+	if (LayoutFB[row*DCOLS+col]==DisplayFB[row*DCOLS+col]) {
 	  // If we find just one equal byte, we don't break, because this 
 	  // would require a goto, which takes one byte, too.
 	  if (++equal>5) break;
@@ -484,11 +488,11 @@ static int drv_MO_flush (void)
 	  equal=0;
 	}
       }
-      drv_MO_write (FrameBuffer1+row*COLS+pos1, pos2-pos1+1);
+      drv_MO_write (LayoutFB+row*DCOLS+pos1, pos2-pos1+1);
     }
   }
   
-  memcpy (FrameBuffer2, FrameBuffer1, ROWS*COLS*sizeof(char));
+  memcpy (DisplayFB, LayoutFB, DROWS*DCOLS*sizeof(char));
   
   switch (PROTOCOL) {
   case 1:
@@ -651,6 +655,88 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
 }
 
 
+// ****************************************
+// ***    internal helper functions     ***
+// ****************************************
+
+static void drv_MO_resize (int rows, int cols)
+{
+  char *newFB;
+  int row, col;
+  
+  // Layout FB is large enough
+  if (rows<=LROWS && cols<=LCOLS)
+    return;
+  
+  // allocate new Layout FB
+  newFB=malloc(cols*rows*sizeof(char));
+  memset (newFB, ' ', rows*cols*sizeof(char));
+
+  // transfer contents
+  if (LayoutFB!=NULL) {
+    for (row=0; row<LROWS; row++) {
+      for (col=0; col<LCOLS; col++) {
+	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
+      }
+    }
+    free (LayoutFB);
+  }
+  
+  LayoutFB = newFB;
+  LCOLS    = cols;
+  LROWS    = rows;
+}
+
+
+// ****************************************
+// ***        widget callbacks          ***
+// ****************************************
+
+
+int drv_MO_draw_text (WIDGET *W)
+{
+  WIDGET_TEXT *T=W->data;
+  char *txt, *fb1, *fb2;
+  int row, col, len, end;
+  
+  debug ("drv_MO_draw_text(%s) x=%2d y=%2d  value=<%s>", W->name, W->col, W->row, T->buffer);
+
+  row=W->row;
+  col=W->col;
+  txt=T->buffer;
+  len=strlen(txt);
+  end=col+len;
+  
+  // maybe grow layout framebuffer
+  drv_MO_resize (W->row, W->col+len-1);
+
+  fb1=LayoutFB+row*LCOLS;
+  fb2=DisplayFB+row*DCOLS;
+  
+  // transfer new text into layout buffer
+  memcpy (fb1+col, txt, len);
+
+  for (; col<=end; col++) {
+    int pos1, pos2, equal;
+    if (fb1[col]==fb2[col]) continue;
+    drv_MO_goto (row, col);
+    for (pos1=col, pos2=pos1, col++, equal=0; col<=end; col++) {
+      if (fb1[col]==fb2[col]) {
+	// If we find just one equal byte, we don't break, because this 
+	// would require a goto, which takes several bytes, too.
+	if (++equal>5) break;
+      } else {
+	pos2=col;
+	equal=0;
+      }
+    }
+    memcpy (fb2+pos1, fb1+pos1, pos2-pos1+1);
+    drv_MO_write (fb2+pos1, pos2-pos1+1);
+  }
+    
+  return 0;
+}
+
 
 // ****************************************
 // ***        exported functions        ***
@@ -679,9 +765,25 @@ int drv_MO_init (char *section)
   if ((ret=drv_MO_start (section))!=0)
     return ret;
   
+  // init display framebuffer
+  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
+  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
+  
+  // init layout framebuffer
+  LROWS = 0;
+  LCOLS = 0;
+  LayoutFB=NULL;
+  drv_MO_resize (DROWS, DCOLS);
+
+  // sanity check
+  if (LayoutFB==NULL || DisplayFB==NULL) {
+    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+  
   // register text widget
   wc=Widget_Text;
-  wc.draw=NULL; //Fixme
+  wc.draw=drv_MO_draw_text;
   widget_register(&wc);
   
   // register plugins
@@ -703,14 +805,14 @@ int drv_MO_quit (void) {
   close (Device);
   unlock_port(Port);
   
-  if (FrameBuffer1) {
-    free(FrameBuffer1);
-    FrameBuffer1=NULL;
+  if (LayoutFB) {
+    free(LayoutFB);
+    LayoutFB=NULL;
   }
   
-  if (FrameBuffer2) {
-    free(FrameBuffer2);
-    FrameBuffer2=NULL;
+  if (DisplayFB) {
+    free(DisplayFB);
+    DisplayFB=NULL;
   }
   
   return (0);

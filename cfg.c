@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.26 2004/01/11 18:26:02 reinelt Exp $^
+/* $Id: cfg.c,v 1.27 2004/01/14 11:33:00 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.27  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.26  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -161,14 +166,23 @@
  *   This list was allocated be cfg_list() and must be 
  *   freed by the caller!
  *
+ * cfg_get_raw (section, key, defval) 
+ *   return the a value for a given key in a given section 
+ *   or <defval> if key does not exist. Does NOT evaluate
+ *   the expression. Therefore used to get the expression 
+ *   itself!
+ *
  * cfg_get (section, key, defval) 
  *   return the a value for a given key in a given section 
- *   or <defval> if key does not exist
+ *   or <defval> if key does not exist. The specified
+ *   value in the config is treated as a expression and 
+ *   is evaluated!
  *
  * cfg_number (section, key, defval, min, int max, *value) 
  *   return the a value for a given key in a given section 
  *   convert it into a number with syntax checking
- *   check if its in a given range
+ *   check if its in a given range. As it uses cfg_get()
+ *   internally, the evaluator is used here, too.
  * 
  */
 
@@ -183,6 +197,7 @@
 #include <sys/stat.h>
 
 #include "debug.h"
+#include "evaluator.h"
 #include "cfg.h"
 
 typedef struct {
@@ -361,7 +376,7 @@ char *l4l_cfg_list (char *section)
 }
 
 
-char *l4l_cfg_get (char *section, char *key, char *defval)
+char *l4l_cfg_get_raw (char *section, char *key, char *defval)
 {
   int len;
   char *buffer;
@@ -396,33 +411,52 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
 }
 
 
+char *l4l_cfg_get (char *section, char *key, char *defval)
+{
+  char *expression;
+  RESULT result = {0, 0.0, NULL};
+  
+  expression=cfg_get_raw(section, key, defval);
+  
+  if (expression!=NULL && *expression!='\0') {
+    if (Eval(expression, &result)==0) {
+      return R2S(&result);
+    }
+  }
+  return defval;
+}
+
+
 int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int *value) 
 {
-  char *s, *e;
-  
+  char *expression;
+  RESULT result = {0, 0.0, NULL};
+   
   // start with default value
   // in case of an (uncatched) error, you have the
   // default value set, which may be handy...
   *value=defval;
 
-  s=cfg_get(section, key, NULL);
-  if (s==NULL) {
+  expression=cfg_get_raw(section, key, NULL);
+  if (expression==NULL) {
     return 0;
   }
   
-  *value=strtol(s, &e, 0);
-  if (*e!='\0') {
-    error ("bad %s entry '%s' in %s", key, s, cfg_source());
+  if (Eval(expression, &result)!=0) {
     return -1;
   }
+  *value=R2N(&result);
+  DelResult(&result);
   
   if (*value<min) {
-    error ("bad %s value '%s' in %s, minimum is %d", key, s, cfg_source(), min);
+    error ("bad %s value '%d' in %s, minimum is %d", key, *value, cfg_source(), min);
+    *value=min;
     return -1;
   }
   
   if (*value>max) {
-    error ("bad %s value '%s' in %s, maximum is %d", key, s, cfg_source(), max);
+    error ("bad %s value '%d' in %s, maximum is %d", key, *value, cfg_source(), max);
+    *value=max;
     return -1;
   }
 
@@ -637,10 +671,11 @@ char *l4l_cfg_source (void)
 }
 
 
-int   (*cfg_init)   (char *source)                           = l4l_cfg_init;
-char *(*cfg_source) (void)                                   = l4l_cfg_source;
-int   (*cfg_cmd)    (char *arg)                              = l4l_cfg_cmd;
-char *(*cfg_list)   (char *section)                          = l4l_cfg_list;
-char *(*cfg_get)    (char *section, char *key, char *defval) = l4l_cfg_get;
-int   (*cfg_number) (char *section, char *key, int   defval, 
-		     int min, int max, int *value)           = l4l_cfg_number;
+int   (*cfg_init)    (char *source)                           = l4l_cfg_init;
+char *(*cfg_source)  (void)                                   = l4l_cfg_source;
+int   (*cfg_cmd)     (char *arg)                              = l4l_cfg_cmd;
+char *(*cfg_list)    (char *section)                          = l4l_cfg_list;
+char *(*cfg_get_raw) (char *section, char *key, char *defval) = l4l_cfg_get_raw;
+char *(*cfg_get)     (char *section, char *key, char *defval) = l4l_cfg_get;
+int   (*cfg_number)  (char *section, char *key, int   defval, 
+		      int min, int max, int *value)           = l4l_cfg_number;

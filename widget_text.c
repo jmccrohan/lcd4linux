@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.3 2004/01/13 08:18:20 reinelt Exp $
+/* $Id: widget_text.c,v 1.4 2004/01/14 11:33:00 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,11 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.4  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.3  2004/01/13 08:18:20  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -49,33 +54,150 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "debug.h"
 #include "cfg.h"
+#include "evaluator.h"
 #include "timer.h"
 #include "widget.h"
+#include "widget_text.h"
 
 
-typedef struct WIDGET_TEXT {
-  char *value;
-  char *align;
-  int   width;
-  int   update;
-} WIDGET_TEXT;
-
-
-void widget_text_callback (void *vSelf)
+void widget_text_scroll (void *Self)
 {
-  WIDGET *Self=(WIDGET*)vSelf;
+  WIDGET      *W = (WIDGET*)Self;
+  WIDGET_TEXT *T = W->data;
   
-   debug ("callback: Self->name=%s", Self->name);
+  int num, len, pad;
+  char *src, *dst;
+
+  src=T->value;
+  dst=T->buffer;
+  num=0;
+  len=strlen(T->value);
+
+  switch (T->align) {
+  case ALIGN_LEFT:
+    pad=0;
+    break;
+  case ALIGN_CENTER:
+    pad=(T->width - len)/2;  
+    if (pad<0) pad=0;
+    break;
+  case ALIGN_RIGHT:
+    pad=T->width - len; 
+    if (pad<0) pad=0;
+    break;
+  case ALIGN_MARQUEE:
+    pad=T->width - T->scroll;
+    T->scroll++;
+    if (T->scroll >= T->width+len) T->scroll=0;
+    break;
+  default: // not reached 
+    pad=0;
+  }
+  
+  // pad blanks on the beginning
+  while (pad>0) {
+    *(dst++)=' ';
+    num++;
+    pad--;
+  }
+  
+  // overread src (marquee)
+  while (pad<0) {
+    src++;
+    pad++;
+  }
+  
+  // copy content
+  while (num < T->width) {
+    if (*src=='\0') break;
+    *(dst++)=*(src++);
+    num++;
+  }
+  
+  // pad blanks on the end
+  while (num < T->width) {
+    *(dst++)=' ';
+    num++;
+  }
+  *dst='\0';
+  
+  // finally, draw it!
+  if (W->class->draw)
+    W->class->draw(W);
+}
+  
+
+void widget_text_update (void *Self)
+{
+  WIDGET      *W = (WIDGET*)Self;
+  WIDGET_TEXT *T = W->data;
+  RESULT result = {0, 0.0, NULL};
+  char *value;
+  
+  // evaluate expression
+  Eval(T->expression, &result);
+  
+  // string or number?
+  if (T->precision==0xC0DE) {
+    value=strdup(R2S(&result));
+  } else {
+    double number=R2N(&result);
+    int width=T->width;
+    int precision=T->precision;
+    // print zero bytes so we can specify NULL as target 
+    // and get the length of the resulting string
+    int size=snprintf (NULL, 0, "%.*f", precision, number);
+    // number does not fit into field width: try to reduce precision
+    if (size>width && precision>0) {
+      int delta=size-width;
+      if (delta>precision) delta=precision;
+      precision-=delta;
+      size-=delta;
+      // zero precision: omit decimal point, too
+      if (precision==0) size--;
+    }
+    // number still doesn't fit: display '*****' 
+    if (size>width) {
+      debug ("overflow");
+      value=malloc(width+1);
+      memset (value, '*', width);
+      *(value+width)='\0';
+    } else {
+      value=malloc(size+1);
+      snprintf (value, size+1, "%.*f", precision, number);
+    }
+  }
+  
+  // has value changed?
+  if (T->value == NULL || strcmp(T->value, value)!=0) {
+    // free old value
+    if (T->value) free (T->value);
+    T->value=value;
+    // reset marquee counter
+    T->scroll=0;
+    // if there's a marquee scroller active, it has its own
+    // update callback timer, so we do nothing here; otherwise
+    // we simply call this scroll callback directly
+    if (T->align!=ALIGN_MARQUEE) {
+      widget_text_scroll (Self);
+    }
+  } else {
+    // value is the same, so free our buffer
+    free (value);
+  }
+
+  DelResult (&result);
 }
 
 
-int widget_text_init (WIDGET *Self) {
-  
-  char *section;
-  WIDGET_TEXT *data;
+int widget_text_init (WIDGET *Self) 
+{
+  char *section; char *c;
+  WIDGET_TEXT *T;
   
   // prepare config section
   // strlen("Widget:")=7
@@ -83,20 +205,65 @@ int widget_text_init (WIDGET *Self) {
   strcpy(section, "Widget:");
   strcat(section, Self->name);
   
-  data=malloc(sizeof(WIDGET_TEXT));
+  T=malloc(sizeof(WIDGET_TEXT));
+  memset (T, 0, sizeof(WIDGET_TEXT));
+
+  // get raw expression (we evaluate it ourselves)
+  T->expression = cfg_get_raw (section, "expression",  "''");
   
-  data->value = cfg_get (section, "value",  "''");
-  data->align = cfg_get (section, "align",  "L");
+  // field width, default 10
+  cfg_number (section, "width", 10,  0, 99999, &(T->width));
   
-  cfg_number (section, "width",   5,  0, 99999, &(data->width));
-  cfg_number (section, "update", -1, -1, 99999, &(data->update));
+  // precision: number of digits after the decimal point (default: none)
+  // Note: this is the *maximum* precision on small values,
+  // for larger values the precision may be reduced to fit into the field width.
+  // The default value 0xC0DE is used to distinguish between numbers and strings:
+  // if no precision is given, the result is always treated as a string. If a
+  // precision is specified, the result is treated as a number.
+  cfg_number (section, "precision", 0xC0DE, 0, 80, &(T->precision));
+  
+  // field alignment: Left (default), Center, Right or Marquee
+  c = cfg_get (section, "align",  "L");
+  switch (toupper(*c)) {
+  case 'L':
+    T->align=ALIGN_LEFT;
+    break;
+  case 'C':
+    T->align=ALIGN_CENTER;
+    break;
+  case 'R':
+    T->align=ALIGN_RIGHT;
+    break;
+  case 'M':
+    T->align=ALIGN_MARQUEE;
+    break;
+  default:
+    error ("widget %s has unknown alignment '%s', using 'Left'", section, c);
+    T->align=ALIGN_LEFT;
+  }
+  free (c);
+  
+  // update interval (msec), default 1 sec
+  cfg_number (section, "update", 1000, 10, 99999, &(T->update));
+  
+  // marquee scroller speed: interval (msec), default 500msec
+  if (T->align==ALIGN_MARQUEE) {
+    cfg_number (section, "speed", 500, 10, 99999, &(T->speed));
+  }
+  
+  // buffer
+  T->buffer=malloc(T->width+1);
   
   free (section);
-  Self->data=data;
+  Self->data=T;
   
-  debug ("timer_add: Self=%p Self->name=%s", Self, Self->name);
-  timer_add (widget_text_callback, Self, 200, 0);
-  
+  timer_add (widget_text_update, Self, T->update, 0);
+
+  // a marquee scroller has its own timer and callback
+  if (T->align==ALIGN_MARQUEE) {
+    timer_add (widget_text_scroll, Self, T->speed, 0);
+  }
+
   return 0;
 }
 
@@ -117,7 +284,6 @@ int widget_text_quit (WIDGET *Self) {
 WIDGET_CLASS Widget_Text = {
   name:   "text",
   init:   widget_text_init,
-  update: NULL,
   draw:   NULL,
   quit:   widget_text_quit,
 };

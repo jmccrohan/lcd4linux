@@ -1,4 +1,4 @@
-/* $Id: expr.c,v 1.3 2004/01/12 03:51:01 reinelt Exp $
+/* $Id: expr.c,v 1.4 2004/01/14 11:33:00 reinelt Exp $
  *
  * expr ('y*') functions
  * This is only a workaround to make the Evaluator usable until
@@ -24,6 +24,11 @@
  *
  *
  * $Log: expr.c,v $
+ * Revision 1.4  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.3  2004/01/12 03:51:01  reinelt
  * evaluating the 'Variables' section in the config file
  *
@@ -63,7 +68,7 @@ int Expr(int index, char string[EXPR_TXT_LEN], double *val)
 
   sprintf(yn, "y%d", index);
   expression = cfg_get(NULL, yn, NULL);
-					    
+  
   if (!expression || !*expression) {
     error("Empty expression for 'y%d'", index);
     errs[index]++;

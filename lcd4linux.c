@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.60 2004/01/13 08:18:19 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.61 2004/01/14 11:33:00 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.61  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.60  2004/01/13 08:18:19  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -591,7 +596,7 @@ int main (int argc, char *argv[])
 
   // check the conf to see if quiet startup is wanted 
   if (!quiet) {
-    quiet = atoi(cfg_get(NULL, "Quiet", "0"));
+    cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
   }
   
   // Fixme: compatibility only...

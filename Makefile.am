@@ -1,4 +1,4 @@
-## Process this file with automake to produce Makefile.in
+# Process this file with automake to produce Makefile.in
 
 AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
@@ -25,11 +25,12 @@ layout.c layout.h \
 timer.c timer.h \
 evaluator.c evaluator.h \
 widget.c widget.h \
-widget_text.c widget_text.h \
+widget_text.c \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
 plugin_cfg.c \
+plugin_uname.c \
 plugin_cpuinfo.c \
 plugin_i2c_sensors.c \
 plugin_xmms.c \

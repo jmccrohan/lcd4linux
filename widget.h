@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.6 2004/01/13 08:18:20 reinelt Exp $
+/* $Id: widget.h,v 1.7 2004/01/14 11:33:00 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.7  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.6  2004/01/13 08:18:20  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -59,7 +64,6 @@ struct WIDGET; // forward declaration
 typedef struct WIDGET_CLASS {
   char *name;
   int (*init)   (struct WIDGET *Self);
-  int (*update) (struct WIDGET *Self); // Fixme: do we really need this?
   int (*draw)   (struct WIDGET *Self);
   int (*quit)   (struct WIDGET *Self);
 } WIDGET_CLASS;
@@ -68,16 +72,14 @@ typedef struct WIDGET_CLASS {
 typedef struct WIDGET{
   char         *name;
   WIDGET_CLASS *class;
+  int           row;
+  int           col;
   void         *data;
 } WIDGET;
 
 
 
 int widget_register (WIDGET_CLASS *widget);
-int widget_add      (char *name);
-
-
-// some basic widgets
-WIDGET_CLASS Widget_Text;
+int widget_add      (char *name, int row, int col);
 
 #endif

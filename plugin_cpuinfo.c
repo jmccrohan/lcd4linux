@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.1 2004/01/13 10:03:01 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.2 2004/01/14 11:33:00 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.2  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.1  2004/01/13 10:03:01  reinelt
  * new util 'hash' for associative arrays
  * new plugin 'cpuinfo'
@@ -67,7 +72,8 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
     stream=fopen("/proc/cpuinfo", "r");
     if (stream==NULL) {
       error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
-      goto error;
+      SetResult(&result, R_STRING, ""); 
+      return;
     }
     
     while (!feof(stream)) {
@@ -91,9 +97,7 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
       hash_set (&CPUinfo, key, val);
       
     }
-    
     fclose (stream);
-	   
     time(&now);
   }
   
@@ -101,8 +105,6 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
   val=hash_get(&CPUinfo, key);
   if (val==NULL) val="";
 
- error:
-  // val="";
   SetResult(&result, R_STRING, val); 
 }
 

@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.1 2004/01/13 10:03:01 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.2 2004/01/14 11:33:00 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.2  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.1  2004/01/13 10:03:01  reinelt
  * new util 'hash' for associative arrays
  * new plugin 'cpuinfo'
@@ -62,7 +67,7 @@ static void load_variables (void)
     if (strchr(key, '.')!=NULL || strchr(key, ':') !=0) {
       error ("ignoring variable '%s' from %s: structures not allowed", key, cfg_source());
     } else {
-      expression=cfg_get (section, key, "");
+      expression=cfg_get_raw (section, key, "");
       if (expression!=NULL && *expression!='\0') {
 	if (Eval(expression, &result)==0) {
 	  debug ("Variable %s = '%s' (%f)", key, R2S(&result), R2N(&result));

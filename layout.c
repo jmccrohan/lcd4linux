@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.5 2004/01/13 08:18:19 reinelt Exp $
+/* $Id: layout.c,v 1.6 2004/01/14 11:33:00 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.6  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.5  2004/01/13 08:18:19  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -68,8 +73,7 @@
 int layout_addItem (char *name, int row, int col)
 {
   // allocate widget
-  widget_add (name);
-
+  widget_add (name, row-1, col-1);
   return 0;
 }
 

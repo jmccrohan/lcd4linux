@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.7 2004/01/13 08:18:20 reinelt Exp $
+/* $Id: widget.c,v 1.8 2004/01/14 11:33:00 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,11 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.8  2004/01/14 11:33:00  reinelt
+ * new plugin 'uname' which does what it's called
+ * text widget nearly finished
+ * first results displayed on MatrixOrbital
+ *
  * Revision 1.7  2004/01/13 08:18:20  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -106,7 +111,7 @@ int widget_register (WIDGET_CLASS *widget)
 }
 
 
-int widget_add (char *name)
+int widget_add (char *name, int row, int col)
 {
   int i;
   char *section;
@@ -125,6 +130,7 @@ int widget_add (char *name)
   class=cfg_get(section, "class", NULL);
   if (class==NULL || *class=='\0') {
     error ("error: widget '%s' has no class!", name);
+    if (class) free (class);
     return -1;
   }
   
@@ -136,6 +142,7 @@ int widget_add (char *name)
       break;
     }
   }
+  if (class) free (class);
   if (i==nClasses) {
     error ("widget '%s': class '%s' not supported");
     return -1;
@@ -162,6 +169,8 @@ int widget_add (char *name)
   
   Widget->name  = name;
   Widget->class = Class;
+  Widget->row   = row;
+  Widget->col   = col;
   
   if (Class->init!=0) {
     Class->init(Widget);
