@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.2 2004/01/27 05:06:10 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.3 2004/01/27 08:13:39 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.3  2004/01/27 08:13:39  reinelt
+ * ported PPP token to plugin_ppp
+ *
  * Revision 1.2  2004/01/27 05:06:10  reinelt
  * i2c update from Xavier
  *
@@ -151,6 +154,7 @@ void my_i2c_sensors_path(void)
   int done;
   
   fd1 = opendir(base);
+  if (fd1==NULL) return;
   while((dir = readdir(fd1)))   {
     // Skip '.' and '..'
     if (strcmp(dir->d_name, "." )==0 ||

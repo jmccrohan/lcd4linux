@@ -106,7 +106,7 @@ lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h processor.c processor.h layout.c layout.h timer.c timer.h evaluator.c evaluator.h widget.c      widget.h widget_text.c widget_text.h widget_bar.c  widget_bar.h widget_icon.c widget_icon.h plugin.c plugin.h plugin_math.c plugin_string.c plugin_cfg.c plugin_uname.c plugin_loadavg.c plugin_proc_stat.c plugin_cpuinfo.c plugin_meminfo.c plugin_netdev.c plugin_i2c_sensors.c plugin_xmms.c system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h exec.c exec.h expr.c expr.h mail2.c socket.c socket.h imon.c imon.h display.c display.h drv.c drv.h drv_generic_serial.c  drv_generic_serial.h drv_generic_parport.c drv_generic_parport.h drv_generic_text.c    drv_generic_text.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
+lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h processor.c processor.h layout.c layout.h timer.c timer.h evaluator.c evaluator.h widget.c      widget.h widget_text.c widget_text.h widget_bar.c  widget_bar.h widget_icon.c widget_icon.h plugin.c plugin.h plugin_math.c plugin_string.c plugin_cfg.c plugin_uname.c plugin_loadavg.c plugin_proc_stat.c plugin_cpuinfo.c plugin_meminfo.c plugin_netdev.c plugin_ppp.c plugin_i2c_sensors.c plugin_xmms.c system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h exec.c exec.h expr.c expr.h mail2.c socket.c socket.h imon.c imon.h display.c display.h drv.c drv.h drv_generic_serial.c  drv_generic_serial.h drv_generic_parport.c drv_generic_parport.h drv_generic_text.c    drv_generic_text.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
 
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -153,7 +153,7 @@ widget_bar.$(OBJEXT) widget_icon.$(OBJEXT) plugin.$(OBJEXT) \
 plugin_math.$(OBJEXT) plugin_string.$(OBJEXT) plugin_cfg.$(OBJEXT) \
 plugin_uname.$(OBJEXT) plugin_loadavg.$(OBJEXT) \
 plugin_proc_stat.$(OBJEXT) plugin_cpuinfo.$(OBJEXT) \
-plugin_meminfo.$(OBJEXT) plugin_netdev.$(OBJEXT) \
+plugin_meminfo.$(OBJEXT) plugin_netdev.$(OBJEXT) plugin_ppp.$(OBJEXT) \
 plugin_i2c_sensors.$(OBJEXT) plugin_xmms.$(OBJEXT) system.$(OBJEXT) \
 isdn.$(OBJEXT) wifi.$(OBJEXT) mail.$(OBJEXT) seti.$(OBJEXT) \
 battery.$(OBJEXT) dvb.$(OBJEXT) filter.$(OBJEXT) exec.$(OBJEXT) \
@@ -190,11 +190,11 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/mail.P .deps/mail2.P .deps/parport.P .deps/parser.P .deps/pid.P \
 .deps/pixmap.P .deps/plugin.P .deps/plugin_cfg.P .deps/plugin_cpuinfo.P \
 .deps/plugin_i2c_sensors.P .deps/plugin_loadavg.P .deps/plugin_math.P \
-.deps/plugin_meminfo.P .deps/plugin_netdev.P .deps/plugin_proc_stat.P \
-.deps/plugin_string.P .deps/plugin_uname.P .deps/plugin_xmms.P \
-.deps/processor.P .deps/seti.P .deps/socket.P .deps/system.P \
-.deps/timer.P .deps/udelay.P .deps/widget.P .deps/widget_bar.P \
-.deps/widget_icon.P .deps/widget_text.P .deps/wifi.P
+.deps/plugin_meminfo.P .deps/plugin_netdev.P .deps/plugin_ppp.P \
+.deps/plugin_proc_stat.P .deps/plugin_string.P .deps/plugin_uname.P \
+.deps/plugin_xmms.P .deps/processor.P .deps/seti.P .deps/socket.P \
+.deps/system.P .deps/timer.P .deps/udelay.P .deps/widget.P \
+.deps/widget_bar.P .deps/widget_icon.P .deps/widget_text.P .deps/wifi.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

@@ -13,6 +13,7 @@ Display CF631 {
     Driver 'Crystalfontz'
     Model '631'
     Port '/dev/usb/tts/0'
+    Port '/dev/tts/0'
     Speed 115200
 }
 

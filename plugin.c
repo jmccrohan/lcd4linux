@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.14 2004/01/25 05:30:09 reinelt Exp $
+/* $Id: plugin.c,v 1.15 2004/01/27 08:13:39 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.15  2004/01/27 08:13:39  reinelt
+ * ported PPP token to plugin_ppp
+ *
  * Revision 1.14  2004/01/25 05:30:09  reinelt
  * plugin_netdev for parsing /proc/net/dev added
  *
@@ -127,6 +130,7 @@ int plugin_init_proc_stat (void);
 int plugin_init_cpuinfo (void);
 int plugin_init_meminfo (void);
 int plugin_init_netdev (void);
+int plugin_init_ppp (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 
@@ -142,8 +146,8 @@ int plugin_init (void)
   plugin_init_cpuinfo();
   plugin_init_meminfo();
   plugin_init_netdev();
-  // MR: segfaults here
-  // plugin_init_i2c_sensors();
+  plugin_init_ppp();
+  plugin_init_i2c_sensors();
   plugin_init_xmms();
   
   return 0;

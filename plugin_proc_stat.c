@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.11 2004/01/25 05:30:09 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.12 2004/01/27 08:13:39 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.12  2004/01/27 08:13:39  reinelt
+ * ported PPP token to plugin_ppp
+ *
  * Revision 1.11  2004/01/25 05:30:09  reinelt
  * plugin_netdev for parsing /proc/net/dev added
  *
@@ -185,12 +188,12 @@ static void my_proc_stat (RESULT *result, int argc, RESULT *argv[])
 {
   char  *string;
   double number;
-
+  
   if (parse_proc_stat()<0) {
     SetResult(&result, R_STRING, ""); 
     return;
   }
-
+  
   switch (argc) {
   case 1:
     string=hash_get(&Stat, R2S(argv[0]));
