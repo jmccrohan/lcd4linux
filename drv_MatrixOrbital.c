@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.12 2004/01/20 12:45:47 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.13 2004/01/20 14:25:12 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.13  2004/01/20 14:25:12  reinelt
+ * some reorganization
+ * moved drv_generic to drv_generic_serial
+ * moved port locking stuff to drv_generic_serial
+ *
  * Revision 1.12  2004/01/20 12:45:47  reinelt
  * "Default screen" working with MatrixOrbital
  *
@@ -86,20 +91,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 
 #include "debug.h"
 #include "cfg.h"
 #include "plugin.h"
-#include "lock.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_bar.h"
 #include "drv.h"
-#include "drv_generic.h"
+#include "drv_generic_serial.h"
 #include "drv_generic_text.h"
 
 
@@ -182,8 +183,7 @@ static int drv_MO_start (char *section)
 {
   int i;  
   char *model;
-  char *port, buffer[256];
-  speed_t speed;
+  char buffer[256];
   
   model=cfg_get(section, "Model", NULL);
   if (model!=NULL && *model!='\0') {
@@ -202,34 +202,7 @@ static int drv_MO_start (char *section)
   }
   
   
-  port=cfg_get(section, "Port", NULL);
-  if (port==NULL || *port=='\0') {
-    error ("%s: no '%s.Port' entry from %s", Name, section, cfg_source());
-    return -1;
-  }
-  
-  if (cfg_number(section, "Speed", 19200, 1200, 19200, &i)<0) return -1;
-  switch (i) {
-  case 1200:
-    speed=B1200;
-    break;
-  case 2400:
-    speed=B2400;
-    break;
-  case 9600:
-    speed=B9600;
-    break;
-  case 19200:
-    speed=B19200;
-    break;
-  default:
-    error ("%s: unsupported speed '%d' from %s", Name, i, cfg_source());
-    return -1;
-  }    
-  
-  info ("%s: using port '%s' at %d baud", Name, port, i);
-  
-  if (drv_generic_serial_open(Name, port, speed)<0) return -1;
+  if (drv_generic_serial_open(section, Name)<0) return -1;
 
   // read module type
   drv_generic_serial_write ("\3767", 2);

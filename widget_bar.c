@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.3 2004/01/20 12:45:47 reinelt Exp $
+/* $Id: widget_bar.c,v 1.4 2004/01/20 14:25:12 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,11 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.4  2004/01/20 14:25:12  reinelt
+ * some reorganization
+ * moved drv_generic to drv_generic_serial
+ * moved port locking stuff to drv_generic_serial
+ *
  * Revision 1.3  2004/01/20 12:45:47  reinelt
  * "Default screen" working with MatrixOrbital
  *
@@ -140,7 +145,7 @@ int widget_bar_init (WIDGET *Self)
   
   // sanity check
   if (B->expression1==NULL || *B->expression1=='\0') {
-    error ("widget %s has no expression, using '0.0'", Self->name, c);
+    error ("widget %s has no expression, using '0.0'", Self->name);
     B->expression1="0";
   }
   

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.2 2004/01/20 12:45:47 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.3 2004/01/20 14:25:12 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.3  2004/01/20 14:25:12  reinelt
+ * some reorganization
+ * moved drv_generic to drv_generic_serial
+ * moved port locking stuff to drv_generic_serial
+ *
  * Revision 1.2  2004/01/20 12:45:47  reinelt
  * "Default screen" working with MatrixOrbital
  *
@@ -51,12 +56,10 @@
 #include "debug.h"
 #include "cfg.h"
 #include "plugin.h"
-#include "lock.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_bar.h"
 #include "drv.h"
-#include "drv_generic.h"
 #include "drv_generic_text.h"
 
 
