@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.14 2004/05/09 05:41:42 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.14  2004/05/09 05:41:42  reinelt
+ *
+ * i2c fix for kernel 2.6.5 (temp_input1 vs. temp1_input) from Xavier
+ *
  * Revision 1.13  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -173,9 +177,9 @@ static int parse_i2c_sensors_sysfs(char *key)
   // now the formating stuff, depending on the file :
   // Some values must be divided by 1000, the others
   // are parsed directly (we just remove the \n).
-  if (!strncmp(key, "temp_", 5)  ||
-      !strncmp(key, "curr_", 5)  ||
-      !strncmp(key, "in_", 3)    ||
+  if (!strncmp(key, "temp", 4)  ||
+      !strncmp(key, "curr", 4)  ||
+      !strncmp(key, "in", 2)    ||
       !strncmp(key, "vid", 3)) {
     value = strtod(buffer, NULL);
     // FIXME: any way to do this without converting to double ?		  
@@ -332,7 +336,7 @@ void my_i2c_sensors_path(char *method)
     fd2 = opendir(dname);
     done = 0;
     while((file = readdir(fd2))) {
-      if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1")) { // FIXME : do all sensors have a temp_input1 ?
+      if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input") || !strcmp(file->d_name, "temp1")) { // FIXME : do all sensors have a temp_input1 ?
 	path = realloc(path, strlen(dname)+1);
 	strcpy(path, dname);			  
 	done=1;
