@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.25 2001/03/17 11:11:31 ltoetsch Exp $
+/* $Id: processor.c,v 1.26 2001/05/06 10:01:27 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.26  2001/05/06 10:01:27  reinelt
+ *
+ * fixed a bug which prevented extendet tokens to be used for GPO's
+ * many thanks to Carsten Nau!
+ *
  * Revision 1.25  2001/03/17 11:11:31  ltoetsch
  * bugfix: max for BAR_T
  *
@@ -159,7 +164,7 @@
 #define GPOS 16
 
 char *row[ROWS+1];
-char  gpo[GPOS+1];
+int   gpo[GPOS+1];
 int   rows, cols, xres, yres, supported_bars, gpos;
 int   token_usage[256]={0,};
 
