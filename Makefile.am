@@ -30,3 +30,18 @@ MatrixOrbital.c \
 HD44780.c \
 Raster.c \
 XWindow.c
+
+EXTRA_DIST = \
+lcd4linux.conf.sample \
+lcd4kde.conf \
+lcd4linux.kdelnk \
+lcd4linux.xpm \
+lcd4linux.lsm \
+FAQ \
+TODO \
+README.Drivers \
+README.MatrixOrbital \
+README.HD44780 \
+README.X11 \
+README.KDE \
+README.Raster
