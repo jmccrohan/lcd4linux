@@ -55,14 +55,14 @@ AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd=true], [has_gd=false])
 AC_CHECK_HEADERS(usb.h, [has_usb=true], [has_usb=false])
 
 # check for i2c
-AC_CHECK_HEADERS(linux/compiler.h,
-	[AC_CHECK_HEADERS(linux/i2c.h,
-		[AC_CHECK_HEADERS(linux/i2c-dev.h,
-			[has_i2c=true],
-			[has_i2c=false])],
-		[has_i2c=false])]
-	[has_i2c=false]
-)
+AC_CHECK_HEADERS(linux/compiler.h linux/i2c.h linux/i2c-dev.h,[has_i2c=true],[has_i2c=false],[
+#if HAVE_LINUX_COMPILER_H
+#include <linux/compiler.h>
+# endif
+#if HAVE_LINUX_I2C_H
+#include <linux/i2c.h>
+# endif
+])
 
 # drivers
 sinclude(drivers.m4)

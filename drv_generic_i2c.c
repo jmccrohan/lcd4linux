@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.1 2005/03/28 19:39:23 reinelt Exp $
+/* $Id: drv_generic_i2c.c,v 1.2 2005/04/05 05:12:57 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.2  2005/04/05 05:12:57  reinelt
+ * i2c patch from Paul (still does not work here :-(
+ *
  * Revision 1.1  2005/03/28 19:39:23  reinelt
  * HD44780/I2C patch from Luis merged (still does not work for me)
  *
@@ -89,19 +92,22 @@ int drv_generic_i2c_open (const char *section, const char *driver)
 
   udelay_init();
 
-  bus    = cfg_get(section, "Port", NULL);   
-  device = cfg_get(section, "Device", NULL);
+  Section = (char*)section;
+  Driver  = (char*)driver;
+
+  bus    = cfg_get(Section, "Port", NULL);   
+  device = cfg_get(Section, "Device", NULL);
   dev    = atoi(device);
-  info   ("%s: initializing I2C bus %s",driver,bus);
+  info   ("%s: initializing I2C bus %s",Driver,bus);
   info   ("device %d",dev);
   if ((i2c_device = open(bus,O_WRONLY)) < 0) {
-    error("%s: I2C bus %s open failed !\n",driver,bus);
+    error("%s: I2C bus %s open failed !\n",Driver,bus);
     return -1;
   }
   
-  info   ("%s: initializing I2C slave device 0x%x",driver,dev);
+  info   ("%s: initializing I2C slave device 0x%x",Driver,dev);
   if (ioctl(i2c_device,I2C_SLAVE, dev ) < 0) {
-    error("%s: error initializing device 0x%x\n",driver,dev);
+    error("%s: error initializing device 0x%x\n",Driver,dev);
     close(i2c_device);
     return -1;
   }

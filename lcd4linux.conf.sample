@@ -140,7 +140,7 @@ Display LCM-162 {
 
 Display HD44780-I2C {
     Driver 'HD44780'
-    Model 'WRAP1C-PCF8574'
+    Model 'generic'
     Bus 'i2c'
     Port '/dev/i2c-0'
     Device '70'
