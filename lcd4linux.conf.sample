@@ -95,6 +95,12 @@ Display XWindow {
     Halfground '#70c000'
 }
 
+
+Plugin Seti {
+    Directory '/root/setiathome-3.08.i686-pc-linux-gnu'
+}
+
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'

@@ -106,7 +106,7 @@ lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         debug.c       debug.h       drv.c         drv.h         evaluator.c   evaluator.h   hash.c        hash.h        layout.c      layout.h      lock.c 	      lock.h        pid.c         pid.h         timer.c       timer.h       udelay.c      udelay.h      qprintf.c     qprintf.h                                 widget.c      widget.h      widget_text.c widget_text.h widget_bar.c  widget_bar.h  widget_icon.c widget_icon.h                             plugin.c      plugin.h      plugin_math.c               plugin_string.c             plugin_cfg.c                plugin_uname.c              plugin_loadavg.c            plugin_proc_stat.c          plugin_cpuinfo.c            plugin_meminfo.c            plugin_netdev.c             plugin_ppp.c                plugin_dvb.c                plugin_i2c_sensors.c        plugin_imon.c               plugin_xmms.c               plugin_mysql.c
+lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         debug.c       debug.h       drv.c         drv.h         evaluator.c   evaluator.h   hash.c        hash.h        layout.c      layout.h      lock.c 	      lock.h        pid.c         pid.h         timer.c       timer.h       udelay.c      udelay.h      qprintf.c     qprintf.h                                 widget.c      widget.h      widget_text.c widget_text.h widget_bar.c  widget_bar.h  widget_icon.c widget_icon.h                             plugin.c      plugin.h      plugin_math.c               plugin_string.c             plugin_cfg.c                plugin_uname.c              plugin_loadavg.c            plugin_proc_stat.c          plugin_cpuinfo.c            plugin_meminfo.c            plugin_netdev.c             plugin_ppp.c                plugin_dvb.c                plugin_i2c_sensors.c        plugin_imon.c               plugin_xmms.c               plugin_mysql.c              plugin_seti.c
 
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -146,7 +146,7 @@ plugin_uname.$(OBJEXT) plugin_loadavg.$(OBJEXT) \
 plugin_proc_stat.$(OBJEXT) plugin_cpuinfo.$(OBJEXT) \
 plugin_meminfo.$(OBJEXT) plugin_netdev.$(OBJEXT) plugin_ppp.$(OBJEXT) \
 plugin_dvb.$(OBJEXT) plugin_i2c_sensors.$(OBJEXT) plugin_imon.$(OBJEXT) \
-plugin_xmms.$(OBJEXT) plugin_mysql.$(OBJEXT)
+plugin_xmms.$(OBJEXT) plugin_mysql.$(OBJEXT) plugin_seti.$(OBJEXT)
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -174,9 +174,9 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/MilfordInstruments.P \
 .deps/plugin_dvb.P .deps/plugin_i2c_sensors.P .deps/plugin_imon.P \
 .deps/plugin_loadavg.P .deps/plugin_math.P .deps/plugin_meminfo.P \
 .deps/plugin_mysql.P .deps/plugin_netdev.P .deps/plugin_ppp.P \
-.deps/plugin_proc_stat.P .deps/plugin_string.P .deps/plugin_uname.P \
-.deps/plugin_xmms.P .deps/qprintf.P .deps/timer.P .deps/udelay.P \
-.deps/widget.P .deps/widget_bar.P .deps/widget_icon.P \
+.deps/plugin_proc_stat.P .deps/plugin_seti.P .deps/plugin_string.P \
+.deps/plugin_uname.P .deps/plugin_xmms.P .deps/qprintf.P .deps/timer.P \
+.deps/udelay.P .deps/widget.P .deps/widget_bar.P .deps/widget_icon.P \
 .deps/widget_text.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)

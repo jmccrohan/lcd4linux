@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.21 2004/03/10 07:16:15 reinelt Exp $
+/* $Id: plugin.c,v 1.22 2004/03/13 06:49:20 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.22  2004/03/13 06:49:20  reinelt
+ * seti@home plugin ported to NextGeneration
+ *
  * Revision 1.21  2004/03/10 07:16:15  reinelt
  * MySQL plugin from Javier added
  *
@@ -160,6 +163,7 @@ int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 int plugin_init_imon(void);
 int plugin_init_mysql(void);
+int plugin_init_seti(void);
 
 
 void plugin_exit_math (void);
@@ -177,6 +181,7 @@ void plugin_exit_i2c_sensors (void);
 void plugin_exit_xmms (void);
 void plugin_exit_imon(void);
 void plugin_exit_mysql(void);
+void plugin_exit_seti(void);
 
 int plugin_init (void)
 {
@@ -195,6 +200,7 @@ int plugin_init (void)
   plugin_init_xmms();
   plugin_init_imon();
   plugin_init_mysql();
+  plugin_init_seti();
   
   return 0;
 }
@@ -215,6 +221,7 @@ void plugin_exit(void) {
   plugin_exit_xmms();
   plugin_exit_imon();	
   plugin_exit_mysql();	
+  plugin_exit_seti();	
   
   DeleteFunctions();
   DeleteVariables();
