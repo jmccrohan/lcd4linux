@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.36 2004/09/18 10:57:29 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.37 2004/09/18 15:58:57 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.37  2004/09/18 15:58:57  reinelt
+ * even more HD44780 cleanups, hardwiring for LCM-162
+ *
  * Revision 1.36  2004/09/18 10:57:29  reinelt
  * more parport/i2c cleanups
  *
@@ -280,20 +283,21 @@ typedef struct {
 
 #define CAP_PARPORT    (1<<0)
 #define CAP_I2C        (1<<1)
-#define CAP_BRIGHTNESS (1<<2)
-#define CAP_BUSY4BIT   (1<<3)
-#define CAP_HD66712    (1<<4)
-#define CAP_LCM162     (1<<5)
+#define CAP_GPO        (1<<2)
+#define CAP_BRIGHTNESS (1<<3)
+#define CAP_BUSY4BIT   (1<<4)
+#define CAP_HD66712    (1<<5)
+#define CAP_LCM162     (1<<6)
 
 #define BUS_PP  CAP_PARPORT
 #define BUS_I2C CAP_I2C
 
 
 static MODEL Models[] = {
-  { 0x01, "generic",  CAP_PARPORT|CAP_I2C },
-  { 0x02, "Noritake", CAP_PARPORT|CAP_I2C|CAP_BRIGHTNESS },
+  { 0x01, "generic",  CAP_PARPORT|CAP_I2C|CAP_GPO },
+  { 0x02, "Noritake", CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_BRIGHTNESS },
   { 0x03, "Soekris",  CAP_PARPORT|CAP_BUSY4BIT },
-  { 0x04, "HD66712",  CAP_PARPORT|CAP_I2C|CAP_HD66712 },
+  { 0x04, "HD66712",  CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_HD66712 },
   { 0x05, "LCM-162",  CAP_PARPORT|CAP_LCM162 },
   { 0xff, "Unknown",  0 }
 };
@@ -567,6 +571,12 @@ static int drv_HD_PP_load (const char *section)
     error ("%s: bad %s.Bits '%d' from %s, should be '4' or '8'", Name, section, Bits, cfg_source());
     return -1;
   }    
+  
+  /* LCM-162 only supports 8-bit-mode */
+  if (Capabilities & CAP_LCM162 && Bits != 8) {
+    error ("%s: Model '%s' does not support %d bit mode!", Name, Models[Model].name, Bits);
+    Bits = 8;
+  }
   info ("%s: using %d bit mode", Name, Bits);
   
   if (drv_generic_parport_open(section, Name) != 0) {
@@ -574,18 +584,27 @@ static int drv_HD_PP_load (const char *section)
     return -1;
   }
 
-  if (Bits==8) {
-    if ((SIGNAL_RS      = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
-    if ((SIGNAL_RW      = drv_generic_parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
-    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
-    if ((SIGNAL_GPO     = drv_generic_parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
+  /* the LCM-162 is hardwired */
+  if (Capabilities & CAP_LCM162) {
+    if ((SIGNAL_RS      = drv_generic_parport_hardwire_ctrl ("RS",      "SELECT"))==0xff) return -1;
+    if ((SIGNAL_RW      = drv_generic_parport_hardwire_ctrl ("RW",      "INIT"  ))==0xff) return -1;
+    if ((SIGNAL_ENABLE  = drv_generic_parport_hardwire_ctrl ("ENABLE",  "AUTOFD"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = drv_generic_parport_hardwire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
+    if ((SIGNAL_GPO     = drv_generic_parport_hardwire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
   } else {
-    if ((SIGNAL_RS      = drv_generic_parport_wire_data ("RS",      "DB4"))==0xff) return -1;
-    if ((SIGNAL_RW      = drv_generic_parport_wire_data ("RW",      "DB5"))==0xff) return -1;
-    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
-    if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
+    if (Bits==8) {
+      if ((SIGNAL_RS      = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
+      if ((SIGNAL_RW      = drv_generic_parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
+      if ((SIGNAL_ENABLE  = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
+      if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
+      if ((SIGNAL_GPO     = drv_generic_parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
+    } else {
+      if ((SIGNAL_RS      = drv_generic_parport_wire_data ("RS",      "DB4"))==0xff) return -1;
+      if ((SIGNAL_RW      = drv_generic_parport_wire_data ("RW",      "DB5"))==0xff) return -1;
+      if ((SIGNAL_ENABLE  = drv_generic_parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
+      if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
+      if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
+    }
   }
   
   /* clear all signals */
@@ -608,7 +627,7 @@ static int drv_HD_PP_load (const char *section)
     drv_HD_PP_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
     drv_HD_PP_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
     drv_HD_PP_nibble  (allControllers, 0x02); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
-    drv_HD_PP_command (allControllers, 0x28, T_EXEC);	    /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
+    drv_HD_PP_command (allControllers, 0x28, T_EXEC);	       /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
   }
 
   /* maybe use busy-flag from now on  */
@@ -617,7 +636,7 @@ static int drv_HD_PP_load (const char *section)
   
   /* make sure we don't use the busy flag with RW wired to GND */
   if (UseBusy && !SIGNAL_RW)   {
-    error("%s: Busyflag is to be used, but RW is wired to GND", Name);
+    error("%s: busy-flag checking is impossible with RW wired to GND!", Name);
     UseBusy=0;
   }
 
@@ -625,12 +644,17 @@ static int drv_HD_PP_load (const char *section)
   /* at the moment this is inly possible with Martin Hejl's gpio driver, */
   /* which allows to use 4 bits as input and 4 bits as output */
   if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
-    error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
+    error("%s: Model '%s' does not support busy-flag checking in 4 bit mode", Name, Models[Model].name);
     UseBusy=0;
   }
   
-  info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
+  info("%s: %susing busy-flag checking", Name, UseBusy ? "" : "not ");
 
+  /* The LCM-162 should really use BusyFlag checking */
+  if (!UseBusy && (Capabilities & CAP_LCM162))   {
+    error("%s: Model '%s' should definitely use busy-flag checking!", Name, Models[Model].name);
+  }
+  
   return 0;
 }
 
@@ -828,6 +852,7 @@ static int drv_HD_start (const char *section, const int quiet)
     if (model) free (model);
     return -1;
   }
+  free (model);
 
   bus=cfg_get(section, "Bus", "parport");
   if (bus==NULL && *bus=='\0') {
@@ -860,12 +885,10 @@ static int drv_HD_start (const char *section, const int quiet)
 
   /* sanity check: Model can use bus */
   if (!(Capabilities & Bus)) {
-    error ("%s: Model '%s' cannot be used on the %s bus.", Name, model, bus);
-    free (model);
+    error ("%s: Model '%s' cannot be used on the %s bus!", Name, Models[Model].name, bus);
     free (bus);
     return -1;
   }
-  free(model);
   free(bus);
   
   size=cfg_get(section, "Size", NULL);
@@ -884,7 +907,7 @@ static int drv_HD_start (const char *section, const int quiet)
   DCOLS = cols;
   
   if (cfg_number(section, "Controllers", 1, 1, 2, &numControllers)<0) return -1;
-  info ("%s: using display with %d controllers", Name, numControllers);
+  info ("%s: using %d controller(s)", Name, numControllers);
   
   /* current controller */
   currController=1;
@@ -893,8 +916,14 @@ static int drv_HD_start (const char *section, const int quiet)
   allControllers = numControllers==2 ? 3 : 1;
   
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
+  if (gpos > 0 && !(Capabilities & CAP_GPO)) {
+    error ("%s: Model '%s' does not support GPO's!", Name, Models[Model].name);
+    gpos = 0;
+  }
   GPOS  = gpos;
-  info ("%s: controlling %d GPO's", Name, GPOS);
+  if (gpos > 0) {
+    info ("%s: using %d GPO's", Name, GPOS);
+  }
   
   if (drv_HD_load(section) < 0) {
     error ("%s: start display failed!", Name);

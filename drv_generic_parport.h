@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.6 2004/09/18 08:22:59 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.7 2004/09/18 15:58:57 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.7  2004/09/18 15:58:57  reinelt
+ * even more HD44780 cleanups, hardwiring for LCM-162
+ *
  * Revision 1.6  2004/09/18 08:22:59  reinelt
  * drv_generic_parport_status() to read status lines
  *
@@ -64,6 +67,13 @@
  *
  * unsigned char drv_generic_parport_wire_ctrl (char *name, char *deflt)
  *   reads wiring for one control signal from config
+ *   returns DRV_GENERIC_PARPORT_CONTROL_* or 255 on error
+ *
+ * unsigned char drv_generic_parport_hardwire_ctrl (char *name)
+ *   returns hardwiring for one control signal
+ *   same as above, but does not read from config,
+ *   but cheks the config and emits a warning that the config
+ *   entry will be ignored
  *   returns DRV_GENERIC_PARPORT_CONTROL_* or 255 on error
  *
  * unsigned char drv_generic_parport_wire_data (char *name, char *deflt)

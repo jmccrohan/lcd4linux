@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.10 2004/09/18 09:48:29 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.11 2004/09/18 15:58:57 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.11  2004/09/18 15:58:57  reinelt
+ * even more HD44780 cleanups, hardwiring for LCM-162
+ *
  * Revision 1.10  2004/09/18 09:48:29  reinelt
  * HD44780 cleanup and prepararation for I2C backend
  * LCM-162 submodel framework
@@ -251,48 +254,70 @@ int drv_generic_parport_close (void)
 }
 
 
-unsigned char drv_generic_parport_wire_ctrl (const char *name, const char *deflt)
+static unsigned char drv_generic_parport_signal_ctrl (const char *name, const char *signal)
 {
-  unsigned char w;
-  char wire[256];
-  char *s;
-  
-  qprintf(wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (Section, wire, deflt);
-  if (strcasecmp(s,"STROBE")==0) {
-    w=PARPORT_CONTROL_STROBE;
-  } else if(strcasecmp(s,"AUTOFD")==0) {
-    w=PARPORT_CONTROL_AUTOFD;
-  } else if(strcasecmp(s,"INIT")==0) {
-    w=PARPORT_CONTROL_INIT;
-  } else if(strcasecmp(s,"SELECT")==0) {
-    w=PARPORT_CONTROL_SELECT;
-  } else if(strcasecmp(s,"GND")==0) {
-    w=0;
+  unsigned char wire;
+
+  if (strcasecmp(signal,"STROBE") == 0) {
+    wire = PARPORT_CONTROL_STROBE;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", Driver, name);
+  } else if(strcasecmp(signal,"AUTOFD") == 0) {
+    wire = PARPORT_CONTROL_AUTOFD;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", Driver, name);
+  } else if(strcasecmp(signal,"INIT") == 0) {
+    wire = PARPORT_CONTROL_INIT;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", Driver, name);
+  } else if(strcasecmp(signal,"SELECT") == 0) {
+    wire = PARPORT_CONTROL_SELECT;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", Driver, name);
+  } else if(strcasecmp(signal,"GND") == 0) {
+    wire = 0;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
-    error ("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
+    error ("%s: unknown signal <%s> for wire <%s>", Driver, signal, name);
     error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
     return 0xff;
   }
-  free(s);
-
-  if (w&PARPORT_CONTROL_STROBE) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", Driver, name);
-  }
-  if (w&PARPORT_CONTROL_AUTOFD) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", Driver, name);
-  }
-  if (w&PARPORT_CONTROL_INIT) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", Driver, name);
-  }
-  if (w&PARPORT_CONTROL_SELECT) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", Driver, name);
-  }
-  if (w==0) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
-  }
   
-  return w;
+  return wire;
+}
+
+
+unsigned char drv_generic_parport_wire_ctrl (const char *name, const char *deflt)
+{
+  unsigned char wire;
+  char key[256];
+  char *val;
+  
+  qprintf(key, sizeof(key), "Wire.%s", name);
+  val = cfg_get (Section, key, deflt);
+  
+  wire = drv_generic_parport_signal_ctrl (name, val);
+  
+  free (val);
+
+  return wire;
+}
+
+
+unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *signal)
+{
+  unsigned char wire;
+  char key[256];
+  char *val;
+  
+  qprintf(key, sizeof(key), "Wire.%s", name);
+  val = cfg_get (Section, key, "");
+  
+  /* maybe warn the user */
+  if (*val != '\0' && strcasecmp (signal, val) != 0) {
+    error ("%s: ignoring configured signal <%s> for wire <%s>", Driver, val, name);
+  }
+  free (val);
+  
+  wire = drv_generic_parport_signal_ctrl (name, signal);
+  
+  return wire;
 }
 
 
