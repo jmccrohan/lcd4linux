@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.49 2003/10/12 06:08:28 nicowallmeier Exp $
+/* $Id: processor.c,v 1.50 2003/11/11 04:40:20 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.50  2003/11/11 04:40:20  reinelt
+ * WIFI patch from Xavier Vello
+ *
  * Revision 1.49  2003/10/12 06:08:28  nicowallmeier
  * imond/telmond support
  *
@@ -230,6 +233,7 @@
 #include "cfg.h"
 #include "system.h"
 #include "isdn.h"
+#include "wifi.h"
 #include "parser.h"
 #include "display.h"
 #include "bar.h"
@@ -257,6 +261,7 @@ static struct { double user, nice, system, idle; } busy;
 static struct { int read, write, total, max, peak; } disk;
 static struct { int rx, tx, total, max, peak, bytes; } net;
 static struct { int usage, in, out, total, max, peak; } isdn;
+static struct { int signal, link, noise; } wifi;
 static struct { int rx, tx, total, max, peak; } ppp;
 static struct { int perc, stat; double dur; } batt;
 static struct { double perc, cput; } seti;
@@ -336,6 +341,13 @@ static double query (int token)
     return isdn.max;
   case T_ISDN_USED:
     return isdn.usage;
+  
+  case T_WIFI_SIGNAL:
+    return wifi.signal;
+  case T_WIFI_LINK:
+    return wifi.link;
+  case T_WIFI_NOISE:
+    return wifi.noise;  
 
   case T_PPP_RX:
     return ppp.rx;
@@ -430,6 +442,11 @@ static double query_bar (int token)
     return value/isdn.peak;
   case T_ISDN_TOTAL:
     return value/isdn.peak/2.0;
+  
+  case T_WIFI_SIGNAL:
+  case T_WIFI_LINK:
+  case T_WIFI_NOISE:
+	  return value/100;
 
   case T_PPP_RX:
   case T_PPP_TX:
@@ -562,6 +579,13 @@ static void print_token (int token, char **p, char *start)
     else
       *p+=sprintf (*p, " ");
     break;
+	
+  case T_WIFI_SIGNAL:
+  case T_WIFI_LINK:
+  case T_WIFI_NOISE:
+    *p+=sprintf (*p, "%3.0f", query(token));
+    break;
+
 
   case T_SETI_PRC:
     val=100.0*query(token);
@@ -722,6 +746,10 @@ static void collect_data (void)
     isdn.max=isdn.in>isdn.out?isdn.in:isdn.out;
     if (isdn.max>isdn.peak) isdn.peak=isdn.max;
   }
+  
+  if (token_usage[C_WIFI]) {
+    Wifi (&wifi.signal, &wifi.link, &wifi.noise);
+  }  
 
   if (token_usage[C_PPP]) {
     PPP (0, &ppp.rx, &ppp.tx);

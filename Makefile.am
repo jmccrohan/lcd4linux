@@ -21,6 +21,7 @@ evaluator.c evaluator.h \
 client.c client.h \
 system.c system.h \
 isdn.c isdn.h \
+wifi.c wifi.h \
 mail.c mail.h \
 seti.c seti.h \
 battery.c battery.h \

@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.22 2003/10/12 06:08:28 nicowallmeier Exp $
+/* $Id: parser.c,v 1.23 2003/11/11 04:40:20 reinelt Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.23  2003/11/11 04:40:20  reinelt
+ * WIFI patch from Xavier Vello
+ *
  * Revision 1.22  2003/10/12 06:08:28  nicowallmeier
  * imond/telmond support
  *
@@ -180,6 +183,9 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "io", T_ISDN_OUT,   C_ISDN,    1 },
 			  { "it", T_ISDN_TOTAL, C_ISDN,    1 },
 			  { "im", T_ISDN_MAX,   C_ISDN,    1 },
+			  { "ws", T_WIFI_SIGNAL,   C_WIFI,    1 },
+			  { "wl", T_WIFI_LINK, C_WIFI,    1 },
+			  { "wn", T_WIFI_NOISE,   C_WIFI,    1 },			  
 			  { "ti", T_PPP_RX,     C_PPP,     1 },
 			  { "to", T_PPP_TX,     C_PPP,     1 },
 			  { "tt", T_PPP_TOTAL,  C_PPP,     1 },

@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.15 2003/10/12 06:08:28 nicowallmeier Exp $
+/* $Id: parser.h,v 1.16 2003/11/11 04:40:20 reinelt Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.16  2003/11/11 04:40:20  reinelt
+ * WIFI patch from Xavier Vello
+ *
  * Revision 1.15  2003/10/12 06:08:28  nicowallmeier
  * imond/telmond support
  *
@@ -98,6 +101,7 @@ typedef enum {
   T_ETH_RX, T_ETH_TX, T_ETH_TOTAL, T_ETH_MAX,
   T_PPP_RX, T_PPP_TX, T_PPP_TOTAL, T_PPP_MAX,
   T_ISDN_USED, T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
+  T_WIFI_SIGNAL, T_WIFI_LINK, T_WIFI_NOISE,	
   T_SETI_PRC, T_SETI_CPU,
   T_BATT_PERC, T_BATT_STAT, T_BATT_DUR,
   T_DVB_STRENGTH, T_DVB_SNR,
@@ -111,7 +115,7 @@ typedef enum {
 } TOKEN;
 
 typedef enum {
-  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, C_BATT, C_DVB,
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_WIFI, C_SETI, C_BATT, C_DVB,
   C_MAIL, C_SENSOR, C_EXEC, C_IMON, C_TELMON
 } CLASS;
 
