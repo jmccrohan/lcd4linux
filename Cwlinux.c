@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.6 2003/02/24 04:50:57 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.7 2003/05/14 06:17:39 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.7  2003/05/14 06:17:39  reinelt
+ * added support for CW1602
+ *
  * Revision 1.6  2003/02/24 04:50:57  reinelt
  * cwlinux fixes
  *
@@ -62,9 +65,7 @@
 #include "display.h"
 #include "bar.h"
 
-#define XRES 6
-#define YRES 8
-#define CHARS 15
+#define CHARS 8
 
 static LCD Lcd;
 static char *Port = NULL;
@@ -158,12 +159,12 @@ static void CW_Goto(int row, int col)
 }
 
 
-static void CW_define_char (int ascii, char *buffer)
+static void CW12232_define_char (int ascii, char *buffer)
 {
   int i, j;
   char cmd[10]="\376Nn123456\375";
   
-  cmd[2]=(char)ascii+1;
+  cmd[2]=(char)(ascii+1);
   
   // Cwlinux uses a vertical bitmap layout, so
   // we have to kind of 'rotate' the bitmap.
@@ -178,6 +179,22 @@ static void CW_define_char (int ascii, char *buffer)
   }
   CW_write(cmd,10);
 }
+
+
+static void CW1602_define_char (int ascii, char *buffer)
+{
+  int i;
+  char cmd[12]="\376Nn12345678\375";
+
+  cmd[2]=(char)(ascii+1);
+
+  for (i=0; i<8; i++) {
+    cmd[3+i]=buffer[i];
+  }
+  CW_write(cmd,12);
+  sleep(1);  // delay for cw1602 to settle the character defined!
+}
+
 
 int CW_clear(void)
 {
@@ -238,7 +255,7 @@ int CW_init(LCD * Self)
 {
   char *port;
   char *speed;
-  char buffer[16];
+  // char buffer[16];
   
   Lcd = *Self;
 
@@ -294,7 +311,7 @@ int CW_init(LCD * Self)
   CW_write ("\376D\375", 3);
 
   // auto scroll off
-  CW_write ("\376R\375", 3);
+  // CW_write ("\376R\375", 3);
 
   // underline cursor off
   CW_write ("\376K\375", 3);
@@ -305,7 +322,7 @@ int CW_init(LCD * Self)
   // backlight brightness
   CW_Brightness();
 
-  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+  bar_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, CHARS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
     
   return 0;
@@ -336,8 +353,6 @@ int CW_flush(void)
   char *p;
   int c, row, col;
 
-  bar_process(CW_define_char);
-
   for (row = 0; row < Lcd.rows; row++) {
     for (col = 0; col < Lcd.cols; col++) {
       c=bar_peek(row, col);
@@ -361,6 +376,18 @@ int CW_flush(void)
   return 0;
 }
 
+int CW12232_flush(void)
+{
+  bar_process(CW12232_define_char);
+  return CW_flush();
+}
+
+int CW1602_flush(void)
+{
+  bar_process(CW1602_define_char);
+  return CW_flush();
+}
+
 
 int CW_quit(void)
 {
@@ -373,18 +400,33 @@ int CW_quit(void)
 
 LCD Cwlinux[] = {
   {name: "CW12232", 
-   rows:  4, 
-   cols:  20, 
-   xres:  XRES, 
-   yres:  YRES, 
+   rows:  4,
+   cols:  20,
+   xres:  6, 
+   yres:  8,
    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
-   gpos:  0, 
-   init:  CW_init, 
+   gpos:  0,
+   init:  CW_init,
    clear: CW_clear,
-   put:   CW_put, 
-   bar:   CW_bar, 
-   gpo:   NULL, 
-   flush: CW_flush, 
+   put:   CW_put,
+   bar:   CW_bar,
+   gpo:   NULL,
+   flush: CW12232_flush,
+   quit:  CW_quit
+  },
+  {name: "CW1602",
+   rows:  2,
+   cols:  16,
+   xres:  5,
+   yres:  8,
+   bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+   gpos:  0,
+   init:  CW_init,
+   clear: CW_clear,
+   put:   CW_put,
+   bar:   CW_bar,
+   gpo:   NULL,
+   flush: CW1602_flush,
    quit:  CW_quit
   },
   {NULL}
