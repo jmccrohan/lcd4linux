@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: widget_text.c,v 1.12 2004/02/09 19:49:38 nicowallmeier Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.12  2004/02/09 19:49:38  nicowallmeier
+ * Minor bugfix
+ *
  * Revision 1.11  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -224,12 +227,12 @@ void widget_text_update (void *Self)
   } else {
     double number=R2N(&result);
     int width=T->width-strlen(preval)-strlen(postval);
-    if (width<0) width=0;
     int precision=T->precision;
     // print zero bytes so we can specify NULL as target 
     // and get the length of the resulting string
     int size=snprintf (NULL, 0, "%.*f", precision, number);
     // number does not fit into field width: try to reduce precision
+    if (width<0) width=0;
     if (size>width && precision>0) {
       int delta=size-width;
       if (delta>precision) delta=precision;
