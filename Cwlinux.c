@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.3 2002/09/12 05:24:54 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.4 2003/02/22 07:23:24 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.4  2003/02/22 07:23:24  reinelt
+ * Cwlinux fixes
+ *
  * Revision 1.3  2002/09/12 05:24:54  reinelt
  * code cleanup, character defining for bars
  *
@@ -57,27 +60,7 @@
 #define YRES 8
 #define CHARS 7
 
-#define LCD_CMD			254
-#define LCD_CMD_END		253
-#define LCD_INIT_CHINESE_T	56
-#define LCD_INIT_CHINESE_S	55
-#define LCD_LIGHT_ON		66
-#define LCD_LIGHT_OFF		70
-#define LCD_CLEAR		88
-#define LCD_SET_INSERT		71
-#define LCD_INIT_INSERT		72
-#define LCD_SET_BAUD		57
-#define LCD_ENABLE_WRAP		67
-#define LCD_DISABLE_WRAP	68
-#define LCD_SETCHAR		78
-#define LCD_ENABLE_CURSOR	81
-#define LCD_DISABLE_CURSOR	82
-
-#define LCD_LENGTH		20
-
-#define DELAY			20
-#define UPDATE_DELAY		0	/* 1 sec */
-#define SETUP_DELAY		0	/* 2 sec */
+#define DELAY 200
 
 static LCD Lcd;
 static char *Port = NULL;
@@ -86,7 +69,8 @@ static int Device = -1;
 
 static char Txt[4][20];
 
-static int CwLnx_open(void)
+
+static int CW_open(void)
 {
   int fd;
   pid_t pid;
@@ -99,6 +83,7 @@ static int CwLnx_open(void)
       error("Cwlinux: port %s is locked by process %d", Port, pid);
     return -1;
   }
+
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY);
   if (fd == -1) {
     error("Cwlinux: open(%s) failed: %s", Port, strerror(errno));
@@ -111,16 +96,19 @@ static int CwLnx_open(void)
     return -1;
   }
   cfmakeraw(&portset);
+  cfsetispeed(&portset, Speed);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset) == -1) {
     error("Cwlinux: tcsetattr(%s) failed: %s", Port, strerror(errno));
     unlock_port(Port);
     return -1;
   }
+
   return fd;
 }
 
-static void CwLnx_write(char *string, int len)
+
+static void CW_write(char *string, int len)
 {
   if (write (Device, string, len)==-1) {
     if (errno==EAGAIN) {
@@ -129,32 +117,48 @@ static void CwLnx_write(char *string, int len)
     }
     error ("Cwlinux: write(%s) failed: %s", Port, strerror(errno));
   }
-
-  // Fixme: Why?
-  // usleep(DELAY);
+  usleep(DELAY);
 }
 
-static void CwLnx_Goto(int row, int col)
+
+static int CW_read(char *string, int len)
 {
-  char cmd[5];
+  int ret;
   
-  cmd[0]=LCD_CMD;
-  cmd[1]=LCD_SET_INSERT;
+  ret=read (Device, string, len);
+  if (ret<0 && errno==EAGAIN) {
+    usleep(1000);
+    ret=read (Device, string, len);
+  }
+  debug ("read(%s)=%d", string, ret);
+
+  if (ret<0) {
+    error("Cwlinux: read() failed: %s", strerror(errno));
+  }
+
+  usleep(DELAY);
+  
+  return ret;
+}
+
+
+static void CW_Goto(int row, int col)
+{
+  char cmd[5]="\376Gxy\375";
+  
   cmd[2]=(char)col;
   cmd[3]=(char)row;
-  cmd[4]=LCD_CMD_END;
-  
-  CwLnx_write(cmd,5);
+  CW_write(cmd,5);
+  usleep(DELAY);
+
 }
 
-static void CwLnx_define_char (int ascii, char *buffer)
+static void CW_define_char (int ascii, char *buffer)
 {
-  char cmd[10];
   int i, j;
+  char cmd[10]="\376Nn123456\375";
   
-  cmd[0]=LCD_CMD;
-  cmd[1]=LCD_SETCHAR;
-  cmd[2]=(char)ascii;
+  cmd[2]=(char)ascii+1;
   
   // Cwlinux uses a vertical bitmap layout, so
   // we have to kind of 'rotate' the bitmap.
@@ -163,19 +167,18 @@ static void CwLnx_define_char (int ascii, char *buffer)
     cmd[3+i]=0;
     for (j=0; j<8;j++) {
       if (buffer[j] & (1<<(5-i))) {
-	cmd[3+i]|=(1<<j);
+	cmd[3+i]|=(1<<(7-j));
       }
     }
   }
-  cmd[10]=LCD_CMD_END;
-  CwLnx_write(cmd,10);
+  CW_write(cmd,10);
+  usleep(DELAY);
 }
 
-int CwLnx_clear(void)
+int CW_clear(void)
 {
-  char cmd[3];
-  
   int row, col;
+
   for (row = 0; row < Lcd.rows; row++) {
     for (col = 0; col < Lcd.cols; col++) {
       Txt[row][col] = '\t';
@@ -184,20 +187,18 @@ int CwLnx_clear(void)
 
   bar_clear();
 
-  cmd[0]=LCD_CMD;
-  cmd[1]=LCD_CLEAR;
-  cmd[2]=LCD_CMD_END;
-  CwLnx_write(cmd,3);
-  
+  CW_write("\376X\375",3);
+  usleep(1000);
+
   return 0;
 }
 
-int CwLnx_init(LCD * Self)
+int CW_init(LCD * Self)
 {
   char *port;
   char *speed;
-  char  cmd[3];
-
+  char buffer[16];
+  
   Lcd = *Self;
 
   if (Port) {
@@ -215,12 +216,6 @@ int CwLnx_init(LCD * Self)
   speed = cfg_get("Speed") ? : "19200";
 
   switch (atoi(speed)) {
-  case 1200:
-    Speed = B1200;
-    break;
-  case 2400:
-    Speed = B2400;
-    break;
   case 9600:
     Speed = B9600;
     break;
@@ -234,33 +229,46 @@ int CwLnx_init(LCD * Self)
 
   debug("using port %s at %d baud", Port, atoi(speed));
 
-  Device = CwLnx_open();
+  Device = CW_open();
   if (Device == -1)
     return -1;
 
+  // read firmware version
+  CW_read(buffer,sizeof(buffer));
+  CW_write ("\3761\375", 3);
+  if (CW_read(buffer,2)!=2) {
+    info ("unable to read firmware version!");
+  } else {
+    info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
+  }
+  info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
+
+  CW_clear();
+
+  // auto line wrap off
+  CW_write ("\376D\375", 3);
+  usleep(DELAY);
+
+  // auto scroll off
+  CW_write ("\376R\375", 3);
+  usleep(DELAY);
+
+  // underline cursor off
+  CW_write ("\376K\375", 3);
+  usleep(DELAY);
+
+  // backlight on
+  CW_write ("\376B\375", 3);
+  usleep(DELAY);
+
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
-  bar_add_segment(255,255,255,255); // ASCII 255 = block
     
-  CwLnx_clear();
-
-  // turn backlight on
-  cmd[0]=LCD_CMD;
-  cmd[1]=LCD_LIGHT_ON;
-  cmd[2]=LCD_CMD_END;
-  CwLnx_write(cmd,3);
-
-  // Fixme:
-  // enable (disable?) linewrap
-  cmd[0]=LCD_CMD;
-  cmd[1]=LCD_ENABLE_WRAP;
-  cmd[2]=LCD_CMD_END;
-  CwLnx_write(cmd,3);
-
   return 0;
 }
 
-int CwLnx_put(int row, int col, char *text)
+
+int CW_put(int row, int col, char *text)
 {
   char *p = &Txt[row][col];
   char *t = text;
@@ -271,48 +279,54 @@ int CwLnx_put(int row, int col, char *text)
   return 0;
 }
 
-int CwLnx_bar(int type, int row, int col, int max, int len1, int len2)
+
+int CW_bar(int type, int row, int col, int max, int len1, int len2)
 {
   return bar_draw (type, row, col, max, len1, len2);
 }
 
-int CwLnx_flush(void)
+
+int CW_flush(void)
 {
   char buffer[256];
   char *p;
   int c, row, col;
 
-  bar_process(CwLnx_define_char);
+  bar_process(CW_define_char);
 
   for (row = 0; row < Lcd.rows; row++) {
     for (col = 0; col < Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
+	if (c!=32) c++; //blank
 	Txt[row][col]=(char)c;
       }
     }
     for (col = 0; col < Lcd.cols; col++) {
       if (Txt[row][col] == '\t')
 	continue;
-      CwLnx_Goto(row, col);
+      CW_Goto(row, col);
+      usleep(DELAY);
       for (p = buffer; col < Lcd.cols; col++, p++) {
 	if (Txt[row][col] == '\t')
 	  break;
 	*p = Txt[row][col];
       }
-      CwLnx_write(buffer, p - buffer);
+      CW_write(buffer, p - buffer);
     }
   }
   return 0;
 }
 
-int CwLnx_quit(void)
+
+int CW_quit(void)
 {
   debug("closing port %s", Port);
   close(Device);
   unlock_port(Port);
   return (0);
 }
+
 
 LCD Cwlinux[] = {
   {name: "CW12232", 
@@ -322,13 +336,13 @@ LCD Cwlinux[] = {
    yres:  YRES, 
    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
    gpos:  0, 
-   init:  CwLnx_init, 
-   clear: CwLnx_clear,
-   put:   CwLnx_put, 
-   bar:   CwLnx_bar, 
+   init:  CW_init, 
+   clear: CW_clear,
+   put:   CW_put, 
+   bar:   CW_bar, 
    gpo:   NULL, 
-   flush: CwLnx_flush, 
-   quit:  CwLnx_quit
+   flush: CW_flush, 
+   quit:  CW_quit
   },
   {NULL}
 };
