@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.26 2001/05/06 10:01:27 reinelt Exp $
+/* $Id: processor.c,v 1.27 2002/08/19 04:41:20 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.27  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.26  2001/05/06 10:01:27  reinelt
  *
  * fixed a bug which prevented extendet tokens to be used for GPO's
@@ -154,6 +157,7 @@
 #include "isdn.h"
 #include "parser.h"
 #include "display.h"
+#include "bar.h"
 #include "processor.h"
 #include "mail.h"
 #include "battery.h"

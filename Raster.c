@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.19 2001/09/10 13:55:53 reinelt Exp $
+/* $Id: Raster.c,v 1.20 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.20  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.19  2001/09/10 13:55:53  reinelt
  * M50530 driver
  *
@@ -138,6 +141,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 #include "pixmap.h"
 
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T )

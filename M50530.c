@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.2 2002/04/30 07:20:15 reinelt Exp $
+/* $Id: M50530.c,v 1.3 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.3  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.2  2002/04/30 07:20:15  reinelt
  *
  * implemented the new ndelay(nanoseconds) in all parallel port drivers
@@ -61,6 +64,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 #include "udelay.h"
 
 #define XRES 5

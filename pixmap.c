@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.9 2001/05/27 07:19:28 reinelt Exp $
+/* $Id: pixmap.c,v 1.10 2002/08/19 04:41:20 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.10  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.9  2001/05/27 07:19:28  reinelt
  *
  * fixed a warning in pixmap.c
@@ -88,6 +91,7 @@
 #include <time.h>
 
 #include "display.h"
+#include "bar.h"
 #include "pixmap.h"
 #include "fontmap.h"
 #include "debug.h"

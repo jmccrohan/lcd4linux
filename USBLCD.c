@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.3 2002/08/18 08:11:11 reinelt Exp $
+/* $Id: USBLCD.c,v 1.4 2002/08/19 04:41:20 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.4  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.3  2002/08/18 08:11:11  reinelt
  * USBLCD buffered I/O
  *
@@ -62,6 +65,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 #include "udelay.h"
 
 #define GET_HARD_VERSION	1

@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.6 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.7 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.7  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.6  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -73,6 +76,7 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
+#include "bar.h"
 #include "pixmap.h"
 
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T)

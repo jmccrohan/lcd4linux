@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.22 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.23 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.23  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.22  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -139,6 +142,7 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
+#include "bar.h"
 
 #define XRES 5
 #define YRES 8

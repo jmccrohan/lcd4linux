@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.22 2002/08/17 14:14:21 reinelt Exp $
+/* $Id: HD44780.c,v 1.23 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.23  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.22  2002/08/17 14:14:21  reinelt
  *
  * USBLCD fixes
@@ -168,6 +171,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 #include "udelay.h"
 
 #define XRES 5

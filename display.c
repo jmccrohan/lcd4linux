@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.31 2002/08/17 13:10:23 reinelt Exp $
+/* $Id: display.c,v 1.32 2002/08/19 04:41:20 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.32  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.31  2002/08/17 13:10:23  reinelt
  * USBLCD driver added
  *
@@ -191,6 +194,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 
 extern LCD BeckmannEgle[];
 extern LCD Crystalfontz[];

@@ -26,6 +26,7 @@ filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
+bar.c bar.h \
 fontmap.c fontmap.h \
 exec.c exec.h \
 mail2.c \

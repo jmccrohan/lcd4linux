@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.2 2002/08/17 12:54:08 reinelt Exp $
+/* $Id: T6963.c,v 1.3 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.3  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.2  2002/08/17 12:54:08  reinelt
  * minor T6963 changes
  *
@@ -62,6 +65,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 #include "udelay.h"
 #include "pixmap.h"
 

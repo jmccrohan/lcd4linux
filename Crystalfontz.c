@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.7 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.8 2002/08/19 04:41:20 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.8  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.7  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -59,6 +62,7 @@
 #include	"cfg.h"
 #include	"lock.h"
 #include	"display.h"
+#include	"bar.h"
 #include	"Crystalfontz.h"
 
 #define XRES	6

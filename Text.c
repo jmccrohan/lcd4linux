@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.4 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: Text.c,v 1.5 2002/08/19 04:41:20 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.5  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.4  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -75,6 +78,8 @@ int main(int argc, char *argv[])
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
+
 extern int foreground;
 
 static LCD Lcd;

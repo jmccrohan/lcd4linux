@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.16 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: parser.c,v 1.17 2002/08/19 04:41:20 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.17  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.16  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -114,6 +117,7 @@
 
 #include "debug.h"
 #include "display.h"
+#include "bar.h"
 #include "parser.h"
 
 typedef struct {

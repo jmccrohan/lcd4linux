@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.26 2001/08/05 17:13:29 reinelt Exp $
+/* $Id: XWindow.c,v 1.27 2002/08/19 04:41:20 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.27  2002/08/19 04:41:20  reinelt
+ * introduced bar.c, moved bar stuff from display.h to bar.h
+ *
  * Revision 1.26  2001/08/05 17:13:29  reinelt
  *
  * cleaned up inlude of sys/time.h and time.h
@@ -143,6 +146,7 @@
 #include        "debug.h"
 #include	"cfg.h"
 #include	"display.h"
+#include        "bar.h"
 #include	"pixmap.h"
 
 /* glibc 2.1 requires defining semun ourselves */
