@@ -82,3 +82,8 @@ follow any scheme on most displays)
 // 2001-03-15 Leopold Toetsch <lt@toetsch.at>
 // Text display has troubles with '\r'
 // done 2001-03-16, replace \r,\n with '_'  -lt
+
+2001-03-24 Carsten Nau <info@cnau.de>
+change network clients to support different devices
+at the moment the sum of all eth* devices is calculated
+%n* should be extended tokens
