@@ -1,3 +1,23 @@
+2004-01-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, README.Plugins, evaluator.c, plugin.c, plugin_sample.c:
+	Evaluator: functions with variable argument lists
+	Evaluator: plugin_sample.c and README.Plugins added
+
+	* plugin.c, evaluator.c: Evaluator rearrangements...
+
+2004-01-05  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, expr.c, expr.h, parser.c, parser.h, processor.c:
+	added %y tokens to make the Evaluator useable
+
+2004-01-02  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* debian/changelog, debian/compat, debian/config, debian/control, debian/copyright, debian/dirs, debian/docs, debian/init.d, debian/rules, debian/templates:
+	debianization added
+
+	* ChangeLog, TODO: Changelog, TODO updated
+
 2003-12-19  Michael Reinelt  <reinelt@merlin.ethnet>
 
 	* Makefile.am, Makefile.in, plugin.c, plugin_xmms.c:
