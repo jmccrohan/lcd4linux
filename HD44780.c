@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.19 2001/03/15 15:49:22 ltoetsch Exp $
+/* $Id: HD44780.c,v 1.20 2001/09/09 12:26:03 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.20  2001/09/09 12:26:03  reinelt
+ * GPO bug: INIT is _not_ inverted
+ *
  * Revision 1.19  2001/03/15 15:49:22  ltoetsch
  * fixed compile HD44780.c, cosmetics
  *
@@ -199,15 +202,15 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 #ifdef WITH_PPDEV
-static void HD_toggle (int bit)
+static void HD_toggle (int bit, int inv)
 {
   struct ppdev_frob_struct frob;
 
   frob.mask=bit;
-  frob.val=0; // rise (inverted!)
+  frob.val=inv?0:bit; // rise
   ioctl (PPfd, PPFCONTROL, &frob);
   udelay(1);
-  frob.val=bit; // lower (inverted!)
+  frob.val=inv?bit:0; // lower
   ioctl (PPfd, PPFCONTROL, &frob);
 }
 #endif
@@ -228,7 +231,7 @@ static void HD_command (unsigned char cmd, int delay)
     ioctl(PPfd, PPWDATA, &cmd);
     
     // send command
-    HD_toggle(PARPORT_CONTROL_STROBE);
+    HD_toggle(PARPORT_CONTROL_STROBE, 1);
     
     // wait
     udelay(delay);
@@ -266,7 +269,7 @@ static void HD_write (char *string, int len, int delay)
       
       udelay(1);
       // send command
-      HD_toggle(PARPORT_CONTROL_STROBE);
+      HD_toggle(PARPORT_CONTROL_STROBE, 1);
 
       // wait
       udelay(delay);
@@ -293,14 +296,15 @@ static void HD_setGPO (int bits)
 
 #ifdef WITH_PPDEV
 
-    if (PPdev) {
 
+    if (PPdev) {
+      
       // put data on DB1..DB8
       ioctl(PPfd, PPWDATA, &bits);
-      
-      // toggle INIT
-      HD_toggle(PARPORT_CONTROL_INIT);
 
+      // toggle INIT
+      HD_toggle(PARPORT_CONTROL_INIT, 0);
+      
     } else
       
 #endif
