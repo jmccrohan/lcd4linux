@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.18 2004/02/10 07:42:35 reinelt Exp $
+/* $Id: plugin.c,v 1.19 2004/02/18 14:45:42 nicowallmeier Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.19  2004/02/18 14:45:42  nicowallmeier
+ * Imon/Telmon plugin ported
+ *
  * Revision 1.18  2004/02/10 07:42:35  reinelt
  * cut off all old-style files which are no longer used with NextGeneration
  *
@@ -145,6 +148,7 @@ int plugin_init_ppp (void);
 int plugin_init_dvb (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
+int plugin_init_imon(void);
 
 
 int plugin_init (void)
@@ -162,6 +166,7 @@ int plugin_init (void)
   plugin_init_dvb();
   plugin_init_i2c_sensors();
   plugin_init_xmms();
+  plugin_init_imon();
   
   return 0;
 }

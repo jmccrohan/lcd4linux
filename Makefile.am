@@ -46,6 +46,7 @@ plugin_netdev.c             \
 plugin_ppp.c                \
 plugin_dvb.c                \
 plugin_i2c_sensors.c        \
+plugin_imon.c               \
 plugin_xmms.c               
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
