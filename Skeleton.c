@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.8 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: Skeleton.c,v 1.9 2003/08/17 08:25:30 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.9  2003/08/17 08:25:30  reinelt
+ * preparations for liblcd4linux; minor bugs in SIN.c and Skeleton.c
+ *
  * Revision 1.8  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -71,6 +74,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "bar.h"
 
 static LCD Lcd;
 
@@ -86,7 +90,7 @@ int Skel_init (LCD *Self)
   error ("Skeleton: This driver does not drive anything!");
   return -1;
 
-  Skel_clear();
+  Skel_clear(1);
   return 0;
 }
 

@@ -4,6 +4,7 @@ AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
+noinst_LIBRARIES = liblcd4linux.a
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
@@ -35,6 +36,23 @@ mail2.c \
 socket.c socket.h
 
 EXTRA_lcd4linux_SOURCES= \
+parport.c parport.h \
+BeckmannEgle.c \
+Crystalfontz.c \
+Cwlinux.c \
+HD44780.c \
+M50530.c \
+T6963.c \
+USBLCD.c \
+MatrixOrbital.c \
+PalmPilot.c \
+Raster.c \
+SIN.c \
+Skeleton.c \
+XWindow.c \
+Text.c
+
+liblcd4linux_a_SOURCES = \
 parport.c parport.h \
 BeckmannEgle.c \
 Crystalfontz.c \

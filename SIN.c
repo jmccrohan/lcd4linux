@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: SIN.c,v 1.10 2003/08/17 08:25:30 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.10  2003/08/17 08:25:30  reinelt
+ * preparations for liblcd4linux; minor bugs in SIN.c and Skeleton.c
+ *
  * Revision 1.9  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -79,6 +82,7 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
+#include "bar.h"
 
 // FIXME: 6x8
 #define XRES 1
@@ -201,7 +205,7 @@ int SIN_init (LCD *Self)
   // Fixme: should we read the identifier here....
   SIN_write ("\033S0", 3); // select screen #0
   sleep (1); // FIXME: handshaking
-  SIN_clear();
+  SIN_clear(1);
 
   return 0;
 }
