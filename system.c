@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.17 2000/10/08 09:16:40 reinelt Exp $
+/* $Id: system.c,v 1.18 2000/11/17 10:36:23 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.18  2000/11/17 10:36:23  reinelt
+ *
+ * fixed parsing of /proc/net/dev for 2.0 kernels
+ *
  * Revision 1.17  2000/10/08 09:16:40  reinelt
  *
  *
@@ -638,7 +642,7 @@ int Net (int *rx, int *tx, int *bytes)
       pkg_rx+=v[0];
       pkg_tx+=v[8];
       *bytes=1;
-    } else if (n==11) {
+    } else if (n==12) {
       pkg_rx+=v[0];
       pkg_tx+=v[5];
       *bytes=0;
