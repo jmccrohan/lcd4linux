@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.24 2002/08/19 07:36:29 reinelt Exp $
+/* $Id: HD44780.c,v 1.25 2002/08/19 09:11:34 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.25  2002/08/19 09:11:34  reinelt
+ * changed HD44780 to use generic bar functions
+ *
  * Revision 1.24  2002/08/19 07:36:29  reinelt
  *
  * finished bar.c, USBLCD is the first driver that uses the generic bar functions
@@ -181,7 +184,6 @@
 #define XRES 5
 #define YRES 8
 #define CHARS 8
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 static LCD Lcd;
 
@@ -191,16 +193,11 @@ static unsigned short Port=0;
 static char *PPdev=NULL;
 
 #ifdef WITH_PPDEV
-static int   PPfd=-1;
+static int PPfd=-1;
 #endif
 
 static char Txt[4][40];
-static BAR  Bar[4][40];
 static int  GPO=0;
-
-static int nSegment=2;
-static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
-			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 #ifdef WITH_PPDEV
 static void HD_toggle (int bit, int inv, int delay)
@@ -338,6 +335,7 @@ static void HD_setGPO (int bits)
   }
 }
 
+
 static int HD_open (void)
 {
 #ifdef WITH_PPDEV
@@ -385,172 +383,13 @@ static int HD_open (void)
   return 0;
 }
 
-static void HD_process_bars (void)
+
+static void HD_define_char (int ascii, char *buffer)
 {
-  int row, col;
-  int i, j;
-  
-  for (i=2; i<nSegment && Segment[i].used; i++);
-  for (j=i+1; j<nSegment; j++) {
-    if (Segment[j].used)
-      Segment[i++]=Segment[j];
-  }
-  nSegment=i;
-  
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      if (Bar[row][col].type==0) continue;
-      for (i=0; i<nSegment; i++) {
-	if (Segment[i].type & Bar[row][col].type &&
-	    Segment[i].len1== Bar[row][col].len1 &&
-	    Segment[i].len2== Bar[row][col].len2) break;
-      }
-      if (i==nSegment) {
-	nSegment++;
-	Segment[i].len1=Bar[row][col].len1;
-	Segment[i].len2=Bar[row][col].len2;
-	Segment[i].type=Bar[row][col].type;
-	Segment[i].used=0;
-	Segment[i].ascii=-1;
-      }
-      Bar[row][col].segment=i;
-    }
-  }
+  HD_command (0x40|8*ascii, 40);
+  HD_write (buffer, 8, 120); // 120 usec delay for CG RAM write
 }
 
-static int HD_segment_diff (int i, int j)
-{
-  int RES;
-  int i1, i2, j1, j2;
-  
-  if (i==j) return 65535;
-  if (!(Segment[i].type & Segment[j].type)) return 65535;
-  if (Segment[i].len1==0 && Segment[j].len1!=0) return 65535;
-  if (Segment[i].len2==0 && Segment[j].len2!=0) return 65535;
-  RES=Segment[i].type & BAR_H ? XRES:YRES;
-  if (Segment[i].len1>=RES && Segment[j].len1<RES) return 65535;
-  if (Segment[i].len2>=RES && Segment[j].len2<RES) return 65535;
-  if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) return 65535;
-
-  i1=Segment[i].len1; if (i1>RES) i1=RES;
-  i2=Segment[i].len2; if (i2>RES) i2=RES;
-  j1=Segment[j].len1; if (j1>RES) i1=RES;
-  j2=Segment[j].len2; if (j2>RES) i2=RES;
-  
-  return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
-}
-
-static void HD_compact_bars (void)
-{
-  int i, j, r, c, min;
-  int pack_i, pack_j;
-  int pass1=1;
-  int deviation[nSegment][nSegment];
-  
-  if (nSegment>CHARS+2) {
-
-    for (i=2; i<nSegment; i++) {
-      for (j=0; j<nSegment; j++) {
-	deviation[i][j]=HD_segment_diff(i,j);
-      }
-    }
-    
-    while (nSegment>CHARS+2) {
-      min=65535;
-      pack_i=-1;
-      pack_j=-1;
-      for (i=2; i<nSegment; i++) {
-	if (pass1 && Segment[i].used) continue;
-	for (j=0; j<nSegment; j++) {
-	  if (deviation[i][j]<min) {
-	    min=deviation[i][j];
-	    pack_i=i;
-	    pack_j=j;
-	  }
-	}
-      }
-      if (pack_i==-1) {
-	if (pass1) {
-	  pass1=0;
-	  continue;
-	} else {
-	  error ("HD44780: unable to compact bar characters");
-	  nSegment=CHARS;
-	  break;
-	}
-      } 
-      
-      nSegment--;
-      Segment[pack_i]=Segment[nSegment];
-      
-      for (i=0; i<nSegment; i++) {
-	deviation[pack_i][i]=deviation[nSegment][i];
-	deviation[i][pack_i]=deviation[i][nSegment];
-      }
-      
-      for (r=0; r<Lcd.rows; r++) {
-	for (c=0; c<Lcd.cols; c++) {
-	  if (Bar[r][c].segment==pack_i)
-	    Bar[r][c].segment=pack_j;
-	  if (Bar[r][c].segment==nSegment)
-	    Bar[r][c].segment=pack_i;
-	}
-      }
-    }
-  }
-}
-
-static void HD_define_chars (void)
-{
-  int c, i, j;
-  char buffer[8];
-
-  for (i=2; i<nSegment; i++) {
-    if (Segment[i].used) continue;
-    if (Segment[i].ascii!=-1) continue;
-    for (c=0; c<CHARS; c++) {
-      for (j=2; j<nSegment; j++) {
-	if (Segment[j].ascii==c) break;
-      }
-      if (j==nSegment) break;
-    }
-    Segment[i].ascii=c;
-    switch (Segment[i].type) {
-    case BAR_L:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
-	buffer[j]=Pixel[Segment[i].len1];
-	buffer[j+4]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_R:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
-	buffer[j]=Pixel[Segment[i].len1];
-	buffer[j+4]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_U:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[7-j]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[7-j]=0;
-      }
-      break;
-    case BAR_D:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[j]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[j]=0;
-      }
-      break;
-    }
-    HD_command (0x40|8*c, 40);
-    HD_write (buffer, 8, 120); // 120 usec delay for CG RAM write
-  }
-}
 
 int HD_clear (void)
 {
@@ -559,17 +398,17 @@ int HD_clear (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       Txt[row][col]='\t';
-      Bar[row][col].len1=-1;
-      Bar[row][col].len2=-1;
-      Bar[row][col].type=0;
-      Bar[row][col].segment=-1;
     }
   }
+
+  bar_clear();
+
   GPO=0;
   HD_setGPO (GPO);         // All GPO's off
   HD_command (0x01, 1640); // clear display
   return 0;
 }
+
 
 int HD_init (LCD *Self)
 {
@@ -635,10 +474,15 @@ int HD_init (LCD *Self)
   if (HD_open()!=0)
     return -1;
   
+  bar_init(rows, cols, XRES, YRES, CHARS);
+  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+  bar_add_segment(255,255,255,255); // ASCII 255 = block
+  
   HD_clear();
   
   return 0;
 }
+
 
 void HD_goto (int row, int col)
 {
@@ -647,6 +491,7 @@ void HD_goto (int row, int col)
   pos=(row%2)*64+(row/2)*20+col;
   HD_command (0x80|pos, 40);
 }
+
 
 int HD_put (int row, int col, char *text)
 {
@@ -659,76 +504,12 @@ int HD_put (int row, int col, char *text)
   return 0;
 }
 
+
 int HD_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  int rev=0;
-  
-  if (len1<1) len1=1;
-  else if (len1>max) len1=max;
-  
-  if (len2<1) len2=1;
-  else if (len2>max) len2=max;
-  
-  switch (type) {
-  case BAR_L:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_R:
-    while (max>0 && col<=Lcd.cols) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=XRES) {
-	Bar[row][col].len1=rev?0:XRES;
-	len1-=XRES;
-      } else {
-	Bar[row][col].len1=rev?XRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=XRES) {
-	Bar[row][col].len2=rev?0:XRES;
-	len2-=XRES;
-      } else {
-	Bar[row][col].len2=rev?XRES-len2:len2;
-	len2=0;
-      }
-      max-=XRES;
-      col++;
-    }
-    break;
-
-  case BAR_U:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_D:
-    while (max>0 && row<=Lcd.rows) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=YRES) {
-	Bar[row][col].len1=rev?0:YRES;
-	len1-=YRES;
-      } else {
-	Bar[row][col].len1=rev?YRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=YRES) {
-	Bar[row][col].len2=rev?0:YRES;
-	len2-=YRES;
-      } else {
-	Bar[row][col].len2=rev?YRES-len2:len2;
-	len2=0;
-      }
-      max-=YRES;
-      row++;
-    }
-    break;
-
-  }
-  return 0;
+  return bar_draw (type, row, col, max, len1, len2);
 }
+
 
 int HD_gpo (int num, int val)
 {
@@ -743,26 +524,20 @@ int HD_gpo (int num, int val)
   return 0;
 }
 
+
 int HD_flush (void)
 {
   char buffer[256];
   char *p;
-  int s, row, col;
+  int c, row, col;
   
-  HD_process_bars();
-  HD_compact_bars();
-  HD_define_chars();
-  
-  for (s=0; s<nSegment; s++) {
-    Segment[s].used=0;
-  }
+  bar_process(HD_define_char);
 
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
-      s=Bar[row][col].segment;
-      if (s!=-1) {
-	Segment[s].used=1;
-	Txt[row][col]=Segment[s].ascii;
+      c=bar_peek(row, col);
+      if (c!=-1) {
+	Txt[row][col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
@@ -780,6 +555,7 @@ int HD_flush (void)
 
   return 0;
 }
+
 
 int HD_quit (void)
 {
@@ -805,7 +581,22 @@ int HD_quit (void)
   return 0;
 }
 
+
 LCD HD44780[] = {
-  { "HD44780",0,0,XRES,YRES,BARS,0,HD_init,HD_clear,HD_put,HD_bar,HD_gpo,HD_flush,HD_quit },
+  { name: "HD44780",
+    rows:  0,
+    cols:  0,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  HD_init,
+    clear: HD_clear,
+    put:   HD_put,
+    bar:   HD_bar,
+    gpo:   HD_gpo,
+    flush: HD_flush,
+    quit:  HD_quit 
+  },
   { NULL }
 };
