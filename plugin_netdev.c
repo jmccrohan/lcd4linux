@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.9 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.10 2004/06/17 10:58:58 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.10  2004/06/17 10:58:58  reinelt
+ *
+ * changed plugin_netdev to use the new fast hash model
+ *
  * Revision 1.9  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -88,86 +92,82 @@
 
 
 static HASH NetDev;
-static FILE *stream = NULL;
-
-// Fixme: use new & fast hash code!!!
-
-static void hash_put3 (char *key1, char *key2, char *key3, char *val) 
-{
-  char key[32];
-  
-  qprintf(key, sizeof(key), "%s.%s.%s", key1, key2, key3);
-  hash_put_delta (&NetDev, key, val);
-}
-
+static FILE *Stream = NULL;
+static char *DELIMITER = " :|\t\n";
 
 static int parse_netdev (void)
 {
   int age;
-  int line;
-  int  RxTx=0; // position of Receive/Transmit switch
+  int row, col;
+  static int first_time = 1;
   
   // reread every 10 msec only
-  age=hash_age(&NetDev, NULL);
-  if (age>0 && age<=10) return 0;
+  age = hash_age(&NetDev, NULL);
+  if (age > 0 && age <= 10) return 0;
   
-  if (stream==NULL) stream=fopen("/proc/net/dev", "r");
-  if (stream==NULL) {
+  if (Stream == NULL) Stream = fopen("/proc/net/dev", "r");
+  if (Stream == NULL) {
     error ("fopen(/proc/net/dev) failed: %s", strerror(errno));
     return -1;
   }
 
-  rewind(stream);    
-  line=0;
+  rewind(Stream);    
+  row = 0;
   
-  while (!feof(stream)) {
+  while (!feof(Stream)) {
     char buffer[256];
-    char header[256], *h, *t;
-    char *head[64];
-    char delim[]=" :|\t\n";
-    int  col;
+    char dev[16];
+    char *beg, *end;
+    int len;
     
-    if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
-
-    // skip line 1
-    if (++line<2) continue;
-
-    // line 2 used for headers
-    if (line==2) {
-      strncpy(header, buffer, sizeof(header));
-      RxTx=(strrchr(header, '|') - header);
-      col=0;
-      h=header;
-      while (h!=NULL) {
-	while (strchr(delim, *h)) h++;
-	if ((t=strpbrk(h, delim))!=NULL) *t='\0';
-	head[col++]=h;
-	h=t?t+1:NULL;
-      }
-    } else {
-      char *h, *iface=NULL;
-      col=0;
-      h=buffer;
-      while (h!=NULL) {
-	while (strchr(delim, *h)) h++;
-	if ((t=strpbrk(h, delim))!=NULL) *t='\0';
-	if (col==0) {
-	  iface=h;
-	} else {
-	  hash_put3 (iface, (h-buffer) < RxTx ? "Rx" : "Tx", head[col], h);
+    if (fgets (buffer, sizeof(buffer), Stream) == NULL) break;
+    
+    switch (++row) {
+      
+    case 1:
+      // skip row 1
+      continue;
+      
+    case 2:
+      // row 2 used for headers
+      if (first_time) {
+	char *RxTx = strrchr(buffer, '|');
+	first_time = 0;
+	col = 0;
+	beg = buffer;
+	while (beg) {
+	  char key[32];
+	  
+	  while (strchr(DELIMITER, *beg)) beg++;
+	  if ((end = strpbrk(beg, DELIMITER)) != NULL) *end = '\0';
+	  qprintf(key, sizeof(key), "%s_%s", beg < RxTx ? "Rx" : "Tx", beg);
+	  hash_set_column (&NetDev, col++, key);
+	  beg = end ? end + 1 : NULL;
 	}
-	h=t?t+1:NULL;
-	col++;
       }
+      continue;
+
+    default:
+      // fetch interface name (1st column) as key
+      beg = buffer;
+      while (*beg && *beg == ' ') beg++;
+      end = beg + 1;
+      while (*end && *end != ':') end++;
+      len = end - beg;
+      if (len >= sizeof(dev)) len = sizeof(dev)-1;
+      strncpy (dev, beg, len);
+      dev[len] = '\0';
+      
+      hash_put_delta (&NetDev, dev, buffer); 
     }
   }
   
   return 0;
 }  
 
-static void my_netdev (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void my_netdev (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
 {
-  char *key;
+  char *dev, *key;
   int delay;
   double value;
   
@@ -176,17 +176,18 @@ static void my_netdev (RESULT *result, RESULT *arg1, RESULT *arg2)
     return;
   }
 
-  key   = R2S(arg1);
-  delay = R2N(arg2);
+  dev   = R2S(arg1);
+  key   = R2S(arg2);
+  delay = R2N(arg3);
   
-  value  = hash_get_regex(&NetDev, key, NULL, delay);
+  value  = hash_get_regex(&NetDev, dev, key, delay);
   
   SetResult(&result, R_NUMBER, &value); 
 }
 
-static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2)
+static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
 {
-  char *key;
+  char *dev, *key;
   int delay;
   double value;
   
@@ -195,10 +196,11 @@ static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2)
     return;
   }
 
-  key   = R2S(arg1);
-  delay = R2N(arg2);
+  dev   = R2S(arg1);
+  key   = R2S(arg2);
+  delay = R2N(arg3);
   
-  value  = hash_get_delta(&NetDev, key, NULL, delay);
+  value  = hash_get_delta(&NetDev, dev, key, delay);
   
   SetResult(&result, R_NUMBER, &value); 
 }
@@ -207,16 +209,18 @@ static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2)
 int plugin_init_netdev (void)
 {
   hash_create(&NetDev);
-  AddFunction ("netdev",       2, my_netdev);
-  AddFunction ("netdev::fast", 2, my_netdev_fast);
+  hash_set_delimiter (&NetDev, " :|\t\n");
+
+  AddFunction ("netdev",       3, my_netdev);
+  AddFunction ("netdev::fast", 3, my_netdev_fast);
   return 0;
 }
 
 void plugin_exit_netdev(void) 
 {
-  if(stream!=NULL) {
-    fclose (stream);
-    stream=NULL;
+  if(Stream!=NULL) {
+    fclose (Stream);
+    Stream=NULL;
   }
   hash_destroy(&NetDev);
 }

@@ -256,7 +256,7 @@ Widget DiskBar {
 
 Widget Eth0 {
     class 'Text'
-    expression (netdev('eth0.Rx.bytes', 500)+netdev('eth0.Tx.bytes', 500))/1024
+    expression (netdev('eth0', 'Rx_bytes', 500)+netdev('eth0', 'Tx_bytes', 500))/1024
     prefix 'eth0'
     postfix ' '
     width 10	
@@ -267,8 +267,8 @@ Widget Eth0 {
 
 Widget Eth0Bar {
     class 'Bar'
-    expression  netdev('eth0.Rx.bytes', 500)
-    expression2 netdev('eth0.Tx.bytes', 500)
+    expression  netdev('eth0', 'Rx_bytes', 500)
+    expression2 netdev('eth0', 'Tx_bytes', 500)
     length 14	
     direction 'E'
     update tack

@@ -1,4 +1,4 @@
-/* $Id: plugin_diskstats.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
+/* $Id: plugin_diskstats.c,v 1.4 2004/06/17 10:58:58 reinelt Exp $
  *
  * plugin for /proc/diskstats parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_diskstats.c,v $
+ * Revision 1.4  2004/06/17 10:58:58  reinelt
+ *
+ * changed plugin_netdev to use the new fast hash model
+ *
  * Revision 1.3  2004/06/17 06:23:43  reinelt
  *
  * hash handling rewritten to solve performance issues
@@ -92,7 +96,7 @@ static int parse_diskstats (void)
     end = beg;
     while (*beg) {
       while (*beg == ' ') beg++;
-      end = beg+1;
+      end = beg + 1;
       while (*end && *end != ' ') end++;
       if (num++ == 2) break;
       beg = end ? end+1 : NULL;
