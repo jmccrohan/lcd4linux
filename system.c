@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.9 2000/03/28 07:22:15 reinelt Exp $
+/* $Id: system.c,v 1.10 2000/04/13 06:09:52 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.10  2000/04/13 06:09:52  reinelt
+ *
+ * added BogoMips() to system.c (not used by now, maybe sometimes we can
+ * calibrate our delay loop with this value)
+ *
+ * added delay loop to HD44780 driver. It seems to be quite fast now. Hopefully
+ * no compiler will optimize away the delay loop!
+ *
  * Revision 1.9  2000/03/28 07:22:15  reinelt
  *
  * version 0.95 released
@@ -70,6 +78,9 @@
  * 
  * char *Processor (void);
  *   returns processor type ('i686')
+ *
+ * double BogoMips (void);
+ *   returns BogoMips from /proc/cpuinfo
  *
  * int   Memory (void);
  *   returns main memory (Megabytes)
@@ -126,7 +137,7 @@ static int parse_meminfo (char *tag, char *buffer)
   
   p=strstr(buffer, tag);
   if (p==NULL) {
-    fprintf (stderr, "parse(/proc/meminfo) failed: no %s line\n", tag);
+    fprintf (stderr, "parse(/proc/meminfo) failed: no '%s' line\n", tag);
     return -1;
   }
   if (sscanf(p+strlen(tag), "%lu", &val)<1) {
@@ -182,6 +193,41 @@ char *Processor(void)
     }
   }
   return buffer;
+}
+
+double BogoMips (void)
+{
+  static double val=-2;
+  char buffer[4096];
+
+  if (val==-1) return -1;
+
+  if (val==-2) {
+    char *p;
+    int fd=open("/proc/meminfo", O_RDONLY);
+    if (fd==-1) {
+      perror ("open(/proc/cpuinfo) failed");
+      val=-1;
+      return -1;
+    }
+    if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
+      perror ("read(/proc/cpuinfo) failed");
+      val=-1;
+      return -1;
+    }
+    p=strstr(buffer, "bogomips");
+    if (p==NULL) {
+      fprintf (stderr, "parse(/proc/cpuinfo) failed: no 'bogomips' line\n");
+      val=-1;
+      return -1;
+    }
+    if (sscanf(p+8, " : %lf", &val)<1) {
+      fprintf (stderr, "scanf(/proc/cpuinfo) failed\n");
+      val=-1;
+      return -1;
+    }
+  }
+  return val;
 }
 
 int Memory(void)
@@ -404,7 +450,7 @@ int Disk (int *r, int *w)
   }
   p=strstr(buffer, "disk_rblk");
   if (p==NULL) {
-    fprintf (stderr, "parse(/proc/stat) failed: no disk_rblk line\n");
+    fprintf (stderr, "parse(/proc/stat) failed: no 'disk_rblk' line\n");
     fd=-1;
     return -1;
   }
@@ -415,7 +461,7 @@ int Disk (int *r, int *w)
   }
   p=strstr(buffer, "disk_wblk");
   if (p==NULL) {
-    fprintf (stderr, "parse(/proc/stat) failed: no disk_wblk line\n");
+    fprintf (stderr, "parse(/proc/stat) failed: no 'disk_wblk' line\n");
     fd=-1;
     return -1;
   }

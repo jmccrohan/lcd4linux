@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.5 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: system.h,v 1.6 2000/04/13 06:09:52 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.6  2000/04/13 06:09:52  reinelt
+ *
+ * added BogoMips() to system.c (not used by now, maybe sometimes we can
+ * calibrate our delay loop with this value)
+ *
+ * added delay loop to HD44780 driver. It seems to be quite fast now. Hopefully
+ * no compiler will optimize away the delay loop!
+ *
  * Revision 1.5  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -43,15 +51,16 @@
 
 #define SENSORS 9
 
-char *System (void);
-char *Release (void);
-char *Processor (void);
-int   Memory (void);
-int   Ram (int *total, int *free, int *shared, int *buffered, int *cached);
-int   Load (double *load1, double *load2, double *load3);
-int   Busy (double *user, double *nice, double *system, double *idle);
-int   Disk (int *r, int *w);
-int   Net (int *rx, int *tx);
-int   Sensor (int index, double *val, double *min, double *max);
+char  *System (void);
+char  *Release (void);
+char  *Processor (void);
+double BogoMips (void);
+int    Memory (void);
+int    Ram (int *total, int *free, int *shared, int *buffered, int *cached);
+int    Load (double *load1, double *load2, double *load3);
+int    Busy (double *user, double *nice, double *system, double *idle);
+int    Disk (int *r, int *w);
+int    Net (int *rx, int *tx);
+int    Sensor (int index, double *val, double *min, double *max);
 
 #endif

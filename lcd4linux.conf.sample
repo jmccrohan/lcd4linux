@@ -6,7 +6,7 @@
 Display HD44780
 Port 0x378
 Size 16x2
-
+Delay 600
 
 #Display PPM
 #size 20x4

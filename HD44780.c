@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.1 2000/04/12 08:05:45 reinelt Exp $
+/* $Id: HD44780.c,v 1.2 2000/04/13 06:09:52 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.2  2000/04/13 06:09:52  reinelt
+ *
+ * added BogoMips() to system.c (not used by now, maybe sometimes we can
+ * calibrate our delay loop with this value)
+ *
+ * added delay loop to HD44780 driver. It seems to be quite fast now. Hopefully
+ * no compiler will optimize away the delay loop!
+ *
  * Revision 1.1  2000/04/12 08:05:45  reinelt
  *
  * first version of the HD44780 driver
@@ -49,8 +57,6 @@
 #define CHARS 8
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
-static LCD Lcd;
-
 typedef struct {
   int len1;
   int len2;
@@ -66,7 +72,9 @@ typedef struct {
   int ascii;
 } SEGMENT;
 
+static LCD Lcd;
 static unsigned short Port=0;
+static unsigned long  Delay;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -75,28 +83,29 @@ static int nSegment=2;
 static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
-
 static void HD_delay (unsigned long usec)
 {
-  usleep(usec);
+  unsigned long i=usec*Delay/2;
+  while (i--);
 }
 
-static void HD_command (unsigned char cmd)
+static void HD_command (unsigned char cmd, int delay)
 {
   outb (cmd, Port);    // put data on DB1..DB8
   outb (0x02, Port+2); // set Enable = bit 0 invertet
   HD_delay(1);
   outb (0x03, Port+2); // clear Enable
+  HD_delay(delay);
 }
 
-static void HD_write (char *string, int len)
+static void HD_write (char *string, int len, int delay)
 {
   while (len--) {
     outb (*string++, Port); // put data on DB1..DB8
     outb (0x00, Port+2); // set Enable = bit 0 invertet
     HD_delay(1);
     outb (0x01, Port+2); // clear Enable
-    HD_delay(40);
+    HD_delay(delay);
   }
 }
 
@@ -107,20 +116,13 @@ static int HD_open (void)
     return -1;
   }
 
-  HD_command (0x30);  // 8 Bit mode
-  HD_delay (4100);      // wait 4.1 ms
-  HD_command (0x30);  // 8 Bit mode
-  HD_delay (100);       // wait 100 us
-  HD_command (0x30);  // 8 Bit mode
-  HD_delay (4100);      // wait 4.1 ms
-  HD_command (0x38);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
-  HD_delay (40);        // wait 40 us
-  HD_command (0x08);  // Display off, cursor off, blink off
-  HD_delay (40);        // wait 40 us
-  HD_command (0x0c);  // Display on, cursor off, blink off
-  HD_delay (1640);      // wait 1.64 ms
-  HD_command (0x06);  // curser moves to right, no shift
-  HD_delay (40);        // wait 40 us
+  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+  HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
+  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+  HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  HD_command (0x08, 40);   // Display off, cursor off, blink off
+  HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
+  HD_command (0x06, 40);   // curser moves to right, no shift
 
   return 0;
 }
@@ -287,8 +289,8 @@ static void HD_define_chars (void)
       }
       break;
     }
-    HD_command (0x40|8*c);
-    HD_write (buffer, 8);
+    HD_command (0x40|8*c, 40);
+    HD_write (buffer, 8, 120); // 120 usec delay for CG RAM write
   }
 }
 
@@ -305,8 +307,7 @@ int HD_clear (void)
       Bar[row][col].segment=-1;
     }
   }
-  HD_command (0x01); // clear display
-  HD_delay (1640);
+  HD_command (0x01, 1640); // clear display
   return 0;
 }
 
@@ -332,16 +333,25 @@ int HD_init (LCD *Self)
     fprintf (stderr, "HD44780: no 'Size' entry in %s\n", cfg_file());
     return -1;
   }
-  
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
     fprintf(stderr,"HD44780: bad size '%s'\n",s);
     return -1;
   }
-  
+
+  s=cfg_get ("Delay");
+  if (s==NULL || *s=='\0') {
+    fprintf (stderr, "HD44780: no 'Delay' entry in %s\n", cfg_file());
+    return -1;
+  }
+  if ((Delay=strtol(s, &e, 0))==0 || *e!='\0' || Delay<1) {
+    fprintf (stderr, "HD44780: bad delay '%s' in %s\n", s, cfg_file());
+    return -1;
+  }    
+
   Self->rows=rows;
   Self->cols=cols;
   Lcd=*Self;
-  
+
   if (HD_open()!=0)
     return -1;
   
@@ -359,8 +369,7 @@ void HD_goto (int row, int col)
   int pos;
   pos=(row%2)*64+col;
   if (row>2) pos+=20;
-  HD_command (0x80|pos);
-  HD_delay(40);
+  HD_command (0x80|pos, 40);
 }
 
 int HD_put (int row, int col, char *text)
@@ -474,7 +483,7 @@ int HD_flush (void)
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
-      HD_write (buffer, p-buffer);
+      HD_write (buffer, p-buffer, 40);
     }
   }
   return 0;

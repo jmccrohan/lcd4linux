@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.15 2000/04/12 08:05:45 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.16 2000/04/13 06:09:52 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.16  2000/04/13 06:09:52  reinelt
+ *
+ * added BogoMips() to system.c (not used by now, maybe sometimes we can
+ * calibrate our delay loop with this value)
+ *
+ * added delay loop to HD44780 driver. It seems to be quite fast now. Hopefully
+ * no compiler will optimize away the delay loop!
+ *
  * Revision 1.15  2000/04/12 08:05:45  reinelt
  *
  * first version of the HD44780 driver
@@ -104,11 +112,6 @@
 #define CHARS 8
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
-static LCD Lcd;
-static char *Port=NULL;
-static speed_t Speed;
-static int Device=-1;
-
 typedef struct {
   int len1;
   int len2;
@@ -123,6 +126,11 @@ typedef struct {
   int used;
   int ascii;
 } SEGMENT;
+
+static LCD Lcd;
+static char *Port=NULL;
+static speed_t Speed;
+static int Device=-1;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
