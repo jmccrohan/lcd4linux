@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.1 2001/03/07 18:10:21 ltoetsch Exp $
+/* $Id: exec.c,v 1.2 2001/03/08 08:39:54 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.2  2001/03/08 08:39:54  reinelt
+ *
+ * fixed two typos
+ *
  * Revision 1.1  2001/03/07 18:10:21  ltoetsch
  * added e(x)ec commands
  *
@@ -55,7 +59,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN])
   
   pipe = popen(command, "r");
   if (pipe == NULL) {
-    error("Couln't run pip '%s'", command);
+    error("Couln't run pipe '%s'", command);
     return -1;
   }
   fread(buff, EXEC_TXT_LEN, 1, pipe);

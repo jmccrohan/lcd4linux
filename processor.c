@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.16 2001/03/07 18:10:21 ltoetsch Exp $
+/* $Id: processor.c,v 1.17 2001/03/08 08:39:55 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.17  2001/03/08 08:39:55  reinelt
+ *
+ * fixed two typos
+ *
  * Revision 1.16  2001/03/07 18:10:21  ltoetsch
  * added e(x)ec commands
  *
@@ -521,7 +525,7 @@ static void collect_data (void)
 
   for (i=1; i<EXECS; i++) {
     if (token_usage[T_EXEC]&(1<<i)) {
-      Exec (i, &exec[i].s);
+      Exec (i, exec[i].s);
     }
   }
 }
