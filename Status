@@ -2,6 +2,7 @@ Lcd4Linux NextGeneration porting status
 
  DRIVERS :  format : status (widgets) + extras [todo]
 -------------------------------------------------------
+        BeckmannEgle -> Ported (Text,Bar,Icon)    
         Crystalfontz -> Ported (Text,Bar,Icon) + blacklight,contrast,pwm [gpo,rpm]
               Curses -> Ported (Text,Bar)   
              Cwlinux -> Ported (Text,Bar,Icon) + blacklight [gpo,gpi,inverted text,relay]
@@ -14,7 +15,6 @@ Lcd4Linux NextGeneration porting status
             XWindow* -> Ported (Text,Bar,Icon) [gnome applet ?]
              Raster* -> Ported (Text,Bar,Icon)
 
-        BeckmannEgle ->     
 
            PalmPilot -> Obsolete
                  SIN -> Obsolete

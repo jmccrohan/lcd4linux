@@ -1,4 +1,44 @@
+2004-05-28  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_BeckmannEgle.c:
+	added drv_BeckmannEgle.c (forgotten at first check in :-)
+
+	* drivers.m4, drv.c, drv_Crystalfontz.c, drv_Cwlinux.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_generic_serial.c, drv_generic_serial.h, lcd4linux.conf.sample, lock.c, lock.h, BeckmannEgle.c, Makefile.am, Makefile.in, config.guess, config.sub, configure:
+	ported driver for Beckmann+Egle Mini-Terminals
+	added 'flags' parameter to serial_init()
+
+2004-05-27  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* plugin_imon.c: Moved variables to Plugin:imon / Plugin:telmon
+
+2004-05-27  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Status:
+	Status update
+
+	* drv_Crystalfontz.c, drv_Cwlinux.c, drv_HD44780.c, drv_MatrixOrbital.c, plugin_imon.c, plugin_netdev.c, plugin_proc_stat.c, plugin_wireless.c:
+	changed function naming scheme to plugin::function
+
+2004-05-26  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* debug.c, drivers.m4, drv.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_USBLCD.c, drv_generic_text.c, drv_generic_text.h, lcd4linux.conf.sample, widget.c, Makefile.am, Makefile.in, Status, Text.c, config.h.in, configure:
+	Curses driver ported.
+
+	* drivers.m4, drv.c, drv_MilfordInstruments.c, lcd4linux.conf.sample, Makefile.in, MilfordInstruments.c, Status, configure, Makefile.am:
+	MilfordInstruments driver ported
+
 2004-05-25  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drivers.m4, drv.c, Makefile.am, Makefile.in, config.h.in, configure:
+	'make distcheck' bugs fixed
+	release number changed to 0.10.0-RC1
+
+	* Status, mail.c, mail.h, mail2.c, socket.c, socket.h, wifi.c, wifi.h, PalmPilot.c:
+	Status updated
+	obsolete files removed
+
+	* ChangeLog:
+	Changelog updated
 
 	* drv_Image.c:
 	added drv_Image.c (this time really!)
