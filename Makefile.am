@@ -54,6 +54,8 @@ imon.c imon.h \
 \
 display.c display.h \
 drv.c drv.h \
+drv_generic.c drv_generic.h \
+drv_generic_bar.c \
 debug.c debug.h \
 cfg.c cfg.h \
 lock.c lock.h \

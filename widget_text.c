@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.6 2004/01/15 07:47:02 reinelt Exp $
+/* $Id: widget_text.c,v 1.7 2004/01/20 04:51:39 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.7  2004/01/20 04:51:39  reinelt
+ * moved generic stuff from drv_MatrixOrbital to drv_generic
+ * implemented new-stylish bars which are nearly finished
+ *
  * Revision 1.6  2004/01/15 07:47:02  reinelt
  * debian/ postinst and watch added (did CVS forget about them?)
  * evaluator: conditional expressions (a?b:c) added
@@ -162,6 +166,7 @@ void widget_text_scroll (void *Self)
   if (W->class->draw)
     W->class->draw(W);
 }
+
 
 
 void widget_text_update (void *Self)

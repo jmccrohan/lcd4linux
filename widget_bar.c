@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.1 2004/01/18 21:25:16 reinelt Exp $
+/* $Id: widget_bar.c,v 1.2 2004/01/20 04:51:39 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.2  2004/01/20 04:51:39  reinelt
+ * moved generic stuff from drv_MatrixOrbital to drv_generic
+ * implemented new-stylish bars which are nearly finished
+ *
  * Revision 1.1  2004/01/18 21:25:16  reinelt
  * Framework for bar widget opened
  *
@@ -53,7 +57,65 @@ void widget_bar_update (void *Self)
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_BAR *T = W->data;
   RESULT result = {0, 0.0, NULL};
+
+  double val1, val2;
+  double min, max;
+  
+  // evaluate expressions
+  val1=0.0;
+  if (T->expression1!=NULL && *T->expression1!='\0') {
+    Eval(T->expression1, &result); 
+    val1 = R2N(&result); 
+    DelResult(&result);
+  }
+  
+  val2=0.0;
+  if (T->expression2!=NULL && *T->expression2!='\0') {
+    Eval(T->expression2, &result); 
+    val2 = R2N(&result); 
+    DelResult(&result);
+  }
+  
+  // minimum: if expression is empty, do auto-scaling
+  if (T->expr_min!=NULL && *T->expr_min!='\0') {
+    Eval(T->expr_min, &result); 
+    min = R2N(&result); 
+    DelResult(&result);
+  } else {
+    min = T->min;
+    if (val1 < min) min = val1;
+    if (val2 < min) min = val2;
+  }
+  
+  // maximum: if expression is empty, do auto-scaling
+  if (T->expr_max!=NULL && *T->expr_max!='\0') {
+    Eval(T->expr_max, &result); 
+    max = R2N(&result); 
+    DelResult(&result);
+  } else {
+    max = T->max;
+    if (val1 > max) max = val1;
+    if (val2 > max) max = val2;
+  }
+  
+
+  // calculate bar values
+  T->min=min;
+  T->max=max;
+  if (max>min) {
+    T->val1=(val1-min)/(max-min);
+    T->val2=(val2-min)/(max-min);
+  } else {
+    T->val1=0.0;
+    T->val2=0.0;
+  }
+  
+  // finally, draw it!
+  if (W->class->draw)
+    W->class->draw(W);
+  
 }
+
 
 
 int widget_bar_init (WIDGET *Self) 
@@ -71,9 +133,13 @@ int widget_bar_init (WIDGET *Self)
   memset (B, 0, sizeof(WIDGET_BAR));
 
   // get raw expressions (we evaluate them ourselves)
-  B->expression1 = cfg_get_raw (section, "expression",   "''");
-  B->expression2 = cfg_get_raw (section, "expression2",  "''");
+  B->expression1 = cfg_get_raw (section, "expression",  NULL);
+  B->expression2 = cfg_get_raw (section, "expression2", NULL);
   
+  // minimum and maximum value
+  B->expr_min = cfg_get_raw (section, "min", NULL);
+  B->expr_max = cfg_get_raw (section, "max", NULL);
+
   // bar length, default 1
   cfg_number (section, "length", 1,  0, 99999, &(B->length));
   
@@ -107,8 +173,10 @@ int widget_bar_init (WIDGET *Self)
   free (section);
   Self->data=B;
   
+  debug ("Michi: widget_bar added...");
+  
   timer_add (widget_bar_update, Self, B->update, 0);
-
+  
   return 0;
 }
 
@@ -127,7 +195,7 @@ int widget_bar_quit (WIDGET *Self) {
 
 
 WIDGET_CLASS Widget_Bar = {
-  name:   "text",
+  name:   "bar",
   init:   widget_bar_init,
   draw:   NULL,
   quit:   widget_bar_quit,

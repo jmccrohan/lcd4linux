@@ -2,7 +2,7 @@ Display LK204 {
     Driver 'MatrixOrbital'
     Model 'LK204-24-USB'
     Port '/dev/usb/tts/0'
-    Port '/dev/tts/0'
+#    Port '/dev/tts/0'
     Speed 19200
     Contrast 256/2
 }
@@ -38,7 +38,7 @@ Widget RAM {
 Widget Busy {
     class 'Text'
     expression cpu('busy', 500)
-    prefix 'Busy '	
+    prefix 'Busy'	
     postfix '%'	
     width 10	
     precision 1
@@ -46,15 +46,23 @@ Widget Busy {
     update tick	
 }	
 
+Widget BusyBar {
+    class 'Bar'
+    expression cpu('busy', 500)
+    length 10	
+    direction 'E'
+    update tack
+}
+
 Widget Load {
     class 'Text'
     expression loadavg(1)
     prefix 'Load'
     postfix loadavg(1)>1.0?'!':' '
     width 10
-    precision 2
+    precision 1
     align 'R'
-    update tack
+    update tick
 }
 
 
@@ -67,7 +75,8 @@ Layout Default {
 	Col10 'RAM'
     }
     Row3 {
-	Col1 'Busy'
+	Col1  'Busy'
+	Col10 'BusyBar'
     }
     Row4 {
 	Col1 'Load'

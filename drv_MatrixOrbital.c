@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.9 2004/01/18 21:25:16 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.10 2004/01/20 04:51:39 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.10  2004/01/20 04:51:39  reinelt
+ * moved generic stuff from drv_MatrixOrbital to drv_generic
+ * implemented new-stylish bars which are nearly finished
+ *
  * Revision 1.9  2004/01/18 21:25:16  reinelt
  * Framework for bar widget opened
  *
@@ -84,31 +88,22 @@
 #include "cfg.h"
 #include "plugin.h"
 #include "lock.h"
-#include "drv.h"
-#include "bar.h"
-#include "icon.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_bar.h"
+#include "drv.h"
+#include "drv_generic.h"
+#include "drv_generic_bar.h"
 
 
-// these values are hardcoded
-#define XRES 5
-#define YRES 8
-#define CHARS 8
+static char Name[]="MatrixOrbital";
 
-static char *Port=NULL;
-static speed_t Speed;
-static int Device=-1;
 static int Model;
 
-static int DROWS, DCOLS; // display size
-static int LROWS, LCOLS; // layout size
 static int GPOS, ICONS, PROTOCOL;
 
-static char *LayoutFB=NULL;
-static char *DisplayFB=NULL;
-static int GPO[8];
+// Fixme:
+// static int GPO[8];
 
 
 typedef struct {
@@ -153,105 +148,17 @@ static MODEL Models[] = {
 };
 
 
-static int drv_MO_open (void)
-{
-  int fd;
-  pid_t pid;
-  struct termios portset;
-  
-  if ((pid=lock_port(Port))!=0) {
-    if (pid==-1)
-      error ("MatrixOrbital: port %s could not be locked", Port);
-    else
-      error ("MatrixOrbital: port %s is locked by process %d", Port, pid);
-    return -1;
-  }
-  fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
-  if (fd==-1) {
-    error ("MatrixOrbital: open(%s) failed: %s", Port, strerror(errno));
-    unlock_port(Port);
-    return -1;
-  }
-  if (tcgetattr(fd, &portset)==-1) {
-    error ("MatrixOrbital: tcgetattr(%s) failed: %s", Port, strerror(errno));
-    unlock_port(Port);
-    return -1;
-  }
-  cfmakeraw(&portset);
-  cfsetospeed(&portset, Speed);
-  if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-    error ("MatrixOrbital: tcsetattr(%s) failed: %s", Port, strerror(errno));
-    unlock_port(Port);
-    return -1;
-  }
-  return fd;
-}
-
-
-static int drv_MO_read (char *string, int len)
-{
-  int run, ret;
-  
-  if (Device==-1) return -1;
-  for (run=0; run<10; run++) {
-    ret=read (Device, string, len);
-    if (ret>=0 || errno!=EAGAIN) break;
-    debug ("read(): EAGAIN");
-    usleep(1000);
-  }
-  
-  if (ret<0) {
-    error("MatrixOrbital: read(%s, %d) failed: %s", Port, len, strerror(errno));
-  }
-  
-  return ret;
-}
-
-
-static void drv_MO_write (char *string, int len)
-{
-  int run, ret;
-  
-  if (Device==-1) return;
-  for (run=0; run<10; run++) {
-    ret=write (Device, string, len);
-    if (ret>=0 || errno!=EAGAIN) break;
-    debug ("write(): EAGAIN");
-    usleep(1000);
-  }
-
-  if (ret<0) {
-    error ("MatrixOrbital: write(%s) failed: %s", Port, strerror(errno));
-  }
-
-  // Fixme
-  if (ret!=len) {
-    error ("MatrixOrbital: partial write: len=%d ret=%d", len, ret);
-  }
-
-  return;
-}
-
-
-static int drv_MO_contrast (int contrast)
-{
-  char buffer[4];
-  
-  if (contrast<0  ) contrast=0;
-  if (contrast>255) contrast=255;
-  snprintf (buffer, 4, "\376P%c", contrast);
-  drv_MO_write (buffer, 3);
-  return contrast;
-}
-
+// ****************************************
+// ***  hardware dependant functions    ***
+// ****************************************
 
 static void drv_MO_define_char (int ascii, char *buffer)
 {
   char cmd[3]="\376N";
 
   cmd[2]=(char)ascii;
-  drv_MO_write (cmd, 3);
-  drv_MO_write (buffer, 8);
+  drv_generic_serial_write (cmd, 3);
+  drv_generic_serial_write (buffer, 8);
 }
 
 
@@ -260,79 +167,7 @@ static void drv_MO_goto (int row, int col)
   char cmd[5]="\376Gyx";
   cmd[2]=(char)col+1;
   cmd[3]=(char)row+1;
-  drv_MO_write(cmd,4);
-}
-
-
-static int drv_MO_clear (int full)
-{
-  int gpo;
-  
-  memset (LayoutFB, ' ', LROWS*LCOLS*sizeof(char));
-  
-  icon_clear();
-  bar_clear();
-  memset(GPO, 0, sizeof(GPO));
-
-  if (full) {
-    memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
-    switch (PROTOCOL) {
-    case 1:
-      drv_MO_write ("\014",  1);  // Clear Screen
-      drv_MO_write ("\376V", 2);  // GPO off
-      break;
-    case 2:
-      drv_MO_write ("\376\130",  2);  // Clear Screen
-      for (gpo=1; gpo<=GPOS; gpo++) {
-	char cmd1[3]="\376V";
-	char cmd2[4]="\376\300x\377";
-	cmd1[2]=(char)gpo;
-	cmd2[2]=(char)gpo;
-	drv_MO_write (cmd1, 3);  // GPO off
-	drv_MO_write (cmd2, 4);  // PWM full power
-      }
-      break;
-    }
-  }
-  
-  return 0;
-}
-
-static int drv_MO_put (int row, int col, char *text)
-{
-  char *p=LayoutFB+row*DCOLS+col;
-  char *t=text;
-  
-  while (*t && col++<=DCOLS) {
-    *p++=*t++;
-  }
-  return 0;
-}
-
-
-static int drv_MO_bar (int type, int row, int col, int max, int len1, int len2)
-{
-  return bar_draw (type, row, col, max, len1, len2);
-}
-
-
-static int drv_MO_icon (int num, int seq, int row, int col)
-{
-  return icon_draw (num, seq, row, col);
-}
-
-
-static int drv_MO_gpo (int num, int val)
-{
-  if (num>=GPOS) 
-    return -1;
-
-  GPO[num]=val;
-  
-  // Fixme
-  GPO[num]=255;
-
-  return 0;
+  drv_generic_serial_write(cmd,4);
 }
 
 
@@ -340,98 +175,92 @@ static int drv_MO_gpo (int num, int val)
 static int drv_MO_start (char *section)
 {
   int i;  
-  char *port, buffer[256];
   char *model;
+  char *port, buffer[256];
+  speed_t speed;
   
-  if (Port) {
-    free (Port);
-    Port=NULL;
-  }
-
   model=cfg_get(section, "Model", NULL);
   if (model!=NULL && *model!='\0') {
     for (i=0; Models[i].type!=0xff; i++) {
       if (strcasecmp(Models[i].name, model)==0) break;
     }
     if (Models[i].type==0xff) {
-      error ("MatrixOrbital: %s.Model '%s' is unknown from %s", section, model, cfg_source());
+      error ("%s: %s.Model '%s' is unknown from %s", Name, section, model, cfg_source());
       return -1;
     }
     Model=i;
-    info ("MatrixOrbital: using model '%s'", Models[Model].name);
+    info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
-    info ("MatrixOrbital: no '%s.Model' entry from %s, auto-dedecting", section, cfg_source());
+    info ("%s: no '%s.Model' entry from %s, auto-dedecting", Name, section, cfg_source());
     Model=-1;
   }
   
   
   port=cfg_get(section, "Port", NULL);
   if (port==NULL || *port=='\0') {
-    error ("MatrixOrbital: no '%s.Port' entry from %s", section, cfg_source());
+    error ("%s: no '%s.Port' entry from %s", Name, section, cfg_source());
     return -1;
   }
-  Port=strdup(port);
-
+  
   if (cfg_number(section, "Speed", 19200, 1200, 19200, &i)<0) return -1;
   switch (i) {
   case 1200:
-    Speed=B1200;
+    speed=B1200;
     break;
   case 2400:
-    Speed=B2400;
+    speed=B2400;
     break;
   case 9600:
-    Speed=B9600;
+    speed=B9600;
     break;
   case 19200:
-    Speed=B19200;
+    speed=B19200;
     break;
   default:
-    error ("MatrixOrbital: unsupported speed '%d' from %s", i, cfg_source());
+    error ("%s: unsupported speed '%d' from %s", Name, i, cfg_source());
     return -1;
   }    
   
-  info ("MatrixOrbital: using port '%s' at %d baud", Port, i);
+  info ("%s: using port '%s' at %d baud", Name, port, i);
   
-  Device=drv_MO_open();
-  if (Device==-1) return -1;
+  if (drv_generic_serial_open(Name, port, speed)<0) return -1;
 
   // read module type
-  drv_MO_write ("\3767", 2);
+  drv_generic_serial_write ("\3767", 2);
   usleep(1000);
-  if (drv_MO_read (buffer, 1)==1) {
+  if (drv_generic_serial_read (buffer, 1)==1) {
     for (i=0; Models[i].type!=0xff; i++) {
       if (Models[i].type == (int)*buffer) break;
     }
-    info ("MatrixOrbital: display reports model '%s' (type 0x%02x)", 
-	  Models[i].name, Models[i].type);
+    info ("%s: display reports model '%s' (type 0x%02x)", 
+	  Name, Models[i].name, Models[i].type);
 
     // auto-dedection
     if (Model==-1) Model=i;
 
     // auto-dedection matches specified model?
     if (Models[i].type!=0xff && Model!=i) {
-      error ("MatrixOrbital: %s.Model '%s' from %s does not match dedected Model '%s'", 
-	     section, model, cfg_source(), Models[i].name);
+      error ("%s: %s.Model '%s' from %s does not match dedected Model '%s'", 
+	     Name, section, model, cfg_source(), Models[i].name);
       return -1;
     }
 
   } else {
-    info ("MatrixOrbital: display detection failed.");
+    info ("%s: display detection failed.", Name);
   }
   
   // read serial number
-  drv_MO_write ("\3765", 2);
+  drv_generic_serial_write ("\3765", 2);
   usleep(100000);
-  if (drv_MO_read (buffer, 2)==2) {
-    info ("MatrixOrbital: display reports serial number 0x%x", *(short*)buffer);
+  if (drv_generic_serial_read (buffer, 2)==2) {
+    info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
   }
 
   // read version number
-  drv_MO_write ("\3766", 2);
+  drv_generic_serial_write ("\3766", 2);
   usleep(100000);
-  if (drv_MO_read (buffer, 1)==1) {
-    info ("MatrixOrbital: display reports firmware version 0x%x", *buffer);
+  if (drv_generic_serial_read (buffer, 1)==1) {
+    info ("%s: display reports firmware version 0x%x", Name, *buffer);
   }
   
   // initialize global variables
@@ -440,93 +269,26 @@ static int drv_MO_start (char *section)
   GPOS     = Models[Model].gpos;
   PROTOCOL = Models[Model].protocol;
 
-  // init Icons
-  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
-  if (ICONS>0) {
-    debug ("reserving %d of %d user-defined characters for icons", ICONS, CHARS);
-    icon_init(DROWS, DCOLS, XRES, YRES, CHARS, ICONS, drv_MO_define_char);
-  }
-  
   // init Bars
-  bar_init(DROWS, DCOLS, XRES, YRES, CHARS-ICONS);
-  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
-  bar_add_segment(255,255,255,255); // ASCII 255 = block
+  // Fixme
+  // bar_init(DROWS, DCOLS, XRES, YRES, CHARS-ICONS);
+  // bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+  // bar_add_segment(255,255,255,255); // ASCII 255 = block
   
-
-  // Fixme: where to init contrast?
-  drv_MO_contrast(128);
 
   if (PROTOCOL==2) 
-    drv_MO_write ("\376\130", 2);  // Clear Screen
+    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
   else 
-    drv_MO_write ("\014", 1);  // Clear Screen
+    drv_generic_serial_write ("\014", 1);  // Clear Screen
   
-  drv_MO_write ("\376B", 3);  // backlight on
-  drv_MO_write ("\376K", 2);  // cursor off
-  drv_MO_write ("\376T", 2);  // blink off
-  drv_MO_write ("\376D", 2);  // line wrapping off
-  drv_MO_write ("\376R", 2);  // auto scroll off
+  drv_generic_serial_write ("\376B", 3);  // backlight on
+  drv_generic_serial_write ("\376K", 2);  // cursor off
+  drv_generic_serial_write ("\376T", 2);  // blink off
+  drv_generic_serial_write ("\376D", 2);  // line wrapping off
+  drv_generic_serial_write ("\376R", 2);  // auto scroll off
 
   return 0;
 }
-
-
-static int drv_MO_flush (void)
-{
-  int row, col, pos1, pos2;
-  int c, equal;
-  int gpo;
-  
-  bar_process(drv_MO_define_char);
-  
-  for (row=0; row<DROWS; row++) {
-    for (col=0; col<DCOLS; col++) {
-      c=bar_peek(row, col);
-      if (c==-1) c=icon_peek(row, col);
-      if (c!=-1) {
-	LayoutFB[row*DCOLS+col]=(char)c;
-      }
-    }
-    for (col=0; col<DCOLS; col++) {
-      if (LayoutFB[row*DCOLS+col]==DisplayFB[row*DCOLS+col]) continue;
-      drv_MO_goto (row, col);
-      for (pos1=col++, pos2=pos1, equal=0; col<DCOLS; col++) {
-	if (LayoutFB[row*DCOLS+col]==DisplayFB[row*DCOLS+col]) {
-	  // If we find just one equal byte, we don't break, because this 
-	  // would require a goto, which takes one byte, too.
-	  if (++equal>5) break;
-	} else {
-	  pos2=col;
-	  equal=0;
-	}
-      }
-      drv_MO_write (LayoutFB+row*DCOLS+pos1, pos2-pos1+1);
-    }
-  }
-  
-  memcpy (DisplayFB, LayoutFB, DROWS*DCOLS*sizeof(char));
-  
-  switch (PROTOCOL) {
-  case 1:
-    if (GPO[0]) {
-      drv_MO_write ("\376W", 2);  // GPO on
-    } else {
-      drv_MO_write ("\376V", 2);  // GPO off
-    }
-    break;
-  case 2:
-    for (gpo=1; gpo<=GPOS; gpo++) {
-      char cmd[3]="\376";
-      cmd[1]=GPO[gpo]? 'W':'V';
-      cmd[2]=(char)gpo;
-      drv_MO_write (cmd, 3);
-    }
-    break;
-  }
-  
-  return 0;
-}
-
 
 
 // ****************************************
@@ -543,7 +305,7 @@ static void plugin_contrast (RESULT *result, RESULT *arg1)
   if (contrast<0  ) contrast=0;
   if (contrast>255) contrast=255;
   snprintf (buffer, 4, "\376P%c", (int)contrast);
-  drv_MO_write (buffer, 3);
+  drv_generic_serial_write (buffer, 3);
   
   SetResult(&result, R_NUMBER, &contrast); 
 }
@@ -560,11 +322,11 @@ static void plugin_backlight (RESULT *result, RESULT *arg1)
   if (backlight<0) {
     // backlight off
     snprintf (buffer, 3, "\376F");
-    drv_MO_write (buffer, 2);
+    drv_generic_serial_write (buffer, 2);
   } else {
     // backlight on for n minutes
     snprintf (buffer, 4, "\376B%c", (int)backlight);
-    drv_MO_write (buffer, 3);
+    drv_generic_serial_write (buffer, 3);
   }
   SetResult(&result, R_NUMBER, &backlight); 
 }
@@ -592,9 +354,9 @@ static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
   case 1:
     if (num==0) {
       if (val>=1.0) {
-	drv_MO_write ("\376W", 2);  // GPO on
+	drv_generic_serial_write ("\376W", 2);  // GPO on
       } else {
-	drv_MO_write ("\376V", 2);  // GPO off
+	drv_generic_serial_write ("\376V", 2);  // GPO off
       }
     } else {
       error("Fixme");
@@ -609,7 +371,7 @@ static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
       cmd[1]='V';  // GPO off
     }
     cmd[2]=(char)num;
-    drv_MO_write (cmd, 3);
+    drv_generic_serial_write (cmd, 3);
     break;
   }
   
@@ -633,7 +395,7 @@ static void plugin_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
   if (val>255.0) val=255.0;
   cmd[3]=(char)val;
 
-  drv_MO_write (cmd, 4);
+  drv_generic_serial_write (cmd, 4);
 
   SetResult(&result, R_NUMBER, &val); 
 }
@@ -651,9 +413,9 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
   if (num>6) num=6;
   cmd[2]=(char)num;
   
-  drv_MO_write (cmd, 3);
+  drv_generic_serial_write (cmd, 3);
   usleep(100000);
-  drv_MO_read (buffer, 7);
+  drv_generic_serial_read (buffer, 7);
   
   debug ("rpm: buffer[0]=0x%01x", buffer[0]);
   debug ("rpm: buffer[1]=0x%01x", buffer[1]);
@@ -668,96 +430,19 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
 
 
 // ****************************************
-// ***    internal helper functions     ***
-// ****************************************
-
-static void drv_MO_resize (int rows, int cols)
-{
-  char *newFB;
-  int row, col;
-  
-  // Layout FB is large enough
-  if (rows<=LROWS && cols<=LCOLS)
-    return;
-  
-  // allocate new Layout FB
-  newFB=malloc(cols*rows*sizeof(char));
-  memset (newFB, ' ', rows*cols*sizeof(char));
-
-  // transfer contents
-  if (LayoutFB!=NULL) {
-    for (row=0; row<LROWS; row++) {
-      for (col=0; col<LCOLS; col++) {
-	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
-      }
-    }
-    free (LayoutFB);
-  }
-  
-  LayoutFB = newFB;
-  LCOLS    = cols;
-  LROWS    = rows;
-}
-
-
-// ****************************************
 // ***        widget callbacks          ***
 // ****************************************
 
 
 int drv_MO_draw_text (WIDGET *W)
 {
-  WIDGET_TEXT *T=W->data;
-  char *txt, *fb1, *fb2;
-  int row, col, len, end;
-  
-  debug ("drv_MO_draw_text(%s) x=%2d y=%2d  value=<%s>", W->name, W->col, W->row, T->buffer);
-
-  row=W->row;
-  col=W->col;
-  txt=T->buffer;
-  len=strlen(txt);
-  end=col+len;
-  
-  // maybe grow layout framebuffer
-  drv_MO_resize (W->row, W->col+len-1);
-
-  fb1 = LayoutFB  + row*LCOLS;
-  fb2 = DisplayFB + row*DCOLS;
-  
-  // transfer new text into layout buffer
-  memcpy (fb1+col, txt, len);
-
-  for (; col<=end; col++) {
-    int pos1, pos2, equal;
-    if (fb1[col]==fb2[col]) continue;
-    drv_MO_goto (row, col);
-    for (pos1=col, pos2=pos1, col++, equal=0; col<=end; col++) {
-      if (fb1[col]==fb2[col]) {
-	// If we find just one equal byte, we don't break, because this 
-	// would require a goto, which takes several bytes, too.
-	if (++equal>5) break;
-      } else {
-	pos2=col;
-	equal=0;
-      }
-    }
-    memcpy       (fb2+pos1, fb1+pos1, pos2-pos1+1);
-    drv_MO_write (fb2+pos1,           pos2-pos1+1);
-  }
-    
-  return 0;
+  return drv_generic_text_draw_text(W, 5, drv_MO_goto, drv_generic_serial_write);
 }
 
 
 int drv_MO_draw_bar (WIDGET *W)
 {
-  WIDGET_BAR *B=W->data;
-  
-  debug ("drv_MO_draw_bar(%s) x=%2d y=%2d ", W->name, W->col, W->row);
-
-
-  return 0;
+  return drv_generic_text_draw_bar(W, 5, drv_MO_define_char, drv_MO_goto, drv_generic_serial_write);
 }
 
 
@@ -784,34 +469,34 @@ int drv_MO_init (char *section)
   WIDGET_CLASS wc;
   int ret;  
   
+  XRES=5;
+  YRES=8;
+  CHARS=8;
+  
   // start display
   if ((ret=drv_MO_start (section))!=0)
     return ret;
   
-  // init display framebuffer
-  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
-  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
-  
-  // init layout framebuffer
-  LROWS = 0;
-  LCOLS = 0;
-  LayoutFB=NULL;
-  drv_MO_resize (DROWS, DCOLS);
+  // initialize generic text driver
+  if ((ret=drv_generic_text_init(Name))!=0)
+    return ret;
 
-  // sanity check
-  if (LayoutFB==NULL || DisplayFB==NULL) {
-    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
-    return -1;
-  }
+  // initialize generic bar driver
+  if ((ret=drv_generic_text_bar_init())!=0)
+    return ret;
+  
+  // add fixed chars to the bar driver
+  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
+  drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+
+  // register text widget
+  wc=Widget_Text;
+  wc.draw=drv_MO_draw_text;
+  widget_register(&wc);
   
   // register bar widget
   wc=Widget_Bar;
   wc.draw=drv_MO_draw_bar;
-  widget_register(&wc);
-  
-  // register text widget
-  wc=Widget_Text;
-  wc.draw=drv_MO_draw_text;
   widget_register(&wc);
   
   // register plugins
@@ -827,29 +512,19 @@ int drv_MO_init (char *section)
 
 // close driver & display
 int drv_MO_quit (void) {
-  info("MatrixOrbital: shutting down.");
-  
-  debug ("closing port %s", Port);
-  close (Device);
-  unlock_port(Port);
-  
-  if (LayoutFB) {
-    free(LayoutFB);
-    LayoutFB=NULL;
-  }
-  
-  if (DisplayFB) {
-    free(DisplayFB);
-    DisplayFB=NULL;
-  }
+
+  info("%s: shutting down.", Name);
+  drv_generic_serial_close();
+  drv_generic_quit();
   
   return (0);
 }
 
 
 DRIVER drv_MatrixOrbital = {
-  name: "MatrixOrbital",
-  list:  drv_MO_list,
-  init:  drv_MO_init,
-  quit:  drv_MO_quit, 
+  name: Name,
+  list: drv_MO_list,
+  init: drv_MO_init,
+  quit: drv_MO_quit, 
 };
+
