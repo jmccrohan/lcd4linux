@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.3 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.4 2004/06/08 21:46:38 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.4  2004/06/08 21:46:38  reinelt
+ *
+ * splash screen for X11 driver (and generic graphic driver)
+ *
  * Revision 1.3  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -59,10 +63,12 @@ extern unsigned char *drv_generic_graphic_FB;
 void (*drv_generic_graphic_real_blit)(int row, int col, int height, int width);
 
 // generic functions and widget callbacks
-int  drv_generic_graphic_init            (char *section, char *driver);
-int  drv_generic_graphic_draw            (WIDGET *W);
-int  drv_generic_graphic_icon_draw       (WIDGET *W);
-int  drv_generic_graphic_bar_draw        (WIDGET *W);
-int  drv_generic_graphic_quit            (void);
+int drv_generic_graphic_init      (char *section, char *driver);
+int drv_generic_graphic_clear     (void);
+int drv_generic_graphic_greet     (char *msg1, char *msg2);
+int drv_generic_graphic_draw      (WIDGET *W);
+int drv_generic_graphic_icon_draw (WIDGET *W);
+int drv_generic_graphic_bar_draw  (WIDGET *W);
+int drv_generic_graphic_quit      (void);
 
 #endif

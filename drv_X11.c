@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.4 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_X11.c,v 1.5 2004/06/08 21:46:38 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.5  2004/06/08 21:46:38  reinelt
+ *
+ * splash screen for X11 driver (and generic graphic driver)
+ *
  * Revision 1.4  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -69,6 +73,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "timer.h"
 #include "plugin.h"
 #include "widget.h"
@@ -351,7 +356,7 @@ int drv_X11_init (char *section, int quiet)
   int ret;  
   
   // real worker functions
-  drv_generic_graphic_real_blit   = drv_X11_blit;
+  drv_generic_graphic_real_blit = drv_X11_blit;
   
   // start display
   if ((ret=drv_X11_start (section))!=0)
@@ -362,8 +367,18 @@ int drv_X11_init (char *section, int quiet)
     return ret;
   
   // initially expose window
+  drv_generic_graphic_clear();
   drv_X11_expose (0, 0, dimx+2*border, dimy+2*border);
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_graphic_greet (buffer, NULL)) {
+      sleep (3);
+      drv_generic_graphic_clear();
+    }
+  }
+
   // register text widget
   wc=Widget_Text;
   wc.draw=drv_generic_graphic_draw;

@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.8  2004/06/08 21:46:38  reinelt
+ *
+ * splash screen for X11 driver (and generic graphic driver)
+ *
  * Revision 1.7  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -136,7 +140,7 @@ static void drv_generic_graphic_resizeFB (int rows, int cols)
   if (cols<LCOLS) cols=LCOLS;
   
   // allocate new Layout FB
-  newFB=malloc(cols*rows*sizeof(char));
+  newFB = malloc(cols*rows*sizeof(char));
   memset (newFB, 0, rows*cols*sizeof(char));
   
   // transfer contents
@@ -155,38 +159,112 @@ static void drv_generic_graphic_resizeFB (int rows, int cols)
 }
 
 
-int drv_generic_graphic_draw (WIDGET *W)
+int drv_generic_graphic_clear (void)
 {
-  WIDGET_TEXT *Text=W->data;
-  unsigned char *txt;
-  int row, col, len;
-  int x, y;
+  memset(drv_generic_graphic_FB, 0, DCOLS*DROWS*sizeof(*drv_generic_graphic_FB));
+  drv_generic_graphic_real_blit (0, 0, DROWS * YRES, DCOLS * XRES);
+  return 0;
+}
 
-  row=YRES*W->row;
-  col=XRES*W->col;
-  txt=Text->buffer;
-  len=strlen(txt);
+
+// ****************************************
+// *** generic text handling            ***
+// ****************************************
+
+static void drv_generic_graphic_render (int row, int col, unsigned char *txt)
+{
+  int c, r, x, y;
+  int len = strlen(txt);
   
   // maybe grow layout framebuffer
-  drv_generic_graphic_resizeFB (row+YRES, col+XRES*len);
+  drv_generic_graphic_resizeFB (row + YRES, col + XRES * len);
   
+  r = row;
+  c = col;
+
   // render text into layout FB
-  while (*txt!='\0') {
-    int c=*txt;
-    for (y=0; y<YRES; y++) {
-      int mask=1<<XRES;
-      for (x=0; x<XRES; x++) {
-	mask>>=1;
-	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = Font_6x8[c][y]&mask ? 1:0;
+  while (*txt != '\0') {
+    for (y = 0; y < YRES; y++) {
+      int mask = 1 << XRES;
+      for (x = 0; x < XRES; x++) {
+	mask >>= 1;
+	drv_generic_graphic_FB[(r+y) * LCOLS + c + x] = Font_6x8[*txt][y]&mask ? 1:0;
       }
     }
-    col+=XRES;
+    c += XRES;
     txt++;
   }
   
   // flush area
-  drv_generic_graphic_real_blit (YRES*W->row, XRES*W->col, YRES, XRES*len);
+  drv_generic_graphic_real_blit (row, col, YRES, XRES*len);
+
+}
+
+
+// say hello to the user
+int drv_generic_graphic_greet (char *msg1, char *msg2)
+{
+  char *line1[] = { "* LCD4Linux " VERSION " *",
+		    "LCD4Linux " VERSION,
+		    "* LCD4Linux *",
+		    "LCD4Linux",
+		    "L4Linux",
+		    NULL };
   
+  char *line2[] = { "http://lcd4linux.sourceforge.net",
+		    "lcd4linux.sourceforge.net",
+		    "http://lcd4linux.sf.net",
+		    "lcd4linux.sf.net",
+		    NULL };
+  
+  int i;
+  int flag = 0;
+  
+  int cols = DCOLS/XRES;
+  int rows = DROWS/YRES;
+  
+  for (i = 0; line1[i]; i++) {
+    if (strlen(line1[i]) <= cols) {
+      drv_generic_graphic_render (YRES * 0 , XRES * (cols-strlen(line1[i]))/2, line1[i]);
+      flag = 1;
+      break;
+    }
+  }
+
+  if (rows >= 2) {
+    for (i = 0; line2[i]; i++) {
+      if (strlen(line2[i]) <= cols) {
+	drv_generic_graphic_render (YRES * 1, XRES * (cols-strlen(line2[i]))/2, line2[i]);
+	flag = 1;
+	break;
+      }
+    }
+  }
+  
+  if (msg1 && rows >= 3) {
+    int len = strlen(msg1);
+    if ( len <= cols) {
+      drv_generic_graphic_render (YRES * 2, XRES * (cols-len)/2, msg1);
+      flag = 1;
+    }
+  }
+  
+  if (msg2 && rows >= 4) {
+    int len = strlen(msg2);
+    if ( len <= cols) {
+      drv_generic_graphic_render (YRES * 3, XRES * (cols-len)/2, msg2);
+      flag = 1;
+    }
+  }
+
+  return flag;
+}
+
+
+int drv_generic_graphic_draw (WIDGET *W)
+{
+  WIDGET_TEXT *Text = W->data;
+  drv_generic_graphic_render (YRES * W->row, XRES * W->col, Text->buffer);
   return 0;
 }
 
