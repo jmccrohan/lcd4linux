@@ -23,6 +23,7 @@ Lcd4Linux NextGeneration porting status
 
  PLUGINS :  format : status (functions) {old tokens} [todo]
 ------------------------------------------------------------
+	 plugin_apm  -> Finished (apm) {battery: bd bp bs} 
       plugin_cpuinfo -> Finished (cpuinfo) {P}
           plugin_dvb -> Finished (dvb) NEW
   plugin_i2c_sensors -> Finished (i2c_sensors) {s*} [needs testing for procfs]
@@ -32,13 +33,12 @@ Lcd4Linux NextGeneration porting status
         plugin_mysql -> In progress (mySQLquery, mySQLstatus) NEW
        plugin_netdev -> Finished (netdev) {nm nr nt nw}
           plugin_ppp -> Finished (ppp) {ti tm to tt}
+	 plugin_seti -> Finished (seti) {hc ht}
     plugin_proc_stat -> Finished (proc_stat, cpu, disk) {cb ci cn cs cu dm dr dt dw}
         plugin_uname -> Finished (uname) {o v}
          plugin_xmms -> Finished (xmms) NEW
-	 plugin_seti -> Finished (seti) {hc ht}
-	 plugin_apm  -> Finished (apm) {battery: bd bp bs} 
          
-         plugin_wifi -> To be done (Xavier or Martin)
+         plugin_wifi -> Working on {ws wl wn}
          
 (special plugins : plugin_cfg, plugin_math, plugin_string)
 
@@ -50,11 +50,21 @@ wifi {ws wl wn}
 
  TODO : task {assigned to}
 --------
+
+For 0.10.0 :
 * namespace support for plugins (with ::) {Michael}
+* finish debian package {Xavier, Luk, Samuel}
+* new website ? {Xavier}
+- write decent documentation
+
+For 0.10.1 :
+- add events/input layer
+- support "virtual rows" (will be done with events)
+- add support for input (display keypads, gamepads, socket, ...)
+
+Not time-critical
 - support visible attribute for widgets other than icons
 - time-based bars for graphic displays
 - dynamic loading of plugins/displays/input (after 0.10.0)
-- add support for input (display keypads, gamepads, socket, ...)
-* finish debian package {Xavier, Luk, Samuel}
 
 ( - todo; * in progress; + done)

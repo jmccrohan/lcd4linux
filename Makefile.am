@@ -26,6 +26,7 @@ layout.c      layout.h      \
 lock.c 	      lock.h        \
 pid.c         pid.h         \
 timer.c       timer.h       \
+thread.c      thread.h      \
 udelay.c      udelay.h      \
 qprintf.c     qprintf.h     \
                             \
@@ -49,6 +50,7 @@ plugin_dvb.c                \
 plugin_apm.c                \
 plugin_i2c_sensors.c        \
 plugin_imon.c               \
+plugin_exec.c               \
 plugin_xmms.c               \
 plugin_mysql.c              \
 plugin_seti.c

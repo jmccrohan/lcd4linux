@@ -1,4 +1,4 @@
-/* $Id: pid.c,v 1.5 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: pid.c,v 1.6 2004/03/19 06:37:47 reinelt Exp $
  *
  * PID file handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.6  2004/03/19 06:37:47  reinelt
+ * asynchronous thread handling started
+ *
  * Revision 1.5  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -74,6 +77,10 @@
 #include "debug.h"
 #include "pid.h"
 #include "qprintf.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 int pid_init (const char *pidfile)

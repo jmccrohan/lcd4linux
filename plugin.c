@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.23 2004/03/14 07:11:42 reinelt Exp $
+/* $Id: plugin.c,v 1.24 2004/03/19 06:37:47 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.24  2004/03/19 06:37:47  reinelt
+ * asynchronous thread handling started
+ *
  * Revision 1.23  2004/03/14 07:11:42  reinelt
  * parameter count fixed for plugin_dvb()
  * plugin_APM (battery status) ported
@@ -165,6 +168,7 @@ int plugin_init_ppp (void);
 int plugin_init_dvb (void);
 int plugin_init_apm (void);
 int plugin_init_i2c_sensors (void);
+int plugin_init_exec (void);
 int plugin_init_xmms (void);
 int plugin_init_imon(void);
 int plugin_init_mysql(void);
@@ -184,6 +188,7 @@ void plugin_exit_ppp (void);
 void plugin_exit_dvb (void);
 void plugin_exit_apm (void);
 void plugin_exit_i2c_sensors (void);
+void plugin_exit_exec (void);
 void plugin_exit_xmms (void);
 void plugin_exit_imon(void);
 void plugin_exit_mysql(void);
@@ -204,6 +209,7 @@ int plugin_init (void)
   plugin_init_dvb();
   plugin_init_apm();
   plugin_init_i2c_sensors();
+  plugin_init_exec();
   plugin_init_xmms();
   plugin_init_imon();
   plugin_init_mysql();
@@ -226,6 +232,7 @@ void plugin_exit(void) {
   plugin_exit_dvb();
   plugin_exit_apm();
   plugin_exit_i2c_sensors();
+  plugin_exit_exec();
   plugin_exit_xmms();
   plugin_exit_imon();	
   plugin_exit_mysql();	
