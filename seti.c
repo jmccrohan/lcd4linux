@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.6 2001/09/12 05:37:22 reinelt Exp $
+/* $Id: seti.c,v 1.7 2003/02/22 07:53:10 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.7  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.6  2001/09/12 05:37:22  reinelt
  *
  * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
@@ -94,7 +97,7 @@ int Seti (double *perc, double *cput)
   time(&now);
   
   if (fd==-2) {
-    char *dir=cfg_get("SetiDir");
+    char *dir=cfg_get("SetiDir",NULL);
     if (dir==NULL || *dir=='\0') {
       error ("%s: missing 'SetiDir' entry!\n", cfg_file());
       fd=-1;

@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.5 2002/08/19 10:51:06 reinelt Exp $
+/* $Id: M50530.c,v 1.6 2003/02/22 07:53:10 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.6  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.5  2002/08/19 10:51:06  reinelt
  * M50530 driver using new generic bar functions
  *
@@ -239,14 +242,14 @@ int M5_init (LCD *Self)
     PPdev=NULL;
   }
   
-  s=cfg_get ("Port");
+  s=cfg_get ("Port",NULL);
   if (s==NULL || *s=='\0') {
     error ("M50530: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   PPdev=strdup(s);
   
-  s=cfg_get("Size");
+  s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
     error ("M50530: no 'Size' entry in %s", cfg_file());
     return -1;
@@ -256,7 +259,7 @@ int M5_init (LCD *Self)
     return -1;
   }
 
-  s=cfg_get ("GPOs");
+  s=cfg_get ("GPOs",NULL);
   if (s==NULL) {
     gpos=0;
   } else {

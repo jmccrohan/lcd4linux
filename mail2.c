@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.7 2002/12/05 19:23:01 reinelt Exp $
+/* $Id: mail2.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.8  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.7  2002/12/05 19:23:01  reinelt
  * fixed undefined operations found by gcc3
  *
@@ -201,7 +204,7 @@ static int check_nntp(char *user, char *pass, char *machine,
   *total = 0;
   *unseen = 0;
   
-  strcpy(buf, cfg_get("Newsrc") ?: ".newsrc");
+  strcpy(buf, cfg_get("Newsrc",".newsrc"));
   if (*buf == 0 || ((fp = fopen(buf, "r")) == NULL)) {
     error("Couldn't open .newsrc-file '%s'", buf);
     return -1;

@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.26 2003/02/13 10:40:17 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.27 2003/02/22 07:53:10 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.27  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.26  2003/02/13 10:40:17  reinelt
  *
  * changed "copyright" to "2003"
@@ -222,7 +225,7 @@ static int MO_contrast (void)
   char buffer[4];
   int  contrast;
 
-  contrast=atoi(cfg_get("Contrast")?:"160");
+  contrast=atoi(cfg_get("Contrast","160"));
   snprintf (buffer, 4, "\376P%c", contrast);
   MO_write (buffer, 3);
   return 0;
@@ -293,14 +296,14 @@ static int MO_init (LCD *Self, int protocol)
     Port=NULL;
   }
 
-  port=cfg_get ("Port");
+  port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
     error ("MatrixOrbital: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed")?:"19200";
+  speed=cfg_get("Speed","19200");
   
   switch (atoi(speed)) {
   case 1200:

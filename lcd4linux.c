@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.35 2003/02/13 10:40:17 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.36 2003/02/22 07:53:10 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.36  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.35  2003/02/13 10:40:17  reinelt
  *
  * changed "copyright" to "2003"
@@ -401,7 +404,7 @@ int main (int argc, char *argv[])
   if (cfg_read (cfg)==-1)
     exit (1);
   
-  driver=cfg_get("display");
+  driver=cfg_get("display",NULL);
   if (driver==NULL || *driver=='\0') {
     error ("%s: missing 'display' entry!", cfg_file());
     exit (1);
@@ -418,8 +421,8 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  tick=atoi(cfg_get("tick")?:"100");
-  tack=atoi(cfg_get("tack")?:"500");
+  tick=atoi(cfg_get("tick","100"));
+  tack=atoi(cfg_get("tack","500"));
 
   process_init();
   lcd_clear();

@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.8 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.9 2003/02/22 07:53:09 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.9  2003/02/22 07:53:09  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.8  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -136,7 +139,7 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 		Port=NULL;
 	}
 
-	if ((port=cfg_get("Port"))==NULL || *port=='\0') {
+	if ((port=cfg_get("Port",NULL))==NULL || *port=='\0') {
 		error ("CrystalFontz: no 'Port' entry in %s", cfg_file());
 		return -1;
 	}
@@ -146,7 +149,7 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 		sprintf(Port,"/dev/%s",port);
 	}
 
-	speed=cfg_get("Speed")?:"9600";
+	speed=cfg_get("Speed","9600");
 	switch(atoi(speed)) {
 	case 1200:
 		Speed=B1200;
@@ -214,13 +217,13 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 
 	usleep(350000);
 	write(Device, CRYFON_HIDE_CURSOR CRYFON_SCROLL_OFF CRYFON_WRAP_OFF,3);
-	backlight=cfg_get("Backlight")?:NULL;
+	backlight=cfg_get("Backlight",NULL);
 	if (backlight) {
 		cmd_backlight[1]=atoi(backlight);
 		write(Device,cmd_backlight,4);
 	}
 	
-	contrast=cfg_get("Contrast")?:NULL;
+	contrast=cfg_get("Contrast",NULL);
 	if (contrast) {
 		cmd_contrast[1]=atoi(contrast);
 		write(Device,cmd_contrast,2);

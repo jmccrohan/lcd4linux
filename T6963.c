@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.4 2002/08/21 06:09:53 reinelt Exp $
+/* $Id: T6963.c,v 1.5 2003/02/22 07:53:10 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.5  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.4  2002/08/21 06:09:53  reinelt
  * some T6963 fixes, ndelay wrap
  *
@@ -377,7 +380,7 @@ int T6_init (LCD *Self)
     PPdev=NULL;
   }
 
-  port=cfg_get ("Port");
+  port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
     error ("T6963: no 'Port' entry in %s", cfg_file());
     return -1;

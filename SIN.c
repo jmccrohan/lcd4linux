@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.7 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: SIN.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.8  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.7  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -177,7 +180,7 @@ int SIN_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port");
+  port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
     error ("SIN: no 'Port' entry in %s", cfg_file());
     return -1;

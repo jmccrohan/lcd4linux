@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.8 2003/02/05 04:31:38 reinelt Exp $
+/* $Id: exec.c,v 1.9 2003/02/22 07:53:10 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.9  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.8  2003/02/05 04:31:38  reinelt
  *
  * T_EXEC: remove trailing CR/LF
@@ -97,7 +100,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   if (now[index] > 0) {
     /* delay in Ticks ? */
     sprintf(xn, "Tick_x%d", index);
-    p = cfg_get(xn);
+    p = cfg_get(xn,NULL);
     if (p && *p) {
       if (ticks[index]++ % atoi(p) != 0)
         return 0;
@@ -105,7 +108,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     else {
       sprintf(xn, "Delay_x%d", index);
       /* delay in Delay_x* sec ? */
-      if (time(NULL) <= now[index] + atoi(cfg_get(xn)?:"1")) {
+      if (time(NULL) <= now[index] + atoi(cfg_get(xn,"1"))) {
         return 0;
       }
     }
@@ -114,7 +117,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   *val = -1;
   
   sprintf(xn, "x%d", index);
-  command = cfg_get(xn);
+  command = cfg_get(xn,NULL);
 					    
   if (!command || !*command) {
     error("Empty command for 'x%d'", index);
@@ -154,9 +157,9 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     double max, min;
     *val = atof(buff);
     sprintf(xn, "Max_x%d", index);
-    max = atof(cfg_get(xn)?:"100")?:100;
+    max = atof(cfg_get(xn,"100"));
     sprintf(xn, "Min_x%d", index);
-    min = atof(cfg_get(xn)?:"0");
+    min = atof(cfg_get(xn,"0"));
     if (max != min)
       *val = (*val - min)/(max - min);
   }

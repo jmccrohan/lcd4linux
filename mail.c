@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.11 2001/09/12 05:58:16 reinelt Exp $
+/* $Id: mail.c,v 1.12 2003/02/22 07:53:10 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.12  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.11  2001/09/12 05:58:16  reinelt
  * fixed bug in mail2.c
  *
@@ -121,7 +124,7 @@ int Mail (int index, int *num, int *unseen)
   }
   if (now[index] > 0) {	/* not first time, delay  */
     sprintf(txt1, "Delay_e%d", index); 
-    if (time(NULL)<=now[index]+atoi(cfg_get(txt1)?:"5")) 
+    if (time(NULL)<=now[index]+atoi(cfg_get(txt1,"5"))) 
       return 0;   // no more then 5/Delay_eX seconds after last check?
   }
   time(&now[index]);                      // for Mailbox #index
@@ -129,7 +132,7 @@ int Mail (int index, int *num, int *unseen)
     Build the filename from the config
   */
   snprintf(buffer, sizeof(buffer), "Mailbox%d", index);
-  fnp1=cfg_get(buffer);
+  fnp1=cfg_get(buffer,NULL);
   if (fnp1==NULL || *fnp1=='\0') {
     cfgmbx[index]=FALSE;                  // There is now entry for Mailbox #index
   }

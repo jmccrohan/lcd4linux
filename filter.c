@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.5 2001/08/05 17:13:29 reinelt Exp $
+/* $Id: filter.c,v 1.6 2003/02/22 07:53:10 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.6  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.5  2001/08/05 17:13:29  reinelt
  *
  * cleaned up inlude of sys/time.h and time.h
@@ -136,7 +139,7 @@ double damp(char *name, double value)
   int i, j;
   
   if (tau==-1)
-    tau=atoi(cfg_get("tau")?:"500");
+    tau=atoi(cfg_get("tau","500"));
 
   if (tau==0.0)
     return value;

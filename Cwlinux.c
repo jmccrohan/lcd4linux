@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.4 2003/02/22 07:23:24 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.5 2003/02/22 07:53:09 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.5  2003/02/22 07:53:09  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.4  2003/02/22 07:23:24  reinelt
  * Cwlinux fixes
  *
@@ -206,14 +209,14 @@ int CW_init(LCD * Self)
     Port = NULL;
   }
 
-  port = cfg_get("Port");
+  port = cfg_get("Port",NULL);
   if (port == NULL || *port == '\0') {
     error("Cwlinux: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port = strdup(port);
 
-  speed = cfg_get("Speed") ? : "19200";
+  speed = cfg_get("Speed","19200");
 
   switch (atoi(speed)) {
   case 9600:

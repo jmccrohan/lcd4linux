@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.2 2000/04/03 04:46:38 reinelt Exp $
+/* $Id: cfg.h,v 1.3 2003/02/22 07:53:10 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.3  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.2  2000/04/03 04:46:38  reinelt
  *
  * added '-c key=val' option
@@ -39,7 +42,7 @@
 
 int   cfg_cmd (char *arg);
 void  cfg_set (char *key, char *value);
-char *cfg_get (char *key);
+char *cfg_get (char *key, char *defval);
 int   cfg_read (char *file);
 char *cfg_file (void);
 

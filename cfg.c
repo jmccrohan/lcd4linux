@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.12 2001/03/09 12:14:24 reinelt Exp $
+/* $Id: cfg.c,v 1.13 2003/02/22 07:53:10 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.13  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.12  2001/03/09 12:14:24  reinelt
  *
  * minor cleanups
@@ -97,9 +100,9 @@
  *   should be called before cfg_read()
  *   so we can specify 'default values'
  *
- * cfg_get (key) 
+ * cfg_get (key, defval) 
  *   return the a value for a given key 
- *   or NULL if key does not exist
+ *   or <defval> if key does not exist
  *
  * cfg_read (file)
  *   read configuration from file   
@@ -210,7 +213,7 @@ void cfg_set (char *key, char *val)
   cfg_add (key, val, 0);
 }
 
-char *cfg_get (char *key)
+char *cfg_get (char *key, char *defval)
 {
   int i;
 
@@ -219,7 +222,7 @@ char *cfg_get (char *key)
       return Config[i].val;
     }
   }
-  return NULL;
+  return defval;
 }
 
 static int check_cfg_file(char *file)

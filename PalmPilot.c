@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.7 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.8  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.7  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -209,14 +212,14 @@ int Palm_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port");
+  port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
     error ("PalmPilot: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed")?:"19200";
+  speed=cfg_get("Speed","19200");
   
   switch (atoi(speed)) {
   case 1200:
@@ -241,29 +244,29 @@ int Palm_init (LCD *Self)
 
   debug ("using port %s at %d baud", Port, atoi(speed));
 
-  if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+  if (sscanf(s=cfg_get("size","20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("PalmPilot: bad size '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("font")?:"6x8", "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
+  if (sscanf(s=cfg_get("font","6x8"), "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
     error ("PalmPilot: bad font '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("pixel")?:"1+0", "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
+  if (sscanf(s=cfg_get("pixel","1+0"), "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
     error ("PalmPilot: bad pixel '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("gap")?:"0x0", "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
+  if (sscanf(s=cfg_get("gap","0x0"), "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
     error ("PalmPilot: bad gap '%s'", s);
     return -1;
   }
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
-  border=atoi(cfg_get("border")?:"0");
+  border=atoi(cfg_get("border","0"));
 
   if (pix_init (rows, cols, xres, yres)!=0) {
     error ("PalmPilot: pix_init(%d, %d, %d, %d) failed", rows, cols, xres, yres);

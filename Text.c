@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.7 2003/02/17 04:27:58 reinelt Exp $
+/* $Id: Text.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.8  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.7  2003/02/17 04:27:58  reinelt
  * Text (curses) driver: cosmetic changes
  *
@@ -119,7 +122,7 @@ int Text_init (LCD *Self)
     return -1;
   }
   
-  if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+  if (sscanf(s=cfg_get("size","20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("Text: bad size '%s'", s);
     return -1;
   }
@@ -204,7 +207,7 @@ int Text_put (int row, int col, char *text)
 int Text_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int len, i;
-  if (cfg_get("TextBar")) 
+  if (cfg_get("TextBar", NULL)) 
     mvwprintw(w, row+1 , col+1, "%d %d %d", max, len1, len2);
   else {
     len = min(len1, len2);

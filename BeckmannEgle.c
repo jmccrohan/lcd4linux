@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.11 2002/08/22 05:51:36 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.12 2003/02/22 07:53:09 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.12  2003/02/22 07:53:09  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.11  2002/08/22 05:51:36  reinelt
  * cosmetic changes
  *
@@ -219,14 +222,14 @@ int BE_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port");
+  port=cfg_get ("Port", NULL);
   if (port==NULL || *port=='\0') {
     error ("BeckmannEgle: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port=strdup(port);
 
-  s=cfg_get("Type");
+  s=cfg_get("Type", NULL);
   if (s==NULL || *s=='\0') {
     error ("BeckmannEgle: no 'Type' entry in %s", cfg_file());
     return -1;

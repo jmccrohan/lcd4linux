@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.29 2003/02/05 04:31:38 reinelt Exp $
+/* $Id: processor.c,v 1.30 2003/02/22 07:53:10 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.30  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.29  2003/02/05 04:31:38  reinelt
  *
  * T_EXEC: remove trailing CR/LF
@@ -351,7 +354,7 @@ static double query_bar (int token)
     {
       static int alarm;
       alarm=((alarm+1) % 3);
-      if(value < atoi(cfg_get("battwarning")?:"10") && !alarm) /* flash bar */
+      if(value < atoi(cfg_get("battwarning","10")) && !alarm) /* flash bar */
 	value = 0;
       return value/100;
     }
@@ -655,7 +658,7 @@ void process_init (void)
 {
   int i;
 
-  load.overload=atof(cfg_get("overload")?:"2.0");
+  load.overload=atof(cfg_get("overload","2.0"));
 
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &gpos);
   if (rows>ROWS) {
@@ -671,7 +674,7 @@ void process_init (void)
   for (i=1; i<=rows; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
-    p=cfg_get(buffer)?:"";
+    p=cfg_get(buffer,"");
     debug ("%s: %s", buffer, p);
     row[i]=strdup(parse_row(p, supported_bars, token_usage));
   }
@@ -679,7 +682,7 @@ void process_init (void)
   for (i=1; i<=gpos; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "GPO%d", i);
-    p=cfg_get(buffer)?:"";
+    p=cfg_get(buffer,"");
     debug ("%s: %s", buffer, p);
     gpo[i]=parse_gpo(p, token_usage);
   }

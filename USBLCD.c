@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.7 2002/08/19 09:11:34 reinelt Exp $
+/* $Id: USBLCD.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.8  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.7  2002/08/19 09:11:34  reinelt
  * changed HD44780 to use generic bar functions
  *
@@ -212,7 +215,7 @@ int USBLCD_init (LCD *Self)
     free(Port);
     Port=NULL;
   }
-  if ((port=cfg_get("Port"))==NULL || *port=='\0') {
+  if ((port=cfg_get("Port",NULL))==NULL || *port=='\0') {
     error ("USBLCD: no 'Port' entry in %s", cfg_file());
     return -1;
   }
@@ -225,7 +228,7 @@ int USBLCD_init (LCD *Self)
 
   debug ("using device %s ", Port);
 
-  s=cfg_get("Size");
+  s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
     error ("USBLCD: no 'Size' entry in %s", cfg_file());
     return -1;

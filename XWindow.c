@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.29 2003/02/18 06:13:44 reinelt Exp $
+/* $Id: XWindow.c,v 1.30 2003/02/22 07:53:10 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.30  2003/02/22 07:53:10  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.29  2003/02/18 06:13:44  reinelt
  * X11 driver fixes and cleanup
  *
@@ -383,32 +386,32 @@ int xlcdinit(LCD *Self)
 {
   char *s;
 
-  if (sscanf(s=cfg_get("size")?:"20x4","%dx%d",&cols,&rows)!=2
+  if (sscanf(s=cfg_get("size","20x4"),"%dx%d",&cols,&rows)!=2
       || rows<1 || cols<1) {
     error ("X11: bad size '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("font")?:"5x8","%dx%d",&xres,&yres)!=2
+  if (sscanf(s=cfg_get("font","5x8"),"%dx%d",&xres,&yres)!=2
       || xres<5 || yres>10) {
     error ("X11: bad font '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("pixel")?:"4+1","%d+%d",&pixel,&pgap)!=2
+  if (sscanf(s=cfg_get("pixel","4+1"),"%d+%d",&pixel,&pgap)!=2
       || pixel<1 || pgap<0) {
     error ("X11: bad pixel '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("gap")?:"3x3","%dx%d",&cgap,&rgap)!=2
+  if (sscanf(s=cfg_get("gap","-1x-1"),"%dx%d",&cgap,&rgap)!=2
       || cgap<-1 || rgap<-1) {
     error ("X11: bad gap '%s'",s);
     return -1;
   }
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
-  border=atoi(cfg_get("border")?:"0");
-  rgbfg=cfg_get("foreground")?:"#000000";
-  rgbbg=cfg_get("background")?:"#80d000";
-  rgbhg=cfg_get("halfground")?:"#70c000";
+  border=atoi(cfg_get("border","0"));
+  rgbfg=cfg_get("foreground","#000000");
+  rgbbg=cfg_get("background","#80d000");
+  rgbhg=cfg_get("halfground","#70c000");
   if (*rgbfg=='\\') rgbfg++;
   if (*rgbbg=='\\') rgbbg++;
   if (*rgbhg=='\\') rgbhg++;

@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.25 2002/08/19 09:11:34 reinelt Exp $
+/* $Id: HD44780.c,v 1.26 2003/02/22 07:53:09 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.26  2003/02/22 07:53:09  reinelt
+ * cfg_get(key,defval)
+ *
  * Revision 1.25  2002/08/19 09:11:34  reinelt
  * changed HD44780 to use generic bar functions
  *
@@ -415,7 +418,7 @@ int HD_init (LCD *Self)
   int rows=-1, cols=-1, gpos=-1;
   char *s, *e;
   
-  s=cfg_get ("Port");
+  s=cfg_get ("Port",NULL);
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Port' entry in %s", cfg_file());
     return -1;
@@ -432,7 +435,7 @@ int HD_init (LCD *Self)
   }
   
 #ifdef USE_OLD_UDELAY
-  s=cfg_get ("Delay");
+  s=cfg_get ("Delay",NULL);
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Delay' entry in %s", cfg_file());
     return -1;
@@ -443,7 +446,7 @@ int HD_init (LCD *Self)
   }    
 #endif
   
-  s=cfg_get("Size");
+  s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Size' entry in %s", cfg_file());
     return -1;
@@ -453,7 +456,7 @@ int HD_init (LCD *Self)
     return -1;
   }
 
-  s=cfg_get ("GPOs");
+  s=cfg_get ("GPOs",NULL);
   if (s==NULL) {
     gpos=0;
   }
