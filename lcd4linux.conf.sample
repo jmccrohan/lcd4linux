@@ -407,8 +407,8 @@ Layout Test {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'USBLCD'
-#Display 'T6963-240x64'
-Display 'XWindow'
+Display 'T6963-240x64'
+#Display 'XWindow'
 
 Layout  'Default'
 #Layout  'L16x2'
