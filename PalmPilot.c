@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.10 2003/08/17 12:11:58 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.10  2003/08/17 12:11:58  reinelt
+ * framework for icons prepared
+ *
  * Revision 1.9  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -85,7 +88,6 @@
 #include "bar.h"
 #include "pixmap.h"
 
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T)
 
 static LCD Lcd;
 static char *Port=NULL;
@@ -313,6 +315,19 @@ int Palm_quit (void)
 }
 
 LCD PalmPilot[] = {
-  { "PalmPilot",0,0,0,0,BARS,0,Palm_init,Palm_clear,Palm_put,Palm_bar,NULL,Palm_flush,Palm_quit },
+  { name: "PalmPilot",
+    rows:  0,
+    cols:  0,
+    xres:  0,
+    yres:  0,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    gpos:  0,
+    init:  Palm_init,
+    clear: Palm_clear,
+    put:   Palm_put,
+    bar:   Palm_bar,
+    gpo:   NULL,
+    flush: Palm_flush,
+    quit:  Palm_quit },
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.23 2003/07/29 04:56:13 reinelt Exp $
+/* $Id: Raster.c,v 1.24 2003/08/17 12:11:58 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.24  2003/08/17 12:11:58  reinelt
+ * framework for icons prepared
+ *
  * Revision 1.23  2003/07/29 04:56:13  reinelt
  * disable Raster driver automagically if gd.h not found
  *
@@ -150,8 +153,6 @@
 #include "display.h"
 #include "bar.h"
 #include "pixmap.h"
-
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T )
 
 static LCD Lcd;
 
@@ -410,10 +411,34 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 
 LCD Raster[] = {
 #ifdef WITH_PPM  
-  { "PPM",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,PPM_flush },
+  { name: "PPM",
+    rows:  0,
+    cols:  0,
+    xres:  0,
+    yres:  0,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    gpos:  0,
+    init:  Raster_init,
+    clear: Raster_clear,
+    put:   Raster_put,
+    bar:   Raster_bar,
+    gpo:   NULL,
+    flush: PPM_flush },
 #endif
 #ifdef WITH_PNG
-  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,PNG_flush },
+  { name: "PNG",
+    rows:  0,
+    cols:  0,
+    xres:  0,
+    yres:  0,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    gpos:  0,
+    init:  Raster_init,
+    clear: Raster_clear,
+    put:   Raster_put,
+    bar:   Raster_bar,
+    gpo:   NULL,
+    flush: PNG_flush },
 #endif
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.10 2003/08/17 08:25:30 reinelt Exp $
+/* $Id: SIN.c,v 1.11 2003/08/17 12:11:58 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.11  2003/08/17 12:11:58  reinelt
+ * framework for icons prepared
+ *
  * Revision 1.10  2003/08/17 08:25:30  reinelt
  * preparations for liblcd4linux; minor bugs in SIN.c and Skeleton.c
  *
@@ -88,7 +91,6 @@
 #define XRES 1
 #define YRES 1
 
-#define BARS ( BAR_L | BAR_R )
 
 static LCD Lcd;
 static char *Port=NULL;
@@ -280,6 +282,19 @@ int SIN_quit (void)
 }
 
 LCD SIN[] = {
-  { "SIN",8,40,XRES,YRES,BARS,0,SIN_init,SIN_clear,SIN_put,SIN_bar,NULL,SIN_flush,SIN_quit },
+  { name: "SIN",
+    rows:  8,
+    cols:  40,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R,
+    gpos:  0,
+    init:  SIN_init,
+    clear: SIN_clear,
+    put:   SIN_put,
+    bar:   SIN_bar,
+    gpo:   NULL,
+    flush: SIN_flush,
+    quit:  SIN_quit },
   { NULL }
 };

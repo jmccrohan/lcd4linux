@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.9 2003/08/17 08:25:30 reinelt Exp $
+/* $Id: Skeleton.c,v 1.10 2003/08/17 12:11:58 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.10  2003/08/17 12:11:58  reinelt
+ * framework for icons prepared
+ *
  * Revision 1.9  2003/08/17 08:25:30  reinelt
  * preparations for liblcd4linux; minor bugs in SIN.c and Skeleton.c
  *
@@ -122,6 +125,19 @@ int Skel_quit (void)
 
 
 LCD Skeleton[] = {
-  { "Skeleton",4,20,5,8,BAR_L|BAR_R,0,Skel_init,Skel_clear,Skel_put,Skel_bar,Skel_gpo,Skel_flush, Skel_quit },
+  { name: "Skeleton",
+    rows:  4,
+    cols:  20,
+    xres:  5,
+    yres:  8,
+    bars:  BAR_L|BAR_R,
+    gpo:   0,
+    init:  Skel_init,
+    clear: Skel_clear,
+    put:   Skel_put,
+    bar:   Skel_bar,
+    gpo:   Skel_gpo,
+    flush: Skel_flush, 
+    quit:  Skel_quit },
   { NULL }
 };

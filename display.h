@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.16 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: display.h,v 1.17 2003/08/17 12:11:58 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.17  2003/08/17 12:11:58  reinelt
+ * framework for icons prepared
+ *
  * Revision 1.16  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -97,14 +100,16 @@ typedef struct LCD {
   int xres;
   int yres;
   int bars;
+  int icons;
   int gpos;
-  int (*init) (struct LCD *Self);
+  int (*init)  (struct LCD *Self);
   int (*clear) (int full);
-  int (*put) (int x, int y, char *text);
-  int (*bar) (int type, int x, int y, int max, int len1, int len2);
-  int (*gpo) (int num, int val);
+  int (*put)   (int x, int y, char *text);
+  int (*bar)   (int type, int x, int y, int max, int len1, int len2);
+  int (*icon)  (int num, int row, int col, unsigned char *bitmap);
+  int (*gpo)   (int num, int val);
   int (*flush) (void);
-  int (*quit) (void);
+  int (*quit)  (void);
 } LCD;
 
 typedef struct {
@@ -112,14 +117,15 @@ typedef struct {
   LCD *Model;
 } FAMILY;
 
-int lcd_list (void);
-int lcd_init (char *driver);
+int lcd_list  (void);
+int lcd_init  (char *driver);
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos);
 int lcd_clear (int full);
-int lcd_put (int row, int col, char *text);
-int lcd_bar (int type, int row, int col, int max, int len1, int len2);
-int lcd_gpo (int num, int val);
+int lcd_put   (int row, int col, char *text);
+int lcd_bar   (int type, int row, int col, int max, int len1, int le2);
+int lcd_icon  (int num, int row, int col, unsigned char *bitmap);
+int lcd_gpo   (int num, int val);
 int lcd_flush (void);
-int lcd_quit (void);
+int lcd_quit  (void);
 
 #endif
