@@ -3,10 +3,17 @@ AC_INIT(lcd4linux.c)
 AM_INIT_AUTOMAKE(lcd4linux, 0.95)
 
 dnl Checks for programs.
+AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LN_S
 
 dnl Checks for libraries.
 AC_CHECK_LIB(m, log)
+
+dnl Checks for X11
+AC_PATH_XTRA
+AM_CONDITIONAL(WITH_X, test x$no_x = x)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -17,6 +24,7 @@ AC_HEADER_TIME
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
+AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(gettimeofday strdup strerror strstr strtol uname)
 
 AC_OUTPUT(Makefile)

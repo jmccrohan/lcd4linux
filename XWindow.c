@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.8 2000/03/28 08:48:33 reinelt Exp $
+/* $Id: XWindow.c,v 1.9 2000/03/30 16:46:57 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.9  2000/03/30 16:46:57  reinelt
+ *
+ * configure now handles '--with-x' and '--without-x' correct
+ *
  * Revision 1.8  2000/03/28 08:48:33  reinelt
  *
  * README.X11 added
@@ -49,6 +53,8 @@
  * Tue Mar 21 22:22:03 MET 2000 initial coding
  *
  */
+
+#ifndef X_DISPLAY_MISSING
 
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
@@ -228,6 +234,8 @@ XEvent ev;
 	wa.event_mask=ExposureMask|ButtonPressMask|ButtonReleaseMask;
 	w=XCreateWindow(dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,
 		InputOutput,vi,CWEventMask,&wa);
+	printf ("XCreateWindow (%p, %ld, %d, %d, %d, %d, %d, %d, %d, %p, %ld, %p) = %ld\n", 
+		dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,InputOutput,vi,CWEventMask,&wa, w);
 	pmback=XCreatePixmap(dp,w,dimx,dimy,dd);
 	size_hints.min_width=size_hints.max_width=dimx+2*border;
 	size_hints.min_height=size_hints.max_height=dimy+2*border;
@@ -439,3 +447,5 @@ LCD XWindow[] = {
 	{ "X11", 0, 0, 0, 0, BARS, xlcdinit, xlcdclear, xlcdput, xlcdbar, xlcdflush },
 	{ NULL }
 };
+
+#endif /* X_DISPLAY_MISSING */

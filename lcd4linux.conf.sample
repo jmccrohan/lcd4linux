@@ -16,8 +16,8 @@
 Display X11
 size 20x5
 font 5x8
-pixel 2+0
-gap 2x2
+pixel 5+1
+gap 5x5
 border 3
 foreground \#102000
 halfground \#70c000

@@ -1,0 +1,16 @@
+Begin4
+Title:          lcd4linux
+Version:        0.95
+Entered-date:   2000-03-28
+Description:    system and ISDN information is shown on
+                an external display or in a X11 window.
+Keywords:       LCD 
+Author:         reinelt@eunet.at (Michael Reinelt)
+Maintained-by:  reinelt@eunet.at (Michael Reinelt)
+Primary-site:   download.sourceforge.net /pub/sourceforge/lcd4linux
+                54k lcd4linux-0.95.tar.gz
+Alternate-site: http://lcd4linux.sourceforge.net
+Original-site:  
+Platforms:      
+Copying-policy: GPL
+End

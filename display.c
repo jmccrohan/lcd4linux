@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.12 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: display.c,v 1.13 2000/03/30 16:46:57 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.13  2000/03/30 16:46:57  reinelt
+ *
+ * configure now handles '--with-x' and '--without-x' correct
+ *
  * Revision 1.12  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -117,7 +121,9 @@ FAMILY Driver[] = {
   { "Skeleton",        Skeleton },
   { "Matrix Orbital",  MatrixOrbital },
   { "Raster",          Raster },
+#ifndef X_DISPLAY_MISSING
   { "X Window System", XWindow },
+#endif
   { NULL }
 };
 
