@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.16 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: system.c,v 1.17 2000/10/08 09:16:40 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.17  2000/10/08 09:16:40  reinelt
+ *
+ *
+ * Linux-2.4.0-test9 changed the layout of /proc/stat (especially the disk_io line)
+ * rearranged parsing of some /proc files and (hopefully) made it more robust in concerns of format changes
+ *
  * Revision 1.16  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -170,6 +176,7 @@
 #include "system.h"
 #include "filter.h"
 
+
 static int parse_meminfo (char *tag, char *buffer)
 {
   char *p;
@@ -180,12 +187,13 @@ static int parse_meminfo (char *tag, char *buffer)
     error ("parse(/proc/meminfo) failed: no '%s' line", tag);
     return -1;
   }
-  if (sscanf(p+strlen(tag), "%lu", &val)<1) {
-    error ("scanf(/proc/meminfo) failed");
+  if (sscanf(p+strlen(tag), "%lu", &val)!=1) {
+    error ("parse(/proc/meminfo) failed: unknown '%s' format", tag);
     return -1;
   }
   return val;
 }
+
 
 char *System(void)
 {
@@ -204,6 +212,7 @@ char *System(void)
   return buffer;
 }
 
+
 char *Release(void)
 {
   static char buffer[32]="";
@@ -221,6 +230,7 @@ char *Release(void)
   return buffer;
 }
 
+
 char *Processor(void)
 {
   static char buffer[16]="";
@@ -237,6 +247,7 @@ char *Processor(void)
   }
   return buffer;
 }
+
 
 double BogoMips (void)
 {
@@ -267,8 +278,8 @@ double BogoMips (void)
       val=-1;
       return -1;
     }
-    if (sscanf(p+8, " : %lf", &val)<1) {
-      error ("scanf(/proc/cpuinfo) failed");
+    if (sscanf(p+8, " : %lf", &val)!=1) {
+      error ("parse(/proc/cpuinfo) failed: unknown 'bogomips' format");
       val=-1;
       return -1;
     }
@@ -276,6 +287,7 @@ double BogoMips (void)
   }
   return val;
 }
+
 
 int Memory(void)
 {
@@ -367,6 +379,7 @@ int Ram (int *total, int *free, int *shared, int *buffered, int *cached)
 
 }
 
+
 int Load (double *load1, double *load2, double *load3)
 {
   static int fd=-2;
@@ -406,8 +419,8 @@ int Load (double *load1, double *load2, double *load3)
     return -1;
   }
 
-  if (sscanf(buffer, "%lf %lf %lf", &val1, &val2, &val3)<3) {
-    error ("scanf(/proc/loadavg) failed");
+  if (sscanf(buffer, "%lf %lf %lf", &val1, &val2, &val3)!=3) {
+    error ("parse(/proc/loadavg) failed: unknown format");
     fd=-1;
     return -1;
   }
@@ -419,10 +432,11 @@ int Load (double *load1, double *load2, double *load3)
   return 0;
 }
 
+
 int Busy (double *user, double *nice, double *system, double *idle)
 {
   static int fd=-2;
-  char buffer[64];
+  char buffer[64], *p;
   unsigned long v1, v2, v3, v4;
   double d1, d2, d3, d4, d5;
 
@@ -453,8 +467,16 @@ int Busy (double *user, double *nice, double *system, double *idle)
     fd=-1;
     return -1;
   }
-  if (sscanf(buffer, "%*s %lu %lu %lu %lu", &v1, &v2, &v3, &v4)<4) {
-    error ("scanf(/proc/stat) failed");
+
+  p=strstr(buffer, "cpu ");
+  if (p==NULL) {
+    error ("parse(/proc/stat) failed: no 'cpu' line");
+    fd=-1;
+    return -1;
+  }
+
+  if (sscanf(p+4, " %lu %lu %lu %lu", &v1, &v2, &v3, &v4)!=4) {
+    error ("parse(/proc/stat) failed: unknown 'cpu' format");
     fd=-1;
     return -1;
   }
@@ -473,6 +495,7 @@ int Busy (double *user, double *nice, double *system, double *idle)
   }
   return 0;
 }
+
 
 int Disk (int *r, int *w)
 {
@@ -506,24 +529,36 @@ int Disk (int *r, int *w)
 
   p=strstr(buffer, "disk_io:");
   if (p!=NULL) {
-    int n;
-    unsigned long rblk, wblk;
-    unsigned long rsum, wsum;
-    p+=8;
-    rsum=0;
-    wsum=0;
-    while (sscanf(p, " (%*u,%*u):(%*u,%lu,%*u,%lu)%n", &rblk, &wblk, &n)==2) {
-      rsum+=rblk;
-      wsum+=wblk;
-      p+=n;
+    unsigned long rsum=0, wsum=0;
+    p+=8; while (*p==' ') p++;
+    while (*p && *p!='\n') {
+      int i, n;
+      unsigned long dummy;
+      unsigned long rblk, wblk;
+      i=sscanf(p, "(%lu,%lu):(%lu,%lu,%lu,%lu,%lu)%n", 
+	       &dummy, &dummy, &dummy, &dummy, &rblk, &dummy, &wblk, &n);
+      if (n==0 || i!= 7) {
+	i=sscanf(p, "(%lu,%lu):(%lu,%lu,%lu,%lu)%n",
+		 &dummy, &dummy, &dummy, &rblk, &dummy, &wblk, &n)+1;
+      }
+      if (n>0 && i==7) {
+	rsum+=rblk;
+	wsum+=wblk;
+	p+=n; while (*p==' ') p++;
+      } else {
+	error ("parse(/proc/stat) failed: unknown 'disk_io' format");
+	fd=-1;
+	return -1;
+      }
     }
-    // assume that we got the number of sectors and a sector size of 512 bytes
+    // assume that we got the number of sectors, and a sector size of 512 bytes.
     // to get te number in kilobytes/sec, we calculate as follows:
     // kb=blocks*512/1024, which is blocks/2
     *r=smooth ("disk_r", 500, rsum/2);
     *w=smooth ("disk_w", 500, wsum/2);
 
   } else {
+
     unsigned long r1, r2, r3, r4;
     unsigned long w1, w2, w3, w4;
     p=strstr(buffer, "disk_rblk");
@@ -532,8 +567,8 @@ int Disk (int *r, int *w)
       fd=-1;
       return -1;
     }
-    if (sscanf(p+9, "%lu %lu %lu %lu", &r1, &r2, &r3, &r4)<4) {
-      error ("scanf(/proc/stat) failed");
+    if (sscanf(p+9, "%lu %lu %lu %lu", &r1, &r2, &r3, &r4)!=4) {
+      error ("parse(/proc/stat) failed: unknown 'disk_rblk' format");
       fd=-1;
       return -1;
     }
@@ -543,8 +578,8 @@ int Disk (int *r, int *w)
       fd=-1;
       return -1;
     }
-    if (sscanf(p+9, "%lu %lu %lu %lu", &w1, &w2, &w3, &w4)<4) {
-      error ("scanf(/proc/stat) failed");
+    if (sscanf(p+9, "%lu %lu %lu %lu", &w1, &w2, &w3, &w4)!=4) {
+      error ("parse(/proc/stat) failed: unknown 'disk_wblk' format");
       fd=-1;
       return -1;
     }
@@ -555,11 +590,10 @@ int Disk (int *r, int *w)
   return 0;
 }
 
+
 int Net (int *rx, int *tx, int *bytes)
 {
   char buffer[4096], *p, *s;
-  static char *proc_net_dev_fmt=NULL;
-  static int   proc_net_dev_bytes=0;
   static int fd=-2;
   unsigned long pkg_rx, pkg_tx;
   
@@ -570,22 +604,6 @@ int Net (int *rx, int *tx, int *bytes)
   if (fd==-1) return -1;
   
   if (fd==-2) {
-    struct utsname ubuf;
-    if (uname(&ubuf)==-1) {
-      error ("uname() failed: %s", strerror(errno));
-      fd=-1;
-      return -1;
-    }
-    if (strncmp(ubuf.release,"2.0.",4)==0) {
-      debug ("using old /proc/net/dev format");
-      proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %ld";
-      proc_net_dev_bytes=0;
-    } else {
-      debug ("using new /proc/net/dev format");
-      proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %*d %*d %*d %ld";
-      proc_net_dev_bytes=1;
-    }
-    
     fd = open("/proc/net/dev", O_RDONLY | O_NDELAY);
     if (fd==-1) {
       error ("open(/proc/net/dev) failed: %s", strerror(errno));
@@ -610,19 +628,33 @@ int Net (int *rx, int *tx, int *bytes)
   pkg_tx=0;
   p=buffer;
   while ((s=strsep(&p, "\n"))) {
-    unsigned long r, t;
-    if (sscanf (s, proc_net_dev_fmt, &r, &t)==2) {
-      pkg_rx+=r;
-      pkg_tx+=t;
+    int n, u;
+    unsigned long v[16];
+    n=sscanf (s, " eth%d: %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld",
+	      &u, &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7],
+	      &v[8], &v[9], &v[10], &v[11], &v[12], &v[13], &v[14], &v[15]);
+
+    if (n==17) {
+      pkg_rx+=v[0];
+      pkg_tx+=v[8];
+      *bytes=1;
+    } else if (n==11) {
+      pkg_rx+=v[0];
+      pkg_tx+=v[5];
+      *bytes=0;
+    } else if (n>0) {
+      error ("parse(/proc/net/dev) failed: unknown format");
+      fd=-1;
+      return -1;
     }
   }
 
   *rx=smooth("net_rx", 500, pkg_rx);
   *tx=smooth("net_tx", 500, pkg_tx);
-  *bytes=proc_net_dev_bytes;
 
   return 0;
 }
+
 
 int PPP (int unit, int *rx, int *tx)
 {
@@ -660,10 +692,11 @@ int PPP (int unit, int *rx, int *tx)
   return 0;
 }
 
+
 int Sensor (int index, double *val, double *min, double *max)
 {
   char buffer[32];
-  double value;
+  double dummy, value;
   static int fd[SENSORS]={[0 ... SENSORS-1]=-2,};
   static char *sensor[SENSORS]={NULL,};
   static double val_buf[SENSORS]={0.0,};
@@ -716,8 +749,8 @@ int Sensor (int index, double *val, double *min, double *max)
     return -1;
   }
 
-  if (sscanf(buffer, "%*f %*f %lf", &value)<1) {
-    error ("scanf(%s) failed", sensor[index]);
+  if (sscanf(buffer, "%lf %lf %lf", &dummy, &dummy, &value)!=3) {
+    error ("parse(%s) failed: unknown format", sensor[index]);
     fd[index]=-1;
     return -1;
   }
