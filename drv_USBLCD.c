@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.2 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.3 2004/05/23 08:58:30 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.3  2004/05/23 08:58:30  reinelt
+ *
+ * icon bug with USBLCD fixed
+ *
  * Revision 1.2  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -116,12 +120,12 @@ static void drv_UL_command (unsigned char cmd)
 
 static void drv_UL_write (int row, int col, unsigned char *data, int len)
 {
-  int pos=(row%2)*64+(row/2)*20+col;
+  int pos = (row%2)*64 + (row/2)*20 + col;
   drv_UL_command (0x80|pos);
 
   while (len--) {
-    if(*data==0) *BufPtr++=*data;
-    *BufPtr++=*data++;
+    if(*data == 0) *BufPtr++ = 0;
+    *BufPtr++ = *data++;
   }
 
   drv_UL_send();
@@ -133,7 +137,8 @@ static void drv_UL_defchar (int ascii, unsigned char *buffer)
   
   drv_UL_command (0x40|8*ascii);
 
-  for (i=0; i<8; i++) {
+  for (i = 0; i < 8; i++) {
+    if(*buffer == 0) *BufPtr++ = 0;
     *BufPtr++ = *buffer++;
   }
 

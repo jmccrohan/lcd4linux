@@ -42,7 +42,8 @@ Display HD44780-20x4 {
 #   Port '0x378'
     Bits '8'
     Size '20x4'
-    asc255bug 1
+    asc255bug 0
+    Icons 1
     Wire {
 	RW     'GND'
 	RS     'AUTOFD'
@@ -69,6 +70,7 @@ Display USBLCD {
     Port '/dev/usb/lcd'
     Size '20x4'
     asc255bug 1
+    Icons 1
 }
 
 
@@ -382,7 +384,8 @@ Widget Test {
 
 Layout Default {
     Row1 {
-	Col1  'OS'
+	Col1  'Heartbeat'
+	#Col1  'OS'
     }
     Row2 {
 	Col1  'CPU'
