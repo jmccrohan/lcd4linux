@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.14 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: parser.h,v 1.15 2003/10/12 06:08:28 nicowallmeier Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.15  2003/10/12 06:08:28  nicowallmeier
+ * imond/telmond support
+ *
  * Revision 1.14  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -101,12 +104,15 @@ typedef enum {
   T_EXTENDED,
   T_MAIL, T_MAIL_UNSEEN,
   T_SENSOR,
-  T_EXEC
+  T_EXEC,
+  T_IMON_CPU, T_IMON_VER, T_IMON_DATE, T_IMON_TIME, T_IMON_RIN, T_IMON_ROUT,
+  T_IMON_STATUS, T_IMON_PHONE, T_IMON_IP, T_IMON_OTIME, T_IMON_CHARGE,
+  T_TELMON_NUMBER, T_TELMON_MSN, T_TELMON_TIME, T_TELMON_DATE
 } TOKEN;
 
 typedef enum {
   C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, C_BATT, C_DVB,
-  C_MAIL, C_SENSOR, C_EXEC
+  C_MAIL, C_SENSOR, C_EXEC, C_IMON, C_TELMON
 } CLASS;
 
 char *parse_row (char *string, int supported_bars, int usage[]);

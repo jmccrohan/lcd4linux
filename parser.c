@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.21 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: parser.c,v 1.22 2003/10/12 06:08:28 nicowallmeier Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.22  2003/10/12 06:08:28  nicowallmeier
+ * imond/telmond support
+ *
  * Revision 1.21  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -192,6 +195,21 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "u*", T_MAIL_UNSEEN,C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },
 			  { "x*", T_EXEC,       C_EXEC,    1 },
+			  { "jc", T_IMON_CPU,   C_IMON,    1 },
+			  { "jv", T_IMON_VER,   C_IMON,    0 },
+			  { "jd", T_IMON_DATE,  C_IMON,    0 },
+			  { "jm", T_IMON_TIME,  C_IMON,    0 },
+			  { "ji*",T_IMON_RIN,   C_IMON,    1 },
+			  { "jo*",T_IMON_ROUT,  C_IMON,    1 },
+			  { "js*",T_IMON_STATUS,C_IMON,    0 },
+			  { "jn*",T_IMON_PHONE, C_IMON,    0 },
+			  { "jp*",T_IMON_IP,    C_IMON,    0 },
+			  { "jt*",T_IMON_OTIME, C_IMON,    0 },
+			  { "jk*",T_IMON_CHARGE,C_IMON,    0 },
+			  { "kn", T_TELMON_NUMBER, C_TELMON,0 },
+			  { "km", T_TELMON_MSN, C_TELMON,  0 },
+			  { "kd", T_TELMON_DATE, C_TELMON, 0 },
+			  { "kt", T_TELMON_TIME, C_TELMON, 0 },
 			  { "",  -1,            0 }};
 
 static int bar_type (char tag)

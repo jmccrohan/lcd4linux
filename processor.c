@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.48 2003/10/12 04:46:19 reinelt Exp $
+/* $Id: processor.c,v 1.49 2003/10/12 06:08:28 nicowallmeier Exp $
  *
  * main data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.49  2003/10/12 06:08:28  nicowallmeier
+ * imond/telmond support
+ *
  * Revision 1.48  2003/10/12 04:46:19  reinelt
  *
  *
@@ -236,6 +239,7 @@
 #include "dvb.h"
 #include "seti.h"
 #include "exec.h"
+#include "imon.h"
 
 #define ROWS 64
 #define ICONS 8
@@ -259,6 +263,9 @@ static struct { double perc, cput; } seti;
 static struct { int num, unseen;} mail[MAILBOXES+1];
 static struct { double val, min, max; } sensor[SENSORS+1];
 static struct { double strength, snr; } dvb;
+static struct imonchannel imonch[CHANNELS+1];
+static struct imon imon;
+static struct telmon telmon;
 
 extern int tick, tack;
 static int tick_text, tick_bar, tick_icon, tick_gpo;
@@ -368,6 +375,14 @@ static double query (int token)
   case T_EXEC:
     return exec[(token>>8)-'0'].val;
 
+  case T_IMON_CPU:
+    return imon.cpu;
+    
+  case T_IMON_RIN:
+    return ((double)imonch[(token>>8)-'0'].rate_in)/1024;
+    
+  case T_IMON_ROUT:
+    return ((double)imonch[(token>>8)-'0'].rate_out)/1024;
   }
   return 0.0;
 }
@@ -438,7 +453,19 @@ static double query_bar (int token)
   case T_SENSOR:
     i=(token>>8)-'0';
     return (value-sensor[i].min)/(sensor[i].max-sensor[i].min);
+  
+  case T_IMON_CPU:
+    return value/100;
+  
+  case T_IMON_RIN:
+    i=(token>>8)-'0';
+  	return value/(imonch[i].max_in/8);
+  
+  case T_IMON_ROUT:
+    i=(token>>8)-'0';
+  	return value/(imonch[i].max_out/8);
   }
+  
   return value;
 }
 
@@ -594,6 +621,63 @@ static void print_token (int token, char **p, char *start)
     *p+=sprintf (*p, "%.*s",cols-(int)(*p-start), exec[i].s);
     break;
     
+  case T_IMON_VER:
+    *p+=sprintf (*p, "%s", ImonVer());
+    break;
+    
+  case T_IMON_DATE:
+    *p+=sprintf (*p, "%s ", imon.date);
+    break;
+
+  case T_IMON_TIME:
+    *p+=sprintf (*p, "%s ", imon.time);
+    break;
+    
+  case T_IMON_CPU:
+    *p+=sprintf (*p, "%3.0f", query(token));
+    break;
+    
+  case T_IMON_RIN:
+  case T_IMON_ROUT:
+    *p+=sprintf(*p, "%4.1f", query(token));
+    break;
+  
+  case T_IMON_STATUS:
+    *p+=sprintf(*p, "%s", imonch[(token>>8)-'0'].status);
+    break;
+
+  case T_IMON_PHONE:
+    *p+=sprintf(*p, "%s", imonch[(token>>8)-'0'].phone);
+    break;
+
+  case T_IMON_IP:
+    *p+=sprintf(*p, "%s", imonch[(token>>8)-'0'].ip);
+    break;
+
+  case T_IMON_OTIME:
+    *p+=sprintf(*p, "%s", imonch[(token>>8)-'0'].otime);
+    break;
+
+  case T_IMON_CHARGE:
+    *p+=sprintf(*p, "%s", imonch[(token>>8)-'0'].charge);
+    break;
+    
+  case T_TELMON_NUMBER:
+    *p+=sprintf(*p, "%s", telmon.number);
+    break;
+
+  case T_TELMON_MSN:
+    *p+=sprintf(*p, "%s", telmon.msn);
+    break;
+    
+  case T_TELMON_DATE:
+    *p+=sprintf(*p, "%s", telmon.date);
+    break;
+
+  case T_TELMON_TIME:
+    *p+=sprintf(*p, "%s", telmon.time);
+    break;
+
   default:
     *p+=sprintf (*p, "%5.0f", query(token));
   }
@@ -658,6 +742,29 @@ static void collect_data (void)
     DVB (&dvb.strength, &dvb.snr);
   }
   
+  if (token_usage[C_IMON]) {
+    if (token_usage[T_IMON_CPU] ||
+        token_usage[T_IMON_DATE] ||
+        token_usage[T_IMON_TIME]) {  
+      Imon (&imon, T_IMON_CPU, T_IMON_DATE+T_IMON_TIME);
+    }
+    for (i=0; i<=CHANNELS; i++) {
+      if (((1<<i) & token_usage[T_IMON_RIN]) ||
+		  ((1<<i) & token_usage[T_IMON_ROUT]) ||
+          ((1<<i) & token_usage[T_IMON_STATUS]) ||
+          ((1<<i) & token_usage[T_IMON_PHONE]) || 
+          ((1<<i) & token_usage[T_IMON_IP]) ||
+          ((1<<i) & token_usage[T_IMON_OTIME]) ||
+          ((1<<i) & token_usage[T_IMON_CHARGE])){
+          ImonCh(i, &imonch[i], token_usage);
+      }
+    }
+  }
+  
+  if (token_usage[C_TELMON]) {
+  	Telmon (&telmon);
+  }
+
   for (i=0; i<=MAILBOXES; i++) {
     if (token_usage[T_MAIL]&(1<<i) || token_usage[T_MAIL_UNSEEN]&(1<<i) ) {
       Mail (i, &mail[i].num, &mail[i].unseen);

@@ -29,7 +29,8 @@ filter.c filter.h \
 widget.c widget.h \
 exec.c exec.h \
 mail2.c \
-socket.c socket.h
+socket.c socket.h \
+imon.c imon.h
 
 liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 liblcd4linux_la_LDFLAGS = -version-info 9:11:9
