@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.9 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.10 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.10  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.9  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -91,7 +95,7 @@
 #include "hash.h"
 
 
-static HASH CPUinfo = { 0, };
+static HASH CPUinfo;
 static FILE *stream = NULL;
 
 static int parse_cpuinfo (void)
@@ -99,10 +103,10 @@ static int parse_cpuinfo (void)
   int age;
   
   // reread every second only
-  age=hash_age(&CPUinfo, NULL, NULL);
-  if (age>0 && age<=1000) return 0;
+  age = hash_age(&CPUinfo, NULL);
+  if (age > 0 && age <= 1000) return 0;
   
-  if (stream == NULL) stream=fopen("/proc/cpuinfo", "r");
+  if (stream == NULL) stream = fopen("/proc/cpuinfo", "r");
   if (stream == NULL) {
     error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
     return -1;
@@ -112,21 +116,21 @@ static int parse_cpuinfo (void)
     char buffer[256];
     char *c, *key, *val;
     fgets (buffer, sizeof(buffer), stream);
-    c=strchr(buffer, ':');
-    if (c==NULL) continue;
-    key=buffer; val=c+1;
+    c = strchr(buffer, ':');
+    if (c == NULL) continue;
+    key = buffer; val = c+1;
     // strip leading blanks from key
-    while (isspace(*key)) *key++='\0';
+    while (isspace(*key)) *key++ = '\0';
     // strip trailing blanks from key
-    do *c='\0'; while (isspace(*--c));
+    do *c = '\0'; while (isspace(*--c));
     // strip leading blanks from value
-    while (isspace(*val)) *val++='\0';
+    while (isspace(*val)) *val++ = '\0';
     // strip trailing blanks from value
-    for (c=val; *c!='\0';c++);
-    while (isspace(*--c)) *c='\0';
+    for (c = val; *c != '\0'; c++);
+    while (isspace(*--c)) *c = '\0';
     
     // add entry to hash table
-    hash_set (&CPUinfo, key, val);
+    hash_put (&CPUinfo, key, val);
       
   }
   return 0;
@@ -137,14 +141,14 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
 {
   char *key, *val;
   
-  if (parse_cpuinfo()<0) {
+  if (parse_cpuinfo() < 0) {
     SetResult(&result, R_STRING, ""); 
     return;
   }
   
-  key=R2S(arg1);
-  val=hash_get(&CPUinfo, key);
-  if (val==NULL) val="";
+  key = R2S(arg1);
+  val = hash_get(&CPUinfo, key, NULL);
+  if (val == NULL) val = "";
   
   SetResult(&result, R_STRING, val); 
 }
@@ -152,6 +156,7 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
 
 int plugin_init_cpuinfo (void)
 {
+  hash_create (&CPUinfo);
   AddFunction ("cpuinfo", 1, my_cpuinfo);
   return 0;
 }

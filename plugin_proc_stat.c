@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.19 2004/05/27 03:39:47 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.20 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.20  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.19  2004/05/27 03:39:47  reinelt
  *
  * changed function naming scheme to plugin::function
@@ -123,31 +127,31 @@
 #include "hash.h"
 
 
-static HASH Stat = { 0, };
+static HASH Stat;
 static FILE *stream = NULL;
 
 
-static void hash_set1 (char *key1, char *val) 
+static void hash_put1 (char *key1, char *val) 
 {
-  hash_set_delta (&Stat, key1, val);
+  hash_put_delta (&Stat, key1, val);
 }
 
 
-static void hash_set2 (char *key1, char *key2, char *val) 
+static void hash_put2 (char *key1, char *key2, char *val) 
 {
   char key[32];
   
   qprintf(key, sizeof(key), "%s.%s", key1, key2);
-  hash_set1 (key, val);
+  hash_put1 (key, val);
 }
 
 
-static void hash_set3 (char *key1, char *key2, char *key3, char *val) 
+static void hash_put3 (char *key1, char *key2, char *key3, char *val) 
 {
   char key[32];
   
   qprintf(key, sizeof(key), "%s.%s.%s", key1, key2, key3);
-  hash_set1 (key, val);
+  hash_put1 (key, val);
 }
 
 
@@ -156,7 +160,7 @@ static int parse_proc_stat (void)
   int age;
   
   // reread every 10 msec only
-  age=hash_age(&Stat, NULL, NULL);
+  age=hash_age(&Stat, NULL);
   if (age>0 && age<=10) return 0;
   
   if (stream==NULL) stream=fopen("/proc/stat", "r");
@@ -186,7 +190,7 @@ static int parse_proc_stat (void)
       for (i=0; i<4 && beg!=NULL; i++) {
 	while (strchr(delim, *beg)) beg++; 
 	if ((end=strpbrk(beg, delim))) *end='\0'; 
-	hash_set2 (cpu, key[i], beg); 
+	hash_put2 (cpu, key[i], beg); 
 	beg=end?end+1:NULL;
       }
     } 
@@ -199,7 +203,7 @@ static int parse_proc_stat (void)
       for (i=0, beg=buffer+5; i<2 && beg!=NULL; i++) {
 	while (strchr(delim, *beg)) beg++; 
 	if ((end=strpbrk(beg, delim))) *end='\0'; 
-	hash_set2 ("page", key[i], beg); 
+	hash_put2 ("page", key[i], beg); 
 	beg=end?end+1:NULL;
       }
     } 
@@ -213,7 +217,7 @@ static int parse_proc_stat (void)
       for (i=0, beg=buffer+5; i<2 && beg!=NULL; i++) {
 	while (strchr(delim, *beg)) beg++; 
 	if ((end=strpbrk(beg, delim))) *end='\0'; 
-	hash_set2 ("swap", key[i], beg); 
+	hash_put2 ("swap", key[i], beg); 
 	beg=end?end+1:NULL;
       }
     } 
@@ -230,7 +234,7 @@ static int parse_proc_stat (void)
 	  strcpy(num, "sum");
 	else 
 	  qprintf(num, sizeof(num), "%d", i-1);
-	hash_set2 ("intr", num,  beg);
+	hash_put2 ("intr", num,  beg);
 	beg=end?end+1:NULL;
       }
     } 
@@ -249,7 +253,7 @@ static int parse_proc_stat (void)
 	for (i=0; i<5 && beg!=NULL; i++) {
 	  while (strchr(delim, *beg)) beg++; 
 	  if ((end=strpbrk(beg, delim))) *end='\0'; 
-	  hash_set3 ("disk_io", dev, key[i], beg); 
+	  hash_put3 ("disk_io", dev, key[i], beg); 
 	  beg=end?end+1:NULL;
 	}
 	dev=beg;
@@ -265,7 +269,7 @@ static int parse_proc_stat (void)
       beg=end?end+1:NULL;
       if ((end=strpbrk(beg, delim))) *end='\0'; 
       while (strchr(delim, *beg)) beg++; 
-      hash_set1 (buffer, beg);
+      hash_put1 (buffer, beg);
     } 
   }
   return 0;
@@ -284,12 +288,12 @@ static void my_proc_stat (RESULT *result, int argc, RESULT *argv[])
   
   switch (argc) {
   case 1:
-    string=hash_get(&Stat, R2S(argv[0]));
+    string=hash_get(&Stat, R2S(argv[0]), NULL);
     if (string==NULL) string="";
     SetResult(&result, R_STRING, string); 
     break;
   case 2:
-    number=hash_get_delta(&Stat, R2S(argv[0]), R2N(argv[1]));
+    number=hash_get_delta(&Stat, R2S(argv[0]), NULL, R2N(argv[1]));
     SetResult(&result, R_NUMBER, &number); 
     break;
   default:
@@ -314,10 +318,10 @@ static void my_cpu (RESULT *result, RESULT *arg1, RESULT *arg2)
   key   = R2S(arg1);
   delay = R2N(arg2);
   
-  cpu_user   = hash_get_delta(&Stat, "cpu.user",   delay);
-  cpu_nice   = hash_get_delta(&Stat, "cpu.nice",   delay);
-  cpu_system = hash_get_delta(&Stat, "cpu.system", delay);
-  cpu_idle   = hash_get_delta(&Stat, "cpu.idle",   delay);
+  cpu_user   = hash_get_delta(&Stat, "cpu.user",   NULL, delay);
+  cpu_nice   = hash_get_delta(&Stat, "cpu.nice",   NULL, delay);
+  cpu_system = hash_get_delta(&Stat, "cpu.system", NULL, delay);
+  cpu_idle   = hash_get_delta(&Stat, "cpu.idle",   NULL, delay);
 
   cpu_total  = cpu_user+cpu_nice+cpu_system+cpu_idle;
   
@@ -352,7 +356,7 @@ static void my_disk (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
   delay = R2N(arg3);
   
   qprintf(buffer, sizeof(buffer), "disk_io\\.%s\\.%s", dev, key);
-  value  = hash_get_regex(&Stat, buffer, delay);
+  value  = hash_get_regex(&Stat, buffer, NULL, delay);
   
   SetResult(&result, R_NUMBER, &value); 
 }
@@ -360,6 +364,7 @@ static void my_disk (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
 
 int plugin_init_proc_stat (void)
 {
+  hash_create(&Stat);
   AddFunction ("proc_stat",      -1, my_proc_stat);
   AddFunction ("proc_stat::cpu",  2, my_cpu);
   AddFunction ("proc_stat::disk", 3, my_disk);

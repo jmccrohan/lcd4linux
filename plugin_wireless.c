@@ -1,4 +1,4 @@
-/* $Id: plugin_wireless.c,v 1.3 2004/05/27 03:39:47 reinelt Exp $
+/* $Id: plugin_wireless.c,v 1.4 2004/06/17 06:23:43 reinelt Exp $
  *
  * Wireless Extension plugin
  *
@@ -28,6 +28,10 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.4  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.3  2004/05/27 03:39:47  reinelt
  *
  * changed function naming scheme to plugin::function
@@ -104,7 +108,7 @@
 #define MWATT2DBM(in) ((int) (ceil(10.0 * log10((double) in))))
 
 
-static HASH wireless = { 0, };
+static HASH wireless;
 static int sock=-2;
 
 static char *operation_mode[] = { 
@@ -181,7 +185,7 @@ static int get_ifname(struct iwreq *preq, char *dev) {
     return -1;
   }
 
-  hash_set(&wireless,key_buffer, preq->u.name);
+  hash_put(&wireless,key_buffer, preq->u.name);
   return(0);
 
 }
@@ -195,7 +199,7 @@ static int get_frequency(char* dev,char* key) {
   int age;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -226,7 +230,7 @@ static int get_frequency(char* dev,char* key) {
 */
   snprintf(qprintf_buffer,sizeof(qprintf_buffer), "%g", freq);
 
-  hash_set(&wireless, key_buffer, qprintf_buffer);
+  hash_put(&wireless, key_buffer, qprintf_buffer);
   return(0);
   
 }
@@ -240,7 +244,7 @@ static int get_essid(char* dev,char* key) {
 
   
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -261,7 +265,7 @@ static int get_essid(char* dev,char* key) {
     return -1;
   }
 
-  hash_set(&wireless,key_buffer, essid_buffer);  
+  hash_put(&wireless,key_buffer, essid_buffer);  
   return(0);
   
 }
@@ -273,7 +277,7 @@ static int get_op_mode(char* dev,char* key) {
   int age;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -293,7 +297,7 @@ static int get_op_mode(char* dev,char* key) {
     req.u.mode=7; /* mode not available */
   }      
 
-  hash_set(&wireless,key_buffer, operation_mode[req.u.mode]);  
+  hash_put(&wireless,key_buffer, operation_mode[req.u.mode]);  
   return(0);
       
 }
@@ -307,7 +311,7 @@ static int get_bitrate(char* dev,char* key) {
   double bitrate=0;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -335,7 +339,7 @@ static int get_bitrate(char* dev,char* key) {
 */  
   snprintf(bitrate_buffer,sizeof(bitrate_buffer), "%g", bitrate);
   
-  hash_set(&wireless,key_buffer, bitrate_buffer);   
+  hash_put(&wireless,key_buffer, bitrate_buffer);   
   
   return(0);
 }
@@ -351,7 +355,7 @@ static int get_sens(char* dev,char* key) {
   int has_range =0;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -385,7 +389,7 @@ static int get_sens(char* dev,char* key) {
     qprintf(buffer, sizeof(buffer), "%d", req.u.sens.value);
   }
 
-  hash_set(&wireless,key_buffer, buffer);
+  hash_put(&wireless,key_buffer, buffer);
     return(0);
 }
     
@@ -401,7 +405,7 @@ static int get_sec_mode(char* dev,char* key) {
   int key_size=0;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -430,9 +434,9 @@ static int get_sec_mode(char* dev,char* key) {
   //  printf(" [%d]", info->key_flags & IW_ENCODE_INDEX);
 
   if(has_key && (key_flags & IW_ENCODE_RESTRICTED))
-    hash_set(&wireless,key_buffer, "restricted");
+    hash_put(&wireless,key_buffer, "restricted");
   else if(has_key && (key_flags & IW_ENCODE_OPEN))
-    hash_set(&wireless,key_buffer, "open");  
+    hash_put(&wireless,key_buffer, "open");  
 
     return(0);
 }
@@ -447,7 +451,7 @@ static int get_stats(char *dev, char *key)
   struct iw_range range;
 
   qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev,key);
-  age=hash_age(&wireless, key, NULL);
+  age=hash_age(&wireless, key);
   
   /* reread every HASH_TTL msec only */
   if (age>0 && age<=HASH_TTL) {
@@ -473,28 +477,28 @@ static int get_stats(char *dev, char *key)
   if(stats.qual.level > range.max_qual.level)  {
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d", stats.qual.level-0x100);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_LEVEL);
-    hash_set(&wireless,key_buffer, qprintf_buffer);
+    hash_put(&wireless,key_buffer, qprintf_buffer);
 
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d", stats.qual.noise-0x100);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_NOISE);
-    hash_set(&wireless,key_buffer, qprintf_buffer);
+    hash_put(&wireless,key_buffer, qprintf_buffer);
 
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.qual,range.max_qual.qual);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_QUALITY);
-    hash_set(&wireless,key_buffer, qprintf_buffer);
+    hash_put(&wireless,key_buffer, qprintf_buffer);
   } else {
 
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.level, range.max_qual.level);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_LEVEL);;
-    hash_set(&wireless,key_buffer, qprintf_buffer);
+    hash_put(&wireless,key_buffer, qprintf_buffer);
 
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.noise,range.max_qual.noise);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_NOISE);
-    hash_set(&wireless,key_buffer, qprintf_buffer);
+    hash_put(&wireless,key_buffer, qprintf_buffer);
 
     qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.qual, range.max_qual.qual);
     qprintf(key_buffer,sizeof(key_buffer), "%s.%s", dev, KEY_QUALITY);
-    hash_set(&wireless,key_buffer, qprintf_buffer);    
+    hash_put(&wireless,key_buffer, qprintf_buffer);    
   }
 
   return 0; 
@@ -529,7 +533,7 @@ static void save_result(RESULT *result, char* dev, char* key, int res) {
     return;
   }
   
-  val=hash_get(&wireless,key_buffer);
+  val=hash_get(&wireless,key_buffer, NULL);
 
   if (val) {
     SetResult(&result, R_STRING, val);     
@@ -622,6 +626,8 @@ init and cleanup
 
 int plugin_init_wireless(void)
 {
+  hash_create(&wireless);
+
   AddFunction ("wifi::level",       1, wireless_level);
   AddFunction ("wifi::noise",       1, wireless_noise);
   AddFunction ("wifi::quality",     1, wireless_quality);

@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.17 2004/06/05 14:56:48 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.18 2004/06/17 06:23:43 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.18  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.17  2004/06/05 14:56:48  reinelt
  *
  * Cwlinux splash screen fixed
@@ -155,7 +159,7 @@
 #endif
 
 static char *path=NULL;
-static HASH I2Csensors = { 0, };
+static HASH I2Csensors;
 
 static const char *procfs_tokens[4][3] = {
   {"temp_hyst", "temp_max", "temp_input"},	// for temp#
@@ -207,7 +211,7 @@ static int parse_i2c_sensors_sysfs(char *key)
     val[strlen(val)-1]='\0';
   } 
  
-  hash_set (&I2Csensors, key, val);
+  hash_put (&I2Csensors, key, val);
 
   return 0; 
 
@@ -276,7 +280,7 @@ static int parse_i2c_sensors_procfs(char *key)
     } else {
       qprintf (final_key, sizeof(final_key), "%s%s", procfs_tokens[tokens_index][pos], number);
       // debug ("%s -> %s", final_key, value);
-      hash_set (&I2Csensors, final_key, value);
+      hash_put (&I2Csensors, final_key, value);
       pos++;
     }
   }
@@ -293,11 +297,11 @@ void my_i2c_sensors(RESULT *result, RESULT *arg)
   char *val;
   char *key=R2S(arg);  
   
-  age=hash_age(&I2Csensors, key, &val);
+  age=hash_age(&I2Csensors, key);
   if (age<0 || age>250) {
     parse_i2c_sensors(key);
-    val=hash_get(&I2Csensors, key);
   }
+  val=hash_get(&I2Csensors, key, NULL);
   if (val) {
     SetResult(&result, R_STRING, val); 
   } else {
@@ -363,8 +367,11 @@ void my_i2c_sensors_path(char *method)
 
 int plugin_init_i2c_sensors (void)
 {
-  char *path_cfg = cfg_get(NULL, "i2c_sensors-path", "");
+  char *path_cfg;
 
+  hash_create(&I2Csensors);
+
+  path_cfg = cfg_get(NULL, "i2c_sensors-path", "");
   if (path_cfg == NULL || *path_cfg == '\0') {
     // debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
     my_i2c_sensors_path("sysfs");
@@ -401,6 +408,8 @@ int plugin_init_i2c_sensors (void)
       error("i2c_sensors: unknown path %s, should start with /sys or /proc");
     }
   }
+
+  hash_create(&I2Csensors);
   
   return 0;
 }

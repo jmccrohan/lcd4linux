@@ -1,4 +1,4 @@
-/* $Id: plugin_apm.c,v 1.1 2004/03/14 07:11:42 reinelt Exp $
+/* $Id: plugin_apm.c,v 1.2 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for APM (battery status)
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: plugin_apm.c,v $
+ * Revision 1.2  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.1  2004/03/14 07:11:42  reinelt
  * parameter count fixed for plugin_dvb()
  * plugin_APM (battery status) ported
@@ -129,7 +133,7 @@ static int parse_proc_apm (void)
   int age, i;
 
   // reread every 10 msec only
-  age = hash_age (&APM, NULL, NULL);
+  age = hash_age (&APM, NULL);
   if (age > 0 && age <= 10) return 0;
   
   if (fd == -2) {
@@ -156,10 +160,9 @@ static int parse_proc_apm (void)
   for (i = 0; i < 9 && beg != NULL; i++) {
     while (*beg == ' ') beg++; 
     if ((end = strpbrk(beg, " \n"))) *end='\0'; 
-    hash_set (&APM, key[i], beg); 
+    hash_put (&APM, key[i], beg); 
     beg = end ? end+1 : NULL;
   }
-
   
   return 0;
 }
@@ -169,20 +172,23 @@ static void my_apm (RESULT *result, RESULT *arg1)
 {
   char *val;
   
-  if (parse_proc_apm()<0) {
+  if (parse_proc_apm() < 0) {
     SetResult(&result, R_STRING, ""); 
     return;
   }
 
-  val=hash_get(&APM, R2S(arg1));
-  if (val==NULL) val="";
+  val = hash_get(&APM, R2S(arg1), NULL);
+  if (val == NULL) val = "";
 
   SetResult(&result, R_STRING, val); 
 }
 
 int plugin_init_apm (void)
 {
+  hash_create (&APM);
+  
   AddFunction ("apm", 1, my_apm);
+
   return 0;
 }
 
@@ -192,5 +198,6 @@ void plugin_exit_apm (void)
     close (fd);
   }
   fd = -2;
+
   hash_destroy(&APM);
 }

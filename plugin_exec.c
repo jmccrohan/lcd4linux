@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.2 2004/04/08 10:48:25 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,10 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.3  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.2  2004/04/08 10:48:25  reinelt
  * finished plugin_exec
  * modified thread handling
@@ -78,7 +82,7 @@ typedef struct {
 static EXEC_THREAD Thread[NUM_THREADS];
 static int max_thread = -1;
 
-static HASH EXEC = { 0, };
+static HASH EXEC;
 
 
 // x^0 + x^5 + x^12
@@ -208,10 +212,10 @@ static int do_exec (char *cmd, char *key, int delay)
 {
   int i, age;
   
-  age = hash_age(&EXEC, key, NULL);
+  age = hash_age(&EXEC, key);
   
   if (age < 0) {
-    hash_set (&EXEC, key, "");
+    hash_put (&EXEC, key, "");
     // first-time call: create thread
     if (delay < 10) {
       error ("exec(%s): delay %d is too short! using 10 msec", cmd, delay);
@@ -232,7 +236,7 @@ static int do_exec (char *cmd, char *key, int delay)
       // lock shared memory
       mutex_lock(Thread[i].mutex);
       // copy data
-      hash_set (&EXEC, key, Thread[i].ret);
+      hash_put (&EXEC, key, Thread[i].ret);
       // unlock shared memory
       mutex_unlock(Thread[i].mutex);
       return 0;
@@ -258,7 +262,7 @@ static void my_exec (RESULT *result, RESULT *arg1, RESULT *arg2)
     return;
   }
   
-  val = hash_get(&EXEC, key);
+  val = hash_get(&EXEC, key, NULL);
   if (val == NULL) val = "";
   
   SetResult(&result, R_STRING, val); 
@@ -267,6 +271,7 @@ static void my_exec (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 int plugin_init_exec (void)
 {
+  hash_create(&EXEC);
   AddFunction ("exec", 2, my_exec);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.8 2004/06/09 06:40:29 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.9 2004/06/17 06:23:39 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.9  2004/06/17 06:23:39  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.8  2004/06/09 06:40:29  reinelt
  *
  * splash screen for T6963 driver
@@ -80,6 +84,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
 #include "widget.h"

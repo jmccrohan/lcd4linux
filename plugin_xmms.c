@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.9 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.10 2004/06/17 06:23:43 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,10 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.10  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.9  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -95,7 +99,7 @@
 #include "plugin.h"
 
 
-static HASH xmms = { 0, };
+static HASH xmms;
 
 
 static int parse_xmms_info (void)
@@ -105,7 +109,7 @@ static int parse_xmms_info (void)
   char zeile[200];
   
   // reread every 100msec only
-  age=hash_age(&xmms, NULL, NULL);
+  age=hash_age(&xmms, NULL);
   if (age>=0 && age<=200) return 0;
   // Open Filestream for '/tmp/xmms-info'
   xmms_stream = fopen("/tmp/xmms-info","r");
@@ -131,7 +135,7 @@ static int parse_xmms_info (void)
     // strip trailing blanks from value
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
-    hash_set (&xmms, key, val);
+    hash_put (&xmms, key, val);
   }
   
   fclose(xmms_stream);
@@ -149,7 +153,7 @@ static void my_xmms (RESULT *result, RESULT *arg1)
   }
    
   key=R2S(arg1);
-  val=hash_get(&xmms, key);
+  val=hash_get(&xmms, key, NULL);
   if (val==NULL) val="";
   
   SetResult(&result, R_STRING, val);
@@ -158,6 +162,7 @@ static void my_xmms (RESULT *result, RESULT *arg1)
 
 int plugin_init_xmms (void)
 {
+  hash_create(&xmms);
 
   // register xmms info
   AddFunction ("xmms", 1, my_xmms);
@@ -167,5 +172,5 @@ int plugin_init_xmms (void)
 
 void plugin_exit_xmms(void) 
 {
-	hash_destroy(&xmms);
+  hash_destroy(&xmms);
 }

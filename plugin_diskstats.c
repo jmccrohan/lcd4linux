@@ -1,4 +1,4 @@
-/* $Id: plugin_diskstats.c,v 1.2 2004/05/29 01:07:56 reinelt Exp $
+/* $Id: plugin_diskstats.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for /proc/diskstats parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_diskstats.c,v $
+ * Revision 1.3  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.2  2004/05/29 01:07:56  reinelt
  * bug in plugin_diskstats fixed
  *
@@ -51,21 +55,11 @@
 
 #include "debug.h"
 #include "plugin.h"
-#include "qprintf.h"
 #include "hash.h"
 
 
-static HASH DISKSTATS = { 0, };
+static HASH DISKSTATS;
 static FILE *stream = NULL;
-
-
-static void hash_set2 (char *key1, char *key2, char *val) 
-{
-  char key[32];
-  
-  qprintf(key, sizeof(key), "%s.%s", key1, key2);
-  hash_set_delta (&DISKSTATS, key, val);
-}
 
 
 static int parse_diskstats (void)
@@ -73,7 +67,7 @@ static int parse_diskstats (void)
   int age;
   
   // reread every 10 msec only
-  age = hash_age(&DISKSTATS, NULL, NULL);
+  age = hash_age(&DISKSTATS, NULL);
   if (age > 0 && age <= 10) return 0;
   
   if (stream == NULL) stream = fopen("/proc/diskstats", "r");
@@ -86,42 +80,31 @@ static int parse_diskstats (void)
   
   while (!feof(stream)) {
     char buffer[1024];
+    char dev[64];
     char *beg, *end;
-    char *major = NULL;
-    char *minor = NULL;
-    char *name  = NULL; 
-    char *key[]  = { "reads",  "read_merges",  "read_sectors",  "read_ticks",
-		     "writes", "write_merges", "write_sectors", "write_ticks",
-		     "in_flight", "io_ticks", "time_in_queue" 
-    };
-    
-    int i;
+    int num, len;
     
     if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
     
+    // fetch device name (3rd column) as key
+    num = 0;
     beg = buffer;
-    i = 0;
-    while (beg != NULL) {
-      while (*beg == ' ') beg++; 
-      if ((end = strchr(beg, ' '))) *end = '\0'; 
-      switch (i) {
-      case 0:
-	major = beg;
-	break;
-      case 1:
-	minor = beg;
-	break;
-      case 2:
-	name = beg;
-	hash_set2 (name, "major", major); 
-	hash_set2 (name, "minor", minor); 
-	break;
-      default:
-	hash_set2 (name, key[i-3], beg); 
-      }
-      i++;
+    end = beg;
+    while (*beg) {
+      while (*beg == ' ') beg++;
+      end = beg+1;
+      while (*end && *end != ' ') end++;
+      if (num++ == 2) break;
       beg = end ? end+1 : NULL;
     }
+    len = end ? end - beg : strlen(beg);
+    
+    if (len >= sizeof(dev)) len = sizeof(dev)-1;
+    strncpy (dev, beg, len);
+    dev[len] = '\0';
+    
+    hash_put_delta (&DISKSTATS, dev, buffer); 
+    
   }
   return 0;
 }
@@ -129,7 +112,7 @@ static int parse_diskstats (void)
 
 static void my_diskstats (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
 {
-  char *dev, *key, buffer[32];
+  char *dev, *key;
   int delay;
   double value;
   
@@ -142,8 +125,7 @@ static void my_diskstats (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *ar
   key   = R2S(arg2);
   delay = R2N(arg3);
   
-  qprintf(buffer, sizeof(buffer), "%s\\.%s", dev, key);
-  value  = hash_get_regex(&DISKSTATS, buffer, delay);
+  value  = hash_get_regex(&DISKSTATS, dev, key, delay);
   
   SetResult(&result, R_NUMBER, &value); 
 }
@@ -151,6 +133,18 @@ static void my_diskstats (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *ar
 
 int plugin_init_diskstats (void)
 {
+  int i;
+  char *header[] = { "major", "minor", "name", 
+		     "reads",  "read_merges",  "read_sectors",  "read_ticks",
+		     "writes", "write_merges", "write_sectors", "write_ticks",
+		     "in_flight", "io_ticks", "time_in_queue", "" };
+  
+  hash_create (&DISKSTATS);
+  hash_set_delimiter (&DISKSTATS, " \n");
+  for (i=0; *header[i] != '\0'; i++) {
+    hash_set_column (&DISKSTATS, i, header[i]);
+  }
+  
   AddFunction ("diskstats", 3, my_diskstats);
   return 0;
 }

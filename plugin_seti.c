@@ -1,4 +1,4 @@
-/* $Id: plugin_seti.c,v 1.2 2004/03/13 19:06:01 reinelt Exp $
+/* $Id: plugin_seti.c,v 1.3 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for seti@home status reporting
  *
@@ -27,6 +27,10 @@
  *
  *
  * $Log: plugin_seti.c,v $
+ * Revision 1.3  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.2  2004/03/13 19:06:01  reinelt
  * ChangeLog and Status update; small glitch in plugin_seti fixed.
  *
@@ -61,7 +65,7 @@
 #define DIRKEY    "Directory"
 #define STATEFILE "state.sah"
 
-static HASH SETI = { 0, };
+static HASH SETI;
 static int fatal = 0;
 
 static int parse_seti (void)
@@ -74,7 +78,7 @@ static int parse_seti (void)
   if (fatal != 0) return -1;
   
   // reread every 100 msec only
-  age=hash_age(&SETI, NULL, NULL);
+  age=hash_age(&SETI, NULL);
   if (age>0 && age<=100) return 0;
   
   if (fn[0] == '\0') {
@@ -120,7 +124,7 @@ static int parse_seti (void)
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
     // add entry to hash table
-    hash_set (&SETI, key, val);
+    hash_put (&SETI, key, val);
   }
   
   fclose (stream);
@@ -139,7 +143,7 @@ static void my_seti (RESULT *result, RESULT *arg1)
   }
   
   key=R2S(arg1);
-  val=hash_get(&SETI, key);
+  val=hash_get(&SETI, key, NULL);
   if (val==NULL) val="";
   
   SetResult(&result, R_STRING, val); 
@@ -148,6 +152,7 @@ static void my_seti (RESULT *result, RESULT *arg1)
 
 int plugin_init_seti (void)
 {
+  hash_create(&SETI);
   AddFunction ("seti", 1, my_seti);
   return 0;
 }

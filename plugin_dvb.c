@@ -1,4 +1,4 @@
-/* $Id: plugin_dvb.c,v 1.4 2004/03/14 07:11:42 reinelt Exp $
+/* $Id: plugin_dvb.c,v 1.5 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for DVB status
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_dvb.c,v $
+ * Revision 1.5  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.4  2004/03/14 07:11:42  reinelt
  * parameter count fixed for plugin_dvb()
  * plugin_APM (battery status) ported
@@ -78,7 +82,7 @@
 
 static char *frontend="/dev/dvb/adapter0/frontend0";
 
-static HASH DVB = { 0, };
+static HASH DVB;
 
 static int get_dvb_stats (void)
 {
@@ -89,49 +93,49 @@ static int get_dvb_stats (void)
   char val[16];
   
   // reread every 1000 msec only
-  age=hash_age(&DVB, NULL, NULL);
-  if (age>0 && age<=1000) return 0;
+  age = hash_age(&DVB, NULL);
+  if (age > 0 && age <= 1000) return 0;
   
   // open frontend
   fd = open(frontend, O_RDONLY);
-  if (fd==-1) {
+  if (fd == -1) {
     error ("open(%s) failed: %s", frontend, strerror(errno));
     return -1;
   }
   
-  if (ioctl(fd, FE_READ_SIGNAL_STRENGTH, &sig)!=0) {
+  if (ioctl(fd, FE_READ_SIGNAL_STRENGTH, &sig) != 0) {
     error("ioctl(FE_READ_SIGNAL_STRENGTH) failed: %s", strerror(errno));
-    sig=0;
+    sig = 0;
   }
   
-  if (ioctl(fd, FE_READ_SNR, &snr)!=0) {
+  if (ioctl(fd, FE_READ_SNR, &snr) != 0) {
     error("ioctl(FE_READ_SNR) failed: %s", strerror(errno));
-    snr=0;
+    snr = 0;
   }
   
-  if (ioctl(fd, FE_READ_BER, &ber)!=0) {
+  if (ioctl(fd, FE_READ_BER, &ber) != 0) {
     error("ioctl(FE_READ_BER) failed: %s", strerror(errno));
-    ber=0;
+    ber = 0;
   }
 
-  if (ioctl(fd, FE_READ_UNCORRECTED_BLOCKS, &ucb)!=0) {
+  if (ioctl(fd, FE_READ_UNCORRECTED_BLOCKS, &ucb) != 0) {
     error("ioctl(FE_READ_UNCORRECTED_BLOCKS) failed: %s", strerror(errno));
-    ucb=0;
+    ucb = 0;
   }
 
   close (fd);
 
   snprintf (val, sizeof(val), "%f", sig/65535.0);
-  hash_set (&DVB, "signal_strength", val);
+  hash_put (&DVB, "signal_strength", val);
 
   snprintf (val, sizeof(val), "%f", snr/65535.0);
-  hash_set (&DVB, "snr", val);
+  hash_put (&DVB, "snr", val);
   
   snprintf (val, sizeof(val), "%lu", ber);
-  hash_set (&DVB, "ber", val);
+  hash_put (&DVB, "ber", val);
 
   snprintf (val, sizeof(val), "%lu", ucb);
-  hash_set (&DVB, "uncorrected_blocks", val);
+  hash_put (&DVB, "uncorrected_blocks", val);
 
   return 0;
 }
@@ -146,19 +150,22 @@ static void my_dvb (RESULT *result, RESULT *arg1)
     return;
   }
 
-  val=hash_get(&DVB, R2S(arg1));
+  val=hash_get(&DVB, R2S(arg1), NULL);
   if (val==NULL) val="";
-
+  
   SetResult(&result, R_STRING, val); 
 }
 
+
 int plugin_init_dvb (void)
 {
+  hash_create(&DVB);
   AddFunction ("dvb", 1, my_dvb);
   return 0;
 }
 
+
 void plugin_exit_dvb(void) 
 {
-	hash_destroy(&DVB);
+  hash_destroy(&DVB);
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.8 2004/05/27 06:29:29 nicowallmeier Exp $
+/* $Id: plugin_imon.c,v 1.9 2004/06/17 06:23:43 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.9  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.8  2004/05/27 06:29:29  nicowallmeier
  * Moved variables to Plugin:imon / Plugin:telmon
  *
@@ -79,8 +83,8 @@
 #include <sys/socket.h>
 
 
-static HASH TELMON = { 0, };
-static HASH IMON = { 0, };
+static HASH TELMON;
+static HASH IMON;
 
 static char thost[256];
 static int tport;
@@ -251,7 +255,7 @@ static int parse_telmon(){
  int age;
    
  // reread every 1 sec only
- age=hash_age(&TELMON, NULL, NULL);
+ age=hash_age(&TELMON, NULL);
  if (age>0 && age<=1000) return 0;
 
  if (telmond_fd != -1){
@@ -266,17 +270,17 @@ static int parse_telmon(){
 	char number[256];
 	char msn[256];
 	sscanf(telbuf,"%s %s %s %s",date,time,number,msn);
-	hash_set (&TELMON, "time", time);
+	hash_put (&TELMON, "time", time);
 	date[4]='\0';
 	date[7]='\0';
 	qprintf(time, sizeof(time), "%s.%s.%s",date+8,date+5,date);
-	hash_set (&TELMON, "number", number);
-	hash_set (&TELMON, "msn", msn);
-	hash_set (&TELMON, "date", time);
+	hash_put (&TELMON, "number", number);
+	hash_put (&TELMON, "msn", msn);
+	hash_put (&TELMON, "date", time);
 	phonebook(number);
 	phonebook(msn);
-	hash_set (&TELMON, "name", number);
-	hash_set (&TELMON, "msnname", msn);
+	hash_put (&TELMON, "name", number);
+	hash_put (&TELMON, "msnname", msn);
    }
    close (telmond_fd);
    strcpy(oldanswer,telbuf);
@@ -292,7 +296,7 @@ static void my_telmon (RESULT *result, RESULT *arg1){
   return;
  }
   
- val=hash_get(&TELMON, R2S(arg1));
+ val=hash_get(&TELMON, R2S(arg1), NULL);
  if (val==NULL) val="";
  SetResult(&result, R_STRING, val); 
 }
@@ -314,14 +318,14 @@ void init(){
 
 static int parse_imon(char *cmd){
  // reread every half sec only
- int age=hash_age(&IMON, cmd, NULL);
+ int age=hash_age(&IMON, cmd);
  if (age>0 && age<=500) return 0;
 
  init(); // establish connection
 
  if (err) return -1;
  
- hash_set (&IMON, cmd , get_value(cmd));
+ hash_put (&IMON, cmd , get_value(cmd));
  
  return 0;
 }
@@ -329,7 +333,7 @@ static int parse_imon(char *cmd){
 static void my_imon_version (RESULT *result){
  char *val;
  // read only ones
- int age=hash_age(&IMON, "version", NULL);
+ int age=hash_age(&IMON, "version");
  if (age<0){
   char *s;
   init();
@@ -345,10 +349,10 @@ static void my_imon_version (RESULT *result){
    }
    s=s+1;		
   }
-  hash_set (&IMON, "version", s);
+  hash_put (&IMON, "version", s);
  }
 	
- val=hash_get(&IMON, "version");
+ val=hash_get(&IMON, "version", NULL);
  if (val==NULL) val="";
  SetResult(&result, R_STRING, val); 
 }
@@ -361,7 +365,7 @@ static int parse_imon_rates(char *channel){
  qprintf(buf,sizeof(buf),"rate %s in",channel);
  
  // reread every half sec only
- age=hash_age(&IMON, buf, NULL);
+ age=hash_age(&IMON, buf);
  if (age>0 && age<=500) return 0;
 
  init(); // establish connection
@@ -374,9 +378,9 @@ static int parse_imon_rates(char *channel){
  if (sscanf(s,"%s %s",in, out)!=2) return -1;
 
  qprintf(buf, sizeof(buf), "rate %s in", channel);
- hash_set (&IMON, buf , in);
+ hash_put (&IMON, buf , in);
  qprintf(buf, sizeof(buf), "rate %s out", channel);
- hash_set (&IMON, buf , out);
+ hash_put (&IMON, buf , out);
  
  return 0;
 }
@@ -393,7 +397,7 @@ static void my_imon_rates (RESULT *result, RESULT *arg1, RESULT *arg2){
  
  qprintf(buf,sizeof(buf),"rate %s %s",R2S(arg1),R2S(arg2));
 
- val=hash_get(&IMON, buf);
+ val=hash_get(&IMON, buf, NULL);
  if (val==NULL) val="";
  SetResult(&result, R_STRING, val); 
 }
@@ -406,13 +410,16 @@ static void my_imon (RESULT *result, RESULT *arg1){
   return;
  }
   
- val=hash_get(&IMON, cmd);
+ val=hash_get(&IMON, cmd, NULL);
  if (val==NULL) val="";
  SetResult(&result, R_STRING, val); 
 }
 
 int plugin_init_imon (void){
  char telmon='\1',imon='\1';	
+
+ hash_create(&TELMON);
+ hash_create(&IMON);
 
  char *s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
  if (*s=='\0') {

@@ -1,4 +1,4 @@
-/* $Id: plugin_isdn.c,v 1.1 2004/05/19 05:23:25 reinelt Exp $
+/* $Id: plugin_isdn.c,v 1.2 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for ISDN subsystem
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: plugin_isdn.c,v $
+ * Revision 1.2  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.1  2004/05/19 05:23:25  reinelt
  *
  * plugin_isdn.c added (sorry, I forgot...)
@@ -70,16 +74,16 @@ typedef struct {
 } CPS;
 
 
-static HASH ISDN_INFO = { 0, };
-static HASH ISDN_CPS  = { 0, };
+static HASH ISDN_INFO;
+static HASH ISDN_CPS;
 
 
-static void hash_set_info (char *name, int channel, char *val)
+static void hash_put_info (char *name, int channel, char *val)
 {
   char key[16];
 
   qprintf (key, sizeof(key), "%s[%d]", name, channel);
-  hash_set (&ISDN_INFO, key, val);
+  hash_put (&ISDN_INFO, key, val);
 }
 
 static int parse_isdninfo (void)
@@ -89,7 +93,7 @@ static int parse_isdninfo (void)
   long flags;
   
   // reread every 10 msec only
-  age = hash_age(&ISDN_INFO, NULL, NULL);
+  age = hash_age(&ISDN_INFO, NULL);
   if (age > 0 && age <= 10) return 0;
 
   // open file
@@ -124,7 +128,7 @@ static int parse_isdninfo (void)
       while (*beg && strchr(delim, *beg)) beg++; 
       while (beg && *beg) {
 	if ((end = strpbrk(beg, delim))) *end = '\0'; 
-	hash_set_info(buffer, i, beg);
+	hash_put_info(buffer, i, beg);
 	beg = end ? end+1 : NULL;
 	while (*beg && strchr(delim, *beg)) beg++; 
 	i++;
@@ -150,7 +154,7 @@ static void my_isdn_info (RESULT *result, RESULT *arg1, RESULT *arg2)
   }
   
   qprintf(key, sizeof(key), "%s[%d]", R2S(arg1), (int)R2N(arg2));
-  val = hash_get(&ISDN_INFO, key);
+  val = hash_get(&ISDN_INFO, key, NULL);
   if (val == NULL) val = "";
   SetResult(&result, R_STRING, val); 
 }
@@ -158,17 +162,17 @@ static void my_isdn_info (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 #ifdef HAVE_LINUX_ISDN_H
 
-static void hash_set_cps (int channel, CPS *cps)
+static void hash_put_cps (int channel, CPS *cps)
 {
   char key[16], val[16];
 
   qprintf (key, sizeof(key), channel < 0 ? "i" : "i%d", channel);
   qprintf (val, sizeof(val), "%u", cps->in);
-  hash_set_delta (&ISDN_CPS, key, val);
+  hash_put_delta (&ISDN_CPS, key, val);
 
   qprintf (key, sizeof(key), channel < 0 ? "o" : "o%d", channel);
   qprintf (val, sizeof(val), "%u", cps->out);
-  hash_set_delta (&ISDN_CPS, key, val);
+  hash_put_delta (&ISDN_CPS, key, val);
 }
 
 
@@ -180,7 +184,7 @@ static int get_cps(void)
   CPS sum;
 
   // reread every 10 msec only
-  age = hash_age(&ISDN_CPS, NULL, NULL);
+  age = hash_age(&ISDN_CPS, NULL);
   if (age > 0 && age <= 10) return 0;
   
   if (fd == -1) return -1;
@@ -204,9 +208,9 @@ static int get_cps(void)
   for (i = 0; i < ISDN_MAX_CHANNELS; i++) {
     sum.in  += cps[i].in;
     sum.out += cps[i].out;
-    hash_set_cps (i, &cps[i]);
+    hash_put_cps (i, &cps[i]);
   }
-  hash_set_cps (-1, &sum);
+  hash_put_cps (-1, &sum);
 
   return 0;
 }
@@ -221,7 +225,7 @@ static void my_isdn_cps (RESULT *result, RESULT *arg1, RESULT *arg2)
     return;
   }
   
-  value = hash_get_delta(&ISDN_CPS, R2S(arg1), R2N(arg2));
+  value = hash_get_delta(&ISDN_CPS, R2S(arg1), NULL, R2N(arg2));
   SetResult(&result, R_NUMBER, &value); 
 
 }
@@ -231,6 +235,9 @@ static void my_isdn_cps (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 int plugin_init_isdn (void)
 {
+  hash_create(&ISDN_INFO);
+  hash_create(&ISDN_CPS);
+
   AddFunction ("isdn::info", 2, my_isdn_info);
 
 #ifdef HAVE_LINUX_ISDN_H

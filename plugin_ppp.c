@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.5 2004/05/29 15:53:28 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.6 2004/06/17 06:23:43 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.6  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.5  2004/05/29 15:53:28  reinelt
  *
  * M50530: reset parport signals on exit
@@ -77,7 +81,7 @@
 
 #ifdef HAVE_NET_IF_PPP_H
 
-static HASH PPP = { 0, };
+static HASH PPP;
 
 static int get_ppp_stats (void)
 {
@@ -89,7 +93,7 @@ static int get_ppp_stats (void)
   char key[16], val[16];
 
   // reread every 10 msec only
-  age=hash_age(&PPP, NULL, NULL);
+  age=hash_age(&PPP, NULL);
   if (age>0 && age<=10) return 0;
   
   // open socket only once
@@ -114,10 +118,10 @@ static int get_ppp_stats (void)
     }
     qprintf(key, sizeof(key), "Rx:%d", unit);
     qprintf(val, sizeof(val), "%d", ibytes);
-    hash_set_delta (&PPP, key, val);
+    hash_put_delta (&PPP, key, val);
     qprintf(key, sizeof(key), "Tx:%d", unit);
     qprintf(val, sizeof(val), "%d", obytes);
-    hash_set_delta (&PPP, key, val);
+    hash_put_delta (&PPP, key, val);
 
   }
   return 0;
@@ -132,7 +136,7 @@ static void my_ppp (RESULT *result, RESULT *arg1, RESULT *arg2)
     SetResult(&result, R_STRING, ""); 
     return;
   }
-  value=hash_get_delta(&PPP, R2S(arg1), R2N(arg2));
+  value=hash_get_delta(&PPP, R2S(arg1), NULL, R2N(arg2));
   SetResult(&result, R_NUMBER, &value); 
 }
 
@@ -141,6 +145,7 @@ static void my_ppp (RESULT *result, RESULT *arg1, RESULT *arg2)
 
 int plugin_init_ppp (void)
 {
+  hash_create(&PPP);
 #ifdef HAVE_NET_IF_PPP_H
   AddFunction ("ppp", 2, my_ppp);
 #endif
@@ -149,5 +154,5 @@ int plugin_init_ppp (void)
 
 void plugin_exit_ppp(void) 
 {
-	hash_destroy(&PPP);
+  hash_destroy(&PPP);
 }

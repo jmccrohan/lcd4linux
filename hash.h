@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.13 2004/06/13 01:12:52 reinelt Exp $
+/* $Id: hash.h,v 1.14 2004/06/17 06:23:43 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.14  2004/06/17 06:23:43  reinelt
+ *
+ * hash handling rewritten to solve performance issues
+ *
  * Revision 1.13  2004/06/13 01:12:52  reinelt
  *
  * debug widgets changed (thanks to Andy Baxter)
@@ -87,40 +91,57 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
-
+// struct timeval
 #include <sys/time.h>
-typedef struct timeval timeval;
+
 
 typedef struct {
-  timeval time;
-  double  val;
+  int   size;
+  char *value;
+  struct timeval timestamp;
 } HASH_SLOT;
 
 
 typedef struct {
+  char *key;
+  int   val;
+} HASH_COLUMN;
+
+typedef struct {
   char      *key;
-  char      *val;
-  int       len; 
-  timeval   time;
-  int       root;
+  int       index;
+  int       nSlot;
   HASH_SLOT *Slot;
 } HASH_ITEM;
 
 
 typedef struct {
-  int       sorted;
-  timeval   time;
-  int       nItems;
-  HASH_ITEM *Items;
+  int         sorted;
+  struct timeval timestamp;
+  int         nItems;
+  HASH_ITEM   *Items;
+  int         nColumns;
+  HASH_COLUMN *Columns;
+  char        *delimiter;
 } HASH;
 
 
-void   hash_set       (HASH *Hash, char *key, char *val);
-void   hash_set_delta (HASH *Hash, char *key, char *val);
-int    hash_age       (HASH *Hash, char *key, char **value);
-char  *hash_get       (HASH *Hash, char *key);
-double hash_get_delta (HASH *Hash, char *key, int delay);
-double hash_get_regex (HASH *Hash, char *key, int delay);
-void   hash_destroy   (HASH *Hash);
+
+void   hash_create        (HASH *Hash);
+
+int    hash_age           (HASH *Hash, const char *key);
+
+void   hash_set_column    (HASH *Hash, int number, const char *column);
+void   hash_set_delimiter (HASH *Hash, const char *delimiter);
+
+char  *hash_get           (HASH *Hash, const char *key, const char *column);
+double hash_get_delta     (HASH *Hash, const char *key, const char *column, int delay);
+double hash_get_regex     (HASH *Hash, const char *key, const char *column, int delay);
+
+void   hash_put           (HASH *Hash, const char *key, const char *value);
+void   hash_put_delta     (HASH *Hash, const char *key, const char *value);
+
+void   hash_destroy       (HASH *Hash);
+
 
 #endif
