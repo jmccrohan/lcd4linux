@@ -48,7 +48,8 @@ Widget Busy {
 
 Widget BusyBar {
     class 'Bar'
-    expression cpu('busy', 500)
+    expression  cpu('busy',   500)
+    expression2 cpu('system', 500)
     length 10	
     direction 'E'
     update tack
@@ -63,6 +64,15 @@ Widget Load {
     precision 1
     align 'R'
     update tick
+}
+
+Widget LoadBar {
+    class 'Bar'
+    expression  loadavg(1)
+    max 2.0
+    length 10	
+    direction 'E'
+    update tack
 }
 
 
@@ -80,6 +90,7 @@ Layout Default {
     }
     Row4 {
 	Col1 'Load'
+	Col11 'LoadBar'
     }
 }
 

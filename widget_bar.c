@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.2 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: widget_bar.c,v 1.3 2004/01/20 12:45:47 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.3  2004/01/20 12:45:47  reinelt
+ * "Default screen" working with MatrixOrbital
+ *
  * Revision 1.2  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -62,14 +65,14 @@ void widget_bar_update (void *Self)
   double min, max;
   
   // evaluate expressions
-  val1=0.0;
+  val1 = 0.0;
   if (T->expression1!=NULL && *T->expression1!='\0') {
     Eval(T->expression1, &result); 
     val1 = R2N(&result); 
     DelResult(&result);
   }
   
-  val2=0.0;
+  val2 = val1;
   if (T->expression2!=NULL && *T->expression2!='\0') {
     Eval(T->expression2, &result); 
     val2 = R2N(&result); 
@@ -98,7 +101,6 @@ void widget_bar_update (void *Self)
     if (val2 > max) max = val2;
   }
   
-
   // calculate bar values
   T->min=min;
   T->max=max;
@@ -136,6 +138,12 @@ int widget_bar_init (WIDGET *Self)
   B->expression1 = cfg_get_raw (section, "expression",  NULL);
   B->expression2 = cfg_get_raw (section, "expression2", NULL);
   
+  // sanity check
+  if (B->expression1==NULL || *B->expression1=='\0') {
+    error ("widget %s has no expression, using '0.0'", Self->name, c);
+    B->expression1="0";
+  }
+  
   // minimum and maximum value
   B->expr_min = cfg_get_raw (section, "min", NULL);
   B->expr_max = cfg_get_raw (section, "max", NULL);
@@ -159,7 +167,7 @@ int widget_bar_init (WIDGET *Self)
     B->direction=DIR_SOUTH;
     break;
   default:
-    error ("widget %s has unknown direction '%s', using 'East'", section, c);
+    error ("widget %s has unknown direction '%s', using 'East'", Self->name, c);
     B->direction=DIR_EAST;
   }
   free (c);
@@ -172,8 +180,6 @@ int widget_bar_init (WIDGET *Self)
   
   free (section);
   Self->data=B;
-  
-  debug ("Michi: widget_bar added...");
   
   timer_add (widget_bar_update, Self, B->update, 0);
   

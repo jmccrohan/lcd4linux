@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.11 2004/01/20 05:36:59 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.12 2004/01/20 12:45:47 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.12  2004/01/20 12:45:47  reinelt
+ * "Default screen" working with MatrixOrbital
+ *
  * Revision 1.11  2004/01/20 05:36:59  reinelt
  * moved text-display-specific stuff to drv_generic_text
  * moved all the bar stuff from drv_generic_bar to generic_text
@@ -175,7 +178,6 @@ static void drv_MO_goto (int row, int col)
 }
 
 
-// start display
 static int drv_MO_start (char *section)
 {
   int i;  
@@ -272,13 +274,6 @@ static int drv_MO_start (char *section)
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
   PROTOCOL = Models[Model].protocol;
-
-  // init Bars
-  // Fixme
-  // bar_init(DROWS, DCOLS, XRES, YRES, CHARS-ICONS);
-  // bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
-  // bar_add_segment(255,255,255,255); // ASCII 255 = block
-  
 
   if (PROTOCOL==2) 
     drv_generic_serial_write ("\376\130", 2);  // Clear Screen
@@ -492,7 +487,7 @@ int drv_MO_init (char *section)
   // add fixed chars to the bar driver
   drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
   drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
-
+  
   // register text widget
   wc=Widget_Text;
   wc.draw=drv_MO_draw_text;

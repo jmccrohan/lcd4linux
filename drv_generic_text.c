@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.1 2004/01/20 05:36:59 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.2 2004/01/20 12:45:47 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.2  2004/01/20 12:45:47  reinelt
+ * "Default screen" working with MatrixOrbital
+ *
  * Revision 1.1  2004/01/20 05:36:59  reinelt
  * moved text-display-specific stuff to drv_generic_text
  * moved all the bar stuff from drv_generic_bar to generic_text
@@ -88,8 +91,6 @@ static int nSegment=0;
 static int fSegment=0;
 static SEGMENT Segment[128];
 
-// Fixme: get rid of me!
-static int RES;
 
 
 // ****************************************
@@ -281,8 +282,8 @@ static void drv_generic_text_bar_create_segments (void)
     res=Bar[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
     for (i=0; i<nSegment; i++) {
       if (Segment[i].dir & Bar[n].dir) {
-	l1 = Segment[i].val1; if (l1>RES) l1=RES;
-	l2 = Segment[i].val2; if (l2>RES) l2=RES;
+	l1 = Segment[i].val1; if (l1>res) l1=res;
+	l2 = Segment[i].val2; if (l2>res) l2=res;
 	if (l1 == Bar[n].val1 && l2 == Bar[n].val2) break;
       }
     }
@@ -448,7 +449,7 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 			       void (*drv_write)(char *buffer, int len))
 {
   WIDGET_BAR *B = W->data;
-  int row, col, len, max, val1, val2;
+  int row, col, len, res, max, val1, val2;
   int c, n, s;
   DIRECTION dir;
   
@@ -459,14 +460,14 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 
   // maybe grow layout framebuffer
   // bars *always* grow heading North or East!
-  if (dir==DIR_EAST || dir==DIR_WEST) {
+  if (dir & (DIR_EAST|DIR_WEST)) {
     drv_generic_text_resizeFB (row, col+len-1);
-    RES = XRES;
   } else {
     drv_generic_text_resizeFB (row, col);
-    RES = YRES;
   }
-  max  = len * RES;
+
+  res  = dir & (DIR_EAST|DIR_WEST)?XRES:YRES;
+  max  = len * res;
   val1 = B->val1 * (double)(max);
   val2 = B->val2 * (double)(max);
   
@@ -522,7 +523,6 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
       }
       memcpy    (DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
       drv_write (DisplayFB+row*DCOLS+pos1,                          pos2-pos1+1);
-      debug ("Michi: bar(%d,%d) len=%d", row, pos1, pos2-pos1+1);
     }
   }
   

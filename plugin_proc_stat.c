@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.5 2004/01/18 09:01:45 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.6 2004/01/20 12:45:47 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.6  2004/01/20 12:45:47  reinelt
+ * "Default screen" working with MatrixOrbital
+ *
  * Revision 1.5  2004/01/18 09:01:45  reinelt
  * /proc/stat parsing finished
  *
@@ -248,8 +251,11 @@ static void my_cpu (RESULT *result, RESULT *arg1, RESULT *arg2)
   else if (strcasecmp(key, "idle"  )==0) value=cpu_idle;
   else if (strcasecmp(key, "busy"  )==0) value=cpu_total-cpu_idle;
   
-  value = 100*value/cpu_total;
-  
+  if (cpu_total>0.0)
+    value = 100*value/cpu_total;
+  else
+    value=0.0;
+
   SetResult(&result, R_NUMBER, &value); 
 }
 
