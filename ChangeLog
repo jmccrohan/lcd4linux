@@ -1,4 +1,105 @@
+2004-01-15  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, lcd4linux.conf.sample, lcd4linux.conf.sample.old, plugin.c, plugin_cpuinfo.c, plugin_loadavg.c, plugin_meminfo.c, widget_text.c, widget_text.h:
+	moved lcd4linux.conf.sample to *.old
+	lcd4linux.conf.sample with new layout
+	new plugins 'loadavg' and 'meminfo'
+	text widget have pre- and postfix
+
+2004-01-14  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, cfg.c, cfg.h, drv_MatrixOrbital.c, expr.c, layout.c, lcd4linux.c, plugin.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_uname.c, widget.c, widget.h, widget_text.c:
+	new plugin 'uname' which does what it's called
+	text widget nearly finished
+	first results displayed on MatrixOrbital
+
+2004-01-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, hash.c, hash.h, plugin.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_sample.c:
+	new util 'hash' for associative arrays
+	new plugin 'cpuinfo'
+
+	* parport.c, timer.c, timer.h, widget.c, widget.h, widget_text.c, configure.in, layout.c, lcd4linux.c, configure, Makefile.in, Makefile.am:
+	timer queues added
+	liblcd4linux deactivated turing transformation to new layout
+
+2004-01-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* evaluator.c, evaluator.h, expr.c, layout.c, lcd4linux.c:
+	evaluating the 'Variables' section in the config file
+
+2004-01-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, cfg.c, drv_MatrixOrbital.c, layout.c, plugin.c, plugin_string.c, widget.c, widget.h, widget_text.c:
+	further widget and layout processing
+
+	* cfg.c, drv_MatrixOrbital.c, layout.c, widget.c:
+	layout starts to exist...
+
+2004-01-10  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, cfg.c, cfg.h, drv.h, drv_MatrixOrbital.c, layout.c, layout.h, lcd4linux.c, plugin.c, widget.c, widget.h, widget_text.c:
+	added new function 'cfg_list()' (not finished yet)
+	added layout.c (will replace processor.c someday)
+	added widget_text.c (will be the first and most important widget)
+	modified lcd4linux.c so that old-style configs should work, too
+
+	* lcd4linux.c, plugin.c:
+	changed initialization order so cfg() gets initialized before plugins.
+	This way a plugin's init() can use cfg_get().
+	Thanks to Xavier for reporting this one!
+
+	* Makefile.am, Makefile.in, plugin.c, plugin_i2c_sensors.c:
+	I2C Sensors plugin from Xavier added
+
+	* drv_MatrixOrbital.c, widget.c, widget.h:
+	further matrixOrbital changes
+	widgets initialized
+
+	* drv.c, drv_MatrixOrbital.c: new MatrixOrbital changes
+
+2004-01-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, display.c, display.h, drv.c, drv.h, drv_MatrixOrbital.c, lcd4linux.c, Makefile.am, Makefile.in, configure:
+	initiated transfer to new driver architecture
+	new file 'drv.c' will someday replace 'display.c'
+	new file 'drv_MatrixOrbital.c' will replace 'MatrixOrbital.c'
+	due to this 'soft' transfer lcd4linux should stay usable during the switch
+	(at least I hope so)
+
+	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, HD44780.c, M50530.c, MatrixOrbital.c, MilfordInstruments.c, PalmPilot.c, Raster.c, T6963.c, Text.c, USBLCD.c, XWindow.c, cfg.c, cfg.h, exec.c, expr.c, filter.c, icon.c, imon.c, lcd4linux.c, mail.c, mail2.c, parport.c, processor.c, seti.c, system.c, wifi.c:
+	added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+
+2004-01-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* cfg.c: allowed '.' in key names
+	allowed empty group keys (not only "group anything {", but "anything {")
+
+	* AUTHORS, cfg.c, lcd4linux.c: Luk Claes added to AUTHORS
+	cfg: group handling ('{}') added
+
+2004-01-07  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* cfg.c, config.h.in, evaluator.c, libtool:
+	small glitch in evaluator fixed
+	made config table sorted and access with bsearch(),
+	which should be much faster
+
 2004-01-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* AUTHORS, debian/copyright, evaluator.c: more copyright issues
+
+	* USBLCD.c, XWindow.c, battery.c, battery.h, debian/copyright, imon.c, imon.h, plugin_xmms.c, seti.c, wifi.c, wifi.h, AUTHORS, HD44780.c, MilfordInstruments.c:
+	Copyright statements cleaned up
+
+	* debian/control, debian/dirs, debian/rules, debian/templates:
+	more debianizing
+
+	* debian/copyright: debian updates
+
+	* aclocal.m4, configure, ltmain.sh: autotools update
+
+	* ChangeLog: *** empty log message ***
 
 	* Makefile.am, Makefile.in, README.Plugins, evaluator.c, plugin.c, plugin_sample.c:
 	Evaluator: functions with variable argument lists
