@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.27 2000/08/10 18:42:20 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.28 2000/10/25 08:10:48 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.28  2000/10/25 08:10:48  reinelt
+ *
+ * added restart funnctionality
+ * (lots of this code was stolen from sendmail.c)
+ *
  * Revision 1.27  2000/08/10 18:42:20  reinelt
  *
  * fixed some bugs with the new syslog code
@@ -158,6 +163,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <errno.h>
 #include <signal.h>
 
@@ -168,6 +175,7 @@
 #include "processor.h"
 
 char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
+char **my_argv;
 char *output=NULL;
 int got_signal=0;
 int debugging=1;
@@ -248,6 +256,13 @@ int main (int argc, char *argv[])
   int c, smooth;
   int quiet=0;
   
+  // save arguments for restart
+  my_argv=malloc(sizeof(char*)*(argc+1));
+  for (c=0; c<argc; c++) {
+    my_argv[c]=strdup(argv[c]);
+  }
+  my_argv[c]=NULL;
+
   while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
     switch (c) {
     case 'c':
@@ -293,26 +308,46 @@ int main (int argc, char *argv[])
 
   if (!foreground) {
     pid_t i;
+    int fd;
     debug ("going background...");
     i=fork();
     if (i<0) {
       error ("fork() failed: %s", strerror(errno));
       exit (1);
     }
-    if (i!=0)
-      exit (0);
+    if (i!=0) exit (0);
     
-    // close stdin/out/err ???
-    // open (dev/null) ???
+    // ignore nasty signals
+    signal(SIGINT,  SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    // detach stdin
+    if (freopen("/dev/null", "r", stdin)==NULL) {
+      error ("freopen (/dev/null) failed: %s", strerror(errno));
+      exit (1);
+    }
+    // detach stdout and stderr
+    fd=open("/dev/null", O_WRONLY, 0666);
+    if (fd==-1) {
+      error ("open (/dev/null) failed: %s", strerror(errno));
+      exit (1);
+    }
+    fflush(stdout);
+    fflush(stderr);
+    dup2(fd, STDOUT_FILENO);
+    dup2(fd, STDERR_FILENO);
+    close(fd);
   }
   
-  if (foreground)
+  if (foreground) {
     debug ("LCD4Linux " VERSION);
-  else
+  } else {
     info ("Version " VERSION " starting");
-
+    if (my_argv[0]==NULL || my_argv[0][0]!='/') {
+      info ("invoked without full path; restart may not work!");
+    }
+  }
+  
   // set default values
- 
   cfg_set ("row1", "*** %o %v ***");
   cfg_set ("row2", "%p CPU  %r MB RAM");
   cfg_set ("row3", "Busy %cu%% $r10cu");
@@ -332,6 +367,7 @@ int main (int argc, char *argv[])
     exit (1);
   }
 
+  // now install our own signal handler
   signal(SIGHUP,  handler);
   signal(SIGINT,  handler);
   signal(SIGQUIT, handler);
@@ -365,7 +401,16 @@ int main (int argc, char *argv[])
   lcd_quit();
   
   if (got_signal==SIGHUP) {
-    debug ("restarting");
+    int i, j;
+    debug ("restarting...");
+    // close all files on exec
+    for (i=3; i<OPEN_MAX; i++) {
+      if ((j=fcntl(i,F_GETFD,0))!=-1)
+	fcntl(i,F_SETFD,j|FD_CLOEXEC);
+    }
+    execv (my_argv[0], my_argv);
+    error ("execv() failed: %s", strerror(errno));
+    exit(1);
   }
   exit (0);
 }
