@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.16 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin.c,v 1.17 2004/02/10 06:54:39 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.17  2004/02/10 06:54:39  reinelt
+ * DVB plugin ported
+ *
  * Revision 1.16  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -152,6 +155,7 @@ int plugin_init (void)
   plugin_init_meminfo();
   plugin_init_netdev();
   plugin_init_ppp();
+  plugin_init_dvb();
   plugin_init_i2c_sensors();
   plugin_init_xmms();
   
