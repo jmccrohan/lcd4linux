@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.43 2004/11/29 04:42:06 reinelt Exp $^
+/* $Id: cfg.c,v 1.44 2005/01/17 06:29:24 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.44  2005/01/17 06:29:24  reinelt
+ * added software-controlled backlight support to HD44780
+ *
  * Revision 1.43  2004/11/29 04:42:06  reinelt
  * removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
  *
@@ -777,7 +780,6 @@ static int cfg_read (const char *file)
 int cfg_init (const char *file)
 {
   if (cfg_check_source(file) == -1) {
-    error("config file '%s' is insecure, aborting", file);
     return -1;
   }
   

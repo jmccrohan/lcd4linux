@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.40 2004/11/30 05:01:25 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.41 2005/01/17 06:29:24 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.41  2005/01/17 06:29:24  reinelt
+ * added software-controlled backlight support to HD44780
+ *
  * Revision 1.40  2004/11/30 05:01:25  reinelt
  * removed compiler warnings for deactivated i2c bus
  *
@@ -280,6 +283,7 @@ static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
 static unsigned char SIGNAL_ENABLE;
 static unsigned char SIGNAL_ENABLE2;
+static unsigned char SIGNAL_BACKLIGHT;
 static unsigned char SIGNAL_GPO;
 
 /* maximum time to wait for the busy-flag (in usec) */
@@ -306,20 +310,21 @@ typedef struct {
 #define CAP_PARPORT    (1<<0)
 #define CAP_I2C        (1<<1)
 #define CAP_GPO        (1<<2)
-#define CAP_BRIGHTNESS (1<<3)
-#define CAP_BUSY4BIT   (1<<4)
-#define CAP_HD66712    (1<<5)
-#define CAP_LCM162     (1<<6)
+#define CAP_BACKLIGHT  (1<<3)
+#define CAP_BRIGHTNESS (1<<4)
+#define CAP_BUSY4BIT   (1<<5)
+#define CAP_HD66712    (1<<6)
+#define CAP_LCM162     (1<<7)
 
 #define BUS_PP  CAP_PARPORT
 #define BUS_I2C CAP_I2C
 
 
 static MODEL Models[] = {
-  { 0x01, "generic",  CAP_PARPORT|CAP_I2C|CAP_GPO },
+  { 0x01, "generic",  CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_BACKLIGHT },
   { 0x02, "Noritake", CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_BRIGHTNESS },
   { 0x03, "Soekris",  CAP_PARPORT|CAP_BUSY4BIT },
-  { 0x04, "HD66712",  CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_HD66712 },
+  { 0x04, "HD66712",  CAP_PARPORT|CAP_I2C|CAP_GPO|CAP_BACKLIGHT|CAP_HD66712 },
   { 0x05, "LCM-162",  CAP_PARPORT|CAP_LCM162 },
   { 0xff, "Unknown",  0 }
 };
@@ -623,32 +628,44 @@ static int drv_HD_PP_load (const char *section)
     return -1;
   }
 
-  /* the LCM-162 is hardwired */
+  /* Soft-Wiring */
   if (Capabilities & CAP_LCM162) {
-    if ((SIGNAL_RS      = drv_generic_parport_hardwire_ctrl ("RS",      "SELECT"))==0xff) return -1;
-    if ((SIGNAL_RW      = drv_generic_parport_hardwire_ctrl ("RW",      "INIT"  ))==0xff) return -1;
-    if ((SIGNAL_ENABLE  = drv_generic_parport_hardwire_ctrl ("ENABLE",  "AUTOFD"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = drv_generic_parport_hardwire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
-    if ((SIGNAL_GPO     = drv_generic_parport_hardwire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
+    /* the LCM-162 is hardwired */
+    if ((SIGNAL_RS        = drv_generic_parport_hardwire_ctrl ("RS",        "SELECT")) == 0xff) return -1;
+    if ((SIGNAL_RW        = drv_generic_parport_hardwire_ctrl ("RW",        "INIT"  )) == 0xff) return -1;
+    if ((SIGNAL_ENABLE    = drv_generic_parport_hardwire_ctrl ("ENABLE",    "AUTOFD")) == 0xff) return -1;
+    if ((SIGNAL_ENABLE2   = drv_generic_parport_hardwire_ctrl ("ENABLE2",   "GND"   )) == 0xff) return -1;
+    if ((SIGNAL_BACKLIGHT = drv_generic_parport_hardwire_ctrl ("BACKLIGHT", "GND"   )) == 0xff) return -1;
+    if ((SIGNAL_GPO       = drv_generic_parport_hardwire_ctrl ("GPO",       "GND"   )) == 0xff) return -1;
   } else {
     if (Bits==8) {
-      if ((SIGNAL_RS      = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
-      if ((SIGNAL_RW      = drv_generic_parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
-      if ((SIGNAL_ENABLE  = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
-      if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
-      if ((SIGNAL_GPO     = drv_generic_parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
+      if ((SIGNAL_RS        = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD")) == 0xff) return -1;
+      if ((SIGNAL_RW        = drv_generic_parport_wire_ctrl ("RW",      "GND"   )) == 0xff) return -1;
+      if ((SIGNAL_ENABLE    = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE")) == 0xff) return -1;
+      if ((SIGNAL_ENABLE2   = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   )) == 0xff) return -1;
     } else {
-      if ((SIGNAL_RS      = drv_generic_parport_wire_data ("RS",      "DB4"))==0xff) return -1;
-      if ((SIGNAL_RW      = drv_generic_parport_wire_data ("RW",      "DB5"))==0xff) return -1;
-      if ((SIGNAL_ENABLE  = drv_generic_parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
-      if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
-      if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
+      if ((SIGNAL_RS        = drv_generic_parport_wire_data ("RS",      "DB4")) == 0xff) return -1;
+      if ((SIGNAL_RW        = drv_generic_parport_wire_data ("RW",      "DB5")) == 0xff) return -1;
+      if ((SIGNAL_ENABLE    = drv_generic_parport_wire_data ("ENABLE",  "DB6")) == 0xff) return -1;
+      if ((SIGNAL_ENABLE2   = drv_generic_parport_wire_data ("ENABLE2", "GND")) == 0xff) return -1;
     }
+    /* backlight and GPO are always control signals */
+    if ((SIGNAL_BACKLIGHT = drv_generic_parport_wire_ctrl ("BACKLIGHT", "GND"   )) == 0xff) return -1;
+    if ((SIGNAL_GPO       = drv_generic_parport_wire_ctrl ("GPO",       "GND"   )) == 0xff) return -1;
   }
-  
+
+  /* clear capabilities if corresponding signal is GND */
+  if (SIGNAL_BACKLIGHT == 0) {
+    Capabilities &= ~CAP_BACKLIGHT;
+  }
+  if (SIGNAL_GPO == 0) {
+    Capabilities &= ~CAP_GPO;
+  }
+
+
   /* clear all signals */
-  if (Bits==8) {
-    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
+  if (Bits == 8) {
+    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_BACKLIGHT|SIGNAL_GPO, 0);
   } else {
     drv_generic_parport_data (0);
   }
@@ -702,7 +719,7 @@ static void drv_HD_PP_stop (void)
 {
   /* clear all signals */
   if (Bits==8) {
-    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
+    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_BACKLIGHT|SIGNAL_GPO, 0);
   } else {
     drv_generic_parport_data (0);
   }
@@ -918,6 +935,19 @@ static void drv_HD_defchar (const int ascii, const unsigned char *matrix)
 }
 
 
+static int drv_HD_backlight (int backlight)
+{
+  if (!(Capabilities & CAP_BACKLIGHT)) return -1;
+
+  if (backlight < 0) backlight = 0;
+  if (backlight > 1) backlight = 1;
+
+  drv_generic_parport_control (SIGNAL_BACKLIGHT, backlight);
+
+  return backlight;
+}
+
+  
 static int drv_HD_brightness (int brightness)
 {
   char cmd;
@@ -1099,10 +1129,18 @@ static int drv_HD_start (const char *section, const int quiet)
   drv_HD_clear(); /* clear *both* displays */
   drv_HD_command (allControllers, 0x03, T_CLEAR); /* return home */
   
+  /* maybe set backlight */
+  if (Capabilities & CAP_BACKLIGHT) {
+    int backlight;
+    if (cfg_number(section, "Backlight", 0, 0, 1, &backlight) > 0) {
+      drv_HD_backlight(backlight);
+    }
+  }
+
   /* maybe set brightness */
   if (Capabilities & CAP_BRIGHTNESS) {
     int brightness;
-    if (cfg_number(section, "Brightness", 0, 0, 3, &brightness)>0) {
+    if (cfg_number(section, "Brightness", 0, 0, 3, &brightness) > 0) {
       drv_HD_brightness(brightness);
     }
   }
@@ -1130,11 +1168,20 @@ static int drv_HD_start (const char *section, const int quiet)
 /****************************************/
 
 
+static void plugin_backlight (RESULT *result, RESULT *arg1)
+{
+  double backlight;
+  
+  backlight = drv_HD_backlight(R2N(arg1));
+  SetResult(&result, R_NUMBER, &backlight); 
+}
+
+
 static void plugin_brightness (RESULT *result, RESULT *arg1)
 {
   double brightness;
   
-  brightness=drv_HD_brightness(R2N(arg1));
+  brightness = drv_HD_brightness(R2N(arg1));
   SetResult(&result, R_NUMBER, &brightness); 
 }
 
@@ -1226,6 +1273,9 @@ int drv_HD_init (const char *section, const int quiet)
   widget_register(&wc);
   
   /* register plugins */
+  if (Capabilities & CAP_BACKLIGHT) {
+    AddFunction ("LCD::backlight", 1, plugin_backlight);
+  }
   if (Capabilities & CAP_BRIGHTNESS) {
     AddFunction ("LCD::brightness", 1, plugin_brightness);
   }
