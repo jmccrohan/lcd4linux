@@ -23,6 +23,7 @@ foreground \#102000
 halfground \#90c000
 background \#a0d000
 
+
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
 #Row3 "Busy %cb%% $r10cs+cb"
