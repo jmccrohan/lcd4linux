@@ -1,0 +1,82 @@
+body {
+  margin: 0 10px 10px 10px;
+  padding: 0;
+}
+
+h1 {
+  margin-left: -10px;
+  margin-top: 5px;
+  text-align: center;
+  border-bottom: 2px groove black;
+}
+
+div.links {
+  float: right;
+  margin-left: 10px;
+  margin-top: 1em;
+  padding: 0 10px 0px 10px;
+  text-align: center;
+  border: 1px solid black;
+  background: white;
+} div.links div.title {
+  background: white;
+  margin: -0.5em 10px 5px 10px;
+  padding: 0 10px;
+  float: center;
+  border: 1px solid black;
+} div.links div.index {
+  position: relative;
+  bottom: 0;
+  left: -5px;
+  margin-top: 4px;
+  text-align: left;
+} div.links a {
+  color: black;
+  /*text-decoration: none;*/
+}
+
+div.cmd {
+  background: #000;
+  border: 1px solid #ddd;
+  font-family: monospace,fixed;
+  font-style: bold;
+  color: #fff;
+  white-space: pre;
+  font-size: 12px;
+  padding: 5px;
+  margin: 5px;
+}
+
+div.conf {
+  background: #eee;
+  border: 1px solid #111;
+  font-family: monospace,fixed;
+  white-space: pre;
+  font-size: 12px;
+  padding: 5px;
+  margin: 5px;
+}
+
+div.warn {
+  margin-top: 20px;
+  border: 2px solid #700000;
+  margin-left: 20px;
+  padding-left: 5px;
+  width: auto;
+  min-height: 30px;
+} 
+
+div.note {
+  margin-top: 20px;
+  border: 2px solid #43607e;
+  margin-left: 20px;
+  padding-left: 5px;
+  width: auto;
+  min-height: 30px;
+} 
+
+img.icon {
+  float: left;
+  margin-left: -14px;
+  margin-top: -20px;
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml-stylesheet type="text/xsl" href="../xsl/doc.xsl"?>
+<!DOCTYPE doc SYSTEM "../dtd/doc.dtd">
+<doc>
+<head>
+  <title>&L4L; drivers</title>
+  <ref>drivers_index</ref>
+  <links/>
+</head>
+<body>
+<h2>Drivers</h2>
+<index class="drivers"/>
+</body>
+</doc>

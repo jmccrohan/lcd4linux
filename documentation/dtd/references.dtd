@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  DTD of documentation for the lcd4linux project
+    Copyright 2004 Xavier Vello <xavier66@free.fr>
+    Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+-->
+
+<!ENTITY l4l "LCD4Linux">
+<!ENTITY L4L "LCD4Linux">
+
+<!ELEMENT references (ref*)>
+
+<!ELEMENT ref ((class|file|label|hiden))>
+<!ATTLIST ref id CDATA #REQUIRED>
+  <!ELEMENT class (#PCDATA)>
+  <!ELEMENT file (#PCDATA)>
+  <!ELEMENT label (#PCDATA)>
+  <!ELEMENT hiden EMPTY>

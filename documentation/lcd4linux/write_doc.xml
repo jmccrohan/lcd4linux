@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml-stylesheet type="text/xsl" href="../xsl/doc.xsl"?>
+<!DOCTYPE doc SYSTEM "../dtd/doc.dtd">
+<doc>
+<head>
+  <title>How to write documentation for &l4l; ?</title>
+  <ref>write_doc</ref>
+<!--  <links>
+    <link ref="i2c_sensors"/>
+  </links>-->
+</head>
+<body>
+<h2>Overview</h2>
+<p>The &l4l; documentation is composed of XML files which are processed with XSL stylesheets to produce XHTML files. 
+There these XML files are writen in a syntax similar to the HTML syntax, plus some helpers.</p>
+<p>The whole documentation is generated through a make system, which uses <tt>xmllint</tt> to check the validy of the xml files and <tt>xsltproc</tt> to process them and generate the XHTML pages. <i>These two programs are mandatory</i></p>
+
+<h2>The syntax</h2>
+A doc page looks like this :
+<conf>&lt;?xml version="1.0" encoding="UTF-8" standalone="no" ?&gt;
+&lt;?xml-stylesheet type="text/xsl" href="../xsl/doc.xsl"?&gt;
+&lt;!DOCTYPE doc SYSTEM "../dtd/doc.dtd"&gt;
+&lt;doc&gt;
+&lt;head&gt;
+  &lt;title&gt;How to write documentation for &l4l; ?&lt;/title&gt;
+  &lt;ref&gt;write_doc&lt;/ref&gt;
+  &lt;links&gt;
+    &lt;link ref="http://lcd4linux.sf.net"/&gt;
+  &lt;/links&gt;
+&lt;/head&gt;
+&lt;body&gt;
+...
+&lt;/body&gt;
+&lt;/doc&gt;
+</conf>
+
+<li>The three first lines are the preambule of the file, don't touch them.</li>
+<li>The root of the document is <tt>&lt;doc&gt;</tt>, it's the equivalent of &lt;html&gt;.</li>
+<li>Then, there's a <tt>&lt;head&gt;</tt> node, containing the information about the page. See later for the childs.</li>
+<li>The core of the doc is the &lt;body&gt; node, like in HTML, containing the content.</li>
+
+<h3>The &lt;head&gt;</h3>
+The head contains some information about the document :
+<li>&lt;title&gt; is the title of the document, which will be displayed as a &lt;h1&gt;</li>
+<li>&lt;ref&gt; is a unique reference for the document, which is assumed to be the same as in <i>references.xml</i> (we'll discuss later about this file)</li>
+<li>&lt;links&gt; is the section responsible of the "See Alo" box, containing links to other help pages, or to urls. It can contain several &lt;link&gt; elements, whose syntax is explained in the next part.</li>
+<li>There may be other elements, but we'll only use these ones for now.</li>
+
+<h3>The helpers</h3>
+You can use a lot of helpers in the body :
+<li>&lt;link&gt; is a helper to create links. It is used with one of these two arguments :
+<ul>
+<li><tt>&lt;link ref="xxx"/&gt;</tt> will create a link to the documentation page associated with this reference (defined in <i>references.xml</i>)</li>
+<li><tt>&lt;link url="http://..."/&gt;</tt> will create a link to the url</li>
+</ul>
+Note that if you don't provide a text, the text of the link will be the label of the reference or the url. You can specify a text writing <tt>&lt;link url="http://..."&gt;TEXT&lt;/link&gt;</tt>
+</li>
+<warn>As this is XML, you <b>must</b> close all the tags you open, or use self-closing tags for empty ones :<br/>For example, you have to write <tt>&lt;br/&gt;</tt> but not <tt>&lt;br&gt;.</tt></warn>
+
+<li>&lt;cmd&gt; Opens a box with write text on black background, used to indicate something's happening in a console (compilation, logs, ...). The text is in "pre" mode, so spaces and newlines are kept, no need of &amp;nbsp; or &lt;br/&gt;, <b>But beware of &lt; and &gt;</b> (you must replace them with &amp;lt; and &amp;gt;)</li>
+<cmd>xav:~$ echo "An example of &lt;cmd&gt; box"
+An example of &lt;cmd&gt; box
+xav:~$
+</cmd>
+<li>&lt;conf&gt; works like &lt;cmd&gt; but with black text on grey background, to print lcd4linux.conf examples.</li>
+<conf>Widget Lightning {
+    class 'icon'
+    speed 100
+    visible cpu('busy', 500)-50
+    bitmap {
+        row1 '...***'
+        row2 '..***.'
+        row3 '.***..'
+        row4 '.****.'
+        row5 '..**..'
+        row6 '.**...'
+        row7 '**....'
+        row8 '*.....'
+    }
+}</conf>
+<li>&lt;note&gt; is to display a box with a small icon, to point out a detail, or an advice</li>
+<note>To dry a wet cat, don't put it in a microwave ;)</note>
+<li>&lt;warn&gt; works like &lt;note&gt; but with a red exclamation mark and a red border, to display warnings. In general, use a note for a detail or an advice and warn to point configuration problems, hardware hazards, or other happy things ;)</li>
+<warn>We're not responsible for damages caused to your microwave if you don't read the above note !</warn>
+<li>&lt;index&gt; is a cool thing. It displays the list of pages of a specified class. It's used to display indexes. For example &lt;index class="drivers"/&gt; will display a list of all pages about drivers. If there's no class specified, it'll parse the list of pages of the "lcd4linux" class.</li>
+<li>&lt;new&gt; is in the DTD, but is not yet implemented :/</li>
+<li>You can use any other XHTML-valid tag. The most used should be : &lt;br/&gt; &lt;h2&gt; &lt;h3&gt; &lt;li&gt; &lt;b&gt; &lt;i&gt; &lt;tt&gt; ...</li>
+
+<h3>references.xml</h3>
+There's a file in <tt>data/</tt> called <tt>references.xml</tt>. It isn't processed directly, but is used to parse links and indexes. It's syntax is quite straightforward, so I won't explain it.<br/>
+You must add a new entry in it for each page you write so that other pages can have links to it and index it.
+<note>A null &lt;class/&gt; attribute corresponds to the lcd4linux class. It's not a bug, it's a feature, used to make links (the lcd4linux class is in the root of the documentation)</note>
+
+<h2>The compilation system</h2>
+The documentation is compiled with a Makefile build system. There's a toplevel Makefile which calls the apropriate targets in each subdirs which contains xml files (for the moment, <tt>lcd4linux</tt>, <tt>drivers</tt> and <tt>plugins</tt>). In these subdirs, the Makefile is a link to <tt>Makefile.generic</tt>.<br/>
+To compile the documentation, just type make at the toplevel, and look in the <tt>HTML</tt> folder. Type make help for help ;)
+<warn>Two programs are mandatory to build the documentation :
+<ul><li><tt>xmllint</tt> from libxml2 is used to validate the xml pages to be processed. It's in the debian package <tt>libxml2</tt></li>
+<li><tt>xsltproc</tt> from libxslt processes the xml files to generate the html pages. It's in the libxslt tarballs or in the <tt>xsltproc</tt> debian package</li></ul>
+</warn>
+</body>
+</doc>

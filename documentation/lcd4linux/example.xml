@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml-stylesheet type="text/xsl" href="../xsl/doc.xsl"?>
+<!DOCTYPE doc SYSTEM "../dtd/doc.dtd">
+<doc>
+<head>
+  <title>The title of the page The title of the page</title>
+  <version>0.1</version>
+  <ref>doc_example</ref>
+  <links>
+    <link ref="i2c_sensors"/>
+    <link url="http://lcd4linux.sf.net"/>
+    <link url="http://lcd4linux.sf.net">SourceForge</link>
+  </links>
+  <history>
+    <revision version="0.1" by="Xavier">
+      The first, and only version ever ;)
+    </revision>
+     <revision version="0.0" by="Xavier">
+      TEST
+    </revision>   
+  </history>
+  <state finished="true" proofread="true"/>
+</head>
+<body>
+<h2>This is the text of the page, we can use xhtml tags here and there are some helpers : </h2>
+<cmd>&lt;cmd&gt; Will be used to indicate <tt>console commands</tt>, or other things</cmd>
+<conf>&lt;conf&gt; Is to format lcd4linux.conf examples</conf>
+<note>&lt;note&gt; Will display a div with the message, to add a tip, or an explanation</note>
+<warn>&lt;warn&gt; Will work just as &lt;note&gt;, but for more important messages</warn>
+<new date="01/01/01" title="test new">&lt;new&gt; is to display boxes with news, for the main page or, as an example for displays/plugins pages to show news in the features</new> <br />
+
+<link ref="plugin_i2c_sensors"/>
+
+There will be other helpers : &lt;image&gt;, &lt;link&gt;, &lt;table&gt; ...<br />
+
+If you look at the sources of this page, there are a lot of information in the head. They will be used for internal processing, and some will be displayed (for example &lt;links&gt; will define links to be put in a &apos;See also&apos; box, with links to related articles, websites, ...<br />
+	
+We&apos;ll use &apos;standard&apos; xhtml tags &lt;br /&gt; <b>&lt;b&gt;</b> <i>&lt;i&gt;</i> <tt>&lt;tt&gt;</tt> <small>&lt;small&gt;</small> <big>&lt;big&gt;</big> and others, not really proceced by xslt.
+ <h2>&lt;h2&gt;</h2> <h3>&lt;h3&gt;</h3> <h4>&lt;h4&gt;</h4> <h5>&lt;h5&gt;</h5> <h6>&lt;h6&gt;</h6> 
+ 
+ <h2>test</h2>
+ <h3>one</h3>
+ <h3>two</h3>
+ <h3>three</h3>
+ <h2>AAAA</h2>
+ <h3>one</h3>
+ <h3>two</h3>
+ <h3>three</h3>
+</body>
+</doc>

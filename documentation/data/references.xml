@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE references SYSTEM "../dtd/references.dtd">
+
+<references>
+<!--Pages about lcd4linux-->
+  <ref id="index">
+    <class/>
+    <file>index</file>
+    <label>Documentation index</label>
+    <hiden/>
+  </ref>
+  <ref id="overview">
+    <class/>
+    <file>overview</file>
+    <label>&L4L; overview</label>
+  </ref>
+  <ref id="bug_report">
+    <class/>
+    <file>bug_report</file>
+    <label>How to report bugs or get support</label>
+  </ref>
+  <ref id="contact">
+    <class/>
+    <file>contact</file>
+    <label>How to contact us</label>
+  </ref>
+  <ref id="write_doc">
+    <class/>
+    <file>write_doc</file>
+    <label>How to write documentation</label>
+  </ref>
+  
+  <ref id="test">
+    <class/>
+    <file>example</file>
+    <label>A test page</label>
+  </ref> 
+
+<!--Drivers-->
+  <ref id="drivers_index">
+    <class>drivers</class>
+    <file>index</file>
+    <label>Drivers index</label>
+    <hiden/>
+  </ref>
+  <ref id="hd44780">
+    <class>drivers</class>
+    <file>hd44780</file>
+    <label>HD44780 displays driver</label>
+  </ref>
+
+<!--Plugins-->
+  <ref id="plugins_index">
+    <class>plugins</class>
+    <file>index</file>
+    <label>Plugins index</label>
+    <hiden/>
+  </ref>
+  <ref id="i2c_sensors">
+    <class>plugins</class>
+    <file>i2c_sensors</file>
+    <label>I2C sensors plugin</label>
+  </ref>
+  
+</references>
