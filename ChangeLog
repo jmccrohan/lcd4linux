@@ -1,3 +1,31 @@
+2003-09-10  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* XWindow.c, icon.c, pixmap.c, pixmap.h, processor.c, Raster.c:
+	icons nearly finished\!
+
+	* lcd4linux.c, processor.c: icons: reorganized tick_* again...
+
+	* MatrixOrbital.c, USBLCD.c, display.c, icon.c, processor.c, HD44780.c, M50530.c:
+	Icons for M50530, new processing scheme (Ticks.Text...)
+
+2003-09-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* HD44780.c, MatrixOrbital.c, USBLCD.c: basic icon support for HD44780
+
+	* Crystalfontz.c, Cwlinux.c, HD44780.c, M50530.c, MatrixOrbital.c, PalmPilot.c, Raster.c, USBLCD.c, XWindow.c, cfg.c, cfg.h, filter.c, lcd4linux.c, parport.c, processor.c:
+	new function 'cfg_number()'
+
+	* TODO, USBLCD.c, bar.c, display.c, display.h, icon.c, icon.h, lcd4linux.c, processor.c, processor.h, MatrixOrbital.c:
+	even more icons stuff
+
+2003-09-01  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* aclocal.m4, config.guess, config.h.in, configure, configure.in, ltmain.sh, Makefile.am, Makefile.in:
+	shared liblcd4linux
+
+	* icon.h, parser.c, parser.h, processor.c, MatrixOrbital.c, bar.c, display.c, display.h, icon.c:
+	icons nearly finished, but MatrixOrbital only
+
 2003-08-24  Michael Reinelt  <reinelt@eunet.at>
 
 	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, HD44780.c, M50530.c, Makefile.am, Makefile.in, MatrixOrbital.c, PalmPilot.c, Raster.c, SIN.c, Text.c, USBLCD.c, cfg.c, cfg.h, debug.c, debug.h, display.c, display.h, icon.c, lcd4linux.c, parport.c, processor.c, seti.c, system.c:
