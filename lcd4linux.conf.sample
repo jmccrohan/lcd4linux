@@ -74,7 +74,7 @@ Display USBLCD {
 Display T6963-240x64 {
     Driver 'T6963'
     Port '/dev/parports/0'
-    Size '240x64'
+    Size '240x128'
     Wire.CE 'STROBE'
     Wire.CD 'SELECT'
     Wire.RD 'AUTOFD'
@@ -151,6 +151,48 @@ Widget LoadBar {
     update tack
 }
 
+
+Widget Disk {
+    class 'Text'
+    # disk.[rw]blk return blocks, we assume a blocksize of 512
+    # to get the number in kB/s we would do blk*512/1024, which is blk/2 
+    expression (disk('.*', 'rblk', 500)+disk('.*', 'wblk', 500))/2
+    prefix 'disk'
+    postfix ' '
+    width 10	
+    precision 0
+    align 'R'	
+    update tick	
+}	
+
+Widget DiskBar {
+    class 'Bar'
+    expression  disk('.*', 'rblk', 500)
+    expression2 disk('.*', 'wblk', 500)
+    length 14	
+    direction 'E'
+    update tack
+}
+
+Widget Eth0 {
+    class 'Text'
+    expression (netdev('eth0.Rx.bytes', 500)+netdev('eth0.Tx.bytes', 500))/1024
+    prefix 'eth0'
+    postfix ' '
+    width 10	
+    precision 0
+    align 'R'	
+    update tick	
+}	
+
+Widget Eth0Bar {
+    class 'Bar'
+    expression  netdev('eth0.Rx.bytes', 500)
+    expression2 netdev('eth0.Tx.bytes', 500)
+    length 14	
+    direction 'E'
+    update tack
+}
 
 Widget Heartbeat {
     class 'Icon'
@@ -276,6 +318,14 @@ Layout Default {
 	Col1 'Load'
 	Col11 'LoadBar'
     }
+    Row5 {
+	Col1  'Disk'
+	Col11 'DiskBar'
+    }
+    Row6 {
+	Col1  'Eth0'
+	Col11 'Eth0Bar'
+    }
 }
 
 Layout L24x8 {
@@ -312,14 +362,14 @@ Layout Test {
     Row06.Col1 'Test'
     Row07.Col1 'Test'
     Row08.Col1 'Test'
-    Row09.Col1 'Test'
-    Row10.Col1 'Test'
-    Row11.Col1 'Test'
-    Row12.Col1 'Test'
-    Row13.Col1 'Test'
-    Row14.Col1 'Test'
-    Row15.Col1 'Test'
-    Row16.Col1 'Test'
+#    Row09.Col1 'Test'
+#    Row10.Col1 'Test'
+#    Row11.Col1 'Test'
+#    Row12.Col1 'Test'
+#    Row13.Col1 'Test'
+#    Row14.Col1 'Test'
+#    Row15.Col1 'Test'
+#    Row16.Col1 'Test'
 }
 
 #Display 'LK204'
@@ -331,9 +381,9 @@ Layout Test {
 #Display 'USBLCD'
 Display 'T6963-240x64'
 
-#Layout  'Default'
+Layout  'Default'
 #Layout  'L16x2'
-Layout 'Test'
+#Layout 'Test'
 
 
 Variables {

@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.3  2004/02/22 17:35:41  reinelt
+ * some fixes for generic graphic driver and T6963
+ * removed ^M from plugin_imon (Nico, are you editing under Windows?)
+ *
  * Revision 1.2  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -229,9 +233,9 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
     
   case DIR_EAST:
     for (y=0; y<YRES; y++) {
-      len=y<YRES/2 ? val1 : val2;
+      int val=y<YRES/2 ? val1 : val2;
       for (x=0; x<max; x++) {
-	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = x<len ? !rev : rev;
+	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = x<val ? !rev : rev;
       }
     }
     break;
@@ -244,8 +248,8 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
   case DIR_NORTH:
     for (y=0; y<max; y++) {
       for (x=0; x<XRES; x++) {
-	len=x<XRES/2 ? val1 : val2;
-  	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = y<len ? !rev : rev;
+	int val=x<XRES/2 ? val1 : val2;
+  	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = y<val ? !rev : rev;
       }
     }
     break;

@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.2 2004/02/18 06:39:20 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.3 2004/02/22 17:35:41 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.3  2004/02/22 17:35:41  reinelt
+ * some fixes for generic graphic driver and T6963
+ * removed ^M from plugin_imon (Nico, are you editing under Windows?)
+ *
  * Revision 1.2  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -310,7 +314,6 @@ static void drv_T6_blit(int row, int col, int height, int width)
   for (r=row; r<row+height; r++) {
     for (c=col; c<col+width; c++) {
       unsigned char mask = 1<<(XRES-1-c%XRES);
-      //if (c<8) debug ("c=%d c%%XRES=%d mask=%d", c, c%XRES, mask); 
       if (drv_generic_graphic_FB[r*LCOLS+c]) {
 	// set bit
 	Buffer1[(r*DCOLS+c)/XRES] |=  mask;
@@ -335,7 +338,6 @@ static void drv_T6_blit(int row, int col, int height, int width)
     }
     memcpy (Buffer2+j, Buffer1+j, i-j-e+1);
     drv_T6_copy (j, Buffer1+j, i-j-e+1);
-    // sleep (1);
   }
 }
 
@@ -410,6 +412,7 @@ static int drv_T6_start (char *section)
   // set direction: write
   drv_generic_parport_direction (0);
   
+
   // initialize display
 
   drv_T6_send_word (0x40, 0x0000);    // Set Text Home Address

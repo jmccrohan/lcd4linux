@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.1 2004/02/18 14:45:43 nicowallmeier Exp $
+/* $Id: plugin_imon.c,v 1.2 2004/02/22 17:35:41 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.2  2004/02/22 17:35:41  reinelt
+ * some fixes for generic graphic driver and T6963
+ * removed ^M from plugin_imon (Nico, are you editing under Windows?)
+ *
  * Revision 1.1  2004/02/18 14:45:43  nicowallmeier
  * Imon/Telmon plugin ported
  *
