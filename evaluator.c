@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.15 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: evaluator.c,v 1.16 2004/03/08 04:33:08 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.16  2004/03/08 04:33:08  reinelt
+ * string concatenation fixed
+ *
  * Revision 1.15  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -103,6 +106,12 @@
  * int AddFunction (char *name, int argc, void (*func)())
  *   adds a function to the evaluator
  *
+ * void DeleteVariables    (void);
+ *   frees all allocated variables
+ *
+ * void DeleteFunctions    (void);
+ *   frees all allocated functions
+ *
  * void DelResult (RESULT *result)
  *   sets a result to none
  *   frees a probably allocated memory
@@ -116,9 +125,15 @@
  * char* R2S (RESULT *result)
  *   converts a result into a string
  *
- * int Eval (char* expression, RESULT *result)
+ *
+ * int Compile (char* expression, void **tree)
+ *   compiles a expression into a tree
+ * 
+ * int Eval (void *tree, RESULT *result)
  *   evaluates an expression
  *
+ * void DelTree (void *tree)
+ *   frees a compiled tree
  */
 
 
@@ -199,7 +214,8 @@ typedef struct _NODE {
   VARIABLE *Variable;
   FUNCTION *Function;
   int Children;
-  struct _NODE **Child;} NODE;
+  struct _NODE **Child;
+} NODE;
 
 
 
@@ -930,6 +946,7 @@ static int EvalTree (NODE *Root)
   double  number = 0.0;
   double  dummy;
   char   *string = NULL;
+  char   *s1, *s2;
   RESULT *param[10];
   
   for (i = 0; i < Root->Children; i++) {
@@ -1049,8 +1066,11 @@ static int EvalTree (NODE *Root)
 
     case O_CAT: // string concatenation
       type   = R_STRING;
-      // Fixme!!!!
-      string = ""; 
+      s1     = R2S(Root->Child[0]->Result);
+      s2     = R2S(Root->Child[1]->Result);
+      string = malloc(strlen(s1)+strlen(s2)+1);
+      strcpy (string, s1);
+      strcat (string, s2);
       break;
 
     case O_MUL: // multiplication
@@ -1102,7 +1122,7 @@ static int EvalTree (NODE *Root)
     }
     if (type==R_STRING) {
       SetResult (&Root->Result, R_STRING, string);
-      // Fixme: if (string) free (string);
+      if (string) free (string);
       return 0;
     }
     error ("Evaluator: internal error: unhandled type <%d>", type);
@@ -1155,41 +1175,41 @@ int Compile (char* expression, void **tree)
 }
 
 
-int Eval (void *root, RESULT *result)
+int Eval (void *tree, RESULT *result)
 {
   int ret;
-  NODE *Root = (NODE*)root;
+  NODE *Tree = (NODE*)tree;
 
   DelResult (result);
 
-  if (Root==NULL) {
+  if (Tree==NULL) {
     SetResult (&result, R_STRING, "");
     return 0;
   }
 
-  ret = EvalTree(Root);
+  ret = EvalTree(Tree);
 
-  result->type   = Root->Result->type;
-  result->number = Root->Result->number;
-  if (Root->Result->string != NULL) {
-    result->string = strdup(Root->Result->string);
+  result->type   = Tree->Result->type;
+  result->number = Tree->Result->number;
+  if (Tree->Result->string != NULL) {
+    result->string = strdup(Tree->Result->string);
   }
 
   return ret;
 }
 
 
-void DelTree (void *root)
+void DelTree (void *tree)
 {
   int i;
-  NODE *Root = (NODE*)root;
-  if (Root==NULL) return;
+  NODE *Tree = (NODE*)tree;
+  if (Tree==NULL) return;
 
-  for (i=0; i<Root->Children; i++) {
-    DelTree (Root->Child[i]);
+  for (i=0; i<Tree->Children; i++) {
+    DelTree (Tree->Child[i]);
   }
  
-  FreeResult (Root->Result);
+  FreeResult (Tree->Result);
   
-  free (Root);
+  free (Tree);
 }
