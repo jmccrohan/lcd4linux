@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.1 2002/04/29 11:00:26 reinelt Exp $
+/* $Id: T6963.c,v 1.2 2002/08/17 12:54:08 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.2  2002/08/17 12:54:08  reinelt
+ * minor T6963 changes
+ *
  * Revision 1.1  2002/04/29 11:00:26  reinelt
  *
  * added Toshiba T6963 driver
@@ -132,6 +135,8 @@ void T6_status1 (void)
   ioctl (PPfd, PPDATADIR, &direction);
 
 }
+// Fixme:
+static int bug=0;
 
 // perform status check in "auto mode"
 void T6_status2 (void)
@@ -156,10 +161,12 @@ void T6_status2 (void)
     rep_nop();
     if (++n>1000) {
       debug("hang in status2");
+      bug=1;
       break;
     }
     ioctl (PPfd, PPRDATA, &data);
-  } while ((data & 0x08) == 0);
+    // } while ((data & 0x08) == 0);
+  } while ((data & 0x08) != 0x08);
 
   // rise RD and CE
   ctrl = RD_H | WR_H | CE_H | CD_H;
@@ -190,6 +197,8 @@ static void T6_write_cmd (unsigned char cmd)
   // rise WR and CE
   ctrl = RD_H | WR_H | CE_H | CD_H;
   ioctl (PPfd, PPWCONTROL, &ctrl);
+
+  ndelay(40); // Data Hold Time
 }
 
 static void T6_write_data (unsigned char data)
@@ -218,12 +227,11 @@ static void T6_write_data (unsigned char data)
   ctrl = RD_H | WR_H | CE_H | CD_L;
   ioctl (PPfd, PPWCONTROL, &ctrl);
   
-  ndelay(10); // C/D Hold Time
+  ndelay(40); // Data Hold Time
 
   // rise CD
   ctrl = RD_H | WR_H | CE_H | CD_H;
   ioctl (PPfd, PPWCONTROL, &ctrl);
-  
 }
 
 static void T6_write_auto (unsigned char data)
@@ -252,12 +260,11 @@ static void T6_write_auto (unsigned char data)
   ctrl = RD_H | WR_H | CE_H | CD_L;
   ioctl (PPfd, PPWCONTROL, &ctrl);
   
-  ndelay(10); // C/D Hold Time
+  ndelay(40); // Data Hold Time
 
   // rise CD
   ctrl = RD_H | WR_H | CE_H | CD_H;
   ioctl (PPfd, PPWCONTROL, &ctrl);
-
 }
 
 static void T6_send_byte (unsigned char cmd, unsigned char data)
@@ -281,6 +288,10 @@ static void T6_memset(unsigned short addr, unsigned char data, int len)
   T6_write_cmd(0xb0);             // Set Data Auto Write
   for (i=0; i<len; i++) {
     T6_write_auto(data);
+    if (bug) {
+      debug("bug occured at byte %d of %d", i, len);
+      bug=0;
+    }
   }
   T6_status2();
   T6_write_cmd(0xb2);             // Auto Reset
@@ -295,6 +306,10 @@ static void T6_memcpy(unsigned short addr, unsigned char *data, int len)
   T6_write_cmd(0xb0);                // Set Data Auto Write
   for (i=0; i<len; i++) {
     T6_write_auto(*(data++));
+    if (bug) {
+      debug("bug occured at byte %d of %d, addr=%d", i, len, addr);
+      bug=0;
+    }
   }
   T6_status2();
   T6_write_cmd(0xb2);                // Auto Reset
@@ -459,6 +474,7 @@ int T6_quit (void)
 }
 
 LCD T6963[] = {
-  { "TLC1091",16,40,XRES,YRES,BARS,0,T6_init,T6_clear,T6_put,T6_bar,NULL,T6_flush,T6_quit },
+  { "TLC1091", 16,40,XRES,YRES,BARS,0,T6_init,T6_clear,T6_put,T6_bar,NULL,T6_flush,T6_quit },
+  { "DMF5002N",14,40,XRES,YRES,BARS,0,T6_init,T6_clear,T6_put,T6_bar,NULL,T6_flush,T6_quit },
   { NULL }
 };
