@@ -48,7 +48,7 @@ plugin_ppp.c                \
 plugin_dvb.c                \
 plugin_i2c_sensors.c        \
 plugin_imon.c               \
-plugin_xmms.c               
+plugin_xmms.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9

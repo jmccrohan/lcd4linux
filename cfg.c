@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.37 2004/03/06 20:31:16 reinelt Exp $^
+/* $Id: cfg.c,v 1.38 2004/03/08 16:26:26 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.38  2004/03/08 16:26:26  reinelt
+ * re-introduced \nnn (octal) characters in strings
+ * text widgets can have a 'update' speed of 0 which means 'never'
+ * (may be used for static content)
+ *
  * Revision 1.37  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -307,14 +312,33 @@ static char *strip (char *s, int strip_comments)
 // unquote a string
 static char *dequote (char *string)
 {
-  char *s=string;
-  char *p=string;
+  int quote=0;
+  char *s = string;
+  char *p = string;
   
   do {
-    if (*s=='\\' && *(s+1)=='#') {
-      *p++=*++s;
-    } else {
-      *p++=*s;
+    if (*s == '\'') {
+      quote = !quote;
+      *p++ = *s;
+    }
+    else if (quote && *s == '\\') {
+      s++;
+      if (*s >= '0' && *s <= '7') {
+	int n;
+	unsigned int c = 0; 
+	sscanf (s, "%3o%n", &c, &n);
+	if (c == 0 || c > 255) {
+	  error ("WARNING: illegal '\\' in <%s>", string);
+	} else {
+	  *p++ = c;
+	  s += n-1;
+	}
+      } else {
+	*p++ = *s;
+      }
+    }
+    else {
+      *p++ = *s;
     }
   } while (*s++);
   

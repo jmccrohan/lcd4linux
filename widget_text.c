@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.15 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: widget_text.c,v 1.16 2004/03/08 16:26:26 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,11 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.16  2004/03/08 16:26:26  reinelt
+ * re-introduced \nnn (octal) characters in strings
+ * text widgets can have a 'update' speed of 0 which means 'never'
+ * (may be used for static content)
+ *
  * Revision 1.15  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -373,8 +378,10 @@ int widget_text_init (WIDGET *Self)
   }
   free (c);
   
-  // update interval (msec), default 1 sec
-  cfg_number (section, "update", 1000, 10, 99999, &(Text->update));
+  // update interval (msec), default 1 sec, 0 stands for never
+  cfg_number (section, "update", 1000, 0, 99999, &(Text->update));
+  // limit update interval to min 10 msec
+  if (Text->update > 0 && Text->update < 10) Text->update = 10;
   
   // marquee scroller speed: interval (msec), default 500msec
   if (Text->align==ALIGN_MARQUEE) {
@@ -387,7 +394,8 @@ int widget_text_init (WIDGET *Self)
   free (section);
   Self->data=Text;
   
-  timer_add (widget_text_update, Self, Text->update, 0);
+  // add update timer, use one-shot if 'update' is zero
+  timer_add (widget_text_update, Self, Text->update, Text->update==0);
 
   // a marquee scroller has its own timer and callback
   if (Text->align==ALIGN_MARQUEE) {

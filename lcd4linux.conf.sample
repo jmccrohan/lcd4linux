@@ -9,13 +9,13 @@ Display LK204 {
 
 
 Display CF631 {
-    Icons 5
     Driver 'Crystalfontz'
     Model '631'
     Port '/dev/usb/tts/0'
     Speed 115200
     Contrast 95
     Backlight 100
+    Icons 1
 }
 
 Display CF632 {
