@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.6 2003/08/20 05:26:43 reinelt Exp $
+/* $Id: bar.c,v 1.7 2003/09/01 04:09:34 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.7  2003/09/01 04:09:34  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.6  2003/08/20 05:26:43  reinelt
  * small bug in bar compaction fixed
  *
@@ -94,6 +97,7 @@ int bar_init (int rows, int cols, int xres, int yres, int chars)
   }
   
   if ((Bar=malloc (ROWS*COLS*sizeof(BAR)))==NULL) {
+    error ("bar buffer allocation failed: out of memory");
     return -1;
   }
 

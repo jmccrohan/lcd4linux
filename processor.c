@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.37 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: processor.c,v 1.38 2003/09/01 04:09:35 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.38  2003/09/01 04:09:35  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.37  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -675,6 +678,10 @@ static char *process_row (char *data, int row, int len)
       } else {
 	*p++='\t';
       }
+      
+    } else if (*s=='&') {
+      lcd_icon(*(++s)-'0', row, p-buffer+1);
+      *p++='\t';
       
     } else {
       *p++=*s;

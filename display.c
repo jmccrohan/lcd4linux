@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.39 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: display.c,v 1.40 2003/09/01 04:09:34 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.40  2003/09/01 04:09:34  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.39  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -363,13 +366,13 @@ int lcd_bar (int type, int row, int col, int max, int len1, int len2)
   return Lcd->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
 }
 
-int lcd_icon (int num, int row, int col, unsigned char *bitmap)
+int lcd_icon (int num, int row, int col)
 {
   if (num<1 || num>Lcd->icons) return -1;
   if (row<1 || row>Lcd->rows)  return -1;
   if (col<1 || col>Lcd->cols)  return -1;
   if (Lcd->icon==NULL)         return  0;
-  return Lcd->icon(num-1, row-1, col-1, bitmap);
+  return Lcd->icon(num-1, row-1, col-1);
 }
 
 int lcd_gpo (int num, int val)

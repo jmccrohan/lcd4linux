@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.34 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.35 2003/09/01 04:09:34 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.35  2003/09/01 04:09:34  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.34  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -372,7 +375,7 @@ static int MO_init (LCD *Self, int protocol)
     Lcd.icons=Icons;
   }
 
-  icon_init(Lcd.rows, Lcd.cols, XRES, YRES, Icons);
+  icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);
 
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
@@ -428,7 +431,7 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
-int MO_icon (int num, int row, int col, unsigned char *bitmap)
+int MO_icon_old (int num, int row, int col, unsigned char *bitmap)
 {
   // icons use last ascii codes
   char ascii=CHARS-num;
@@ -440,6 +443,12 @@ int MO_icon (int num, int row, int col, unsigned char *bitmap)
   FrameBuffer2[row*Lcd.cols+col]=(char)ascii;
 
   return 0;
+}
+
+
+int MO_icon (int num, int row, int col)
+{
+  return icon_draw (num, row, col);
 }
 
 
@@ -470,6 +479,11 @@ static int MO_flush (int protocol)
       c=bar_peek(row, col);
       if (c!=-1) {
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
+      } else {
+	c=icon_peek(row, col);
+	if (c!=-1) {
+	  FrameBuffer1[row*Lcd.cols+col]=(char)c;
+	}
       }
     }
     for (col=0; col<Lcd.cols; col++) {

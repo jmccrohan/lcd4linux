@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.2 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: icon.c,v 1.3 2003/09/01 04:09:34 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.3  2003/09/01 04:09:34  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.2  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -32,6 +35,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -42,28 +46,43 @@ static int ROWS=0;
 static int COLS=0;
 static int XRES=0;
 static int YRES=0;
+static int CHARS;
 static int ICONS=0;
 
-static int *Screen;
+static int *Screen=NULL;
+static char *Bitmap=NULL;
 
-
-#if 0
-static int icon_get_bitmap (int num)
+static int icon_read_bitmap (int num, char *bitmap)
 {
-  int row, col;
+  int row, col, len;
   char  key[15];
   char *val;
+  char map;
   
-  for (row=1; row<=8; row++) {
-    snprintf (key, sizeof(key), "Icons%d.Bitmap%d", num, row);
-    val=cfg_get(key);
+  for (row=0; row<YRES; row++) {
+    snprintf (key, sizeof(key), "Icon%d.Bitmap%d", num+1, row+1);
+    val=cfg_get(key, "");
+    len=strlen(val);
+    map=0;
+    debug ("read_bitmap: num=%d row=%d val=<%s> len=%d", num, row, val, len);
+    for (col=0; col<XRES; col++) {
+      map<<=1;
+      if (col<len && val[col]=='*') {
+	map|=1;
+      }
+    }
+    *(bitmap+row-1)=map;
   }
+  return 0;
 }
-#endif
 
 
-int icon_init (int rows, int cols, int xres, int yres, int icons)
+
+int icon_init (int rows, int cols, int xres, int yres, int chars, int icons, 
+		void(*defchar)(int ascii, char *bitmap))
 {
+  int n;
+  
   if (rows<1 || cols<1) 
     return -1;
   
@@ -71,6 +90,7 @@ int icon_init (int rows, int cols, int xres, int yres, int icons)
   COLS=cols;
   XRES=xres;
   YRES=yres;
+  CHARS=chars,
   ICONS=icons;
 
   if (Screen) {
@@ -78,10 +98,28 @@ int icon_init (int rows, int cols, int xres, int yres, int icons)
   }
   
   if ((Screen=malloc(ROWS*COLS*sizeof(*Screen)))==NULL) {
+    error ("icon buffer allocation failed: out of memory");
     return -1;
   }
 
   icon_clear();
+
+  if (Bitmap) {
+    free (Bitmap);
+  }
+
+  if ((Bitmap=malloc(YRES*icons*sizeof(*Bitmap)))==NULL) {
+    error ("icon bitmap allocation failed: out of memory");
+    return -1;
+  }
+
+  memset (Bitmap, 0, YRES*icons*sizeof(*Bitmap));
+  
+  for (n=0; n<icons; n++) {
+    icon_read_bitmap(n, Bitmap+YRES*n);
+    // icons use last ascii codes from userdef chars
+    defchar (CHARS-n-1, Bitmap+YRES*n);
+  }
 
   return 0;
 }
@@ -95,6 +133,14 @@ void icon_clear(void)
     Screen[n]=-1;
   }
   
+}
+
+
+int icon_draw (int num, int row, int col)
+{
+  // icons use last ascii codes from userdef chars
+  Screen[row*COLS+col]=CHARS-num-1;
+  return 0;
 }
 
 

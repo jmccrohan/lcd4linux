@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.12 2003/06/21 05:46:18 reinelt Exp $
+/* $Id: parser.h,v 1.13 2003/09/01 04:09:35 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.13  2003/09/01 04:09:35  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.12  2003/06/21 05:46:18  reinelt
  * DVB client integrated
  *
@@ -78,7 +81,7 @@
 #define _PARSER_H_
 
 typedef enum {
-  T_PERCENT=128, T_DOLLAR,
+  T_PERCENT=128, T_DOLLAR, T_AMPERSAND, 
   T_OS, T_RELEASE, T_CPU, T_RAM,
   T_MEM_TOTAL, T_MEM_USED, T_MEM_FREE, T_MEM_SHARED, T_MEM_BUFFER, T_MEM_CACHE, T_MEM_AVAIL, 
   T_LOAD_1, T_LOAD_2, T_LOAD_3, T_OVERLOAD, 

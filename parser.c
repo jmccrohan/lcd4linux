@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.19 2003/06/21 05:46:18 reinelt Exp $
+/* $Id: parser.c,v 1.20 2003/09/01 04:09:35 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.20  2003/09/01 04:09:35  reinelt
+ * icons nearly finished, but MatrixOrbital only
+ *
  * Revision 1.19  2003/06/21 05:46:18  reinelt
  * DVB client integrated
  *
@@ -135,6 +138,7 @@ typedef struct {
 
 static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "$",  T_DOLLAR,     C_GENERIC, 0 },
+			  { "&",  T_AMPERSAND,  C_GENERIC, 0 },
 			  { "o",  T_OS,         C_GENERIC, 0 },
 			  { "v",  T_RELEASE,    C_GENERIC, 0 },
 			  { "p",  T_CPU,        C_GENERIC, 0 },
@@ -299,6 +303,16 @@ char *parse_row (char *string, int supported_bars, int usage[])
       if (token2!=-1) {
 	*p++=token2&255;
 	if (token>256 && !(type & BAR_T)) *p++=token2>>8;
+      }
+      break;
+      
+    case '&':
+      if (*(s+1)<'1'||*(s+1)>'9') {
+	s++;
+	error ("WARNING: illegal '&%c' in <%s>", *s, string);
+      } else {
+	*p++=*s++;
+	*p++=*s++;
       }
       break;
       
