@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.5 2004/01/29 05:55:30 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.6 2004/01/30 07:12:35 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.6  2004/01/30 07:12:35  reinelt
+ * HD44780 busy-flag support from Martin Hejl
+ * loadavg() uClibc replacement from Martin Heyl
+ * round() uClibc replacement from Martin Hejl
+ * warning in i2c_sensors fixed
+ * [
+ *
  * Revision 1.5  2004/01/29 05:55:30  reinelt
  * check for /sys mounted
  *
@@ -164,7 +171,7 @@ void my_i2c_sensors_path(void)
   fd1 = opendir(base);
   if (!fd1) {
     error("[i2c_sensors] Impossible to open %s! Is /sys mounted?", base);
-    return -1;
+    return;
   }
   
   while((dir = readdir(fd1)))   {

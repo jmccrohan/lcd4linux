@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.54 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: processor.c,v 1.55 2004/01/30 07:12:35 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.55  2004/01/30 07:12:35  reinelt
+ * HD44780 busy-flag support from Martin Hejl
+ * loadavg() uClibc replacement from Martin Heyl
+ * round() uClibc replacement from Martin Hejl
+ * warning in i2c_sensors fixed
+ * [
+ *
  * Revision 1.54  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -292,6 +299,17 @@ static struct telmon telmon;
 extern int tick, tack;
 static int tick_text, tick_bar, tick_icon, tick_gpo;
 
+#ifdef DONT_HAVE_ROUND
+double round(double x) {
+	static int y=0;
+	if (x<0) {
+		y = (x-0.5);
+	} else {
+		y = (x-0.5);
+	}
+	return((double)y);
+}
+#endif
 
 static double query (int token)
 {

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.7 2004/01/30 07:12:35 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,13 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.7  2004/01/30 07:12:35  reinelt
+ * HD44780 busy-flag support from Martin Hejl
+ * loadavg() uClibc replacement from Martin Heyl
+ * round() uClibc replacement from Martin Hejl
+ * warning in i2c_sensors fixed
+ * [
+ *
  * Revision 1.6  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -70,6 +77,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -95,6 +103,7 @@ static char Name[]="HD44780";
 #define T_PW     450 // Enable pulse width
 #define T_AS      60 // Address setup time
 #define T_H       40 // Data hold time
+#define T_AH      20 // Address hold time
 
 
 /* HD44780 execution timings [microseconds]
@@ -106,18 +115,24 @@ static char Name[]="HD44780";
 #define T_INIT2  100 // second init sequence: 100 usec
 #define T_EXEC    80 // normal execution time
 #define T_WRCG   120 // CG RAM Write
-#define T_CLEAR 1640 // Clear Display
+#define T_CLEAR 1680 // Clear Display
 
 
 static int Bits=0;
-static int Controllers = 0;
-static int Controller  = 0;
+static int numControllers = 0;
+static int allControllers = 0;
+static int currController = 0;
 
 static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
 static unsigned char SIGNAL_ENABLE;
 static unsigned char SIGNAL_ENABLE2;
 static unsigned char SIGNAL_GPO;
+
+/* maximum time to wait for the busy-flag (in usec) */
+#define MAX_BUSYFLAG_WAIT 100000
+static int use_busy_flag = 0;
+
 
 // Fixme
 static int GPOS;
@@ -127,6 +142,107 @@ static int GPOS;
 // ****************************************
 // ***  hardware dependant functions    ***
 // ****************************************
+
+static void wait_for_busy_flag(int controller)
+{
+  unsigned char enable;
+  unsigned int counter;
+  unsigned char data=0xFF;
+  unsigned char busymask=0;
+
+  if (Bits==8) {
+    busymask = 0x80;
+  } else {
+    /* Since in 4-Bit mode DB0 on the parport is mapped to DB4 on the LCD
+    (and consequently, DB3 on the partport is mapped to DB7 on the LCD)
+    we need to listen for DB3 on the parport to go low
+    */
+    busymask = 0x8;
+  }
+
+  enable=SIGNAL_ENABLE;
+
+  while (controller > 0) {
+    if (controller&0x01 && enable!=0) {
+      /* set data-lines to input*/
+      drv_generic_parport_direction(1);
+      
+      if (Bits==8) {
+        // Set RW, clear RS
+        drv_generic_parport_control(SIGNAL_RW|SIGNAL_RS,SIGNAL_RW);
+      } else {
+        drv_generic_parport_data(SIGNAL_RW);
+      }
+      
+      // Address set-up time
+      ndelay(T_AS);
+      
+      // rise ENABLE
+      if (Bits==8) {
+        drv_generic_parport_control(enable,enable);
+      } else {
+        drv_generic_parport_data(SIGNAL_RW|enable);
+      }
+
+      counter=0;
+      while (1) {
+        /* read the busy flag */
+        data = drv_generic_parport_read();
+        if ((data&busymask)==0) break;
+
+        /* make sure we don't wait forever
+        - but only check after 5 iterations
+        that way, we won't slow down normal mode
+        (where we don't need the timeout anyway) */
+        counter++;
+
+        if (counter >= 5) {
+          struct timeval now, end;
+
+          if (counter == 5) {
+            // determine the time when the timeout has expired
+            gettimeofday (&end, NULL);
+            end.tv_usec+=MAX_BUSYFLAG_WAIT;
+            while (end.tv_usec>1000000) {
+              end.tv_usec-=1000000;
+              end.tv_sec++;
+            }
+          }
+
+          // get the current time
+          gettimeofday(&now, NULL);
+          if (now.tv_sec==end.tv_sec?now.tv_usec>=end.tv_usec:now.tv_sec>=end.tv_sec) {
+            error ("HD44780: timeout waiting for busy flag on controller %x (%x)", controller, data);
+            break;
+
+          }
+        }
+      }
+
+      // RS=low, RW=low, EN=low
+      if (Bits==8) {
+        // Lower EN
+        drv_generic_parport_control(enable,0);
+
+        // Address hold time
+        ndelay(T_AH);
+
+        drv_generic_parport_control(SIGNAL_RW|SIGNAL_RS,0);
+      } else {
+        // Lower EN
+        drv_generic_parport_data(SIGNAL_RW);
+        ndelay(T_AH);
+        drv_generic_parport_data(0);
+      }
+
+      /* set data-lines to output*/
+      drv_generic_parport_direction(0);
+    }
+    enable=SIGNAL_ENABLE2;
+    controller=controller >> 1;
+  }
+}
+
 
 static void drv_HD_nibble(unsigned char controller, unsigned char nibble)
 {
@@ -205,8 +321,8 @@ static void drv_HD_command (unsigned char controller, unsigned char cmd, int del
   }
   
   // wait for command completion
-  udelay(delay);
-
+  if (!use_busy_flag) udelay(delay);
+  
 }
 
 
@@ -216,6 +332,8 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
 
   // sanity check
   if (len<=0) return;
+
+  if (use_busy_flag) wait_for_busy_flag(controller);
 
   if (Bits==8) {
 
@@ -227,13 +345,22 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
     if (controller&0x01) enable|=SIGNAL_ENABLE;
     if (controller&0x02) enable|=SIGNAL_ENABLE2;
     
-    // clear RW, set RS
-    drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
-
-    // Address set-up time
-    ndelay(T_AS);
+    if (!use_busy_flag) {
+      // clear RW, set RS
+      drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
+      // Address set-up time
+      ndelay(T_AS);
+    }
     
     while (len--) {
+
+      if (use_busy_flag) {
+	wait_for_busy_flag(controller);
+	// clear RW, set RS
+	drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
+	// Address set-up time
+	ndelay(T_AS);
+      }
       
       // put data on DB1..DB8
       drv_generic_parport_data (*(string++));
@@ -242,18 +369,19 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
       drv_generic_parport_toggle (enable, 1, T_PW);
       
       // wait for command completion
-      udelay(delay);
+      if (!use_busy_flag) udelay(delay);
     }
     
   } else { // 4 bit mode
     
     while (len--) {
+      if (use_busy_flag) wait_for_busy_flag(controller);
 
       // send data with RS enabled
       drv_HD_byte (controller, *(string++), SIGNAL_RS);
       
       // wait for command completion
-      udelay(delay);
+      if (!use_busy_flag) udelay(delay);
     }
   }
 }
@@ -264,11 +392,11 @@ static void drv_HD_goto (int row, int col)
   int pos;
 
   // handle multiple displays/controllers
-  if (Controllers>1 && row>=DROWS/2) {
+  if (numControllers>1 && row>=DROWS/2) {
     row -= DROWS/2;
-    Controller = 2;
+    currController = 2;
   } else {
-    Controller = 1;
+    currController = 1;
   }
    
   // 16x1 Displays are organized as 8x2 :-(
@@ -284,7 +412,7 @@ static void drv_HD_goto (int row, int col)
     pos=(row%2)*64+(row/2)*20+col;
   }
   
-  drv_HD_command (Controller, (0x80|pos), T_EXEC);
+  drv_HD_command (currController, (0x80|pos), T_EXEC);
 }
 
 
@@ -306,11 +434,14 @@ static int drv_HD_start (char *section)
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("%s: controlling %d GPO's", Name, gpos);
 
-  if (cfg_number(section, "Controllers", 1, 1, 2, &Controllers)<0) return -1;
-  info ("%s: using display with %d controllers", Name, Controllers);
+  if (cfg_number(section, "Controllers", 1, 1, 2, &numControllers)<0) return -1;
+  info ("%s: using display with %d controllers", Name, numControllers);
   
   // current controller
-  Controller=1;
+  currController=1;
+  
+  // Bitmask for *all* Controllers
+  allControllers = numControllers==2 ? 3 : 1;
   
   DROWS = rows;
   DCOLS = cols;
@@ -354,22 +485,35 @@ static int drv_HD_start (char *section)
   
   // initialize *both* displays
   if (Bits==8) {
-    drv_HD_command (0x03, 0x30, T_INIT1); // 8 Bit mode, wait 4.1 ms
-    drv_HD_command (0x03, 0x30, T_INIT2); // 8 Bit mode, wait 100 us
-    drv_HD_command (0x03, 0x38, T_EXEC);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
+    drv_HD_command (allControllers, 0x30, T_INIT1); // 8 Bit mode, wait 4.1 ms
+    drv_HD_command (allControllers, 0x30, T_INIT2); // 8 Bit mode, wait 100 us
+    drv_HD_command (allControllers, 0x38, T_EXEC);  // 8 Bit mode, 1/16 duty cycle, 5x8 font
   } else {
-    drv_HD_nibble(0x03, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
-    drv_HD_nibble(0x03, 0x03); udelay(T_INIT2); // 4 Bit mode, wait 100 us
-    drv_HD_nibble(0x03, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
-    drv_HD_nibble(0x03, 0x02); udelay(T_INIT2); // 4 Bit mode, wait 100 us
-    drv_HD_command (0x03, 0x28, T_EXEC);	    // 4 Bit mode, 1/16 duty cycle, 5x8 font
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT2); // 4 Bit mode, wait 100 us
+    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); // 4 Bit mode, wait 4.1 ms
+    drv_HD_nibble  (allControllers, 0x02); udelay(T_INIT2); // 4 Bit mode, wait 100 us
+    drv_HD_command (allControllers, 0x28, T_EXEC);	    // 4 Bit mode, 1/16 duty cycle, 5x8 font
+  }
+
+  drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
+  drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
+  drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
+
+  // Save it in a local variable, until init is complete (for init, we can't use the busy flag)
+  if (cfg_number(section, "UseBusy", 0, 0, 1, &use_busy_flag)<0) return -1;
+
+  // Make sure we don't use the busy flag, if it's set to GND
+  if (SIGNAL_RW == 0 && use_busy_flag != 0 )   {
+	  debug("HD44780: Busyflag is to be used, but wiring set RW to GND. Disabling busy-flag");
+	  use_busy_flag=0;
   }
   
-  drv_HD_command (0x03, 0x08, T_EXEC);  // Display off, cursor off, blink off
-  drv_HD_command (0x03, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
-  drv_HD_command (0x03, 0x06, T_EXEC);  // curser moves to right, no shift
-  drv_HD_command (0x03, 0x01, T_CLEAR); // clear *both* displays
-  drv_HD_command (0x03, 0x03, T_CLEAR); // return home
+  info("HD44780: %susing Busyflag", use_busy_flag?"":"not ");
+
+  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  drv_HD_command (allControllers, 0x03, T_CLEAR); // return home
+
  
   return 0;
 }
@@ -377,15 +521,15 @@ static int drv_HD_start (char *section)
 
 static void drv_HD_write (char *string, int len)
 {
-  drv_HD_data (Controller, string, len, T_EXEC);
+  drv_HD_data (currController, string, len, T_EXEC);
 }
 
 
 static void drv_HD_defchar (int ascii, char *buffer)
 {
   // define chars on *both* controllers!
-  drv_HD_command (0x03, 0x40|8*ascii, T_EXEC);
-  drv_HD_data (0x03, buffer, 8, T_WRCG);
+  drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
+  drv_HD_data (allControllers, buffer, 8, T_WRCG);
 }
 
 

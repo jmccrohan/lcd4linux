@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.3 2004/01/30 07:12:35 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.3  2004/01/30 07:12:35  reinelt
+ * HD44780 busy-flag support from Martin Hejl
+ * loadavg() uClibc replacement from Martin Heyl
+ * round() uClibc replacement from Martin Hejl
+ * warning in i2c_sensors fixed
+ * [
+ *
  * Revision 1.2  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -49,9 +56,50 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "debug.h"
 #include "plugin.h"
+
+#ifndef HAVE_GETLOADAVG
+
+int getloadavg (double loadavg[], int nelem)
+{
+  static int fd=-2;
+  char buf[65], *p;
+  ssize_t nread;
+  int i;
+      
+  if (fd==-2) fd = open ("/proc/loadavg", O_RDONLY);
+  if (fd < 0) return -1;
+
+  lseek(fd,0,SEEK_SET);
+  nread = read (fd, buf, sizeof buf - 1);
+  //close (fd);
+  
+  if (nread < 0) return -1;
+  buf[nread - 1] = '\0';
+  
+  if (nelem > 3) nelem = 3;
+  p = buf;
+  for (i = 0; i < nelem; ++i) {
+    char *endp;
+    loadavg[i] = strtod (p, &endp);
+    if (endp == NULL || endp == p)
+      /* This should not happen.  The format of /proc/loadavg
+	 must have changed.  Don't return with what we have,
+	 signal an error.  */
+      return -1;
+    p = endp;
+  }
+  
+  return i;
+}
+
+#endif
 
 
 static void my_loadavg (RESULT *result, RESULT *arg1)
