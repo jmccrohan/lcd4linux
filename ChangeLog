@@ -1,4 +1,114 @@
+2004-06-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_generic_text.h, evaluator.c, evaluator.h, hash.c, hash.h, layout.c, layout.h, plugin_cfg.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_proc_stat.c, plugin_uptime.c, plugin_wireless.c, qprintf.c, thread.c, thread.h, timer.c, timer.h, udelay.c, udelay.h, widget.c, widget.h, widget_icon.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, debug.c, debug.h, drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, cfg.h, cfg.c:
+	'const'ified the whole source
+
+2004-06-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Image.c, drv_USBLCD.c:
+	compiler warning in image driver fixed
+	bar bug in USBLCD driver fixed
+
+2004-06-17  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* plugin_diskstats.c, plugin_netdev.c, lcd4linux.conf.sample:
+	changed plugin_netdev to use the new fast hash model
+
+	* hash.c, hash.h, lcd4linux.conf.sample, plugin_apm.c, plugin_cpuinfo.c, plugin_diskstats.c, plugin_dvb.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_meminfo.c, plugin_netdev.c, plugin_ppp.c, plugin_proc_stat.c, plugin_seti.c, plugin_wireless.c, plugin_xmms.c, drv_T6963.c:
+	hash handling rewritten to solve performance issues
+
+2004-06-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* hash.c, hash.h, lcd4linux.conf.sample:
+	debug widgets changed (thanks to Andy Baxter)
+
+2004-06-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_T6963.c, drv_generic_graphic.c, lcd4linux.conf.sample:
+	splash screen for T6963 driver
+
+2004-06-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.in, drv_X11.c, drv_generic_graphic.c, drv_generic_graphic.h, lcd4linux.conf.sample:
+	splash screen for X11 driver (and generic graphic driver)
+
+	* aclocal.m4, bootstrap, config.h.in, configure, configure.in, Makefile.in:
+	autoconf/automake updates
+
+2004-06-07  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample:
+	sample debugging widgets added
+
+	* Makefile.am, Makefile.in, lcd4linux.conf.sample, plugin.c, plugin_test.c:
+	added test plugin from Andy Baxter
+
+2004-06-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, lcd4linux.c:
+	do not display end splash screen if quiet=1
+
+2004-06-05  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Cwlinux.c, drv_USBLCD.c, plugin_i2c_sensors.c:
+	Cwlinux splash screen fixed
+	USBLCD splash screen fixed
+	plugin_i2c qprintf("%f") replaced with snprintf()
+
+	* drv_MilfordInstruments.c, drv_USBLCD.c, drv_generic_text.c, drv_generic_text.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_M50530.c, drv_MatrixOrbital.c:
+	chancged splash screen again
+
+	* drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_USBLCD.c, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c:
+	splash screen for all text-based display drivers
+
+2004-06-02  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv.c, drv_HD44780.c, drv_generic_text.c, drv_generic_text.h:
+	splash screen for HD44780
+
+	* drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, layout.c, lcd4linux.c, lcd4linux.conf.sample:
+	prepared support for startup splash screen
+
+	* drv_Crystalfontz.c:
+	extended contrast range for Crystalfontz
+
+	* lcd4linux.conf.sample:
+	added i2c_sensors example to lcd4linux.conf.sample
+
+	* documentation/lcd4linux/Makefile, documentation/lcd4linux/bug_report.xml, documentation/lcd4linux/example.xml, documentation/lcd4linux/index.xml, documentation/lcd4linux/write_doc.xml, documentation/plugins/Makefile, documentation/plugins/index.xml, documentation/xsl/body.xsl, documentation/xsl/doc.xsl, documentation/xsl/head.xsl, documentation/xsl/helpers.xsl, documentation/xsl/references.xsl, documentation/xsl/xhtml.xsl, documentation/data/doc.css, documentation/data/images/note-icon.png, documentation/data/images/warn-icon.png, documentation/data/references.xml, documentation/drivers/Makefile, documentation/drivers/index.xml, documentation/dtd/doc.dtd, documentation/dtd/references.dtd, documentation/dtd/xhtml-lat1.ent, documentation/dtd/xhtml-special.ent, documentation/dtd/xhtml-symbol.ent, documentation/Makefile, documentation/Makefile.generic:
+	added documentation tree
+
+	* drv_BeckmannEgle.c, lcd4linux.c:
+	fixed models listing for Beckmann+Egle driver
+	some cosmetic changes
+
+2004-06-01  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_T6963.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, drv_generic_text.h, hash.c, hash.h, plugin_i2c_sensors.c, thread.c, timer.c, timer.h, drv_Cwlinux.c, drv_HD44780.c, drv_M50530.c, drv_MatrixOrbital.c, drv_Crystalfontz.c:
+	some Fixme's processed
+	documented some code
+
+	* README.Plugins, plugin_sample.c:
+	made README.Plugins and plugin_sample up to date.
+
 2004-05-31  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_MatrixOrbital.c:
+	some cleanups in the MatrixOrbital driver
+
+	* drv_Cwlinux.c, drv_generic_serial.c, lcd4linux.conf.sample, plugin_i2c_sensors.c, plugin_pop3.c:
+	fixed lots of bugs in the Cwlinux driver
+	do not emit EAGAIN error on the first retry
+	made plugin_i2c_sensors a bit less 'chatty'
+	moved init and exit functions to the bottom of plugin_pop3
+
+	* config.h.in, configure, drivers.m4, drv.c, drv_Cwlinux.c, drv_MatrixOrbital.c, drv_NULL.c, hash.c, Makefile.am, Makefile.in, aclocal.m4:
+	added NULL display driver (for debugging/profiling purposes)
+	added backlight/contrast initialisation for matrixOrbital
+	added Backlight initialisation for Cwlinux
+
+	* ChangeLog:
+	ChangeLog update
 
 	* drv_Image.c, lcd4linux.conf.sample:
 	fixed symlink security issue with the image driver
