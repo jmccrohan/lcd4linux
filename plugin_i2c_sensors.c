@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.9 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.10 2004/02/14 12:07:27 nicowallmeier Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.10  2004/02/14 12:07:27  nicowallmeier
+ * minor bugfix
+ *
  * Revision 1.9  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -265,6 +268,10 @@ void my_i2c_sensors_path(char *method)
   struct dirent *dir;
   struct dirent *file;
   const char *base;
+  char dname[64];
+  DIR *fd1;
+  DIR *fd2;
+  int done;
 	  
   if (!strcmp(method, "sysfs")) {
     base="/sys/bus/i2c/devices/";
@@ -275,10 +282,6 @@ void my_i2c_sensors_path(char *method)
     return; 
   }
 
-  char dname[64];
-  DIR *fd1;
-  DIR *fd2;
-  int done;
   
   fd1 = opendir(base);
   if (!fd1) {
