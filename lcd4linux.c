@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.68 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.69 2004/03/14 07:11:42 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.69  2004/03/14 07:11:42  reinelt
+ * parameter count fixed for plugin_dvb()
+ * plugin_APM (battery status) ported
+ *
  * Revision 1.68  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -410,6 +414,34 @@ int hello (void)
 }
 #endif
 
+
+static void interactive_mode (void)
+{
+  char line[1024];
+  void *tree;
+  RESULT result = {0, 0, 0, NULL};
+    
+  printf("\neval> ");
+  for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
+    if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
+    if (strlen(line)>0) {
+      if (Compile(line, &tree)!=-1) {
+	Eval (tree, &result);
+	if (result.type==R_NUMBER) {
+	  printf ("%g\n", R2N(&result));
+	} else if (result.type==R_STRING) {
+	  printf ("'%s'\n", R2S(&result));
+	}
+	DelResult (&result);
+      }
+      DelTree(tree);
+    }
+    printf("eval> ");
+  }
+  printf ("\n");
+}
+
+
 void handler (int signal)
 {
   debug ("got signal %d", signal);
@@ -563,6 +595,14 @@ int main (int argc, char *argv[])
     running_background=1;
   }
   
+  // go into interactive mode before display initialization
+  if (interactive >= 2) {
+    interactive_mode();
+    pid_exit(PIDFILE);
+    cfg_exit();
+    exit (0);
+  }
+  
   debug ("initializing driver %s", driver);
   if (drv_init(section, driver)==-1) {
     pid_exit(PIDFILE);
@@ -580,30 +620,9 @@ int main (int argc, char *argv[])
   layout_init(layout);
   free(layout);
 
-  // maybe go into interactive mode
-  if (interactive) {
-    char line[1024];
-    void *tree;
-    RESULT result = {0, 0, 0, NULL};
-    
-    printf("\neval> ");
-    for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
-      if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
-      if (strlen(line)>0) {
-	if (Compile(line, &tree)!=-1) {
-	  Eval (tree, &result);
-	  if (result.type==R_NUMBER) {
-	    printf ("%g\n", R2N(&result));
-	  } else if (result.type==R_STRING) {
-	    printf ("'%s'\n", R2S(&result));
-	  }
-	  DelResult (&result);
-        }
-	DelTree(tree);
-      }
-      printf("eval> ");
-    }
-    printf ("\n");
+  // go into interactive mode (display has been initialized)
+  if (interactive >= 1) {
+    interactive_mode();
     drv_quit();
     pid_exit(PIDFILE);
     cfg_exit();

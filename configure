@@ -21092,9 +21092,8 @@ fi
 
 if test "$X11" = "yes"; then
    if test "$no_x" = "yes"; then
-      { { echo "$as_me:$LINENO: error: X11 headers or libraries not available: X11 driver disabled" >&5
-echo "$as_me: error: X11 headers or libraries not available: X11 driver disabled" >&2;}
-   { (exit 1); exit 1; }; }
+      { echo "$as_me:$LINENO: WARNING: X11 headers or libraries not available: X11 driver disabled" >&5
+echo "$as_me: WARNING: X11 headers or libraries not available: X11 driver disabled" >&2;}
    else
       GRAPHIC="yes"
 #     DRIVERS="$DRIVERS drv_X11.lo"

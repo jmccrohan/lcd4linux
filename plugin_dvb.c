@@ -1,4 +1,4 @@
-/* $Id: plugin_dvb.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_dvb.c,v 1.4 2004/03/14 07:11:42 reinelt Exp $
  *
  * plugin for DVB status
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_dvb.c,v $
+ * Revision 1.4  2004/03/14 07:11:42  reinelt
+ * parameter count fixed for plugin_dvb()
+ * plugin_APM (battery status) ported
+ *
  * Revision 1.3  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -150,7 +154,7 @@ static void my_dvb (RESULT *result, RESULT *arg1)
 
 int plugin_init_dvb (void)
 {
-  AddFunction ("dvb", 3, my_dvb);
+  AddFunction ("dvb", 1, my_dvb);
   return 0;
 }
 

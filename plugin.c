@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.22 2004/03/13 06:49:20 reinelt Exp $
+/* $Id: plugin.c,v 1.23 2004/03/14 07:11:42 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.23  2004/03/14 07:11:42  reinelt
+ * parameter count fixed for plugin_dvb()
+ * plugin_APM (battery status) ported
+ *
  * Revision 1.22  2004/03/13 06:49:20  reinelt
  * seti@home plugin ported to NextGeneration
  *
@@ -159,6 +163,7 @@ int plugin_init_meminfo (void);
 int plugin_init_netdev (void);
 int plugin_init_ppp (void);
 int plugin_init_dvb (void);
+int plugin_init_apm (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 int plugin_init_imon(void);
@@ -177,6 +182,7 @@ void plugin_exit_meminfo (void);
 void plugin_exit_netdev (void);
 void plugin_exit_ppp (void);
 void plugin_exit_dvb (void);
+void plugin_exit_apm (void);
 void plugin_exit_i2c_sensors (void);
 void plugin_exit_xmms (void);
 void plugin_exit_imon(void);
@@ -196,6 +202,7 @@ int plugin_init (void)
   plugin_init_netdev();
   plugin_init_ppp();
   plugin_init_dvb();
+  plugin_init_apm();
   plugin_init_i2c_sensors();
   plugin_init_xmms();
   plugin_init_imon();
@@ -217,6 +224,7 @@ void plugin_exit(void) {
   plugin_exit_netdev();
   plugin_exit_ppp();
   plugin_exit_dvb();
+  plugin_exit_apm();
   plugin_exit_i2c_sensors();
   plugin_exit_xmms();
   plugin_exit_imon();	
