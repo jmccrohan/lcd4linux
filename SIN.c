@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.2 2000/11/28 17:27:19 reinelt Exp $
+/* $Id: SIN.c,v 1.3 2000/12/01 07:20:26 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.3  2000/12/01 07:20:26  reinelt
+ *
+ * modified text positioning: row starts with 0, column is hexadecimal
+ *
  * Revision 1.2  2000/11/28 17:27:19  reinelt
  *
  * changed decimal values for screen, row, column to ascii values (shame on you!)
@@ -117,8 +121,7 @@ int SIN_clear (void)
     }
   }
   
-  SIN_write ("\033S0", 3); // select screen #0
-  sleep (1); // FIXME: handshaking
+  SIN_write ("\033 ",2);
   return 0;
 }
 
@@ -146,7 +149,9 @@ int SIN_init (LCD *Self)
   if (Device==-1) return -1;
 
   SIN_write ("\015", 1);  // send 'Enter'
-  // Fixme: we must read the identifier here....
+  // Fixme: should we read the identifier here....
+  SIN_write ("\033S0", 3); // select screen #0
+  sleep (1); // FIXME: handshaking
   SIN_clear();
 
   return 0;
@@ -165,20 +170,19 @@ int SIN_put (int row, int col, char *text)
 
 int SIN_flush (void)
 {
-  char buffer[256]="\033T"; // place text
+  char buffer[256]="\015\033T"; // place text
   char *p;
   int  row, col;
   
   for (row=0; row<Lcd.rows; row++) {
-    buffer[2]='1'+row;
+    buffer[3]='0'+row;
     for (col=0; col<Lcd.cols; col++) {
       if (Txt[row][col]=='\t') continue;
-      sprintf (buffer+3, "%2d", col);
-      for (p=buffer+5; col<Lcd.cols; col++, p++) {
+      sprintf (buffer+4, "%2x", col);
+      for (p=buffer+6; col<Lcd.cols; col++, p++) {
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
-      *p++='\015'; // append <CR>
       SIN_write (buffer, p-buffer);
     }
   }
