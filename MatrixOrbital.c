@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.25 2002/08/19 09:30:18 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.26 2003/02/13 10:40:17 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.26  2003/02/13 10:40:17  reinelt
+ *
+ * changed "copyright" to "2003"
+ * added slightly different protocol for MatrixOrbital "LK202" displays
+ *
  * Revision 1.25  2002/08/19 09:30:18  reinelt
  * MatrixOrbital uses generic bar funnctions
  *
@@ -234,9 +239,9 @@ static void MO_define_char (int ascii, char *buffer)
 }
 
 
-int MO_clear (void)
+static int MO_clear (int protocol)
 {
-  int row, col;
+  int row, col, gpo;
 
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
@@ -246,14 +251,37 @@ int MO_clear (void)
 
   bar_clear();
 
-  MO_write ("\014",  1);  // Clear Screen
-  MO_write ("\376V", 2);  // GPO off
+  switch (protocol) {
+  case 1:
+    MO_write ("\014",  1);  // Clear Screen
+    MO_write ("\376V", 2);  // GPO off
+    break;
+  case 2:
+    MO_write ("\376\130",  2);  // Clear Screen
+    for (gpo=1; gpo<=Lcd.gpos; gpo++) {
+      char cmd[3]="\376V";
+      cmd[2]=(char)gpo;
+      MO_write (cmd, 3);  // GPO off
+    }
+    break;
+  }
+  
   GPO=0;
   return 0;
 }
 
+int MO_clear1 (void)
+{
+  return MO_clear(1);
+}
 
-int MO_init (LCD *Self)
+int MO_clear2 (void)
+{
+  return MO_clear(2);
+}
+
+
+static int MO_init (LCD *Self, int protocol)
 {
   char *port;
   char *speed;
@@ -301,7 +329,7 @@ int MO_init (LCD *Self)
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
-  MO_clear();
+  MO_clear(protocol);
   MO_contrast();
 
   MO_write ("\376B", 3);  // backlight on
@@ -312,6 +340,17 @@ int MO_init (LCD *Self)
 
   return 0;
 }
+
+int MO_init1 (LCD *Self)
+{
+  return MO_init(Self, 1);
+}
+
+int MO_init2 (LCD *Self)
+{
+  return MO_init(Self, 2);
+}
+
 
 
 int MO_put (int row, int col, char *text)
@@ -346,11 +385,11 @@ int MO_gpo (int num, int val)
 }
 
 
-int MO_flush (void)
+static int MO_flush (int protocol)
 {
   char buffer[256]="\376G";
   char *p;
-  int c, row, col;
+  int c, row, col, gpo;
   
   bar_process(MO_define_char);
   
@@ -373,13 +412,35 @@ int MO_flush (void)
     }
   }
 
-  if (GPO & 1) {
-    MO_write ("\376W", 2);  // GPO on
-  } else {
-    MO_write ("\376V", 2);  // GPO off
+  switch (protocol) {
+  case 1:
+    if (GPO & 1) {
+      MO_write ("\376W", 2);  // GPO on
+    } else {
+      MO_write ("\376V", 2);  // GPO off
+    }
+    break;
+  case 2:
+    for (gpo=1; gpo<=Lcd.gpos; gpo++) {
+      char cmd[3]="\376";
+      cmd[1]=(GPO&(1<<(gpo-1))) ? 'W':'V';
+      cmd[2]=(char)gpo;
+      MO_write (cmd, 3);
+    }
+    break;
   }
 
   return 0;
+}
+
+int MO_flush1 (void)
+{
+  return MO_flush(1);
+}
+
+int MO_flush2 (void)
+{
+  return MO_flush(2);
 }
 
 
@@ -400,12 +461,12 @@ LCD MatrixOrbital[] = {
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  1,
-    init:  MO_init,
-    clear: MO_clear,
+    init:  MO_init1,
+    clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
     gpo:   MO_gpo,
-    flush: MO_flush,
+    flush: MO_flush1,
     quit:  MO_quit 
   },
   { name: "LCD1621",
@@ -415,12 +476,12 @@ LCD MatrixOrbital[] = {
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  1,
-    init:  MO_init,
-    clear: MO_clear,
+    init:  MO_init1,
+    clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
     gpo:   MO_gpo,
-    flush: MO_flush,
+    flush: MO_flush1,
     quit:  MO_quit 
   },
   { name: "LCD2021",
@@ -430,12 +491,12 @@ LCD MatrixOrbital[] = {
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  1,
-    init:  MO_init,
-    clear: MO_clear,
+    init:  MO_init1,
+    clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
     gpo:   MO_gpo,
-    flush: MO_flush,
+    flush: MO_flush1,
     quit:  MO_quit 
   },
   { name: "LCD2041",
@@ -445,12 +506,12 @@ LCD MatrixOrbital[] = {
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  1,
-    init:  MO_init,
-    clear: MO_clear,
+    init:  MO_init1,
+    clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
     gpo:   MO_gpo,
-    flush: MO_flush,
+    flush: MO_flush1,
     quit:  MO_quit 
   },
   { name: "LCD4021",
@@ -460,12 +521,42 @@ LCD MatrixOrbital[] = {
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  1,
-    init:  MO_init,
-    clear: MO_clear,
+    init:  MO_init1,
+    clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
     gpo:   MO_gpo,
-    flush: MO_flush,
+    flush: MO_flush1,
+    quit:  MO_quit 
+  },
+  { name: "LK202-25",
+    rows:  2,
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  6,
+    init:  MO_init2,
+    clear: MO_clear2,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush2,
+    quit:  MO_quit 
+  },
+  { name: "LK204-25",
+    rows:  4,
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  6,
+    init:  MO_init2,
+    clear: MO_clear2,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush2,
     quit:  MO_quit 
   },
   { NULL }

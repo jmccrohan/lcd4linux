@@ -1,8 +1,8 @@
-/* $Id: lcd4linux.c,v 1.34 2002/04/29 11:00:28 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.35 2003/02/13 10:40:17 reinelt Exp $
  *
  * LCD4Linux
  *
- * Copyright 1999-2002 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999-2003 Michael Reinelt (reinelt@eunet.at)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.35  2003/02/13 10:40:17  reinelt
+ *
+ * changed "copyright" to "2003"
+ * added slightly different protocol for MatrixOrbital "LK202" displays
+ *
  * Revision 1.34  2002/04/29 11:00:28  reinelt
  *
  * added Toshiba T6963 driver
@@ -201,7 +206,7 @@
 #include "display.h"
 #include "processor.h"
 
-char *release="LCD4Linux " VERSION " (c) 2002 Michael Reinelt <reinelt@eunet.at>";
+char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
 char *output=NULL;
 int got_signal=0;
@@ -229,7 +234,7 @@ int hello (void)
 		    "L4Linux",
 		    NULL };
   
-  char *line2[] = { "(c) 2002 M.Reinelt",
+  char *line2[] = { "(c) 2003 M.Reinelt",
 		    "(c) M.Reinelt",
 		    NULL };
   
