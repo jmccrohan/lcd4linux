@@ -457,9 +457,9 @@ Layout testMySQL {
 
 
 #Display 'LK204'
-#Display 'HD44780-20x4'
+Display 'HD44780-20x4'
 #Display 'M50530-24x8'
-Display 'CF631'
+#Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'USBLCD'

@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.6 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: debug.h,v 1.7 2004/04/12 04:55:59 reinelt Exp $
  *
  * debug messages
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.7  2004/04/12 04:55:59  reinelt
+ * emitted a BIG FAT WARNING if msr.h could not be found (and therefore
+ * the gettimeofday() delay loop would be used)
+ *
  * Revision 1.6  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -61,7 +65,7 @@ extern int verbose_level;
 void message (int level, const char *format, ...);
 
 #define debug(args...) message (2, __FILE__ ": " args)
-#define info(args...) message (1, args)
+#define info(args...)  message (1, args)
 #define error(args...) message (0, args)
 
 #endif
