@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.3 2004/02/01 19:37:40 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.3  2004/02/01 19:37:40  reinelt
+ * got rid of every strtok() incarnation.
+ *
  * Revision 1.2  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -86,8 +89,9 @@ static int parse_netdev (void)
   line=0;
   while (!feof(stream)) {
     char buffer[256];
-    char header[256];
+    char header[256], *h, *t;
     char *head[32];
+    char delim[]=" :|\t\n";
     int  col;
     
     if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
@@ -97,26 +101,29 @@ static int parse_netdev (void)
 
     // line 2 used for headers
     if (line==2) {
-      char *h;
       strncpy(header, buffer, sizeof(header));
       RxTx=(strrchr(header, '|') - header);
       col=0;
-      h=strtok(header, "| \t\n");
+      h=header;
       while (h!=NULL) {
+	while (strchr(delim, *h)) h++;
+	if ((t=strpbrk(h, delim))!=NULL) *t='\0';
 	head[col++]=h;
-	h=strtok(NULL, "| \t\n");
+	h=t?t+1:NULL;
       }
     } else {
       char *h, *iface=NULL;
       col=0;
-      h=strtok(buffer, ":| \t\n");
+      h=buffer;
       while (h!=NULL) {
+	while (strchr(delim, *h)) h++;
+	if ((t=strpbrk(h, delim))!=NULL) *t='\0';
 	if (col==0) {
 	  iface=h;
 	} else {
 	  hash_set3 (iface, (h-buffer) < RxTx ? "Rx" : "Tx", head[col], h);
 	}
-	h=strtok(NULL, "| \t\n");
+	h=t?t+1:NULL;
 	col++;
       }
     }

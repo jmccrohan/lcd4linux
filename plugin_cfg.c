@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.5 2004/02/01 19:37:40 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.5  2004/02/01 19:37:40  reinelt
+ * got rid of every strtok() incarnation.
+ *
  * Revision 1.4  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -70,28 +73,30 @@
 static void load_variables (void)
 {
   char *section="Variables";
-  char *list, *key;
+  char *list, *l, *p;
   char *expression;
   RESULT result = {0, 0.0, NULL};
   
   list=cfg_list(section);
-  key=strtok(list, "|");
-  while (key!=NULL) {
-    if (strchr(key, '.')!=NULL || strchr(key, ':') !=0) {
-      error ("ignoring variable '%s' from %s: structures not allowed", key, cfg_source());
+  l=list;
+  while (l!=NULL) {
+    while (*l=='|') l++;
+    if ((p=strchr(l, '|'))!=NULL) *p='\0';
+    if (strchr(l, '.')!=NULL || strchr(l, ':') !=0) {
+      error ("ignoring variable '%s' from %s: structures not allowed", l, cfg_source());
     } else {
-      expression=cfg_get_raw (section, key, "");
+      expression=cfg_get_raw (section, l, "");
       if (expression!=NULL && *expression!='\0') {
 	if (Eval(expression, &result)==0) {
-	  debug ("Variable %s = '%s' (%f)", key, R2S(&result), R2N(&result));
-	  SetVariable (key, &result);
+	  debug ("Variable %s = '%s' (%f)", l, R2S(&result), R2N(&result));
+	  SetVariable (l, &result);
 	  DelResult (&result);
 	} else {
-	  error ("error evaluating variable '%s' from %s", key, cfg_source());
+	  error ("error evaluating variable '%s' from %s", list, cfg_source());
 	}
       }
     }
-    key=strtok(NULL, "|");
+    l=p?p+1:NULL;
   }
   free (list);
   

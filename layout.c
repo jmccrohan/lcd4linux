@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.8 2004/02/01 18:08:50 reinelt Exp $
+/* $Id: layout.c,v 1.9 2004/02/01 19:37:40 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.9  2004/02/01 19:37:40  reinelt
+ * got rid of every strtok() incarnation.
+ *
  * Revision 1.8  2004/02/01 18:08:50  reinelt
  * removed strtok() from layout processing (took me hours to find this bug)
  * further strtok() removind should be done!
@@ -111,20 +114,22 @@ int layout_init (char *layout)
   // map to lower char for scanf()
   for (l=list; *l!='\0'; l++) *l=tolower(*l);
 
-  while (list!=NULL) {
-    char *pipe;
+  l=list;
+  while (l!=NULL) {
+    char *p;
     int i, n;
     // list is delimited by |
-    if ((pipe=strchr(list, '|'))!=NULL) *pipe='\0';
-    i=sscanf (list, "row%d.col%d%n", &row, &col, &n);
-    if (i==2 && list[n]=='\0') {
-      widget=cfg_get(section, list, NULL);
+    while (*l=='|') l++;
+    if ((p=strchr(l, '|'))!=NULL) *p='\0';
+    i=sscanf (l, "row%d.col%d%n", &row, &col, &n);
+    if (i==2 && l[n]=='\0') {
+      widget=cfg_get(section, l, NULL);
       if (widget!=NULL && *widget!='\0') {
 	layout_addItem (widget, row, col);
       }
     }
     // next field
-    list=pipe?pipe+1:NULL;
+    l=p?p+1:NULL;
   }
   free (list);
   

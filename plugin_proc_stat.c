@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.13 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.14 2004/02/01 19:37:40 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.14  2004/02/01 19:37:40  reinelt
+ * got rid of every strtok() incarnation.
+ *
  * Revision 1.13  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -97,6 +100,7 @@ static HASH Stat = { 0, };
 
 static void hash_set1 (char *key1, char *val) 
 {
+  debug ("Michi: hash_set (<%s>=<%s>)", key1, val);
   hash_set_delta (&Stat, key1, val);
 }
 
@@ -137,51 +141,105 @@ static int parse_proc_stat (void)
   while (!feof(stream)) {
     char buffer[1024];
     if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
-
+    
     if (strncmp(buffer, "cpu", 3)==0) {
-      char *cpu;
-      cpu=strtok(buffer, " \t\n");
-      hash_set2 (cpu, "user",   strtok(NULL, " \t\n"));
-      hash_set2 (cpu, "nice",   strtok(NULL, " \t\n"));
-      hash_set2 (cpu, "system", strtok(NULL, " \t\n"));
-      hash_set2 (cpu, "idle",   strtok(NULL, " \t\n"));
-    } 
-    else if (strncmp(buffer, "page ", 5)==0) {
-      strtok(buffer, " \t\n");
-      hash_set2 ("page", "in",  strtok(NULL, " \t\n"));
-      hash_set2 ("page", "out", strtok(NULL, " \t\n"));
-    } 
-    else if (strncmp(buffer, "swap ", 5)==0) {
-      strtok(buffer, " \t\n");
-      hash_set2 ("swap", "in",  strtok(NULL, " \t\n"));
-      hash_set2 ("swap", "out", strtok(NULL, " \t\n"));
-    } 
-    else if (strncmp(buffer, "intr ", 5)==0) {
+      char *key[]  = { "user", "nice", "system", "idle" }; 
+      char delim[] = " \t\n";
+      char *cpu, *beg, *end; 
       int i;
-      strtok(buffer, " \t\n");
-      hash_set2 ("intr", "sum", strtok(NULL, " \t\n"));
-      for (i=0; i<16; i++) {
-	char buffer[3];
-	snprintf(buffer, sizeof(buffer), "%d", i);
-	hash_set2 ("intr", buffer, strtok(NULL, " \t\n"));
+      
+      cpu=buffer;
+      
+      // skip "cpu" or "cpu0" block
+      if ((end=strpbrk(buffer, delim))!=NULL) *end='\0'; 
+      beg=end?end+1:NULL;
+      
+      for (i=0; i<4 && beg!=NULL; i++) {
+	while (strchr(delim, *beg)) beg++; 
+	if ((end=strpbrk(beg, delim))) *end='\0'; 
+	hash_set2 (cpu, key[i], beg); 
+	beg=end?end+1:NULL;
       }
     } 
+    
+    else if (strncmp(buffer, "page ", 5)==0) {
+      char *key[]  = { "in", "out" }; 
+      char delim[] = " \t\n";
+      char *beg, *end;
+      int i;
+      
+      for (i=0, beg=buffer+5; i<2 && beg!=NULL; i++) {
+	while (strchr(delim, *beg)) beg++; 
+	if ((end=strpbrk(beg, delim))) *end='\0'; 
+	hash_set2 ("page", key[i], beg); 
+	beg=end?end+1:NULL;
+      }
+    } 
+    
+    else if (strncmp(buffer, "swap ", 5)==0) {
+      char *key[]  = { "in", "out" }; 
+      char delim[] = " \t\n";
+      char *beg, *end;
+      int i;
+      
+      for (i=0, beg=buffer+5; i<2 && beg!=NULL; i++) {
+	while (strchr(delim, *beg)) beg++; 
+	if ((end=strpbrk(beg, delim))) *end='\0'; 
+	hash_set2 ("swap", key[i], beg); 
+	beg=end?end+1:NULL;
+      }
+    } 
+
+    else if (strncmp(buffer, "intr ", 5)==0) {
+      char delim[]=" \t\n";
+      char *beg, *end, num[4];
+      int i;
+      
+      for (i=0, beg=buffer+5; i<17 && beg!=NULL; i++) {
+	while (strchr(delim, *beg)) beg++; 
+	if ((end=strpbrk(beg, delim))) *end='\0'; 
+	if (i==0) 
+	  snprintf(num, sizeof(num), "sum");
+	else 
+	  snprintf(num, sizeof(num), "%d", i-1);
+	hash_set2 ("intr", num,  beg);
+	beg=end?end+1:NULL;
+      }
+    } 
+    
+
     else if (strncmp(buffer, "disk_io:", 8)==0) {
-      char *dev=strtok(buffer+8, " \t\n:()");
+      char *key[]  = { "io", "rio", "rblk", "wio", "wblk" }; 
+      char delim[] = " ():,\t\n";
+      char *dev, *beg, *end, *p;
+      int i;
+      
+      dev=buffer+8;
       while (dev!=NULL) {
-	char *p;
+	while (strchr(delim, *dev)) dev++; 
+	if ((end=strchr(dev, ')'))) *end='\0'; 
 	while ((p=strchr(dev, ','))!=NULL) *p=':';
-	hash_set3 ("disk_io", dev, "io",   strtok(NULL, " :(,"));
-	hash_set3 ("disk_io", dev, "rio",  strtok(NULL, " ,"));
-	hash_set3 ("disk_io", dev, "rblk", strtok(NULL, " ,"));
-	hash_set3 ("disk_io", dev, "wio",  strtok(NULL, " ,"));
-	hash_set3 ("disk_io", dev, "wblk", strtok(NULL, " ,)"));
-	dev=strtok(NULL, " \t\n:()");
-      }
-    } 
+	beg=end?end+1:NULL;
+	for (i=0; i<5 && beg!=NULL; i++) {
+	  while (strchr(delim, *beg)) beg++; 
+	  if ((end=strpbrk(beg, delim))) *end='\0'; 
+	  hash_set3 ("disk_io", dev, key[i], beg); 
+	  beg=end?end+1:NULL;
+	}
+	dev=beg;
+      } 
+    }
+    
     else {
-      char *key=strtok(buffer, " \t\n");
-      hash_set2 (key, NULL, strtok(NULL, " \t\n"));
+      char delim[] = " \t\n";
+      char *beg, *end;
+
+      beg=buffer;
+      if ((end=strpbrk(beg, delim))) *end='\0'; 
+      beg=end?end+1:NULL;
+      if ((end=strpbrk(beg, delim))) *end='\0'; 
+      while (strchr(delim, *beg)) beg++; 
+      hash_set1 (buffer, beg);
     } 
   }
   fclose (stream);
