@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.33 2004/08/29 13:03:41 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.34 2004/09/18 08:22:59 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.34  2004/09/18 08:22:59  reinelt
+ * drv_generic_parport_status() to read status lines
+ *
  * Revision 1.33  2004/08/29 13:03:41  reinelt
  *
  * added RouterBoard driver
@@ -464,7 +467,7 @@ static void drv_HD_command (const unsigned char controller, const unsigned char 
   
   /* wait for command completion */
   if (!UseBusy) udelay(delay);
-  
+
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.8 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.9 2004/09/18 08:22:59 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.9  2004/09/18 08:22:59  reinelt
+ * drv_generic_parport_status() to read status lines
+ *
  * Revision 1.8  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -331,6 +334,33 @@ void drv_generic_parport_direction (const int direction)
       ctr = (ctr & ~0x20) ^ (direction?0x20:0x00);
       outb (ctr, Port+2);
     }
+}
+
+
+unsigned char drv_generic_parport_status (void)
+{
+  unsigned char mask = 
+    PARPORT_STATUS_ERROR    | 
+    PARPORT_STATUS_SELECT   |
+    PARPORT_STATUS_PAPEROUT |
+    PARPORT_STATUS_ACK      |
+    PARPORT_STATUS_BUSY;
+
+  unsigned char data;
+  
+#ifdef WITH_PPDEV
+  if (PPdev) {
+    ioctl (PPfd, PPRSTATUS, &data);
+  } else
+#endif
+    {
+      data = inb (Port+1);
+    }
+  
+  /* clear unused bits */
+  data &= mask;
+  
+  return data;
 }
 
 

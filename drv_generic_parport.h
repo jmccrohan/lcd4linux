@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.5 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.6 2004/09/18 08:22:59 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.6  2004/09/18 08:22:59  reinelt
+ * drv_generic_parport_status() to read status lines
+ *
  * Revision 1.5  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -71,6 +74,9 @@
  *   0 - write to parport
  *   1 - read from parport
  *
+ * unsigned char drv_generic_parport_status (void)
+ *   reads control lines
+ *
  * void drv_generic_parport_control (unsigned char mask, unsigned char value)
  *   frobs control line and takes care of inverted signals
  *
@@ -96,6 +102,7 @@ int           drv_generic_parport_close      (void);
 unsigned char drv_generic_parport_wire_ctrl  (const char *name, const char *deflt);
 unsigned char drv_generic_parport_wire_data  (const char *name, const char *deflt);
 void          drv_generic_parport_direction  (const int direction);
+unsigned char drv_generic_parport_status     (void);
 void          drv_generic_parport_control    (const unsigned char mask, const unsigned char value);
 void          drv_generic_parport_toggle     (const unsigned char bit, const int level, const int delay);
 void          drv_generic_parport_data       (const unsigned char data);

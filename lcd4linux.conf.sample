@@ -77,6 +77,38 @@ Display HD44780-20x4 {
 }
 
 
+Display SC1602D {
+    Driver 'HD44780'
+    Port '/dev/parports/0'	
+    Bits '8'
+    Size '16x2'
+    asc255bug 0
+    Icons 1
+    Wire {
+	RW     'GND'
+	RS     'AUTOFD'
+	ENABLE 'STROBE'
+	GPO    'INIT'
+    }
+}
+
+
+Display LCM-162 {
+    Driver 'HD44780'
+    Port '/dev/parports/0'	
+    Bits '8'
+    Size '16x2'
+    UseBusy 1
+    asc255bug 0
+    Icons 1
+    Wire {
+	RW     'INIT'
+	RS     'SELECT'
+	ENABLE 'AUTOFD'
+    }
+}
+
+
 Display M50530-24x8 {
     Driver 'M50530'
     Port '/dev/parports/0'	
@@ -351,12 +383,12 @@ Widget BarTest {
     # delta= step to change value by each time it's read.
     # barno - ten different test bar values can be set up, with barno=0..9
     # if delta=0, just returns the value of bar n instead of changing it.
-    expression test::bar(0,100,50,1)
-    expression2 test::bar(1,100,0,1)
-    length 10
-    max 100
+    expression test::bar(0,30,25,1)
+    expression2 test::bar(1,30,0,1)
+    length 6
+    max 50
     direction 'E'
-    update 200
+    update 10
 }
 
 Widget BarTestVal {
@@ -568,7 +600,8 @@ Layout L16x2 {
     }
     Row2 {
 	Col1  'Disk'
-	Col11 'DiskBar'
+	#Col11 'DiskBar'
+	Col11 'BarTest'
     }
 #   Row2 {
 #	Col1 'Heartbeat'
@@ -626,6 +659,8 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-20x4'
+#Display  'SC1602D'
+Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
@@ -634,11 +669,11 @@ Layout testMySQL {
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
-Display 'USBLCD'
+#Display 'USBLCD'
 #Display 'Image'
 
-Layout  'Default'
-#Layout 'L16x2'
+#Layout  'Default'
+Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
 
