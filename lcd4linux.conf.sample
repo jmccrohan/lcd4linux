@@ -130,7 +130,8 @@ Display CT20x4 {
 
 Display USBLCD {
     Driver 'USBLCD'
-    Port '/dev/lcd0'
+#   Port '/dev/lcd0'
+    Port 'libusb'
     Size '20x4'
     asc255bug 1
     Icons 1
@@ -674,12 +675,12 @@ Layout testMySQL {
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
-#Display 'USBLCD'
-Display 'BWCT'
+Display 'USBLCD'
+#Display 'BWCT'
 #Display 'Image'
 
-#Layout  'Default'
-Layout 'L16x2'
+Layout  'Default'
+#Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
 

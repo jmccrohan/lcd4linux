@@ -5658,6 +5658,9 @@ cat >>confdefs.h <<\_ACEOF
 #define WITH_USBLCD 1
 _ACEOF
 
+   if test "$has_usb" = "true"; then
+      DRVLIBS="$DRVLIBS -lusb"
+   fi
 fi
 
 if test "$X11" = "yes"; then

@@ -223,6 +223,9 @@ if test "$USBLCD" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_USBLCD.o"
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
+   if test "$has_usb" = "true"; then
+      DRVLIBS="$DRVLIBS -lusb"
+   fi
 fi
 
 if test "$X11" = "yes"; then

@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.16 2004/09/24 21:41:00 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.17 2004/10/02 09:31:58 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.17  2004/10/02 09:31:58  reinelt
+ * USBLCD driver modified to use libusb
+ *
  * Revision 1.16  2004/09/24 21:41:00  reinelt
  * new driver for the BWCT USB LCD interface board.
  *
@@ -123,6 +126,10 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
+#ifdef HAVE_USB_H
+#include <usb.h>
+#endif
+
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
@@ -136,21 +143,96 @@
 #include "drv_generic_text.h"
 
 
+#define USBLCD_VENDOR  0x10D2
+#define USBLCD_VENDOR2 0x1212
+#define USBLCD_DEVICE  0x0001
+
 #define IOC_GET_HARD_VERSION 1
 #define IOC_GET_DRV_VERSION  2
 
 
-static char Name[]="USBLCD";
+static char Name[] = "USBLCD";
 
-static char *Port=NULL;
+static char *Port = NULL;
+static int use_libusb = 0;
 static int usblcd_file;
 static unsigned char *Buffer;
 static unsigned char *BufPtr;
 
 
+#ifdef HAVE_USB_H
+
+static usb_dev_handle *lcd;
+static int interface;
+
+extern int usb_debug;
+
+#endif
+
+extern int got_signal;
+
+
+
 /****************************************/
 /***  hardware dependant functions    ***/
 /****************************************/
+
+#ifdef HAVE_USB_H
+
+static int drv_UL_open (void)
+{
+  struct usb_bus *busses, *bus;
+  struct usb_device *dev;
+  
+  lcd = NULL;
+
+  info ("%s: scanning for USBLCD...", Name);
+
+  usb_debug = 0;
+  
+  usb_init();
+  usb_find_busses();
+  usb_find_devices();
+  busses = usb_get_busses();
+
+  for (bus = busses; bus; bus = bus->next) {
+    for (dev = bus->devices; dev; dev = dev->next) {
+      if (((dev->descriptor.idVendor  == USBLCD_VENDOR) ||
+	   (dev->descriptor.idVendor  == USBLCD_VENDOR2)) &&
+	  (dev->descriptor.idProduct == USBLCD_DEVICE)) {
+	
+	unsigned int v = dev->descriptor.bcdDevice;
+	
+	info ("%s: found USBLCD V%1d%1d.%1d%1d on bus %s device %s", Name,
+	      (v & 0xF000)>>12,(v & 0xF00)>>8, (v & 0xF0)>>4, (v & 0xF),
+	      bus->dirname, dev->filename);
+
+	interface = 0;
+	lcd = usb_open(dev);
+	if (usb_claim_interface(lcd, interface) < 0) {
+	  error ("%s: usb_claim_interface() failed!", Name);
+	  error ("%s: maybe you have the usblcd module loaded?", Name);
+	  return -1;
+	}
+	return 0;
+      }
+    }
+  }
+  error ("%s: could not find a USBLCD", Name);
+  return -1;
+}
+
+
+static int drv_UL_close (void) 
+{
+  usb_release_interface(lcd, interface);
+  usb_close(lcd);
+
+  return 0;
+}
+
+#endif
+
 
 static void drv_UL_send ()
 {
@@ -160,16 +242,24 @@ static void drv_UL_send ()
   gettimeofday (&now, NULL);
 #endif
   
-  write(usblcd_file,Buffer,BufPtr-Buffer);
+  if (use_libusb) {
+#ifdef HAVE_USB_H
+    // Fixme: ep?
+    usb_bulk_write(lcd, 1, Buffer, BufPtr-Buffer, 1000);
+#endif
+  } else {
+    write(usblcd_file,Buffer,BufPtr-Buffer);
+  }
   
+ 
 #if 0
   gettimeofday (&end, NULL);
-  debug ("send %d bytes in %d msec (%d usec/byte)", BufPtr-Buffer, 
-	 (1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec)/1000, 
+  debug ("send %d bytes in %d usec (%d usec/byte)", BufPtr-Buffer, 
+	 (1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec), 
 	 (1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec)/(BufPtr-Buffer));
 #endif
   
-  BufPtr=Buffer;
+  BufPtr = Buffer;
 }
 
 
@@ -226,28 +316,40 @@ static void drv_UL_defchar (const int ascii, const unsigned char *matrix)
 
 static int drv_UL_start (const char *section, const int quiet)
 {
-  int rows=-1, cols=-1;
+  int rows = -1, cols = -1;
   int major, minor;
   char *port, *s;
   char buf[128];
 
   if (Port) {
     free(Port);
-    Port=NULL;
+    Port = NULL;
   }
-  if ((port=cfg_get(section, "Port", NULL))==NULL || *port=='\0') {
+
+  if ((port = cfg_get(section, "Port", NULL)) == NULL || *port == '\0') {
     error ("%s: no '%s.Port' entry from %s", Name, section, cfg_source());
     return -1;
   }
-  if (port[0] == '/') {
-    Port = strdup(port);
-  } else {
-    int len = 5+strlen(port)+1;
-    Port = malloc(len);
-    qprintf(Port, len, "/dev/%s", port);
-  }
 
-  debug ("using device %s ", Port);
+  if (strcasecmp (port, "libusb") == 0) {
+#ifdef HAVE_USB_H
+    use_libusb = 1;
+    debug ("using libusb");
+#else
+    error ("%s: cannot use 'libusb' port.", Name);
+    error ("%s: lcd4linux was compiled without libusb support!", Name);
+    return -1;
+#endif
+  } else {
+    if (port[0] == '/') {
+      Port = strdup(port);
+    } else {
+      int len = 5 + strlen(port) + 1;
+      Port = malloc(len);
+      qprintf(Port, len, "/dev/%s", port);
+    }
+    debug ("using device %s ", Port);
+  }
   
   s=cfg_get(section, "Size", NULL);
   if (s==NULL || *s=='\0') {
@@ -263,57 +365,66 @@ static int drv_UL_start (const char *section, const int quiet)
   DROWS = rows;
   DCOLS = cols;
   
+  if (use_libusb) {
+    
+#ifdef HAVE_USB_H
+    if (drv_UL_open() < 0) {
+      return -1;
+    }
+#endif
+    
+  } else {
+    
+    /* open port */
+    usblcd_file=open(Port,O_WRONLY);
+    if (usblcd_file==-1) {
+      error ("%s: open(%s) failed: %s", Name, Port, strerror(errno));
+      return -1;
+    }
+    
+    /* get driver version */
+    memset(buf, 0, sizeof(buf));
+    if (ioctl(usblcd_file, IOC_GET_DRV_VERSION, buf) != 0) {
+      error ("USBLCD: ioctl() failed, could not get Driver Version!");
+      return -1;
+    }
+    info("%s: Driver Version: %s", Name, buf);
+  
+    if (sscanf(buf,"USBLCD Driver Version %d.%d", &major, &minor) != 2) {
+      error("%s: could not read Driver Version!", Name);
+      return -1;
+    }
+    if (major != 1) {
+      error("%d: Driver Version %d not supported!", Name, major);
+      return -1;
+    }
+
+    memset(buf, 0, sizeof(buf));
+    if (ioctl(usblcd_file, IOC_GET_HARD_VERSION, buf) != 0) {
+      error ("%s: ioctl() failed, could not get Hardware Version!", Name);
+      return -1;
+    }
+    info("%s: Hardware Version: %s", Name, buf);
+
+    if (sscanf(buf, "%d.%d", &major, &minor) != 2) {
+      error("%s: could not read Hardware Version!", Name);
+      return -1;
+    }
+  
+    if (major!=1) {
+      error("%s: Hardware Version %d not supported!", Name, major);
+      return -1;
+    }
+  }
+  
   /* Init the command buffer */
   Buffer = (char*)malloc(1024);
-  if (Buffer==NULL) {
+  if (Buffer == NULL) {
     error ("%s: coommand buffer could not be allocated: malloc() failed", Name);
     return -1;
   }
+  BufPtr = Buffer;
   
-  /* open port */
-  usblcd_file=open(Port,O_WRONLY);
-  if (usblcd_file==-1) {
-    error ("%s: open(%s) failed: %s", Name, Port, strerror(errno));
-    return -1;
-  }
-  
-  /* get driver version */
-  memset(buf,0,sizeof(buf));
-  if (ioctl(usblcd_file, IOC_GET_DRV_VERSION, buf)!=0) {
-    error ("USBLCD: ioctl() failed, could not get Driver Version!");
-    return -1;
-  }
-  info("%s: Driver Version: %s", Name, buf);
-  
-  if (sscanf(buf,"USBLCD Driver Version %d.%d",&major,&minor)!=2) {
-    error("%s: could not read Driver Version!", Name);
-    return -1;
-  }
-  if (major!=1) {
-    error("%d: Driver Version %d not supported!", Name, major);
-    return -1;
-  }
-
-  memset(buf,0,sizeof(buf));
-  if (ioctl(usblcd_file, IOC_GET_HARD_VERSION, buf)!=0) {
-    error ("%s: ioctl() failed, could not get Hardware Version!", Name);
-    return -1;
-  }
-  info("%s: Hardware Version: %s", Name, buf);
-
-  if (sscanf(buf,"%d.%d",&major,&minor)!=2) {
-    error("%s: could not read Hardware Version!", Name);
-    return -1;
-  }
-  
-  if (major!=1) {
-    error("%s: Hardware Version %d not supported!", Name, major);
-    return -1;
-  }
-
-  /* reset coimmand buffer */
-  BufPtr=Buffer;
-
   /* initialize display */
   drv_UL_command (0x29); /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
   drv_UL_command (0x08); /* Display off, cursor off, blink off */
@@ -451,8 +562,14 @@ int drv_UL_quit (const int quiet)
     drv_generic_text_greet ("goodbye!", NULL);
   }
 
-  debug ("closing port %s", Port);
-  close(usblcd_file);
+  if (use_libusb) {
+#ifdef HAVE_USB_H
+    drv_UL_close();
+#endif
+  } else {
+    debug ("closing port %s", Port);
+    close(usblcd_file);
+  }
   
   if (Buffer) {
     free(Buffer);
