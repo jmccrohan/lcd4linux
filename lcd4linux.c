@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.11 2000/03/24 11:36:56 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.11  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.10  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -143,6 +149,7 @@ void main (int argc, char *argv[])
   lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
 
+  // FIXME: just debugging
   exit (0);
 
   sleep (3);

@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: pixmap.c,v 1.3 2000/03/24 11:36:56 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.3  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.2  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -38,8 +44,8 @@
  * int pix_clear(void);
  *   clears the pixmap
  *
- * int pix_init (int r, int c);
- *   allocates & clear pixmap wit r rows and c columns
+ * int pix_init (int rows, int cols, int XRES, int YRES);
+ *   allocates & clears pixmap
  *
  * int pix_put (int row, int col, char *text);
  *   draws text into the pixmap
@@ -56,33 +62,38 @@
 #include "pixmap.h"
 #include "fontmap.h"
 
-static int rows=0;
-static int cols=0;
+static int ROWS=0;
+static int COLS=0;
+static int XRES=0;
+static int YRES=0;
+
 unsigned char *Pixmap=NULL;
 
 int pix_clear(void)
 {
   int i;
 
-  for (i=0; i<rows*cols; i++) {
+  for (i=0; i<ROWS*COLS; i++) {
     Pixmap[i]=0;
   }
 
   return 0;
 }
 
-int pix_init (int r, int c)
+int pix_init (int rows, int cols, int xres, int yres)
 {
-  if (r<1 || c<1) 
+  if (rows<1 || cols<1 || xres<1 || yres<1) 
     return -1;
   
   if (Pixmap) 
     free (Pixmap);
 
-  rows=r*YRES;
-  cols=c*XRES;
+  XRES=xres;
+  YRES=yres;
+  ROWS=rows*yres;
+  COLS=cols*xres;
 
-  if ((Pixmap=malloc (rows*cols*sizeof(unsigned char)))==NULL)
+  if ((Pixmap=malloc (ROWS*COLS*sizeof(unsigned char)))==NULL)
     return -1;
     
   return pix_clear();
@@ -95,13 +106,13 @@ int pix_put (int row, int col, char *text)
   row*=YRES;
   col*=XRES;
   
-  while (*text && col<cols) {
+  while (*text && col<COLS) {
     c=*text;
     for (y=0; y<YRES; y++) {
       mask=1<<XRES;
       for (x=0; x<XRES; x++) {
 	mask>>=1;
-	Pixmap[(row+y)*cols+col+x]=Fontmap[c][y]&mask?1:0;
+	Pixmap[(row+y)*COLS+col+x]=Fontmap[c][y]&mask?1:0;
       }
     }
     col+=XRES;
@@ -118,11 +129,11 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
   col*=XRES;
 
   if (type & BAR_H) {
-    if (max>cols-col)
-      max=cols-col;
+    if (max>COLS-col)
+      max=COLS-col;
   } else {
-    if (max>rows-row)
-      max=rows-row;
+    if (max>ROWS-row)
+      max=ROWS-row;
   }
   
   if (len1<1) len1=1;
@@ -143,7 +154,7 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     for (y=0; y<YRES; y++) {
       len=y<YRES/2?len1:len2;
       for (x=0; x<max; x++) {
-	Pixmap[(row+y)*cols+col+x]=x<len?!rev:rev;
+	Pixmap[(row+y)*COLS+col+x]=x<len?!rev:rev;
       }
     }
     break;
@@ -157,7 +168,7 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     for (y=0; y<max; y++) {
       for (x=0; x<XRES; x++) {
 	len=x<XRES/2?len1:len2;
-  	Pixmap[(row+y)*cols+col+x]=y<len?!rev:rev;
+  	Pixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
       }
     }
     break;

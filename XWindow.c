@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: XWindow.c,v 1.3 2000/03/24 11:36:56 reinelt Exp $
  *
  * driver for X11
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.3  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.2  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -42,6 +48,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cfg.h"
 #include "display.h"
@@ -49,19 +56,62 @@
 
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
 
+static int pixel=-1;
+static int pgap=0;
+static int rgap=0;
+static int cgap=0;
+static int border=0;
+
+static int foreground=0;
+static int halfground=0;
+static int background=0;
+
 static DISPLAY Display;
 
 int X_flush (void)
 {
-  int r, c;
+  int xsize, ysize, row, col;
+  unsigned char *buffer;
+  unsigned char R[3], G[3], B[3];
+  
+  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*(pixel+pgap);
+  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*(pixel+pgap);
+  
+  if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
+    return -1;
 
-  for (r=0; r<Display.rows*Display.yres; r++) {
-    for (c=0; c<Display.cols*Display.xres; c++) {
-      printf ("%c", Pixmap[r*Display.cols*Display.xres+c] ? '#':'.');
+  memset (buffer, 0, xsize*ysize*sizeof(*buffer));
+  
+  for (row=0; row<Display.rows*Display.yres; row++) {
+    int y=border+(row/Display.yres)*rgap+row*(pixel+pgap);
+    for (col=0; col<Display.cols*Display.xres; col++) {
+      int x=border+(col/Display.xres)*cgap+col*(pixel+pgap);
+      int a, b;
+      for (a=0; a<pixel; a++)
+	for (b=0; b<pixel; b++)
+	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
     }
-    printf ("\n");
   }
-  printf ("\n");
+  
+  R[0]=0xff&background>>16;
+  G[0]=0xff&background>>8;
+  B[0]=0xff&background;
+
+  R[1]=0xff&halfground>>16;
+  G[1]=0xff&halfground>>8;
+  B[1]=0xff&halfground;
+
+  R[2]=0xff&foreground>>16;
+  G[2]=0xff&foreground>>8;
+  B[2]=0xff&foreground;
+
+  for (row=0; row<ysize; row++) {
+    for (col=0; col<xsize; col++) {
+      int i=buffer[row*xsize+col];
+      printf("%d.%d.%d ", R[i], G[i], B[i]);
+    }
+  }
+
   return 0;
 }
 
@@ -78,24 +128,45 @@ int X_clear (void)
 
 int X_init (DISPLAY *Self)
 {
-  int rows=-1;
-  int cols=-1;
-
-  rows=atoi(cfg_get("rows")?:"4");
-  cols=atoi(cfg_get("columns")?:"20");
-
-  if (rows<1 || cols<1) {
-    fprintf (stderr, "X11: incorrect number of rows or columns\n");
+  char *s;
+  int rows=-1, cols=-1;
+  int xres=1, yres=-1;
+  
+  if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+    fprintf (stderr, "Raster: bad size '%s'\n", s);
     return -1;
   }
 
-  if (pix_init (rows, cols)!=0) {
-    fprintf (stderr, "X11: pix_init(%d, %d) failed\n", rows, cols);
+  if (sscanf(s=cfg_get("font")?:"5x8", "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
+    fprintf (stderr, "Raster: bad font '%s'\n", s);
+    return -1;
+  }
+
+  if (sscanf(s=cfg_get("pixel")?:"4+1", "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
+    fprintf (stderr, "Raster: bad pixel '%s'\n", s);
+    return -1;
+  }
+
+  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &rgap, &cgap)!=2 || rgap<0 || cgap<0) {
+    fprintf (stderr, "Raster: bad gap '%s'\n", s);
+    return -1;
+  }
+
+  border=atoi(cfg_get("border")?:"0");
+
+  foreground=strtol(cfg_get("foreground")?:"000000", NULL, 16);
+  halfground=strtol(cfg_get("halfground")?:"ffffff", NULL, 16);
+  background=strtol(cfg_get("background")?:"ffffff", NULL, 16);
+
+  if (pix_init (rows, cols, xres, yres)!=0) {
+    fprintf (stderr, "Raster: pix_init(%d, %d, %d, %d) failed\n", rows, cols, xres, yres);
     return -1;
   }
 
   Self->rows=rows;
   Self->cols=cols;
+  Self->xres=xres;
+  Self->yres=yres;
   Display=*Self;
 
   pix_clear();
@@ -114,6 +185,6 @@ int X_bar (int type, int row, int col, int max, int len1, int len2)
 
 
 DISPLAY XWindow[] = {
-  { "X11", 0, 0, XRES, YRES, BARS, X_init, X_clear, X_put, X_bar, X_flush },
+  { "X11", 0, 0, 0, 0, BARS, X_init, X_clear, X_put, X_bar, X_flush },
   { "" }
 };

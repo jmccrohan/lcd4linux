@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.1 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: Raster.c,v 1.2 2000/03/24 11:36:56 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.2  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.1  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -36,6 +42,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cfg.h"
 #include "display.h"
@@ -45,53 +52,62 @@
 
 static DISPLAY Display;
 
-static int pixelsize=-1;
-static int pixelgap=0;
-static int rowgap=0;
-static int colgap=0;
+static int pixel=-1;
+static int pgap=0;
+static int rgap=0;
+static int cgap=0;
 static int border=0;
 
 static int foreground=0;
 static int halfground=0;
 static int background=0;
 
-#define R(color) (0xff&((color)>>16))
-#define G(color) (0xff&((color)>>8))
-#define B(color) (0xff&((color)))
-
 int Raster_flush (void)
 {
-  int xsize, ysize;
-  int x, y, pos;
+  int xsize, ysize, row, col;
+  unsigned char *buffer;
+  unsigned char R[3], G[3], B[3];
   
-  xsize=2*border+Display.cols*Display.xres*(pixelsize+pixelgap);
-  ysize=2*border+Display.rows*Display.yres*(pixelsize+pixelgap);
+  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*(pixel+pgap);
+  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*(pixel+pgap);
   
-  printf ("P3\n");
-  printf ("%d %d\n", xsize, ysize);
-  printf ("255\n");
+  if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
+    return -1;
 
-  pos=0;
+  memset (buffer, 0, xsize*ysize*sizeof(*buffer));
   
-  for (y=0; y<ysize; y++) {
-    for (x=0; x<xsize; x++) {
-      if (x<border || x>=xsize-border || 
-	  y<border || y>=ysize-border ||
-	  (y-border)%(pixelsize+pixelgap)>=pixelsize ||
-	  (x-border)%(pixelsize+pixelgap)>=pixelsize) {
-	pos+=printf ("%d %d %d ", R(background), G(background), B(background));
-      } else {
-	if (Pixmap[((y-border)/(pixelsize+pixelgap))*Display.cols*Display.xres+(x-border)/(pixelsize+pixelgap)])
-	  pos+=printf ("%d %d %d ", R(foreground), G(foreground), B(foreground));
-	else
-	  pos+=printf ("%d %d %d ", R(halfground), G(halfground), B(halfground));
-      }
-      if (pos>80) {
-	pos=0;
-	printf ("\n");
-      }
+  for (row=0; row<Display.rows*Display.yres; row++) {
+    int y=border+(row/Display.yres)*rgap+row*(pixel+pgap);
+    for (col=0; col<Display.cols*Display.xres; col++) {
+      int x=border+(col/Display.xres)*cgap+col*(pixel+pgap);
+      int a, b;
+      for (a=0; a<pixel; a++)
+	for (b=0; b<pixel; b++)
+	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
     }
   }
+  
+  printf ("P6\n%d %d\n255\n", xsize, ysize);
+  
+  R[0]=0xff&background>>16;
+  G[0]=0xff&background>>8;
+  B[0]=0xff&background;
+
+  R[1]=0xff&halfground>>16;
+  G[1]=0xff&halfground>>8;
+  B[1]=0xff&halfground;
+
+  R[2]=0xff&foreground>>16;
+  G[2]=0xff&foreground>>8;
+  B[2]=0xff&foreground;
+
+  for (row=0; row<ysize; row++) {
+    for (col=0; col<xsize; col++) {
+      int i=buffer[row*xsize+col];
+      printf("%c%c%c", R[i], G[i], B[i]);
+    }
+  }
+
   return 0;
 }
 
@@ -105,39 +121,45 @@ int Raster_clear (void)
 
 int Raster_init (DISPLAY *Self)
 {
-  int rows=-1;
-  int cols=-1;
+  char *s;
+  int rows=-1, cols=-1;
+  int xres=1, yres=-1;
+  
+  if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+    fprintf (stderr, "Raster: bad size '%s'\n", s);
+    return -1;
+  }
 
-  rows=atoi(cfg_get("rows")?:"4");
-  cols=atoi(cfg_get("columns")?:"20");
+  if (sscanf(s=cfg_get("font")?:"5x8", "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
+    fprintf (stderr, "Raster: bad font '%s'\n", s);
+    return -1;
+  }
 
-  pixelsize=atoi(cfg_get("pixelsize")?:"1");
-  pixelgap=atoi(cfg_get("pixelgap")?:"0");
-  rowgap=atoi(cfg_get("rowgap")?:"0");
-  colgap=atoi(cfg_get("colgap")?:"0");
+  if (sscanf(s=cfg_get("pixel")?:"4+1", "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
+    fprintf (stderr, "Raster: bad pixel '%s'\n", s);
+    return -1;
+  }
+
+  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &rgap, &cgap)!=2 || rgap<0 || cgap<0) {
+    fprintf (stderr, "Raster: bad gap '%s'\n", s);
+    return -1;
+  }
+
   border=atoi(cfg_get("border")?:"0");
 
   foreground=strtol(cfg_get("foreground")?:"000000", NULL, 16);
   halfground=strtol(cfg_get("halfground")?:"ffffff", NULL, 16);
   background=strtol(cfg_get("background")?:"ffffff", NULL, 16);
 
-  if (rows<1 || cols<1) {
-    fprintf (stderr, "Raster: incorrect number of rows or columns\n");
-    return -1;
-  }
-  
-  if (pixelsize<1) {
-    fprintf (stderr, "Raster: incorrect pixel size\n");
-    return -1;
-  }
-
-  if (pix_init (rows, cols)!=0) {
-    fprintf (stderr, "Raster: pix_init(%d, %d) failed\n", rows, cols);
+  if (pix_init (rows, cols, xres, yres)!=0) {
+    fprintf (stderr, "Raster: pix_init(%d, %d, %d, %d) failed\n", rows, cols, xres, yres);
     return -1;
   }
 
   Self->rows=rows;
   Self->cols=cols;
+  Self->xres=xres;
+  Self->yres=yres;
   Display=*Self;
 
   pix_clear();
@@ -156,6 +178,6 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 
 
 DISPLAY Raster[] = {
-  { "PPM", 0, 0, XRES, YRES, BARS, Raster_init, Raster_clear, Raster_put, Raster_bar, Raster_flush },
+  { "PPM", 0, 0, 0, 0, BARS, Raster_init, Raster_clear, Raster_put, Raster_bar, Raster_flush },
   { "" }
 };

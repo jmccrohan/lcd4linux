@@ -1,4 +1,4 @@
-/* $Id: pixmap.h,v 1.1 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: pixmap.h,v 1.2 2000/03/24 11:36:56 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: pixmap.h,v $
+ * Revision 1.2  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.1  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -31,13 +37,10 @@
 #ifndef _PIXMAP_H_
 #define _PIXMAP_H_
 
-#define XRES 6
-#define YRES 8
-
 extern unsigned char *Pixmap;
 
 int pix_clear(void);
-int pix_init (int r, int c);
+int pix_init (int rows, int cols, int xres, int yres);
 int pix_put (int row, int col, char *text);
 int pix_bar (int type, int row, int col, int max, int len1, int len2);
 

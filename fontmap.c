@@ -1,4 +1,4 @@
-/* $Id: fontmap.c,v 1.1 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: fontmap.c,v 1.2 2000/03/24 11:36:56 reinelt Exp $
  *
  * 5x8 font
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: fontmap.c,v $
+ * Revision 1.2  2000/03/24 11:36:56  reinelt
+ *
+ * new syntax for raster configuration
+ * changed XRES and YRES to be configurable
+ * PPM driver works nice
+ *
  * Revision 1.1  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -649,10 +655,10 @@ unsigned char Fontmap[256][8]={
 	   b_O___O,
 	   b_O___O,
 	   b______ },
-  [0x69] { b______,
-	   b___O__,
+  [0x69] { b___O__,
 	   b______,
 	   b__OO__,
+	   b___O__,
 	   b___O__,
 	   b___O__,
 	   b__OOO_,
