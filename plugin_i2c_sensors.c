@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.11 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.12 2004/02/16 08:19:44 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.12  2004/02/16 08:19:44  reinelt
+ * i2c_sensors patch from Xavier
+ *
  * Revision 1.11  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -121,7 +124,6 @@
 #endif
 
 static char *path=NULL;
-static int use_sysfs=0;
 static HASH I2Csensors = { 0, };
 
 static const char *procfs_tokens[4][3] = {
@@ -130,6 +132,8 @@ static const char *procfs_tokens[4][3] = {
   {"fan_div1", "fan_div2", "fan_div3"},		// for fan_div
   {"fan_min", "fan_input", ""}			// for fan#
 };
+
+static int (*parse_i2c_sensors)(char *key);
 
 	/***********************************************\
 	* Parsing for new 2.6 kernels 'sysfs' interface *
@@ -265,11 +269,7 @@ void my_i2c_sensors(RESULT *result, RESULT *arg)
   
   age=hash_age(&I2Csensors, key, &val);
   if (age<0 || age>250) {
-    if (use_sysfs) {
-      parse_i2c_sensors_sysfs(key);
-    } else {
-      parse_i2c_sensors_procfs(key);    
-    }
+    parse_i2c_sensors(key);
     val=hash_get(&I2Csensors, key);
   }
   if (val) {
@@ -278,6 +278,7 @@ void my_i2c_sensors(RESULT *result, RESULT *arg)
     SetResult(&result, R_STRING, "??"); 
   }
 }
+
 
 void my_i2c_sensors_path(char *method)
 {
@@ -310,7 +311,7 @@ void my_i2c_sensors_path(char *method)
   
   while((dir = readdir(fd1)))   {
     // Skip non-directories and '.' and '..'
-    if (dir->d_type!=DT_DIR ||
+    if ((dir->d_type!=DT_DIR && dir->d_type!=DT_LNK) ||
        strcmp(dir->d_name, "." )==0 ||
        strcmp(dir->d_name, "..")==0) {
       continue;
@@ -336,6 +337,7 @@ void my_i2c_sensors_path(char *method)
   }
   closedir(fd1);
 }
+
 
 int plugin_init_i2c_sensors (void)
 {
@@ -370,14 +372,17 @@ int plugin_init_i2c_sensors (void)
   }
 
   // we activate the function only if there's a possibly path found
-  if (!path) {
-    free(path);
-  } else {
+  if (path!=NULL) {
     if (strncmp(path, "/sys", 4)==0) {
-      use_sysfs=1;
+      parse_i2c_sensors=parse_i2c_sensors_sysfs;
+      AddFunction ("i2c_sensors", 1, my_i2c_sensors);
+    } else if (strncmp(path, "/proc", 5)==0) {
+      parse_i2c_sensors=parse_i2c_sensors_procfs;      
+      AddFunction ("i2c_sensors", 1, my_i2c_sensors);
+    } else {
+      error("[i2c_sensors] unknown path %s, should start with /sys or /proc");
     }
-    AddFunction ("i2c_sensors", 1, my_i2c_sensors);
   }
- 
+  
   return 0;
 }
