@@ -1,4 +1,4 @@
-/* $ID$
+/* $Id: seti.c,v 1.2 2001/02/18 21:16:06 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.2  2001/02/18 21:16:06  reinelt
+ * *** empty log message ***
+ *
  * Revision 1.1  2001/02/18 21:15:15  reinelt
  *
  * added setiathome client
