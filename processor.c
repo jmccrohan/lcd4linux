@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.51 2003/11/24 11:34:54 reinelt Exp $
+/* $Id: processor.c,v 1.52 2004/01/05 11:57:38 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.52  2004/01/05 11:57:38  reinelt
+ * added %y tokens to make the Evaluator useable
+ *
  * Revision 1.51  2003/11/24 11:34:54  reinelt
  *
  * 'Fixed' Rows which do not scroll by Lars Kempe
@@ -248,6 +251,7 @@
 #include "dvb.h"
 #include "seti.h"
 #include "exec.h"
+#include "expr.h"
 #include "imon.h"
 
 #define ROWS 64
@@ -391,6 +395,9 @@ static double query (int token)
 
   case T_EXEC:
     return exec[(token>>8)-'0'].val;
+
+  case T_EXPR:
+    return expr[(token>>8)-'0'].val;
 
   case T_IMON_CPU:
     return imon.cpu;
@@ -650,6 +657,11 @@ static void print_token (int token, char **p, char *start)
     *p+=sprintf (*p, "%.*s",cols-(int)(*p-start), exec[i].s);
     break;
     
+  case T_EXPR:
+    i = (token>>8)-'0';
+    *p+=sprintf (*p, "%.*s",cols-(int)(*p-start), expr[i].s);
+    break;
+    
   case T_IMON_VER:
     *p+=sprintf (*p, "%s", ImonVer());
     break;
@@ -813,6 +825,12 @@ static void collect_data (void)
   for (i=0; i<=EXECS; i++) {
     if (token_usage[T_EXEC]&(1<<i)) {
       Exec (i, exec[i].s, &exec[i].val);
+    }
+  }
+
+  for (i=0; i<=EXPRS; i++) {
+    if (token_usage[T_EXPR]&(1<<i)) {
+      Expr (i, expr[i].s, &exec[i].val);
     }
   }
 

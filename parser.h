@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.16 2003/11/11 04:40:20 reinelt Exp $
+/* $Id: parser.h,v 1.17 2004/01/05 11:57:38 reinelt Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.17  2004/01/05 11:57:38  reinelt
+ * added %y tokens to make the Evaluator useable
+ *
  * Revision 1.16  2003/11/11 04:40:20  reinelt
  * WIFI patch from Xavier Vello
  *
@@ -109,6 +112,7 @@ typedef enum {
   T_MAIL, T_MAIL_UNSEEN,
   T_SENSOR,
   T_EXEC,
+  T_EXPR,
   T_IMON_CPU, T_IMON_VER, T_IMON_DATE, T_IMON_TIME, T_IMON_RIN, T_IMON_ROUT,
   T_IMON_STATUS, T_IMON_PHONE, T_IMON_IP, T_IMON_OTIME, T_IMON_CHARGE,
   T_TELMON_NUMBER, T_TELMON_MSN, T_TELMON_TIME, T_TELMON_DATE
@@ -116,7 +120,7 @@ typedef enum {
 
 typedef enum {
   C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_WIFI, C_SETI, C_BATT, C_DVB,
-  C_MAIL, C_SENSOR, C_EXEC, C_IMON, C_TELMON
+  C_MAIL, C_SENSOR, C_EXEC, C_EXPR, C_IMON, C_TELMON
 } CLASS;
 
 char *parse_row (char *string, int supported_bars, int usage[]);

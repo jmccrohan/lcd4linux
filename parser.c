@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.23 2003/11/11 04:40:20 reinelt Exp $
+/* $Id: parser.c,v 1.24 2004/01/05 11:57:38 reinelt Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.24  2004/01/05 11:57:38  reinelt
+ * added %y tokens to make the Evaluator useable
+ *
  * Revision 1.23  2003/11/11 04:40:20  reinelt
  * WIFI patch from Xavier Vello
  *
@@ -201,6 +204,7 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "u*", T_MAIL_UNSEEN,C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },
 			  { "x*", T_EXEC,       C_EXEC,    1 },
+			  { "y*", T_EXPR,       C_EXPR,    1 },
 			  { "jc", T_IMON_CPU,   C_IMON,    1 },
 			  { "jv", T_IMON_VER,   C_IMON,    0 },
 			  { "jd", T_IMON_DATE,  C_IMON,    0 },

@@ -32,6 +32,7 @@ dvb.c dvb.h \
 filter.c filter.h \
 widget.c widget.h \
 exec.c exec.h \
+expr.c expr.h \
 mail2.c \
 socket.c socket.h \
 imon.c imon.h
