@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.27 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: XWindow.c,v 1.28 2003/02/17 06:06:12 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.28  2003/02/17 06:06:12  reinelt
+ * small bug in X11 driver: omit pixel gap between cahracters
+ *
  * Revision 1.27  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -435,7 +438,10 @@ int x,y;
 				dirty=1;
 			}
 			x+=pixel+pgap;
+#if 0
+			// this is wrong! MR
 			if (++jgap==xres) { x+=cgap-pgap; jgap=0; }
+#endif
 			pos++;
 		}
 		y+=pixel+pgap;
@@ -521,7 +527,10 @@ int dx,wx,wy;
 				dx,wy,
 				pixel,pixel);
 			dx+=pixel+pgap;
+#if 0
+			// this is wrong! MR
 			if (++jgap==xres) { dx+=cgap-pgap; jgap=0; }
+#endif
 		}
 		wy+=pixel+pgap;
 		if (++igap==yres) { wy+=rgap-pgap; igap=0; }
