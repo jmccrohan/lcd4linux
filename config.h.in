@@ -272,55 +272,49 @@
 /* Version number of package */
 #undef VERSION
 
-/* junk */
+/* Beckmann&Egle driver */
 #undef WITH_BECKMANNEGLE
 
-/* junk */
+/* Crystalfontz driver */
 #undef WITH_CRYSTALFONTZ
 
-/* junk */
+/* CwLinux driver */
 #undef WITH_CWLINUX
 
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
 
-/* junk */
+/* HD44780 driver */
 #undef WITH_HD44780
 
-/* junk */
+/* M50530 driver */
 #undef WITH_M50530
 
-/* junk */
+/* MatrixOrbital driver */
 #undef WITH_MATRIXORBITAL
 
-/* junk */
+/* Milford Instruments driver */
 #undef WITH_MILINST
 
-/* junk */
+/* PalmPilot driver */
 #undef WITH_PALMPILOT
 
-/* junk */
+/* driver */
 #undef WITH_PNG
 
-/* junk */
+/* driver */
 #undef WITH_PPM
 
-/* junk */
-#undef WITH_SIN
-
-/* junk */
-#undef WITH_SKELETON
-
-/* junk */
+/* T6963 driver */
 #undef WITH_T6963
 
-/* junk */
+/* Curses driver */
 #undef WITH_TEXT
 
-/* junk */
+/* USBLCD driver */
 #undef WITH_USBLCD
 
-/* junk */
+/* X11 driver */
 #undef WITH_X11
 
 /* Define to 1 if the X Window System is missing or not being used. */

@@ -20960,12 +20960,14 @@ done
 echo "$as_me:$LINENO: result: done" >&5
 echo "${ECHO_T}done" >&6
 
-RASTER="no"
 PARPORT="no"
+SERIAL="no"
+TEXT="no"
+RASTER="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
 #  DRIVERS="$DRIVERS BeckmannEgle.lo"
-   DRIVERS="$DRIVERS BeckmannEgle.o"
+#  DRIVERS="$DRIVERS BeckmannEgle.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_BECKMANNEGLE 1
@@ -20974,8 +20976,10 @@ _ACEOF
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
-#  DRIVERS="$DRIVERS Crystalfontz.lo drv_Crystalfontz.lo"
-   DRIVERS="$DRIVERS Crystalfontz.o  drv_Crystalfontz.o"
+   TEXT="yes"
+   SERIAL="yes"
+#  DRIVERS="$DRIVERS drv_Crystalfontz.lo"
+   DRIVERS="$DRIVERS drv_Crystalfontz.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CRYSTALFONTZ 1
@@ -20984,8 +20988,10 @@ _ACEOF
 fi
 
 if test "$CWLINUX" = "yes"; then
-#  DRIVERS="$DRIVERS Cwlinux.lo drv_Cwlinux.lo"
-   DRIVERS="$DRIVERS Cwlinux.o drv_Cwlinux.o"
+   TEXT="yes"
+   SERIAL="yes"
+#  DRIVERS="$DRIVERS drv_Cwlinux.lo"
+   DRIVERS="$DRIVERS drv_Cwlinux.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CWLINUX 1
@@ -20994,9 +21000,10 @@ _ACEOF
 fi
 
 if test "$HD44780" = "yes"; then
+   TEXT="yes"
    PARPORT="yes"
-#  DRIVERS="$DRIVERS HD44780.lo drv_HD44780.lo"
-   DRIVERS="$DRIVERS HD44780.o  drv_HD44780.o"
+#  DRIVERS="$DRIVERS drv_HD44780.lo"
+   DRIVERS="$DRIVERS drv_HD44780.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_HD44780 1
@@ -21007,7 +21014,7 @@ fi
 if test "$M50530" = "yes"; then
    PARPORT="yes"
 #  DRIVERS="$DRIVERS M50530.lo"
-   DRIVERS="$DRIVERS M50530.o"
+#  DRIVERS="$DRIVERS M50530.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_M50530 1
@@ -21018,7 +21025,7 @@ fi
 if test "$T6963" = "yes"; then
    PARPORT="yes"
 #  DRIVERS="$DRIVERS T6963.lo"
-   DRIVERS="$DRIVERS T6963.o"
+#  DRIVERS="$DRIVERS T6963.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_T6963 1
@@ -21028,7 +21035,7 @@ fi
 
 if test "$USBLCD" = "yes"; then
 #  DRIVERS="$DRIVERS USBLCD.lo"
-   DRIVERS="$DRIVERS USBLCD.o"
+#  DRIVERS="$DRIVERS USBLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_USBLCD 1
@@ -21037,8 +21044,9 @@ _ACEOF
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
-#  DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
-   DRIVERS="$DRIVERS MatrixOrbital.o  drv_MatrixOrbital.o"
+   SERIAL="yes"
+#  DRIVERS="$DRIVERS drv_MatrixOrbital.lo"
+   DRIVERS="$DRIVERS drv_MatrixOrbital.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MATRIXORBITAL 1
@@ -21048,7 +21056,7 @@ fi
 
 if test "$MILINST" = "yes"; then
 #  DRIVERS="$DRIVERS MilfordInstruments.lo"
-   DRIVERS="$DRIVERS MilfordInstruments.o"
+#  DRIVERS="$DRIVERS MilfordInstruments.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MILINST 1
@@ -21058,7 +21066,7 @@ fi
 
 if test "$PALMPILOT" = "yes"; then
 #  DRIVERS="$DRIVERS PalmPilot.lo"
-   DRIVERS="$DRIVERS PalmPilot.o"
+#  DRIVERS="$DRIVERS PalmPilot.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PALMPILOT 1
@@ -21095,30 +21103,10 @@ echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
    fi
 fi
 
-if test "$SIN" = "yes"; then
-#  DRIVERS="$DRIVERS SIN.lo"
-   DRIVERS="$DRIVERS SIN.o"
-
-cat >>confdefs.h <<\_ACEOF
-#define WITH_SIN 1
-_ACEOF
-
-fi
-
-if test "$SKELETON" = "yes"; then
-#  DRIVERS="$DRIVERS Skeleton.lo"
-   DRIVERS="$DRIVERS Skeleton.o"
-
-cat >>confdefs.h <<\_ACEOF
-#define WITH_SKELETON 1
-_ACEOF
-
-fi
-
 if test "$TEXT" = "yes"; then
    if test "$has_curses" = true; then
 #     DRIVERS="$DRIVERS Text.lo"
-      DRIVERS="$DRIVERS Text.o"
+#     DRIVERS="$DRIVERS Text.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
 
@@ -21139,7 +21127,7 @@ echo "$as_me: error: X11 headers or libraries not available: X11 driver disabled
    { (exit 1); exit 1; }; }
    else
 #     DRIVERS="$DRIVERS XWindow.lo"
-      DRIVERS="$DRIVERS XWindow.o"
+#     DRIVERS="$DRIVERS XWindow.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
 
 cat >>confdefs.h <<\_ACEOF
@@ -21155,16 +21143,29 @@ echo "$as_me: error: You should include at least one driver..." >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-# Raster.lo depends on PPM or PNG
-if test "$RASTER" = "yes"; then
-#  DRIVERS="$DRIVERS Raster.lo"
-   DRIVERS="$DRIVERS Raster.o"
+# generic text driver
+if test "$TEXT" = "yes"; then
+#  DRIVERS="$DRIVERS drv_generic_text.lo"
+   DRIVERS="$DRIVERS drv_generic_text.o"
 fi
 
-# parport driver
+# Raster.lo depends on PPM or PNG
+if test "$RASTER" = "yes"; then
+:
+#  DRIVERS="$DRIVERS Raster.lo"
+#  DRIVERS="$DRIVERS Raster.o"
+fi
+
+# generic parport driver
 if test "$PARPORT" = "yes"; then
-#  DRIVERS="$DRIVERS parport.lo"
-   DRIVERS="$DRIVERS parport.o"
+#  DRIVERS="$DRIVERS drv_generic_parport.lo"
+   DRIVERS="$DRIVERS drv_generic_parport.o"
+fi
+
+# generic serial driver
+if test "$SERIAL" = "yes"; then
+#  DRIVERS="$DRIVERS drv_generic_serial.lo"
+   DRIVERS="$DRIVERS drv_generic_serial.o"
 fi
 
 

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.62 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.63 2004/02/10 07:42:35 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.63  2004/02/10 07:42:35  reinelt
+ * cut off all old-style files which are no longer used with NextGeneration
+ *
  * Revision 1.62  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -310,9 +313,7 @@
 #include "debug.h"
 #include "pid.h"
 #include "udelay.h"
-#include "display.h"  // Fixme: remove me...
 #include "drv.h"
-#include "processor.h" // Fixme: remove me...
 #include "timer.h"
 #include "layout.h"
 #include "plugin.h"
@@ -340,7 +341,8 @@ static void usage(void)
   printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
-
+#if 0
+// Fixme: how to hello() with new layout?
 int hello (void)
 {
   int i, x, y, flag;
@@ -376,7 +378,7 @@ int hello (void)
   if (flag) lcd_flush();
   return flag;
 }
-
+#endif
 
 void handler (int signal)
 {
@@ -428,8 +430,6 @@ int main (int argc, char *argv[])
     case 'l':
       printf ("%s\n", release);
       drv_list();
-      printf ("\n");
-      lcd_list();
       exit(0);
     case 'o':
       output=optarg;
@@ -475,13 +475,8 @@ int main (int argc, char *argv[])
   snprintf (section, sizeof(section), "Display:%s", display);
   driver=cfg_get(section, "Driver", NULL);
   if (driver==NULL || *driver=='\0') {
-#if 0
     error ("missing '%s.Driver' entry in %s!", section, cfg_source());
     exit (1);
-#else
-    // Fixme: compatibility only...
-    driver=NULL;
-#endif
   }
   
   if (!running_foreground) {
@@ -536,40 +531,20 @@ int main (int argc, char *argv[])
     running_background=1;
   }
   
-  // Fixme: Compatibility only...
-  if (driver!=NULL) {
-    debug ("initializing driver %s", driver);
-    if (drv_init(section, driver)==-1) {
-      pid_exit(PIDFILE);
-      exit (1);
-    }
-  } else {
-    debug ("initializing old-style driver %s", display);
-    if (lcd_init(display)==-1) {
-      pid_exit(PIDFILE);
-      exit (1);
-    }
+  debug ("initializing driver %s", driver);
+  if (drv_init(section, driver)==-1) {
+    pid_exit(PIDFILE);
+    exit (1);
   }
   
   // check for new-style layout
   layout=cfg_get(NULL, "Layout", NULL);
   if (layout==NULL || *layout=='\0') {
-#if 0
     error ("missing 'Layout' entry in %s!", cfg_source());
     exit (1);
-#else
-    layout=NULL;
-    info ("using old-style layout!");
-#endif
   }
   
-  // Fixme: compatibility only...
-  if (layout==NULL) {
-    // process_init sets global vars tick, tack
-    process_init();
-  } else {
-    layout_init(layout);
-  }
+  layout_init(layout);
 
   // maybe go into interactive mode
   if (interactive) {
@@ -591,13 +566,7 @@ int main (int argc, char *argv[])
       printf("eval> ");
     }
     printf ("\n");
-    // Fixme: compatibility only...
-    if (layout==NULL) {
-      lcd_clear(1);
-      lcd_quit();
-    } else {
-      drv_quit();
-    }
+    drv_quit();
     pid_exit(PIDFILE);
     cfg_exit();
     exit (0);
@@ -608,15 +577,13 @@ int main (int argc, char *argv[])
     cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
   }
   
-  // Fixme: compatibility only...
-  if (layout==NULL) {
-    if (!quiet && hello()) {
-      sleep (3);
-      lcd_clear(1);
-    }
-  } else {
-    // Fixme: how to hello() with new layout?
+#if 0
+  // Fixme: how to hello() with new layout?
+  if (!quiet && hello()) {
+    sleep (3);
+    lcd_clear(1);
   }
+#endif
 
   debug ("starting main loop");
   
@@ -626,30 +593,20 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  // Fixme: compatibility only...
-  if (layout==NULL) {
-    while (got_signal==0) {
-      process ();
-      usleep(tack*1000);
-    }
-  } else {
-    while (got_signal==0) {
-      struct timespec delay;
-      if (timer_process(&delay)<0) break;
-      nanosleep(&delay, NULL);
-    }
+  while (got_signal==0) {
+    struct timespec delay;
+    if (timer_process(&delay)<0) break;
+    nanosleep(&delay, NULL);
   }
   
   debug ("leaving main loop");
   
-  // Fixme: compatibility only...
-  if (layout==NULL) {
-    lcd_clear(1);
-    if (!quiet) hello();
-    lcd_quit();
-  } else {
-    drv_quit();
-  }
+#if 0
+  // Fixme: how to hello() with new layout?
+  lcd_clear(1);
+  if (!quiet) hello();
+#endif
+  drv_quit();
 
   pid_exit(PIDFILE);
   cfg_exit();

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.17 2004/02/10 06:54:39 reinelt Exp $
+/* $Id: plugin.c,v 1.18 2004/02/10 07:42:35 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.18  2004/02/10 07:42:35  reinelt
+ * cut off all old-style files which are no longer used with NextGeneration
+ *
  * Revision 1.17  2004/02/10 06:54:39  reinelt
  * DVB plugin ported
  *
@@ -139,6 +142,7 @@ int plugin_init_cpuinfo (void);
 int plugin_init_meminfo (void);
 int plugin_init_netdev (void);
 int plugin_init_ppp (void);
+int plugin_init_dvb (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 

@@ -106,7 +106,7 @@ lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h processor.c processor.h layout.c layout.h timer.c timer.h evaluator.c evaluator.h widget.c      widget.h widget_text.c widget_text.h widget_bar.c  widget_bar.h widget_icon.c widget_icon.h plugin.c plugin.h plugin_math.c plugin_string.c plugin_cfg.c plugin_uname.c plugin_loadavg.c plugin_proc_stat.c plugin_cpuinfo.c plugin_meminfo.c plugin_netdev.c plugin_ppp.c plugin_dvb.c plugin_i2c_sensors.c plugin_xmms.c system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h exec.c exec.h expr.c expr.h mail2.c socket.c socket.h imon.c imon.h display.c display.h drv.c drv.h drv_generic_serial.c  drv_generic_serial.h drv_generic_parport.c drv_generic_parport.h drv_generic_text.c    drv_generic_text.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
+lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         debug.c       debug.h       drv.c         drv.h         evaluator.c   evaluator.h   hash.c        hash.h        layout.c      layout.h      lock.c 	      lock.h        pid.c         pid.h         timer.c       timer.h       udelay.c      udelay.h                                  widget.c      widget.h      widget_text.c widget_text.h widget_bar.c  widget_bar.h  widget_icon.c widget_icon.h                             plugin.c      plugin.h      plugin_math.c               plugin_string.c             plugin_cfg.c                plugin_uname.c              plugin_loadavg.c            plugin_proc_stat.c          plugin_cpuinfo.c            plugin_meminfo.c            plugin_netdev.c             plugin_ppp.c                plugin_dvb.c                plugin_i2c_sensors.c        plugin_xmms.c               
 
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -125,10 +125,10 @@ lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h pro
 #fontmap.c fontmap.h \
 #udelay.c udelay.h
 
-EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c drv_Crystalfontz.c Crystalfontz.c drv_Cwlinux.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c drv_MatrixOrbital.c MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c XWindow.c Text.c
+EXTRA_lcd4linux_SOURCES =  drv_generic_text.c    drv_generic_text.h drv_generic_serial.c  drv_generic_serial.h drv_generic_parport.c drv_generic_parport.h BeckmannEgle.c drv_Crystalfontz.c drv_Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c drv_MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c XWindow.c Text.c
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Rows README.Tokens README.Drivers README.Plugins README.KDE Skeleton.c plugin_sample.c
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Rows README.Tokens README.Drivers README.Plugins README.KDE plugin_sample.c
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -146,23 +146,16 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-lcd4linux_OBJECTS =  lcd4linux.$(OBJEXT) pid.$(OBJEXT) hash.$(OBJEXT) \
-parser.$(OBJEXT) processor.$(OBJEXT) layout.$(OBJEXT) timer.$(OBJEXT) \
-evaluator.$(OBJEXT) widget.$(OBJEXT) widget_text.$(OBJEXT) \
-widget_bar.$(OBJEXT) widget_icon.$(OBJEXT) plugin.$(OBJEXT) \
-plugin_math.$(OBJEXT) plugin_string.$(OBJEXT) plugin_cfg.$(OBJEXT) \
-plugin_uname.$(OBJEXT) plugin_loadavg.$(OBJEXT) \
-plugin_proc_stat.$(OBJEXT) plugin_cpuinfo.$(OBJEXT) \
-plugin_meminfo.$(OBJEXT) plugin_netdev.$(OBJEXT) plugin_ppp.$(OBJEXT) \
-plugin_dvb.$(OBJEXT) plugin_i2c_sensors.$(OBJEXT) plugin_xmms.$(OBJEXT) \
-system.$(OBJEXT) isdn.$(OBJEXT) wifi.$(OBJEXT) mail.$(OBJEXT) \
-seti.$(OBJEXT) battery.$(OBJEXT) dvb.$(OBJEXT) filter.$(OBJEXT) \
-exec.$(OBJEXT) expr.$(OBJEXT) mail2.$(OBJEXT) socket.$(OBJEXT) \
-imon.$(OBJEXT) display.$(OBJEXT) drv.$(OBJEXT) \
-drv_generic_serial.$(OBJEXT) drv_generic_parport.$(OBJEXT) \
-drv_generic_text.$(OBJEXT) debug.$(OBJEXT) cfg.$(OBJEXT) lock.$(OBJEXT) \
-pixmap.$(OBJEXT) bar.$(OBJEXT) icon.$(OBJEXT) fontmap.$(OBJEXT) \
-udelay.$(OBJEXT)
+lcd4linux_OBJECTS =  lcd4linux.$(OBJEXT) cfg.$(OBJEXT) debug.$(OBJEXT) \
+drv.$(OBJEXT) evaluator.$(OBJEXT) hash.$(OBJEXT) layout.$(OBJEXT) \
+lock.$(OBJEXT) pid.$(OBJEXT) timer.$(OBJEXT) udelay.$(OBJEXT) \
+widget.$(OBJEXT) widget_text.$(OBJEXT) widget_bar.$(OBJEXT) \
+widget_icon.$(OBJEXT) plugin.$(OBJEXT) plugin_math.$(OBJEXT) \
+plugin_string.$(OBJEXT) plugin_cfg.$(OBJEXT) plugin_uname.$(OBJEXT) \
+plugin_loadavg.$(OBJEXT) plugin_proc_stat.$(OBJEXT) \
+plugin_cpuinfo.$(OBJEXT) plugin_meminfo.$(OBJEXT) \
+plugin_netdev.$(OBJEXT) plugin_ppp.$(OBJEXT) plugin_dvb.$(OBJEXT) \
+plugin_i2c_sensors.$(OBJEXT) plugin_xmms.$(OBJEXT)
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -178,25 +171,20 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
-.deps/HD44780.P .deps/M50530.P .deps/MatrixOrbital.P \
+DEP_FILES =  .deps/BeckmannEgle.P .deps/HD44780.P .deps/M50530.P \
 .deps/MilfordInstruments.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
-.deps/T6963.P .deps/Text.P .deps/USBLCD.P .deps/XWindow.P .deps/bar.P \
-.deps/battery.P .deps/cfg.P .deps/debug.P .deps/display.P .deps/drv.P \
-.deps/drv_Crystalfontz.P .deps/drv_Cwlinux.P .deps/drv_MatrixOrbital.P \
-.deps/drv_generic_parport.P .deps/drv_generic_serial.P \
-.deps/drv_generic_text.P .deps/dvb.P .deps/evaluator.P .deps/exec.P \
-.deps/expr.P .deps/filter.P .deps/fontmap.P .deps/hash.P .deps/icon.P \
-.deps/imon.P .deps/isdn.P .deps/layout.P .deps/lcd4linux.P .deps/lock.P \
-.deps/mail.P .deps/mail2.P .deps/parport.P .deps/parser.P .deps/pid.P \
-.deps/pixmap.P .deps/plugin.P .deps/plugin_cfg.P .deps/plugin_cpuinfo.P \
+.deps/T6963.P .deps/Text.P .deps/USBLCD.P .deps/XWindow.P .deps/cfg.P \
+.deps/debug.P .deps/drv.P .deps/drv_Crystalfontz.P .deps/drv_Cwlinux.P \
+.deps/drv_MatrixOrbital.P .deps/drv_generic_parport.P \
+.deps/drv_generic_serial.P .deps/drv_generic_text.P .deps/evaluator.P \
+.deps/hash.P .deps/layout.P .deps/lcd4linux.P .deps/lock.P .deps/pid.P \
+.deps/plugin.P .deps/plugin_cfg.P .deps/plugin_cpuinfo.P \
 .deps/plugin_dvb.P .deps/plugin_i2c_sensors.P .deps/plugin_loadavg.P \
 .deps/plugin_math.P .deps/plugin_meminfo.P .deps/plugin_netdev.P \
 .deps/plugin_ppp.P .deps/plugin_proc_stat.P .deps/plugin_string.P \
-.deps/plugin_uname.P .deps/plugin_xmms.P .deps/processor.P .deps/seti.P \
-.deps/socket.P .deps/system.P .deps/timer.P .deps/udelay.P \
+.deps/plugin_uname.P .deps/plugin_xmms.P .deps/timer.P .deps/udelay.P \
 .deps/widget.P .deps/widget_bar.P .deps/widget_icon.P \
-.deps/widget_text.P .deps/wifi.P
+.deps/widget_text.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

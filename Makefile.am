@@ -15,60 +15,38 @@ lcd4linux_LDADD   = @DRIVERS@ @DRVLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES = \
-lcd4linux.c \
-pid.c pid.h \
-hash.c hash.h \
-parser.c parser.h \
-processor.c processor.h \
-layout.c layout.h \
-timer.c timer.h \
-evaluator.c evaluator.h \
-widget.c      widget.h \
+lcd4linux_SOURCES =         \
+lcd4linux.c                 \
+cfg.c         cfg.h         \
+debug.c       debug.h       \
+drv.c         drv.h         \
+evaluator.c   evaluator.h   \
+hash.c        hash.h        \
+layout.c      layout.h      \
+lock.c 	      lock.h        \
+pid.c         pid.h         \
+timer.c       timer.h       \
+udelay.c      udelay.h      \
+                            \
+widget.c      widget.h      \
 widget_text.c widget_text.h \
-widget_bar.c  widget_bar.h \
+widget_bar.c  widget_bar.h  \
 widget_icon.c widget_icon.h \
-plugin.c plugin.h \
-plugin_math.c \
-plugin_string.c \
-plugin_cfg.c \
-plugin_uname.c \
-plugin_loadavg.c \
-plugin_proc_stat.c \
-plugin_cpuinfo.c \
-plugin_meminfo.c \
-plugin_netdev.c \
-plugin_ppp.c \
-plugin_dvb.c \
-plugin_i2c_sensors.c \
-plugin_xmms.c \
-system.c system.h \
-isdn.c isdn.h \
-wifi.c wifi.h \
-mail.c mail.h \
-seti.c seti.h \
-battery.c battery.h \
-dvb.c dvb.h \
-filter.c filter.h \
-exec.c exec.h \
-expr.c expr.h \
-mail2.c \
-socket.c socket.h \
-imon.c imon.h \
-\
-display.c display.h \
-drv.c drv.h \
-drv_generic_serial.c  drv_generic_serial.h \
-drv_generic_parport.c drv_generic_parport.h \
-drv_generic_text.c    drv_generic_text.h \
-debug.c debug.h \
-cfg.c cfg.h \
-lock.c lock.h \
-pixmap.c pixmap.h \
-bar.c bar.h \
-icon.c icon.h \
-fontmap.c fontmap.h \
-udelay.c udelay.h
+                            \
+plugin.c      plugin.h      \
+plugin_math.c               \
+plugin_string.c             \
+plugin_cfg.c                \
+plugin_uname.c              \
+plugin_loadavg.c            \
+plugin_proc_stat.c          \
+plugin_cpuinfo.c            \
+plugin_meminfo.c            \
+plugin_netdev.c             \
+plugin_ppp.c                \
+plugin_dvb.c                \
+plugin_i2c_sensors.c        \
+plugin_xmms.c               
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9
@@ -87,15 +65,17 @@ udelay.c udelay.h
 #udelay.c udelay.h
 
 EXTRA_lcd4linux_SOURCES= \
-parport.c parport.h \
+drv_generic_text.c    drv_generic_text.h \
+drv_generic_serial.c  drv_generic_serial.h \
+drv_generic_parport.c drv_generic_parport.h \
 BeckmannEgle.c \
-drv_Crystalfontz.c Crystalfontz.c \
-drv_Cwlinux.c Cwlinux.c \
+drv_Crystalfontz.c \
+drv_Cwlinux.c \
 HD44780.c \
 M50530.c \
 T6963.c \
 USBLCD.c \
-drv_MatrixOrbital.c MatrixOrbital.c \
+drv_MatrixOrbital.c \
 MilfordInstruments.c \
 PalmPilot.c \
 Raster.c \
@@ -121,5 +101,4 @@ README.Tokens \
 README.Drivers \
 README.Plugins \
 README.KDE \
-Skeleton.c \
 plugin_sample.c

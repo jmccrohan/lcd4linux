@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.6 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: debug.c,v 1.7 2004/02/10 07:42:35 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.7  2004/02/10 07:42:35  reinelt
+ * cut off all old-style files which are no longer used with NextGeneration
+ *
  * Revision 1.6  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -84,9 +87,12 @@ void message (int level, const char *format, ...)
   va_end(ap);
   
   if (!running_background) {
+    // Fixme
+#if 0
 #ifdef WITH_TEXT
     extern int curs_err(char *);
     if (!curs_err(buffer))
+#endif
 #endif      
       fprintf (level?stdout:stderr, "%s\n", buffer);
   }
