@@ -8,7 +8,14 @@ Display LK204 {
 }
 
 
-Display myHD44780 {
+Display CF632 {
+    Driver 'Crystalfontz'
+    Model '632'
+    Port '/dev/tts/0'
+    Speed 19200
+}
+
+Display HD44780-20x4 {
     Driver 'HD44780'
     Port '/dev/parports/0'	
 #   Port '0x378'
@@ -27,8 +34,9 @@ Display myHD44780 {
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
-    width 20
-    align 'C'
+    width 16
+    align 'M'
+    speed 100	
     update tick
 }
 
@@ -111,9 +119,23 @@ Layout Default {
     }
 }
 
+Layout L16x2 {
+    Row1 {
+	Col1  'Busy'
+	Col11 'BusyBar'
+    }
+    Row2 {
+	Col1 'Load'
+	Col11 'LoadBar'
+    }
+}
 
-Display 'myHD44780'
-Layout  'Default'
+#Display 'LK204'
+#Display 'HD44780-20x4'
+Display 'CF632'
+
+#Layout  'Default'
+Layout  'L16x2'
 
 Variables {
    tick 500

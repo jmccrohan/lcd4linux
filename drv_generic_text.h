@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.1 2004/01/20 05:36:59 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.2 2004/01/22 07:57:45 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.2  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.1  2004/01/20 05:36:59  reinelt
  * moved text-display-specific stuff to drv_generic_text
  * moved all the bar stuff from drv_generic_bar to generic_text
@@ -48,7 +52,7 @@
 extern int DROWS, DCOLS; // display size
 extern int LROWS, LCOLS; // layout size
 extern int XRES,  YRES;  // pixels of one char cell
-extern int CHARS;        // number of user-defineable characters
+extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
 
 
 extern char *LayoutFB;

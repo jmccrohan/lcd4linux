@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.7 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: widget_text.c,v 1.8 2004/01/22 07:57:45 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.8  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.7  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -178,7 +182,7 @@ void widget_text_update (void *Self)
   int update;
   
   // evaluate prefix
-  if (T->prefix!=NULL && strlen(T->prefix)>0) {
+  if (T->prefix!=NULL && *(T->prefix)!='\0') {
     Eval(T->prefix, &result);
     preval=strdup(R2S(&result));
     DelResult (&result);

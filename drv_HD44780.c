@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.2 2004/01/21 06:39:27 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.3 2004/01/22 07:57:45 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.3  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.2  2004/01/21 06:39:27  reinelt
  * HD44780 missed the "clear display' sequence
  * asc255bug handling added
@@ -434,9 +438,10 @@ int drv_HD_init (char *section)
   int asc255bug;
   int ret;  
   
-  XRES=5;
-  YRES=8;
-  CHARS=8;
+  XRES=5;  // pixel width  of one char 
+  YRES=8;  // pixel height of one char 
+  CHARS=8; // number of user-defineable chars
+  CHAR0=0; // ascii of first user-defineable chars
   
   // start display
   if ((ret=drv_HD_start (section))!=0)

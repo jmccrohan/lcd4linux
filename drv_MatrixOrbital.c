@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.15 2004/01/21 12:36:19 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.16 2004/01/22 07:57:45 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.16  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.15  2004/01/21 12:36:19  reinelt
  * Crystalfontz NextGeneration driver added
  *
@@ -448,9 +452,10 @@ int drv_MO_init (char *section)
   WIDGET_CLASS wc;
   int ret;  
   
-  XRES=5;
-  YRES=8;
-  CHARS=8;
+  XRES=5;  // pixel width  of one char 
+  YRES=8;  // pixel height of one char 
+  CHARS=8; // number of user-defineable chars
+  CHAR0=0; // ascii of first user-defineable chars
   
   // start display
   if ((ret=drv_MO_start (section))!=0)

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.29 2004/01/18 06:54:08 reinelt Exp $^
+/* $Id: cfg.c,v 1.30 2004/01/22 07:57:45 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.30  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.29  2004/01/18 06:54:08  reinelt
  * bug in expr.c fixed (thanks to Xavier)
  * some progress with /proc/stat parsing
@@ -289,7 +293,7 @@ static int validchars (char *string)
     // first and following chars
     if ((*c>='A' && *c<='Z') || (*c>='a' && *c<='z') || (*c=='_')) continue;
     // only following chars
-    if ((c>string) && ((*c>='0' && *c<='9') || (*c=='.'))) continue;
+    if ((c>string) && ((*c>='0' && *c<='9') || (*c=='.') || (*c=='-'))) continue;
     return 0;
   }
   return 1;

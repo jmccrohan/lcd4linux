@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.3 2004/01/20 14:25:12 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.4 2004/01/22 07:57:45 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.4  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.3  2004/01/20 14:25:12  reinelt
  * some reorganization
  * moved drv_generic to drv_generic_serial
@@ -84,11 +88,11 @@ static char   *Driver;
 int DROWS, DCOLS; // display size
 int LROWS, LCOLS; // layout size
 int XRES,  YRES;  // pixels of one char cell
-int CHARS;        // number of user-defineable characters
+int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
 
 char *LayoutFB  = NULL;
 char *DisplayFB = NULL;
-static BAR  *Bar       = NULL;
+static BAR *Bar = NULL;
 
 static int nSegment=0;
 static int fSegment=0;
@@ -103,14 +107,16 @@ static SEGMENT Segment[128];
 void drv_generic_text_resizeFB (int rows, int cols)
 {
   char *newFB;
-  int row, col;
+  BAR *newBar;
+  int i, row, col;
   
-  // Fixme: resize Bar FB too!!!!
-
-
   // Layout FB is large enough
   if (rows<=LROWS && cols<=LCOLS)
     return;
+  
+  // get maximum values
+  if (rows<LROWS) rows=LROWS;
+  if (cols<LCOLS) cols=LCOLS;
   
   // allocate new Layout FB
   newFB=malloc(cols*rows*sizeof(char));
@@ -125,8 +131,32 @@ void drv_generic_text_resizeFB (int rows, int cols)
     }
     free (LayoutFB);
   }
-  
   LayoutFB = newFB;
+
+  
+  // resize Bar buffer
+  if (Bar) {
+
+    newBar=malloc (rows*cols*sizeof(BAR));
+
+    for (i=0; i<rows*cols; i++) {
+      newBar[i].val1    = -1;
+      newBar[i].val2    = -1;
+      newBar[i].dir     =  0;
+      newBar[i].segment = -1;
+    }
+    
+    // transfer contents
+    for (row=0; row<LROWS; row++) {
+      for (col=0; col<LCOLS; col++) {
+	newBar[row*cols+col]=Bar[row*LCOLS+col];
+      }
+    }
+
+    free (Bar);
+    Bar=newBar;
+  }
+  
   LCOLS    = cols;
   LROWS    = rows;
 }
@@ -148,7 +178,7 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
   end=col+len;
   
   // maybe grow layout framebuffer
-  drv_generic_text_resizeFB (row, col+len-1);
+  drv_generic_text_resizeFB (row+1, col+len);
 
   fb1 = LayoutFB  + row*LCOLS;
   fb2 = DisplayFB + row*DCOLS;
@@ -156,24 +186,26 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
   // transfer new text into layout buffer
   memcpy (fb1+col, txt, len);
   
-  for (; col<=end; col++) {
-    int pos1, pos2, equal;
-    if (fb1[col]==fb2[col]) continue;
-    drv_goto (row, col);
-    for (pos1=col, pos2=pos1, col++, equal=0; col<=end; col++) {
-      if (fb1[col]==fb2[col]) {
-	// If we find just one equal byte, we don't break, because this 
-	// would require a goto, which takes several bytes, too.
-	if (++equal>goto_len) break;
-      } else {
-	pos2=col;
-	equal=0;
+  if (row<DROWS) {
+    for (; col<=end && col<DCOLS; col++) {
+      int pos1, pos2, equal;
+      if (fb1[col]==fb2[col]) continue;
+      drv_goto (row, col);
+      for (pos1=col, pos2=pos1, col++, equal=0; col<=end && col<DCOLS; col++) {
+	if (fb1[col]==fb2[col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes several bytes, too.
+	  if (++equal>goto_len) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
+      memcpy    (fb2+pos1, fb1+pos1, pos2-pos1+1);
+      drv_write (fb2+pos1,           pos2-pos1+1);
     }
-    memcpy    (fb2+pos1, fb1+pos1, pos2-pos1+1);
-    drv_write (fb2+pos1,           pos2-pos1+1);
   }
-  
+
   return 0;
 }
 
@@ -202,7 +234,7 @@ static void drv_generic_text_bar_clear(void)
 static void drv_generic_text_bar_create_bar (int row, int col, DIRECTION dir, int len, int val1, int val2)
 {
   int rev=0;
-  
+
   switch (dir) {
   case DIR_WEST:
     val1 = len-val1;
@@ -441,7 +473,7 @@ static void drv_generic_text_bar_define_chars (void(*defchar)(int ascii, char *m
       }
       break;
     }
-    defchar(c, buffer);
+    defchar(CHAR0+c, buffer);
   }
 }
 
@@ -464,9 +496,9 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
   // maybe grow layout framebuffer
   // bars *always* grow heading North or East!
   if (dir & (DIR_EAST|DIR_WEST)) {
-    drv_generic_text_resizeFB (row, col+len-1);
+    drv_generic_text_resizeFB (row+1, col+len);
   } else {
-    drv_generic_text_resizeFB (row, col);
+    drv_generic_text_resizeFB (row+1, col+1);
   }
 
   res  = dir & (DIR_EAST|DIR_WEST)?XRES:YRES;
@@ -504,6 +536,7 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
     if (s==-1) continue;
     c=Segment[s].ascii;
     if (c==-1) continue;
+    if (s>=fSegment) c+=CHAR0; // ascii offset for user-defineable chars
     if(c==LayoutFB[n]) continue;
     LayoutFB[n]=c;
   }

@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.8 2004/01/21 14:29:03 reinelt Exp $
+/* $Id: hash.c,v 1.9 2004/01/22 07:57:45 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.9  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.8  2004/01/21 14:29:03  reinelt
  * new helper 'hash_get_regex' which delivers the sum over regex matched items
  * new function 'disk()' which uses this regex matching
@@ -299,7 +303,6 @@ double hash_get_regex (HASH *Hash, char *key, int delay)
   regex_t preg;
   int i, err;
   
-  debug ("Michi: regex=<%s>", key);
   err=regcomp(&preg, key, REG_ICASE|REG_NOSUB);
   if (err!=0) {
     char buffer[32];
@@ -312,9 +315,7 @@ double hash_get_regex (HASH *Hash, char *key, int delay)
   hash_lookup(Hash, "", 1);
   
   for (i=0;i<Hash->nItems; i++) {
-    debug ("Michi: Testing <%s>", Hash->Items[i].key);
     if (regexec(&preg, Hash->Items[i].key, 0, NULL, 0)==0) {
-      debug ("Michi: MATCHED <%s>", Hash->Items[i].key);
       sum+=hash_get_delta(Hash, Hash->Items[i].key, delay);
     }
   }

@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.1 2004/01/21 12:36:19 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.2 2004/01/22 07:57:45 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.2  2004/01/22 07:57:45  reinelt
+ * several bugs fixed where segfaulting on layout>display
+ * Crystalfontz driver optimized, 632 display already works
+ *
  * Revision 1.1  2004/01/21 12:36:19  reinelt
  * Crystalfontz NextGeneration driver added
  *
@@ -107,7 +111,8 @@ static void drv_CF_define_char (int ascii, char *buffer)
 {
   char cmd[2]="\031n"; // set custom char bitmap
 
-  cmd[1]=(char)ascii;
+  // user-defineable chars start at 128, but are defined at 0
+  cmd[1]=(char)(ascii-CHAR0); 
   drv_generic_serial_write (cmd, 2);
   drv_generic_serial_write (buffer, 8);
 }
@@ -234,9 +239,10 @@ int drv_CF_init (char *section)
   WIDGET_CLASS wc;
   int ret;  
   
-  XRES=5;
-  YRES=8;
-  CHARS=8;
+  XRES=6;    // pixel width  of one char 
+  YRES=8;    // pixel height of one char 
+  CHARS=8;   // number of user-defineable chars
+  CHAR0=128; // ascii of first user-defineable chars
   
   // start display
   if ((ret=drv_CF_start (section))!=0)
@@ -251,8 +257,7 @@ int drv_CF_init (char *section)
     return ret;
   
   // add fixed chars to the bar driver
-  drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
-  drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+  drv_generic_text_bar_add_segment (0, 0, 255, 32); // ASCII 32 = blank
   
   // register text widget
   wc=Widget_Text;
