@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.3 2000/03/26 19:03:52 reinelt Exp $
+/* $Id: cfg.c,v 1.4 2000/03/26 20:00:44 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.4  2000/03/26 20:00:44  reinelt
+ *
+ * README.Raster added
+ *
  * Revision 1.3  2000/03/26 19:03:52  reinelt
  *
  * more Pixmap renaming
@@ -89,7 +93,6 @@ static char *strip (char *s)
   for (p=s; *p; p++) {
     if (*p=='"') do p++; while (*p && *p!='\n' && *p!='"');
     if (*p=='\'') do p++; while (*p && *p!='\n' && *p!='\'');
-    if (p>s && *(p-1)=='\\' && *p=='#')
     if (*p=='\n' || (*p=='#' && (p==s || *(p-1)!='\\'))) {
       *p='\0';
       break;
@@ -99,6 +102,17 @@ static char *strip (char *s)
   return s;
 }
 
+static char *dequote (char *string)
+{
+  char *s=string;
+  char *p=string;
+  
+  do {
+    if (*s!='\\') *p++=*s;
+  } while (*s++);
+  
+  return string;
+}
 
 void cfg_set (char *key, char *val)
 {
@@ -107,16 +121,15 @@ void cfg_set (char *key, char *val)
   for (i=0; i<nConfig; i++) {
     if (strcasecmp(Config[i].key, key)==0) {
       if (Config[i].val) free (Config[i].val);
-      Config[i].val=strdup(val);
+      Config[i].val=dequote(strdup(val));
       return;
     }
   }
   nConfig++;
   Config=realloc(Config, nConfig*sizeof(ENTRY));
   Config[i].key=strdup(key);
-  Config[i].val=strdup(val);
+  Config[i].val=dequote(strdup(val));
 }
-
 
 char *cfg_get (char *key)
 {
@@ -129,7 +142,6 @@ char *cfg_get (char *key)
   }
   return NULL;
 }
-
 
 int cfg_read (char *file)
 {
@@ -170,7 +182,6 @@ int cfg_read (char *file)
   fclose (stream);
   return 0;
 }
-
 
 char *cfg_file (void)
 {

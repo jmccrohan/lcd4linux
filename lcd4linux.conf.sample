@@ -3,20 +3,16 @@
 #Speed 19200
 #Contrast 160
 
-Display xlcd
-#Display PPM
+#Display xlcd
+Display PPM
 size 20x4
 font 5x8
 pixel 3+0
 gap 3x3
 border 5
-foreground black
-halfground gray
-background wheat
-
-#foreground 102000
-#halfground 70c000
-#background 80d000
+foreground \#102000
+halfground \#70c000
+background \#80d000
 
 
 #Row1 "*** %o %v ***"

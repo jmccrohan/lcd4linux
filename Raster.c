@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.6 2000/03/26 19:03:52 reinelt Exp $
+/* $Id: Raster.c,v 1.7 2000/03/26 20:00:44 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.7  2000/03/26 20:00:44  reinelt
+ *
+ * README.Raster added
+ *
  * Revision 1.6  2000/03/26 19:03:52  reinelt
  *
  * more Pixmap renaming
@@ -82,9 +86,9 @@ static int rgap=0;
 static int cgap=0;
 static int border=0;
 
-static int foreground=0;
-static int halfground=0;
-static int background=0;
+static unsigned int foreground=0;
+static unsigned int halfground=0;
+static unsigned int background=0;
 
 extern char* output;
 
@@ -222,9 +226,18 @@ int Raster_init (LCD *Self)
 
   border=atoi(cfg_get("border")?:"0");
 
-  foreground=strtol(cfg_get("foreground")?:"000000", NULL, 16);
-  halfground=strtol(cfg_get("halfground")?:"ffffff", NULL, 16);
-  background=strtol(cfg_get("background")?:"ffffff", NULL, 16);
+  if (sscanf(s=cfg_get("foreground")?:"#102000", "#%x", &foreground)!=1) {
+    fprintf (stderr, "Raster: bad foreground color '%s'\n", s);
+    return -1;
+  }
+  if (sscanf(s=cfg_get("halfground")?:"#70c000", "#%x", &halfground)!=1) {
+    fprintf (stderr, "Raster: bad halfground color '%s'\n", s);
+    return -1;
+  }
+  if (sscanf(s=cfg_get("background")?:"#80d000", "#%x", &background)!=1) {
+    fprintf (stderr, "Raster: bad background color '%s'\n", s);
+    return -1;
+  }
 
   if (pix_init (rows, cols, xres, yres)!=0) {
     fprintf (stderr, "Raster: pix_init(%d, %d, %d, %d) failed\n", rows, cols, xres, yres);
