@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.6 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: Skeleton.c,v 1.7 2001/03/09 13:08:11 ltoetsch Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.7  2001/03/09 13:08:11  ltoetsch
+ * Added Text driver
+ *
  * Revision 1.6  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -104,8 +107,14 @@ int Skel_flush (void)
   return 0;
 }
 
+int Skel_quit (void)
+{
+  info("Skeleton: we shut down now.");
+  return 0;
+}
+
 
 LCD Skeleton[] = {
-  { "Skeleton",4,20,5,8,BAR_L|BAR_R,0,Skel_init,Skel_clear,Skel_put,Skel_bar,Skel_gpo,Skel_flush },
+  { "Skeleton",4,20,5,8,BAR_L|BAR_R,0,Skel_init,Skel_clear,Skel_put,Skel_bar,Skel_gpo,Skel_flush, Skel_quit },
   { NULL }
 };

@@ -1,5 +1,5 @@
 #
-# $Id: README.Drivers,v 1.3 2000/05/21 06:20:35 reinelt Exp $
+# $Id: README.Drivers,v 1.4 2001/03/09 13:08:11 ltoetsch Exp $
 #
 
 How to write new display drivers for lcd4linux
@@ -7,9 +7,13 @@ How to write new display drivers for lcd4linux
 If you plan to write a new display driver for lcd4linux, you should follow
 this guidelines:
 
-* use Skeleton.c as a start point
+* use Skeleton.c as a start point.
+  You might also have a look at Text.c
 
-* create a new sourcefile <drivername>.c and add it to the bottom of Makefile.am
+* create a new sourcefile <drivername>.c and add it to the bottom of
+  Makefile.am
+
+* add an entry to configure.in
 
 * there's no need for a <drivername>.h
 
@@ -45,10 +49,10 @@ this guidelines:
        { "" }
      };
 
-* write the correspondig init(), clear(), put(), bar() and flush()-functions.
-  There's no need to use a framebuffer and display its contents with the flush()-
-  call (as in MatrixOrbital.c), you can directly write to the display in the put()- 
-  and bar()-functions, and use an empty flush()-function. But if you have a limited
-  number of user-defined characters, and therefore you have to do some sort of
-  'character reduction' or similar stuff, you will have to use a framebuffer and
-  the flush()-call. 
+* write the correspondig init(), clear(), put(), bar(), quit() and
+  flush()-functions. There's no need to use a framebuffer and display its
+  contents with the flush()- call (as in MatrixOrbital.c), you can directly
+  write to the display in the put()- and bar()-functions, and use an empty
+  flush()-function. But if you have a limited number of user-defined
+  characters, and therefore you have to do some sort of 'character reduction'
+  or similar stuff, you will have to use a framebuffer and the flush()-call. 

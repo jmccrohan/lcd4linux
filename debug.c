@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.1 2000/11/28 20:20:38 reinelt Exp $
+/* $Id: debug.c,v 1.2 2001/03/09 13:08:11 ltoetsch Exp $
  *
  * debug() and error() functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.2  2001/03/09 13:08:11  ltoetsch
+ * Added Text driver
+ *
  * Revision 1.1  2000/11/28 20:20:38  reinelt
  *
  * added debug.c
@@ -62,6 +65,10 @@ void message (int level, const char *format, ...)
   va_end(ap);
   
   if (foreground) {
+#ifdef WITH_Text
+    extern int curs_err(char *);
+    if (!curs_err(buffer))
+#endif      
     fprintf (level?stdout:stderr, "%s\n", buffer);
     return;
   }

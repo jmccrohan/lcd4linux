@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.14 2001/03/08 15:25:38 ltoetsch Exp $
+# $Id: README,v 1.15 2001/03/09 13:08:11 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -8,7 +8,8 @@ This is the README file for lcd4linux
 INTRODUCTION 
 
 lcd4linux is a small program that reads various information from the kernel
-(and probably from other subsystems, especially ISDN) and displays them on a LCD.
+(and probably from other subsystems, especially ISDN) and displays them on a
+LCD.
 
 It supports displaying text values and different types of bars: Horizontal and
 vertical bars, logarithmic bars, split bars (two independent bars in one row).
@@ -34,6 +35,14 @@ lcd4linux [-c key=val] [-F] [-f config-file] [-o output] [-q] [-v]
   suppress startup splash screen with '-q'
   generate info messages with '-v'
   generate debugging messages with '-vv'
+  
+DIAGNOSTICS
+
+  lcd4linux on foreground writes (depending on level) to stdout or stderr.
+  The Text-Driver has ist's own diagnostics window.
+  
+  Started in the background (the default), lcd4linux uses your syslog daemon
+  for logging. Facility is USER, levels are ERR, INFO and DEBUG.
 
 
 SUPPORTED DISPLAYS
@@ -78,6 +87,8 @@ SUPPORTED DISPLAYS
      PPM (portable pixmap)
      PNG (with libgd)
 
+* Text:
+  This is a ncurses based text driver, mainly intended for debugging.
 
 * other displays: lcd4linux and especially the display driver code is very
   modular, so it should be quite easy to write a driver for any display. See

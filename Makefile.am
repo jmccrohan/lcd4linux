@@ -39,7 +39,8 @@ PNG.c \
 PPM.c \
 SIN.c \
 Skeleton.c \
-XWindow.c	
+XWindow.c \
+Text.c
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \

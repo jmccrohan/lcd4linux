@@ -79,7 +79,7 @@ lcd4linux_DEPENDENCIES = @DRIVERS@
 lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h battery.c battery.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h exec.c exec.h
 
 
-EXTRA_lcd4linux_SOURCES =  BeckmannEgle.c Crystalfontz.c Crystalfontz.h HD44780.c MatrixOrbital.c PalmPilot.c PNG.c PPM.c SIN.c Skeleton.c XWindow.c	
+EXTRA_lcd4linux_SOURCES =  BeckmannEgle.c Crystalfontz.c Crystalfontz.h HD44780.c MatrixOrbital.c PalmPilot.c PNG.c PPM.c SIN.c Skeleton.c XWindow.c Text.c
 
 
 EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster README.Png
@@ -115,11 +115,11 @@ TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/HD44780.P \
 .deps/MatrixOrbital.P .deps/PNG.P .deps/PPM.P .deps/PalmPilot.P \
-.deps/SIN.P .deps/Skeleton.P .deps/XWindow.P .deps/battery.P \
-.deps/cfg.P .deps/debug.P .deps/display.P .deps/exec.P .deps/filter.P \
-.deps/fontmap.P .deps/isdn.P .deps/lcd4linux.P .deps/lock.P \
-.deps/mail.P .deps/parser.P .deps/pixmap.P .deps/processor.P \
-.deps/seti.P .deps/system.P .deps/udelay.P
+.deps/SIN.P .deps/Skeleton.P .deps/Text.P .deps/XWindow.P \
+.deps/battery.P .deps/cfg.P .deps/debug.P .deps/display.P .deps/exec.P \
+.deps/filter.P .deps/fontmap.P .deps/isdn.P .deps/lcd4linux.P \
+.deps/lock.P .deps/mail.P .deps/parser.P .deps/pixmap.P \
+.deps/processor.P .deps/seti.P .deps/system.P .deps/udelay.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

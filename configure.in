@@ -27,7 +27,8 @@ AC_ARG_WITH(
   drivers=all
 )
 if test "$drivers" = "all"; then
-   drivers=[BeckmannEgle,CrystalFontz,HD44780,MatrixOrbital,PalmPilot,PNG,PPM,X11]
+
+drivers=[BeckmannEgle,CrystalFontz,HD44780,MatrixOrbital,PalmPilot,PNG,PPM,X11,Text]
 fi
 drivers=`echo $drivers|sed 's/,/ /g'`
 for driver in $drivers; do
@@ -73,6 +74,11 @@ for driver in $drivers; do
          DRIVERS="$DRIVERS XWindow.o"
 	 DRVLIBS="$DRVLIBS -lX11"
          AC_DEFINE(WITH_X11)
+         ;;
+      Text)
+         DRIVERS="$DRIVERS Text.o"
+	 DRVLIBS="$DRVLIBS -lncurses"
+         AC_DEFINE(WITH_Text)
          ;;
       *) 	
          AC_MSG_ERROR([Unknown driver '$driver'])

@@ -51,6 +51,10 @@ background \#80d000
 #halfground \#90c000
 #background \#a0d000
 
+#Display Text
+#size 40x8
+#TextBar 1
+
 #Display SIN
 #Port /dev/tty9
 

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.24 2001/03/01 11:08:16 reinelt Exp $
+/* $Id: display.c,v 1.25 2001/03/09 13:08:11 ltoetsch Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.25  2001/03/09 13:08:11  ltoetsch
+ * Added Text driver
+ *
  * Revision 1.24  2001/03/01 11:08:16  reinelt
  *
  * reworked configure to allow selection of drivers
@@ -176,6 +179,7 @@ extern LCD Raster[];
 extern LCD SIN[];
 extern LCD Skeleton[];
 extern LCD XWindow[];
+extern LCD Text[];
 
 FAMILY Driver[] = {
 #ifdef WITH_BECKMANNEGLE
@@ -204,6 +208,9 @@ FAMILY Driver[] = {
 #endif
 #ifdef WITH_X11
   { "X Window System", XWindow },
+#endif
+#ifdef WITH_Text
+  { "X Ncurses Text", Text },
 #endif
   { NULL }
 };
