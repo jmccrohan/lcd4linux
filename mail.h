@@ -1,4 +1,4 @@
-/* $Id: mail.h,v 1.3 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: mail.h,v 1.4 2001/03/15 14:25:05 ltoetsch Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.h,v $
+ * Revision 1.4  2001/03/15 14:25:05  ltoetsch
+ * added unread/total news
+ *
  * Revision 1.3  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -38,5 +41,5 @@
 #define MAILBOXES 9
 
 int Mail (int index, int *num, int *unseen);
-int Mail_pop_imap(char *mbx, int *num, int *unseen); /* mail2.c */
+int Mail_pop_imap_news(char *mbx, int *num, int *unseen); /* mail2.c */
 #endif

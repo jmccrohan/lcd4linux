@@ -47,3 +47,5 @@ lcd4linux-0.98
   (which is propably incorrect for normal mbox)
 
 - added another verbose level (-vvv) for debugging socket traffic
+
+- added nntp support for count of news/unread messages in subscribed NGs

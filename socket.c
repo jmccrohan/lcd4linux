@@ -1,4 +1,4 @@
-/* $Id: socket.c,v 1.1 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: socket.c,v 1.2 2001/03/15 14:25:05 ltoetsch Exp $
  *
  * simple socket functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: socket.c,v $
+ * Revision 1.2  2001/03/15 14:25:05  ltoetsch
+ * added unread/total news
+ *
  * Revision 1.1  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -69,7 +72,7 @@
 
 #include "debug.h"
 
-#define TIMEOUT 2 /* 2 seconds timeout */
+#define TIMEOUT 5 /* 5 seconds timeout */
 
 int open_socket(char *machine, int port)
 {

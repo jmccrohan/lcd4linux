@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.18 2001/03/14 13:19:29 ltoetsch Exp $
+# $Id: README,v 1.19 2001/03/15 14:25:05 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -158,16 +158,26 @@ Data-specific options:
   battery: Battwarning 10 (default 10)
   
   Mailbox:
-     The option string may be a plain mbox file or a pop3/imap4 server
+     The option string may be a plain mbox file or a pop3/imap4/nntp server
      string with the following format:
      
        pop3:[user[:pass]@]machine[:port]
        imap4:[user[:pass]@]machine[:port][/dir]
+       nntp:[user[:pass]@]machine[:port][/dir]
        
      Port defaults to 110 and 143 respectively.
      If /dir is not given, INBOX is assumed.
+     If dir is given for nntp: it should be a valid group name
+       with '.' separating items
+     If dir is not given for nntp: all/unread news of subscribed groups
+     from Newsrc are calcualted.
        
      Delay_e1..e9 delay in seconds for querying the MailboxN (default 5)  
+     Newsrc ... path/name of your .newsrc file containing subscribed news
+     
+     Note: authorization on newsservers is untested.
+     Note: user and pass may not contain a '/' with above syntax, I hope
+           that's ok.
    
  
 Driver-specific options:

@@ -101,31 +101,35 @@ Overload 2.0
 # flash bp-Bar if below Battwarning
 # I use Row6 "Bat%bp%bs%bd$r10bp+bp"
 # which gives a nice flash effect
-# default 10
+# default is 10
 
 Battwarning 10
 
 SetiDir /etc/setiathome
 
 # normal local mbox
-Mailbox1 /var/spool/mail/michi
+# Mailbox1 /var/spool/mail/michi
 
 # POP3 mail @ machine
-Mailbox2 pop3:user:pass@machine
+# Mailbox2 pop3:user:pass@machine
 
 # IMAP4 mail folder @ machine
-Mailbox3 imap4:user:pass@machine/folder
+# Mailbox3 imap4:user:pass@machine/folder
 
-# Full syntax of pop3/imap4 is:
+# News server on 'server' group at.linux
+# Mailbox4 nntp:server/at.linux
+
+# Full syntax of pop3/imap4/nntp is:
 # [user[:pass]@]machine[:port][/dir]
 #
-# display total/unseen mails of Mailbox3
+# display total/unseen mails/news of Mailbox3
 # Row6 "Mails %e3/%u3"
 
 # delay query of MailboxN in seconds (default = 5)
 Delay_e1 5
 Delay_e2 20
 Delay_e3 20
+Delay_e4 120
 
 Sensor1 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp1
 Sensor1_min 30

@@ -77,3 +77,6 @@ add a new Token 'nc' for 'network collisions'
 2001-03-14 Michael Reinelt <reinelt@eunet.at>
 add translation tables ('german umlauts' don't 
 follow any scheme on most displays)
+
+2001-03-15 Leopold Toetsch <lt@toetsch.at>
+Text display has troubles with '\r'

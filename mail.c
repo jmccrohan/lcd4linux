@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.6 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: mail.c,v 1.7 2001/03/15 14:25:05 ltoetsch Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.7  2001/03/15 14:25:05  ltoetsch
+ * added unread/total news
+ *
  * Revision 1.6  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -121,9 +124,9 @@ int Mail (int index, int *num, int *unseen)
     rc=stat(fnp1, &fst);
     if ( rc != 0 ) {
       /* 
-        is it pop3 or imap4? 
+        is it pop3, imap4 or nntp? 
       */
-      rc = Mail_pop_imap(fnp1, num, unseen);
+      rc = Mail_pop_imap_news(fnp1, num, unseen);
       if (rc == 0)
 	return 0;
       else

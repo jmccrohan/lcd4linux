@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.26 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: display.c,v 1.27 2001/03/15 14:25:05 ltoetsch Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.27  2001/03/15 14:25:05  ltoetsch
+ * added unread/total news
+ *
  * Revision 1.26  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -214,7 +217,7 @@ FAMILY Driver[] = {
 #ifdef WITH_X11
   { "X Window System", XWindow },
 #endif
-#ifdef WITH_Text
+#ifdef WITH_TEXT
   { "X Ncurses Text", Text },
 #endif
   { NULL }

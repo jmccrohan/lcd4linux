@@ -1,6 +1,6 @@
-/* $Id: mail2.c,v 1.2 2001/03/15 11:10:53 ltoetsch Exp $
+/* $Id: mail2.c,v 1.3 2001/03/15 14:25:05 ltoetsch Exp $
  *
- * mail: pop3, imap functions
+ * mail: pop3, imap, news functions
  *
  * Copyright 2001 by Leopold Tötsch (lt@toetsch.at)
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.3  2001/03/15 14:25:05  ltoetsch
+ * added unread/total news
+ *
  * Revision 1.2  2001/03/15 11:10:53  ltoetsch
  * added quit/logout to pop/imap
  *
@@ -29,7 +32,7 @@
  *
  * Exported Functions:
  *
- * int Mail_pop_imap(char *mbox, int *total_mails, int *unseen);
+ * int Mail_pop_imap_news(char *mbox, int *total_mails, int *unseen);
  *     returns -1 on error, 0 on success
  *
  */
@@ -42,10 +45,12 @@
 #include <errno.h>
 
 #include "debug.h"
+#include "cfg.h"
 #include "socket.h"
 
 #define PROTO_UNKNOWN -1
 #define PROTO_POP3 110
+#define PROTO_NNTP 119
 #define PROTO_IMAP4 143
 
 /*
@@ -71,6 +76,7 @@ static int parse_proto(char *s, int *proto, char **user, char **pass,
   protos[] =
     {
 	{ "pop3:", PROTO_POP3 },
+	{ "nntp:", PROTO_NNTP },
 	{ "imap4:", PROTO_IMAP4 },
     };
   int i;
@@ -167,6 +173,115 @@ static int wr_rd(int fd, char *buf, char *match,
   return n;
 }
 
+static int check_nntp(char *user, char *pass, char *machine,
+		       int port, char *dir, int *total, int *unseen)
+{
+  int fd;
+  int n;
+  char buf[BUFLEN];
+  char line[BUFLEN];
+  FILE *fp;
+  int groups;
+  int err;
+  int totg, unsg;
+  int first;
+  
+  strcpy(buf, cfg_get("Newsrc") ?: ".newsrc");
+  if (*buf == 0 || ((fp = fopen(buf, "r")) == NULL)) {
+    error("Couldn't open .newsrc-file '%s'", buf);
+    return -1;
+  }
+
+  fd = open_socket(machine, port);
+  if (fd < 0)
+    {
+      error("Couldn't connect to %s:%d (%s)", machine, port, strerror(errno));
+      fclose(fp);
+      return -1;
+    }
+  n = read_socket_match(fd, buf, BUFLEN-1, "20"); /* server ready */
+  if (n <= 0) {
+    error("Server doesn't respond %s:%d (%s)", machine, port, strerror(errno));
+    close(fd);
+    return -1;
+  }
+  /* do auth if necessary, this is NOT TESTED */
+  if (*user) {
+    sprintf(buf, "AUTHINFO USER %s\r\n", user);
+    if (wr_rd(fd, buf, "381", "No AUTH required?", machine, port) <= 0)
+      return -1;
+    if (*pass)
+      {
+        sprintf(buf, "AUTHINFO PASS %s\r\n", pass);
+      if (wr_rd(fd, buf, "281", "Wrong PASS?", machine, port) <= 0)
+	return -1;
+      }
+  }
+  sleep(2);  /* wait for newsserver to read groupinfo */
+  groups = 0;
+  err = 0;
+  totg = unsg = 0; /* total, unseen */    
+  while (fgets(line, sizeof(line)-1, fp) && err < 5) {
+    char group[BUFLEN];
+    char *p;
+    int smin, smax, lmin, lmax;
+    
+    if (sscanf(line, "%s:", group) != 1) {
+      error("Couldn't read group in '%s'", line);
+      err++;
+      continue;
+    }
+    if ((p=strchr(group,':')) != NULL)
+      *p='\0';
+				      
+    /* check dir if it matches group */
+    if (*dir && strcmp(dir, group))
+      continue;
+    
+    sprintf(buf, "GROUP %s\r\n", group);
+    if (wr_rd(fd, buf, "211", "Wrong Group", machine, port) <= 0) {
+      err++;
+      continue;
+    }
+    /* answer 211 total smin smax group: */
+    sscanf(buf, "211 %*d %d %d", &smin, &smax);
+    debug("nntp: %s: smin=%d smax=%d", group, smin, smax);
+    totg += smax-smin-1;
+    p = strchr(line, ':');
+    p++;
+    first = 1;
+    while (1) {
+      lmin = strtol(p, &p, 10);
+      if (*p == '-') 
+	lmax = strtol(++p, &p, 10);
+      else
+	lmax=lmin;
+      debug("nntp: %s: lmin=%d lmax=%d", group, lmin, lmax);
+      if (smax >= lmax) { /* server has more articles */
+	if (first)
+	  unsg += smax - lmax;
+	else
+	  unsg -= lmax-lmin+1;
+	first = 0;
+      }
+      else	/* local has higher article ??? */
+        break;
+      if (*p == ',')
+	p++;
+      else
+	break;
+    }
+  } /* while fp */
+  fclose(fp);    
+  strcpy(buf, "QUIT\r\n");
+  wr_rd(fd, buf, "2", "Quit", machine, port);
+  close(fd);
+  *unseen = unsg;
+  *total = totg;
+  return 0;
+}
+      
+
 static int check_imap4(char *user, char *pass, char *machine,
 		       int port, char *dir, int *total, int *unseen)
 {
@@ -259,7 +374,7 @@ static int check_pop3(char *user, char *pass, char *machine,
   return 0;
 }
 
-int Mail_pop_imap(char *s, int *total, int *unseen)
+int Mail_pop_imap_news(char *s, int *total, int *unseen)
 {
   int proto, port, ret;
   char *user, *pass, *machine, *dir, *ds;
@@ -276,8 +391,10 @@ int Mail_pop_imap(char *s, int *total, int *unseen)
     error("Not a pop3/imap4 mailbox");
   else
     ret = (proto == PROTO_POP3) ?
-    check_pop3(user, pass, machine, port, total, unseen) :
-  check_imap4(user, pass, machine, port, dir, total, unseen);
+      check_pop3(user, pass, machine, port, total, unseen) :
+    (proto == PROTO_NNTP) ?
+    check_nntp(user, pass, machine, port, dir, total, unseen) :
+    check_imap4(user, pass, machine, port, dir, total, unseen);
   free(ds);
   return ret;
 }
