@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.7 2004/02/15 08:22:47 reinelt Exp $
+/* $Id: drv.c,v 1.8 2004/02/15 21:43:43 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.8  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.7  2004/02/15 08:22:47  reinelt
  * ported USBLCD driver to NextGeneration
  * added drv_M50530.c (I forgot yesterday, sorry)
@@ -138,11 +144,9 @@ DRIVER *Driver[] = {
 #ifdef WITH_M50530
   &drv_M50530,
 #endif
-  /* Fixme
-     #ifdef WITH_T6963
-     &T6963,
-     #endif
-  */
+#ifdef WITH_T6963
+  &drv_T6963,
+#endif
 #ifdef WITH_USBLCD
   &drv_USBLCD,
 #endif

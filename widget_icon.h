@@ -1,4 +1,4 @@
-/* $Id: widget_icon.h,v 1.3 2004/02/04 19:11:44 reinelt Exp $
+/* $Id: widget_icon.h,v 1.4 2004/02/15 21:43:43 reinelt Exp $
  *
  * icon widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget_icon.h,v $
+ * Revision 1.4  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.3  2004/02/04 19:11:44  reinelt
  * icon visibility patch from Xavier
  *
@@ -39,15 +45,15 @@
 #define _WIDGET_ICON_H_
 
 typedef struct WIDGET_ICON {
-  char *speed_expr; // expression for update interval
-  int   speed;      // update interval (msec)
-  int   ascii;      // ascii code of icon (depends on the driver)
-  int   curmap;     // current bitmap sequence
-  int   prvmap;     // previous bitmap sequence 
-  int   maxmap;     // number of bitmap sequences
-  char *bitmap;     // bitmaps of (animated) icon
-  int   visible;
-  char *visible_expr;
+  char *speed_expr;      // expression for update interval
+  int   speed;           // update interval (msec)
+  int   ascii;           // ascii code of icon (depends on the driver)
+  int   curmap;          // current bitmap sequence
+  int   prvmap;          // previous bitmap sequence 
+  int   maxmap;          // number of bitmap sequences
+  unsigned char *bitmap; // bitmaps of (animated) icon
+  int   visible;         // icon visible?
+  char *visible_expr;    // expression for visibility
 } WIDGET_ICON;
 
 extern WIDGET_CLASS Widget_Icon;

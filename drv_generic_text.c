@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.10 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.11 2004/02/15 21:43:43 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.11  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.10  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -121,8 +127,8 @@ int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
 int ICONS;        // number of user-defineable characters reserved for icons
 
 
-static char *LayoutFB    = NULL;
-static char *DisplayFB   = NULL;
+static unsigned char *LayoutFB    = NULL;
+static unsigned char *DisplayFB   = NULL;
 
 static int nSegment=0;
 static int fSegment=0;
@@ -135,7 +141,7 @@ static BAR *BarFB = NULL;
 // *** generic Framebuffer stuff        ***
 // ****************************************
 
-void drv_generic_text_resizeFB (int rows, int cols)
+static void drv_generic_text_resizeFB (int rows, int cols)
 {
   char *newFB;
   BAR *newBar;

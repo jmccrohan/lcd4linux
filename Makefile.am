@@ -52,20 +52,11 @@ plugin_xmms.c
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9
 #liblcd4linux_la_LIBADD = @DRIVERS@
 
-#liblcd4linux_la_SOURCES = \
-#display.c display.h \
-#drv.c drv.h \
-#debug.c debug.h \
-#cfg.c cfg.h \
-#lock.c lock.h \
-#pixmap.c pixmap.h \
-#bar.c bar.h \
-#icon.c icon.h \
-#fontmap.c fontmap.h \
-#udelay.c udelay.h
+#liblcd4linux_la_SOURCES =
 
 EXTRA_lcd4linux_SOURCES= \
 drv_generic_text.c    drv_generic_text.h \
+drv_generic_graphic.c drv_generic_graphic.h \
 drv_generic_serial.c  drv_generic_serial.h \
 drv_generic_parport.c drv_generic_parport.h \
 BeckmannEgle.c \
@@ -73,7 +64,7 @@ drv_Crystalfontz.c \
 drv_Cwlinux.c \
 drv_HD44780.c \
 drv_M50530.c \
-T6963.c \
+drv_T6963.c \
 drv_USBLCD.c \
 drv_MatrixOrbital.c \
 MilfordInstruments.c \
@@ -81,7 +72,8 @@ PalmPilot.c \
 Raster.c \
 SIN.c \
 XWindow.c \
-Text.c
+Text.c \
+font_6x8.h
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \

@@ -142,7 +142,7 @@ AC_MSG_RESULT([done])
 PARPORT="no"
 SERIAL="no"
 TEXT="no"
-RASTER="no"
+GRAPHIC="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
 #  DRIVERS="$DRIVERS BeckmannEgle.lo"
@@ -175,6 +175,7 @@ if test "$HD44780" = "yes"; then
 fi
 
 if test "$M50530" = "yes"; then
+   TEXT="yes"
    PARPORT="yes"
 #  DRIVERS="$DRIVERS drv_M50530.lo"
    DRIVERS="$DRIVERS drv_M50530.o"
@@ -182,13 +183,16 @@ if test "$M50530" = "yes"; then
 fi
 
 if test "$T6963" = "yes"; then
+   GRAPHIC="yes"
    PARPORT="yes"
-#  DRIVERS="$DRIVERS T6963.lo"
-#  DRIVERS="$DRIVERS T6963.o"
+#  DRIVERS="$DRIVERS drv_T6963.lo"
+   DRIVERS="$DRIVERS drv_T6963.o"
    AC_DEFINE(WITH_T6963,1,[T6963 driver])
 fi
 
 if test "$USBLCD" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
 #  DRIVERS="$DRIVERS drv_USBLCD.lo"
    DRIVERS="$DRIVERS drv_USBLCD.o"
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
@@ -215,7 +219,7 @@ fi
 
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
-      RASTER="yes"
+      GRAPHIC="yes"
       AC_DEFINE(WITH_PNG,1,[ driver])
       DRVLIBS="$DRVLIBS -lgd"
    else
@@ -225,7 +229,7 @@ fi
 
 if test "$PPM" = "yes"; then
    if test "$has_gd" = "true"; then
-      RASTER="yes"
+      GRAPHIC="yes"
       AC_DEFINE(WITH_PPM,1,[ driver])
    else
       AC_MSG_WARN(gd.h not found: PNG driver disabled)
@@ -265,11 +269,11 @@ if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
 fi
 
-# Raster.lo depends on PPM or PNG
-if test "$RASTER" = "yes"; then
+# generic graphic driver
+if test "$GRAPHIC" = "yes"; then
 :
-#  DRIVERS="$DRIVERS Raster.lo"
-#  DRIVERS="$DRIVERS Raster.o"
+#  DRIVERS="$DRIVERS 
+   DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 
 # generic parport driver

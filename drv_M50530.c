@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.1 2004/02/15 08:22:47 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.2 2004/02/15 21:43:43 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.2  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.1  2004/02/15 08:22:47  reinelt
  * ported USBLCD driver to NextGeneration
  * added drv_M50530.c (I forgot yesterday, sorry)
@@ -64,7 +70,6 @@
 static char Name[]="M50530";
 
 static int Model;
-static int Capabilities;
 
 static unsigned char SIGNAL_EX;
 static unsigned char SIGNAL_IOC1;
@@ -79,12 +84,11 @@ static int GPOS;
 typedef struct {
   int type;
   char *name;
-  int capabilities;
 } MODEL;
 
 static MODEL Models[] = {
-  { 0x01, "generic",  0 },
-  { 0xff, "Unknown",  0 }
+  { 0x01, "generic" },
+  { 0xff, "Unknown" }
 };
 
 
@@ -182,7 +186,6 @@ static int drv_M5_start (char *section)
       return -1;
     }
     Model=i;
-    Capabilities=Models[Model].capabilities;
     info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
     error ("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());

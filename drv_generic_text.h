@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.5 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.6 2004/02/15 21:43:43 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.6  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.5  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -73,7 +79,6 @@ void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
 
 
 int  drv_generic_text_init            (char *section, char *driver);
-void drv_generic_text_resizeFB        (int rows, int cols);
 int  drv_generic_text_draw            (WIDGET *W);
 int  drv_generic_text_icon_init       (void);
 int  drv_generic_text_icon_draw       (WIDGET *W);

@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.6 2004/02/07 13:45:23 reinelt Exp $
+/* $Id: widget_icon.c,v 1.7 2004/02/15 21:43:43 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.7  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.6  2004/02/07 13:45:23  reinelt
  * icon visibility patch #2 from Xavier
  *
@@ -77,7 +83,7 @@ static void widget_icon_read_bitmap (char *section, WIDGET_ICON *Icon)
   int row, n;
   char  key[15];
   char *val, *v;
-  char *map;
+  unsigned char *map;
   
   for (row=0; row<YRES; row++) {
     snprintf (key, sizeof(key), "Bitmap.Row%d", row+1);

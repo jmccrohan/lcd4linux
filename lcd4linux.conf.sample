@@ -71,6 +71,17 @@ Display USBLCD {
 }
 
 
+Display T6963-240x64 {
+    Driver 'T6963'
+    Port '/dev/parports/0'
+    Size '240x64'
+    Wire.CE 'STROBE'
+    Wire.CD 'SELECT'
+    Wire.RD 'AUTOFD'
+    Wire.WR 'INIT'
+}
+
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
@@ -291,7 +302,8 @@ Layout L16x2 {
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
-Display 'USBLCD'
+#Display 'USBLCD'
+Display 'T6963-240x64'
 
 Layout  'Default'
 #Layout  'L16x2'

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.12 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.13 2004/02/15 21:43:43 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,12 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.13  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
+ *
  * Revision 1.12  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -249,7 +255,7 @@ static void wait_for_busy_flag(int controller)
           // get the current time
           gettimeofday(&now, NULL);
           if (now.tv_sec==end.tv_sec?now.tv_usec>=end.tv_usec:now.tv_sec>=end.tv_sec) {
-            error ("HD44780: timeout waiting for busy flag on controller %x (%x)", controller, data);
+            error ("%s: timeout waiting for busy flag on controller %x (%x)", Name, controller, data);
             break;
 
           }

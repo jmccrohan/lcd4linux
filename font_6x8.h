@@ -1,8 +1,9 @@
-/* $Id: fontmap.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: font_6x8.h,v 1.1 2004/02/15 21:43:43 reinelt Exp $
  *
- * 5x8 font
+ * 6x8 font
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999, 2000, 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -21,41 +22,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: fontmap.c,v $
- * Revision 1.6  2004/01/29 04:40:02  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.5  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
- *
- * Revision 1.4  2000/08/10 09:44:09  reinelt
- *
- * new debugging scheme: error(), info(), debug()
- * uses syslog if in daemon mode
- *
- * Revision 1.3  2000/03/25 05:50:43  reinelt
- *
- * memory leak in Raster_flush closed
- * driver family logic changed
- *
- * Revision 1.2  2000/03/24 11:36:56  reinelt
- *
- * new syntax for raster configuration
- * changed XRES and YRES to be configurable
- * PPM driver works nice
- *
- * Revision 1.1  2000/03/22 15:36:21  reinelt
- *
- * added '-l' switch (list drivers)
- * generic pixmap driver added
- * X11 Framework done
+ * $Log: font_6x8.h,v $
+ * Revision 1.1  2004/02/15 21:43:43  reinelt
+ * T6963 driver nearly finished
+ * framework for graphic displays done
+ * i2c_sensors patch from Xavier
+ * some more old generation files removed
  *
  */
-
-#include "config.h"
-
-#include "pixmap.h"
-#include "fontmap.h"
 
 #define ______ 0x00
 #define _____O 0x01
@@ -90,7 +64,7 @@
 #define _OOOO_ 0x1e
 #define _OOOOO 0x1f
 
-unsigned char Fontmap[256][8]={
+unsigned char Font_6x8[256][8]={
   [0x20] { ______,
 	   ______,
 	   ______,
