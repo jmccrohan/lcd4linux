@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.46 2003/10/08 06:48:47 nicowallmeier Exp $
+/* $Id: HD44780.c,v 1.47 2003/11/12 05:42:35 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.47  2003/11/12 05:42:35  reinelt
+ * small changes to the 16x4 handling
+ *
  * Revision 1.46  2003/10/08 06:48:47  nicowallmeier
  * special handling for 16x4 displays
  *
@@ -565,6 +568,7 @@ void HD_goto (int row, int col)
 {
   int pos;
 
+  // handle multiple displays/controllers
   if (Controllers>1 && row>=Lcd.rows/2) {
     row -= Lcd.rows/2;
     Controller = 2;
@@ -573,13 +577,14 @@ void HD_goto (int row, int col)
   }
    
   // 16x1 Displays are organized as 8x2 :-(
-  if (Lcd.rows==1 && Lcd.cols==16 && col>7) {
+  if (Lcd.cols==16 && Lcd.rows==1 && col>7) {
     row++;
     col-=8;
   }
   
-  if (Lcd.rows==4 && Lcd.cols==16) {
-  	pos=(row%2)*64+(row/2)*16+col;
+  // 16x4 Displays use a slightly different layout
+  if (Lcd.cols==16 && Lcd.rows==4) {
+    pos=(row%2)*64+(row/2)*16+col;
   } else {  
     pos=(row%2)*64+(row/2)*20+col;
   }
