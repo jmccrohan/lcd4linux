@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.42 2003/09/21 06:43:02 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.43 2003/09/29 06:12:56 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,11 +20,14 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.43  2003/09/29 06:12:56  reinelt
+ * changed default HD44780 wiring: unused signals are GND
+ *
  * Revision 1.42  2003/09/21 06:43:02  reinelt
  *
  *
  * MatrixOrbital: bidirectional communication
- * HD44780: special handling for 16x1 displays (thanks to anonymous bug report on sf.net)
+ * HD44780: special handling for 16x1 displays (thanks to Maciej Witkowiak)
  *
  * Revision 1.41  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
@@ -272,7 +275,7 @@ static int MO_read (char *string, int len)
   }
   
   if (ret<0) {
-    error("Cwlinux: read() failed: %s", strerror(errno));
+    error("MatrixOrbital: read() failed: %s", strerror(errno));
   }
   
   return ret;
@@ -447,8 +450,6 @@ static int MO_init (LCD *Self, int protocol)
   usleep(100000);
   MO_read (buffer, 1);
   debug ("Version number=<0x%x>", *buffer);
-  
-
   #endif
 
   return 0;

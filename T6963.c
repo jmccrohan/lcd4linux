@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.11 2003/09/13 06:45:43 reinelt Exp $
+/* $Id: T6963.c,v 1.12 2003/09/29 06:12:56 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.12  2003/09/29 06:12:56  reinelt
+ * changed default HD44780 wiring: unused signals are GND
+ *
  * Revision 1.11  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
  *
@@ -110,7 +113,7 @@ void T6_status1 (void)
   
   // lower CE and RD
   parport_control (SIGNAL_CE | SIGNAL_RD, 0);
-
+  
   // Access Time: 150 ns 
   ndelay(150);
   
@@ -130,7 +133,7 @@ void T6_status1 (void)
   
   // Output Hold Time: 50 ns 
   ndelay(50);
-
+  
   // turn on data line drivers
   parport_direction (0);
 }
@@ -367,7 +370,7 @@ int T6_init (LCD *Self)
   if ((SIGNAL_WR=parport_wire_ctrl ("WR", "INIT")  )==0xff) return -1;
 
   if (parport_open() != 0) {
-    error ("HD44780: could not initialize parallel port!");
+    error ("T6963: could not initialize parallel port!");
     return -1;
   }
 

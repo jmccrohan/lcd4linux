@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.42 2003/09/21 06:43:02 reinelt Exp $
+/* $Id: HD44780.c,v 1.43 2003/09/29 06:12:56 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,11 +27,14 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.43  2003/09/29 06:12:56  reinelt
+ * changed default HD44780 wiring: unused signals are GND
+ *
  * Revision 1.42  2003/09/21 06:43:02  reinelt
  *
  *
  * MatrixOrbital: bidirectional communication
- * HD44780: special handling for 16x1 displays (thanks to anonymous bug report on sf.net)
+ * HD44780: special handling for 16x1 displays (thanks to Maciej Witkowiak)
  *
  * Revision 1.41  2003/09/13 06:20:39  reinelt
  * HD44780 timings changed; deactivated libtool
@@ -485,15 +488,15 @@ int HD_init (LCD *Self)
   
   if (Bits==8) {
     if ((SIGNAL_RS      = parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
-    if ((SIGNAL_RW      = parport_wire_ctrl ("RW",      "GND")   )==0xff) return -1;
+    if ((SIGNAL_RW      = parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
     if ((SIGNAL_ENABLE  = parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = parport_wire_ctrl ("ENABLE2", "SELECT"))==0xff) return -1;
-    if ((SIGNAL_GPO     = parport_wire_ctrl ("GPO",     "INIT")  )==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
+    if ((SIGNAL_GPO     = parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
   } else {
     if ((SIGNAL_RS      = parport_wire_data ("RS",      "DB4"))==0xff) return -1;
     if ((SIGNAL_RW      = parport_wire_data ("RW",      "DB5"))==0xff) return -1;
     if ((SIGNAL_ENABLE  = parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = parport_wire_data ("ENABLE2", "DB7"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
     if ((SIGNAL_GPO     = parport_wire_data ("GPO",     "GND"))==0xff) return -1;
   }
   
