@@ -2,7 +2,7 @@ Display LK204 {
     Driver 'MatrixOrbital'
     Model 'LK204-24-USB'
     Port '/dev/usb/tts/0'
-#    Port '/dev/tts/0'
+    Port '/dev/tts/0'
     Speed 19200
     Contrast 256/2
 }

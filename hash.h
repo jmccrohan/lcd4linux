@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.1 2004/01/13 10:03:01 reinelt Exp $
+/* $Id: hash.h,v 1.2 2004/01/16 05:04:53 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.2  2004/01/16 05:04:53  reinelt
+ * started plugin proc_stat which should parse /proc/stat
+ * which again is a paint in the a**
+ * thinking over implementation methods of delta functions
+ * (CPU load, ...)
+ *
  * Revision 1.1  2004/01/13 10:03:01  reinelt
  * new util 'hash' for associative arrays
  * new plugin 'cpuinfo'
@@ -32,21 +38,42 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
-
-typedef struct HASH_ITEM {
+typedef struct {
   char *key;
   char *val;
 } HASH_ITEM;
 
-typedef struct HASH {
-  int       nItems;
+
+typedef struct {
   int       sorted;
+  int       nItems;
   HASH_ITEM *Items;
 } HASH;
 
 
+typedef struct {
+  struct timeval time;
+  double val;
+} FILTER_SLOT;
+
+typedef struct {
+  char        *key;
+  int         nSlots;
+  FILTER_SLOT *Slots;
+} FILTER_ITEM;
+
+typedef struct {
+  int         sorted;
+  int         nItems;
+  FILTER_ITEM *Items;
+} FILTER;
+
 void  hash_set     (HASH *Hash, char *key, char *val);
-void *hash_get     (HASH *Hash, char *key);
+char *hash_get     (HASH *Hash, char *key);
 void  hash_destroy (HASH *Hash);
+
+void   filter_set     (FILTER *Filter, char *key, double val);
+double filter_get     (FILTER *Filter, char *key);
+void   filter_destroy (FILTER *Filter);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.12 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: plugin.c,v 1.13 2004/01/16 05:04:53 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.13  2004/01/16 05:04:53  reinelt
+ * started plugin proc_stat which should parse /proc/stat
+ * which again is a paint in the a**
+ * thinking over implementation methods of delta functions
+ * (CPU load, ...)
+ *
  * Revision 1.12  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -114,6 +120,7 @@ int plugin_init_string (void);
 int plugin_init_cfg (void);
 int plugin_init_uname (void);
 int plugin_init_loadavg (void);
+int plugin_init_proc_stat (void);
 int plugin_init_cpuinfo (void);
 int plugin_init_meminfo (void);
 int plugin_init_i2c_sensors (void);
@@ -127,6 +134,7 @@ int plugin_init (void)
   plugin_init_cfg();
   plugin_init_uname();
   plugin_init_loadavg();
+  plugin_init_proc_stat();
   plugin_init_cpuinfo();
   plugin_init_meminfo();
   // MR: segfaults here

@@ -32,6 +32,7 @@ plugin_string.c \
 plugin_cfg.c \
 plugin_uname.c \
 plugin_loadavg.c \
+plugin_proc_stat.c \
 plugin_cpuinfo.c \
 plugin_meminfo.c \
 plugin_i2c_sensors.c \

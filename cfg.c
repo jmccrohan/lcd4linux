@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.27 2004/01/14 11:33:00 reinelt Exp $^
+/* $Id: cfg.c,v 1.28 2004/01/16 05:04:53 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.28  2004/01/16 05:04:53  reinelt
+ * started plugin proc_stat which should parse /proc/stat
+ * which again is a paint in the a**
+ * thinking over implementation methods of delta functions
+ * (CPU load, ...)
+ *
  * Revision 1.27  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -306,9 +312,9 @@ static void cfg_add (char *section, char *key, char *val, int lock)
   entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
   
   if (entry!=NULL) {
-    free (buffer);
     if (entry->lock>lock) return;
-    debug ("Warning: key '%s': value '%s' overwritten with '%s'", buffer, entry->val, val);
+    debug ("Warning: key <%s>: value <%s> overwritten with <%s>", buffer, entry->val, val);
+    free (buffer);
     if (entry->val) free (entry->val);
     entry->val=dequote(strdup(val));
     return;

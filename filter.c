@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.9 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: filter.c,v 1.10 2004/01/16 05:04:53 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.10  2004/01/16 05:04:53  reinelt
+ * started plugin proc_stat which should parse /proc/stat
+ * which again is a paint in the a**
+ * thinking over implementation methods of delta functions
+ * (CPU load, ...)
+ *
  * Revision 1.9  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -110,7 +116,7 @@ double smooth(char *name, int period, double value)
       slots=2;
     else if (slots>SLOTS)
       slots=SLOTS;
-
+    
     nFilter++;
     Filter=realloc(Filter, nFilter*sizeof(FILTER));
     Filter[i].name=strdup(name);
@@ -132,7 +138,7 @@ double smooth(char *name, int period, double value)
   
   t = SECONDS(Filter[i].time[0]) - SECONDS(Filter[i].time[Filter[i].slots-1]);
   v = Filter[i].value[0]-Filter[i].value[Filter[i].slots-1];
-
+  
   if (t==0.0 || v<0.0)
     return 0;
   else

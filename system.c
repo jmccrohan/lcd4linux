@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.32 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: system.c,v 1.33 2004/01/16 05:04:53 reinelt Exp $
  *
  * system status retreivement
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.33  2004/01/16 05:04:53  reinelt
+ * started plugin proc_stat which should parse /proc/stat
+ * which again is a paint in the a**
+ * thinking over implementation methods of delta functions
+ * (CPU load, ...)
+ *
  * Revision 1.32  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -556,7 +562,7 @@ int Busy (double *user, double *nice, double *system, double *idle)
   d3=smooth("cpu_sys",  500, v3);
   d4=smooth("cpu_idle", 500, v4);
   d5=d1+d2+d3+d4;
- 
+  
   if (d5!=0.0) {
     *user=(d1+d2)/d5;
     *nice=d2/d5;
