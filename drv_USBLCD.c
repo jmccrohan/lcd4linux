@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.19 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.20 2005/01/30 06:43:22 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.20  2005/01/30 06:43:22  reinelt
+ * driver for LCD-Linux finished
+ *
  * Revision 1.19  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -391,7 +394,7 @@ static int drv_UL_start (const char *section, const int quiet)
     /* get driver version */
     memset(buf, 0, sizeof(buf));
     if (ioctl(usblcd_file, IOC_GET_DRV_VERSION, buf) != 0) {
-      error ("USBLCD: ioctl() failed, could not get Driver Version!");
+      error ("%s: ioctl() failed, could not get Driver Version!", Name);
       return -1;
     }
     info("%s: Driver Version: %s", Name, buf);
@@ -401,7 +404,7 @@ static int drv_UL_start (const char *section, const int quiet)
       return -1;
     }
     if (major != 1) {
-      error("%d: Driver Version %d not supported!", Name, major);
+      error("%s: Driver Version %d not supported!", Name, major);
       return -1;
     }
 

@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.1 2005/01/22 22:57:57 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.2 2005/01/30 06:43:22 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.2  2005/01/30 06:43:22  reinelt
+ * driver for LCD-Linux finished
+ *
  * Revision 1.1  2005/01/22 22:57:57  reinelt
  * LCD-Linux driver added
  *
@@ -44,6 +47,10 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -56,112 +63,119 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 
-static char Name[]="LCD-Linux";
+
+static char Name[]   = "LCD-Linux";
+static char Device[] = "/dev/lcd";
+
+#define LCDLINUX_MAJOR 120 
+
+struct lcd_driver {
+  unsigned short io;              /* Parport base address */
+  unsigned short flags;           /* Flags (see Documentation) */
+  unsigned short num_cntr;        /* Number of available controllers */
+  unsigned short cntr_rows;       /* Rows per controller */
+  unsigned short disp_cols;       /* Columns */
+  unsigned short tabstop;         /* Length of tab character */
+};
+
+static int lcdlinux_fd = -1;
+
+#define IOCTL_SET_PARAM _IOW(LCDLINUX_MAJOR, 0, struct lcd_driver *)
+#define IOCTL_GET_PARAM _IOR(LCDLINUX_MAJOR, 1, struct lcd_driver *)
 
 
 /****************************************/
 /***  hardware dependant functions    ***/
 /****************************************/
 
+static void drv_LL_send (const char *string, const int len)
+{
+  int run, ret;
+  
+  for (run = 0; run < 10; run++) {
+    ret = write (lcdlinux_fd, string, len);
+    if (ret >= 0 || errno != EAGAIN) break;
+    if (run > 0) info ("%s: write(%s): EAGAIN #%d", Name, Device, run);
+    usleep(1000);
+  }
+  
+  if (ret < 0) {
+    error ("%s: write(%s) failed: %s", Name, Device, strerror(errno));
+  } else if (ret != len) {
+    error ("%s: partial write(%s): len=%d ret=%d", Name, Device, len, ret);
+  }
+  
+  return;
+}
+
+
 static void drv_LL_clear (void)
 {
-  char cmd[1];
-  
-  /* Fixme */
-#if 0
-  cmd[0] = LCD_CLEAR; /* clear display */
-  drv_generic_serial_write (cmd, 1);  /* clear screen */
-#endif
-
-}
-
-
-static int drv_LL_send (const char request, const char value)
-{
-  char buf[2];
-
-  buf[0] = request;
-  buf[1] = value;
-
-  // Fixme
-  // drv_generic_serial_write (buf, 2);
-  
-  return 0;
-}
-
-
-static void drv_LL_command (const char cmd)
-{
-  // Fixme
-  // drv_LL_send (LCD_CMD, cmd);
+  /* Fixme: is there no otherway to clear the display? */
+  drv_LL_send ("\14", 1); /* Form Feed */
 }
 
 
 static void drv_LL_write (const int row, const int col, const char *data, int len)
 {
-  int pos;
+  int pos = row * DCOLS + col;
   
-  /* 16x4 Displays use a slightly different layout */
-  if (DCOLS==16 && DROWS==4) {
-    pos = (row%2)*64+(row/2)*16+col;
-  } else {  
-    pos = (row%2)*64+(row/2)*20+col;
+  if (lseek(lcdlinux_fd, pos, SEEK_SET) == (off_t)-1) {
+    error ("%s: lseek(%s) failed: %s", Name, Device, strerror(errno));
   }
-
-  drv_LL_command (0x80|pos);
-  
-  while (len--) {
-    // Fixme
-    // drv_LL_send (LCD_DATA, *data++);
-  }
+  drv_LL_send (data, len);
 }
+
 
 static void drv_LL_defchar (const int ascii, const unsigned char *matrix)
 {
+  char buffer[8];
+  int pos = 1024 + ascii;
   int i;
   
-  drv_LL_command (0x40|8*ascii);
-
   for (i = 0; i < 8; i++) {
-    // Fixme
-    // drv_LL_send (LCD_DATA, *matrix++ & 0x1f);
+    buffer[i] = *matrix++ & 0x1f;
   }
+
+  if (lseek(lcdlinux_fd, pos, SEEK_SET) == (off_t)-1) {
+    error ("%s: lseek(%s) failed: %s", Name, Device, strerror(errno));
+  }
+
+  drv_LL_send (buffer, 8);
+
 }
 
 
 static int drv_LL_start (const char *section, const int quiet)
 {
-  int rows=-1, cols=-1;
-  char *s;
+  struct lcd_driver buf;
 
-  /* Fixme: open device */
-
-  s=cfg_get(section, "Size", NULL);
-  if (s==NULL || *s=='\0') {
-    error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
+  /* open device */
+  lcdlinux_fd = open(Device, O_WRONLY);
+  if (lcdlinux_fd == -1) {
+    error ("%s: open(%s) failed: %s", Name, Device, strerror(errno));
     return -1;
   }
-  if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
-    free (s);
+    
+  /* get display size */
+  memset(&buf, 0, sizeof(buf));
+  if (ioctl(lcdlinux_fd, IOCTL_GET_PARAM, &buf) != 0) {
+    error ("%s: ioctl() failed: %s", Name, strerror(errno));
+    error ("%s: Could not get display geometry!", Name);
     return -1;
   }
+  info("%s: %dx%d display, %d controllers", Name, buf.disp_cols, buf.cntr_rows, buf.num_cntr);
   
-  DROWS = rows;
-  DCOLS = cols;
+  DROWS = buf.cntr_rows;
+  DCOLS = buf.disp_cols;
   
   /* initialize display */
-  drv_LL_command (0x29); /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
-  drv_LL_command (0x08); /* Display off, cursor off, blink off */
-  drv_LL_command (0x0c); /* Display on, cursor off, blink off */
-  drv_LL_command (0x06); /* curser moves to right, no shift */
-
-  drv_LL_clear();        /* clear display */
+  drv_LL_clear(); /* clear display */
   
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-    if (drv_generic_text_greet (buffer, "www.bwct.de")) {
+    if (drv_generic_text_greet (buffer, "lcd-linux.sf.net")) {
       sleep (3);
       drv_LL_clear();
     }
@@ -285,7 +299,8 @@ int drv_LL_quit (const int quiet)
     drv_generic_text_greet ("goodbye!", NULL);
   }
   
-  // Fixme: close device
+  /* close device */
+  close (lcdlinux_fd);
   
   return (0);
 }

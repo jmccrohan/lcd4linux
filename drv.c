@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.26 2005/01/22 22:57:57 reinelt Exp $
+/* $Id: drv.c,v 1.27 2005/01/30 06:43:22 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.27  2005/01/30 06:43:22  reinelt
+ * driver for LCD-Linux finished
+ *
  * Revision 1.26  2005/01/22 22:57:57  reinelt
  * LCD-Linux driver added
  *
@@ -225,7 +228,7 @@ DRIVER *Driver[] = {
 #if defined (WITH_PNG) || defined(WITH_PPM)
   &drv_Image,
 #endif
-#ifdef WITH_LCDLinux
+#ifdef WITH_LCDLINUX
   &drv_LCDLinux,
 #endif
 #ifdef WITH_LCDTERM
