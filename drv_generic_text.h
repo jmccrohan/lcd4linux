@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.10 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.11 2004/06/02 10:09:22 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.11  2004/06/02 10:09:22  reinelt
+ *
+ * splash screen for HD44780
+ *
  * Revision 1.10  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -88,6 +92,7 @@ void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
 
 // generic functions and widget callbacks
 int  drv_generic_text_init            (char *section, char *driver);
+int  drv_generic_text_greet           (char *message);
 int  drv_generic_text_draw            (WIDGET *W);
 int  drv_generic_text_icon_init       (void);
 int  drv_generic_text_icon_draw       (WIDGET *W);

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.16 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv.c,v 1.17 2004/06/02 10:09:22 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.17  2004/06/02 10:09:22  reinelt
+ *
+ * splash screen for HD44780
+ *
  * Revision 1.16  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -205,45 +209,6 @@ DRIVER *Driver[] = {
 
 
 static DRIVER *Drv = NULL;
-
-
-// Fixme
-char* drv_hello (int line, int cols)
-{
-  int i;
-  static char *line1[] = { "* LCD4Linux " VERSION " *",
-			   "LCD4Linux " VERSION,
-			   "* LCD4Linux *",
-			   "LCD4Linux",
-			   "L4Linux",
-			   NULL };
-  
-  static char *line2[] = { "http://lcd4linux.sourceforge.net",
-			   "lcd4linux.sourceforge.net",
-			   "http://lcd4linux.sf.net",
-			   "lcd4linux.sf.net",
-			   NULL };
-  
-  
-  switch (line) {
-  case 1:
-    for (i = 0; line1[i]; i++) {
-      if (strlen(line1[i]) <= cols) {
-	return line1[i];
-      }
-    }
-    break;
-  case 2:
-    for (i = 0; line2[i]; i++) {
-      if (strlen(line2[i]) <= cols) {
-	return line2[i];
-      }
-    }
-    break;
-  }
-  
-  return NULL;
-}
 
 
 int drv_list (void)

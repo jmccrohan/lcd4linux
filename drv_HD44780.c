@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.25 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.26 2004/06/02 10:09:22 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.26  2004/06/02 10:09:22  reinelt
+ *
+ * splash screen for HD44780
+ *
  * Revision 1.25  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -586,7 +590,7 @@ static void drv_HD_setGPO (int bits)
 #endif
 
 
-static int drv_HD_start (char *section)
+static int drv_HD_start (char *section, int quiet)
 {
   char *model, *strsize;
   int rows=-1, cols=-1, gpos=-1;
@@ -729,6 +733,15 @@ static int drv_HD_start (char *section)
     }
   }
 
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+    }
+  }
+    
   return 0;
 }
 
@@ -794,7 +807,7 @@ int drv_HD_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_HD_start (section))!=0)
+  if ((ret=drv_HD_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -834,48 +847,8 @@ int drv_HD_init (char *section, int quiet)
   widget_register(&wc);
   
   // register plugins
-  if (Capabilities & CAP_BRIGHTNESS)
+  if (Capabilities & CAP_BRIGHTNESS) {
     AddFunction ("LCD::brightness", 1, plugin_brightness);
-  
-  return 0;
-}
-
-
-// say hello to the user
-static int drv_HD_greet (int start_stop)
-{
-  int flag = 0;
-  char buffer[40];
-  char *msg;
-  
-  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
-  
-  msg = drv_hello (1, DCOLS);
-  if (msg != NULL) {
-    drv_HD_write (0, (DCOLS-strlen(msg))/2, msg, strlen(msg));
-    flag = 1;
-  }
-  
-  if (DROWS >= 2) {
-    msg = drv_hello (2, DCOLS);
-    if (msg != NULL) {
-      drv_HD_write (1, (DCOLS-strlen(msg))/2, msg, strlen(msg));
-      flag = 1;
-    }
-  }
-  
-  if (DROWS >= 3) {
-    qprintf(buffer, sizeof(buffer), "HD44780 %dx%d", DCOLS, DROWS);
-    msg = buffer;
-    if (strlen(msg) <= DCOLS) {
-      drv_HD_write (2, (DCOLS-strlen(msg))/2, msg, strlen(msg));
-      flag = 1;
-    }
-  }
-  
-  if (flag && start_stop) {
-    sleep (3);
-    drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
   }
   
   return 0;
@@ -886,8 +859,13 @@ static int drv_HD_greet (int start_stop)
 int drv_HD_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_parport_close();
+
   drv_generic_text_quit();
+
+  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  drv_generic_text_greet ("good bye!");
+
+  drv_generic_parport_close();
   
   return (0);
 }

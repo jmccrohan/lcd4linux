@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.15 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.16 2004/06/02 10:09:22 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.16  2004/06/02 10:09:22  reinelt
+ *
+ * splash screen for HD44780
+ *
  * Revision 1.15  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -266,6 +270,85 @@ static void drv_generic_text_resizeFB (int rows, int cols)
 }
 
 
+// ****************************************
+// *** generic text handling            ***
+// ****************************************
+
+int drv_generic_text_init (char *section, char *driver)
+{
+
+  Section=section;
+  Driver=driver;
+
+  // init display framebuffer
+  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
+  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
+  
+  // init layout framebuffer
+  LROWS = 0;
+  LCOLS = 0;
+  LayoutFB=NULL;
+  drv_generic_text_resizeFB (DROWS, DCOLS);
+  
+  // sanity check
+  if (LayoutFB==NULL || DisplayFB==NULL) {
+    error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
+    return -1;
+  }
+  
+  return 0;
+}
+
+
+// say hello to the user
+int drv_generic_text_greet (char *message)
+{
+  int i;
+  int flag = 0;
+
+  char *line1[] = { "* LCD4Linux " VERSION " *",
+		    "LCD4Linux " VERSION,
+		    "* LCD4Linux *",
+		    "LCD4Linux",
+		    "L4Linux",
+		    NULL };
+  
+  char *line2[] = { "http://lcd4linux.sourceforge.net",
+		    "lcd4linux.sourceforge.net",
+		    "http://lcd4linux.sf.net",
+		    "lcd4linux.sf.net",
+		    NULL };
+  
+  
+  for (i = 0; line1[i]; i++) {
+    if (strlen(line1[i]) <= DCOLS) {
+      drv_generic_text_real_write (0, (DCOLS-strlen(line1[i]))/2, line1[i], strlen(line1[i]));
+      flag = 1;
+      break;
+    }
+  }
+
+  if (DROWS >= 2) {
+    for (i = 0; line2[i]; i++) {
+      if (strlen(line2[i]) <= DCOLS) {
+	drv_generic_text_real_write (1, (DCOLS-strlen(line2[i]))/2, line2[i], strlen(line2[i]));
+	flag = 1;
+	break;
+      }
+    }
+  }
+  
+  if (message && DROWS >= 3) {
+    int len = strlen(message);
+    if ( len <= DCOLS) {
+      drv_generic_text_real_write (2, (DCOLS-len)/2, message, len);
+      flag = 1;
+    }
+  }
+  
+  return flag;
+}
+
 
 int drv_generic_text_draw (WIDGET *W)
 {
@@ -312,9 +395,41 @@ int drv_generic_text_draw (WIDGET *W)
 }
 
 
+int drv_generic_text_quit (void) {
+  
+  if (LayoutFB) {
+    free(LayoutFB);
+    LayoutFB=NULL;
+  }
+  
+  if (DisplayFB) {
+    free(DisplayFB);
+    DisplayFB=NULL;
+  }
+  
+  if (BarFB) {
+    free (BarFB);
+    BarFB=NULL;
+  }
+  widget_unregister();
+
+  return (0);
+}
+
+
 // ****************************************
 // *** generic icon handling            ***
 // ****************************************
+
+int drv_generic_text_icon_init (void)
+{
+  if (cfg_number(Section, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
+  if (ICONS>0) {
+    info ("%s: reserving %d of %d user-defined characters for icons", Driver, ICONS, CHARS);
+  }
+  return 0;
+}
+
 
 int drv_generic_text_icon_draw (WIDGET *W)
 {
@@ -383,6 +498,39 @@ static void drv_generic_text_bar_clear(void)
   for (i=0; i<nSegment;i++) {
     Segment[i].used = 0;
   }
+}
+
+
+int drv_generic_text_bar_init (int single_segments)
+{
+  if (BarFB) free (BarFB);
+  
+  if ((BarFB=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
+    error ("bar buffer allocation failed: out of memory");
+    return -1;
+  }
+  
+  Single_Segments = single_segments;
+  
+  nSegment=0;
+  fSegment=0;
+  
+  drv_generic_text_bar_clear();
+  
+  return 0;
+}
+
+
+void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int ascii)
+{
+  Segment[fSegment].val1=val1;
+  Segment[fSegment].val2=val2;
+  Segment[fSegment].dir=dir;
+  Segment[fSegment].used=0;
+  Segment[fSegment].ascii=ascii;
+  
+  fSegment++;
+  nSegment=fSegment;
 }
 
 
@@ -725,96 +873,3 @@ int drv_generic_text_bar_draw (WIDGET *W)
 }
 
 
-// ****************************************
-// *** generic init/quit                ***
-// ****************************************
-
-int drv_generic_text_init (char *section, char *driver)
-{
-
-  Section=section;
-  Driver=driver;
-
-  // init display framebuffer
-  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
-  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
-  
-  // init layout framebuffer
-  LROWS = 0;
-  LCOLS = 0;
-  LayoutFB=NULL;
-  drv_generic_text_resizeFB (DROWS, DCOLS);
-  
-  // sanity check
-  if (LayoutFB==NULL || DisplayFB==NULL) {
-    error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
-    return -1;
-  }
-  
-  return 0;
-}
-
-
-int drv_generic_text_icon_init (void)
-{
-  if (cfg_number(Section, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
-  if (ICONS>0) {
-    info ("%s: reserving %d of %d user-defined characters for icons", Driver, ICONS, CHARS);
-  }
-  return 0;
-}
-
-
-int drv_generic_text_bar_init (int single_segments)
-{
-  if (BarFB) free (BarFB);
-  
-  if ((BarFB=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
-    error ("bar buffer allocation failed: out of memory");
-    return -1;
-  }
-  
-  Single_Segments = single_segments;
-  
-  nSegment=0;
-  fSegment=0;
-  
-  drv_generic_text_bar_clear();
-  
-  return 0;
-}
-
-
-void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int ascii)
-{
-  Segment[fSegment].val1=val1;
-  Segment[fSegment].val2=val2;
-  Segment[fSegment].dir=dir;
-  Segment[fSegment].used=0;
-  Segment[fSegment].ascii=ascii;
-  
-  fSegment++;
-  nSegment=fSegment;
-}
-
-
-int drv_generic_text_quit (void) {
-  
-  if (LayoutFB) {
-    free(LayoutFB);
-    LayoutFB=NULL;
-  }
-  
-  if (DisplayFB) {
-    free(DisplayFB);
-    DisplayFB=NULL;
-  }
-  
-  if (BarFB) {
-    free (BarFB);
-    BarFB=NULL;
-  }
-  widget_unregister();
-
-  return (0);
-}
