@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.20 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin.c,v 1.21 2004/03/10 07:16:15 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.21  2004/03/10 07:16:15  reinelt
+ * MySQL plugin from Javier added
+ *
  * Revision 1.20  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -156,6 +159,7 @@ int plugin_init_dvb (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 int plugin_init_imon(void);
+int plugin_init_mysql(void);
 
 
 void plugin_exit_math (void);
@@ -172,6 +176,7 @@ void plugin_exit_dvb (void);
 void plugin_exit_i2c_sensors (void);
 void plugin_exit_xmms (void);
 void plugin_exit_imon(void);
+void plugin_exit_mysql(void);
 
 int plugin_init (void)
 {
@@ -189,6 +194,7 @@ int plugin_init (void)
   plugin_init_i2c_sensors();
   plugin_init_xmms();
   plugin_init_imon();
+  plugin_init_mysql();
   
   return 0;
 }
@@ -208,6 +214,7 @@ void plugin_exit(void) {
   plugin_exit_i2c_sensors();
   plugin_exit_xmms();
   plugin_exit_imon();	
+  plugin_exit_mysql();	
   
   DeleteFunctions();
   DeleteVariables();
