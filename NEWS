@@ -4,7 +4,7 @@
 
 lcd4linux-0.98
 
-- improved signal-handling: lcd4linux can be restarted by sendig a SIGHUP
+- improved signal-handling: lcd4linux can be restarted by sending a SIGHUP
 
 - lcd4linux uses syslog for messages/warnings etc.
 

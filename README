@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.21 2001/05/27 17:32:35 reinelt Exp $
+# $Id: README,v 1.22 2001/09/05 09:38:52 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -70,6 +70,17 @@ SUPPORTED DISPLAYS
   This driver supports display modules based on the Hitachi HD44780 chip,
   connected to a parallel port. These displays are made by different 
   manufactures, and come in various sizes.
+
+* Beckmann+Egle mini-terminal
+
+  thanks to Helmut A. Bender <hab@arcanum.inka.de>
+
+
+* Mitsubishi M50530
+
+  I got a real cool display (8 lines by 24 characters!) from 
+  Udo Altmann (udo.altmann@web.de) Thanks again!
+  Unfortunately, the driver is not finished yet.
 
 
 * PalmOrb
