@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.7 2000/03/28 07:22:15 reinelt Exp $
+/* $Id: XWindow.c,v 1.8 2000/03/28 08:48:33 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.8  2000/03/28 08:48:33  reinelt
+ *
+ * README.X11 added
+ *
  * Revision 1.7  2000/03/28 07:22:15  reinelt
  *
  * version 0.95 released
@@ -118,7 +122,7 @@ void shmcleanup() {
 }
 
 void quit(int nsig) {
-	printf("pid%d got signal %d\n",getpid(),nsig);
+	printf("X11: pid %d got signal %d\n",getpid(),nsig);
 	semcleanup();
 	shmcleanup();
 	exit(0);
@@ -187,7 +191,7 @@ XColor co_dummy;
 XEvent ev;
 
 	if ((dp=XOpenDisplay(NULL))==NULL) {
-		fprintf(stderr,"can't open display\n");
+		fprintf(stderr,"X11: can't open display\n");
 		return -1;
 	}
 	sc=DefaultScreen(dp);
@@ -198,22 +202,22 @@ XEvent ev;
 	cm=DefaultColormap(dp,sc);
 
 	if (XAllocNamedColor(dp,cm,rgbfg,&co[0],&co_dummy)==False) {
-		fprintf(stderr,"can't alloc foreground color '%s'\n",
+		fprintf(stderr,"X11: can't alloc foreground color '%s'\n",
 			rgbfg);
 		return -1;
 	}
 	if (XAllocNamedColor(dp,cm,rgbbg,&co[1],&co_dummy)==False) {
-		fprintf(stderr,"can't alloc background color '%s'\n",
+		fprintf(stderr,"X11: can't alloc background color '%s'\n",
 			rgbbg);
 		return -1;
 	}
 	if (XAllocNamedColor(dp,cm,rgbhg,&co[2],&co_dummy)==False) {
-		fprintf(stderr,"can't alloc halfground color '%s'\n",
+		fprintf(stderr,"X11: can't alloc halfground color '%s'\n",
 			rgbhg);
 		return -1;
 	}
 	if (XAllocNamedColor(dp,cm,"#e0e0e0",&db,&co_dummy)==False) {
-		fprintf(stderr,"can't alloc db color '%s'\n",
+		fprintf(stderr,"X11: can't alloc db color '%s'\n",
 			"#0000ff");
 		return -1;
 	}
