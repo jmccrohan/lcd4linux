@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.5 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.6 2004/01/21 11:31:23 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.6  2004/01/21 11:31:23  reinelt
+ * two bugs with hash_age() ixed
+ *
  * Revision 1.5  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -82,6 +85,7 @@ static HASH xmms = { 0, };
 
 static int parse_xmms_info (void)
 {
+  int age;
   FILE *xmms_stream;
   char zeile[200];
   

@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.7 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.8 2004/01/21 11:31:23 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.8  2004/01/21 11:31:23  reinelt
+ * two bugs with hash_age() ixed
+ *
  * Revision 1.7  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -100,6 +103,7 @@ static void hash_set3 (char *key1, char *key2, char *key3, char *val)
 
 static int parse_proc_stat (void)
 {
+  int age;
   FILE *stream;
   
   // reread every 10 msec only
