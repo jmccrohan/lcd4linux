@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.23 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: display.c,v 1.24 2001/03/01 11:08:16 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.24  2001/03/01 11:08:16  reinelt
+ *
+ * reworked configure to allow selection of drivers
+ *
  * Revision 1.23  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -163,26 +167,42 @@
 #include "cfg.h"
 #include "display.h"
 
-extern LCD Skeleton[];
-extern LCD MatrixOrbital[];
 extern LCD BeckmannEgle[];
-extern LCD HD44780[];
 extern LCD Crystalfontz[];
-extern LCD SIN[];
+extern LCD HD44780[];
+extern LCD MatrixOrbital[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
+extern LCD SIN[];
+extern LCD Skeleton[];
 extern LCD XWindow[];
 
 FAMILY Driver[] = {
-  { "Skeleton",        Skeleton },
-  { "Matrix Orbital",  MatrixOrbital },
-  { "Beckmann+Egle",   BeckmannEgle },
-  { "HD 44780 based",  HD44780 },
-  { "Crystalfontz",    Crystalfontz },
-  { "SIN Router",      SIN },
+#ifdef WITH_BECKMANNEGLE
+  { "Beckmann+Egle", BeckmannEgle },
+#endif
+#ifdef WITH_CRYSTALFONTZ
+  { "Crystalfontz", Crystalfontz },
+#endif
+#ifdef WITH_HD44780
+  { "HD 44780 based", HD44780 },
+#endif
+#ifdef WITH_MATRIXORBITAL
+  { "Matrix Orbital", MatrixOrbital },
+#endif
+#ifdef WITH_PALMPILOT
   { "3Com Palm Pilot", PalmPilot },
-  { "Raster",          Raster },
-#ifndef X_DISPLAY_MISSING
+#endif
+#if defined (WITH_PNG) || defined(WITH_PPM)
+  { "Raster", Raster },
+#endif
+#ifdef WITH_SIN
+  { "SIN Router", SIN },
+#endif
+#ifdef WITH_SKELETON
+  { "Skeleton", Skeleton },
+#endif
+#ifdef WITH_X11
   { "X Window System", XWindow },
 #endif
   { NULL }

@@ -13,7 +13,80 @@ AC_CHECK_LIB(m, log)
 
 dnl Checks for X11
 AC_PATH_XTRA
-AM_CONDITIONAL(WITH_X, test x$no_x = x)
+
+
+dnl Fixme AM_CONDITIONAL(WITH_X, test x$no_x = x)
+
+dnl drivers
+AC_ARG_WITH(
+  drivers, 
+  [  --with-drivers=<list>   compile driver for displays in <list>,]
+  [                        drivers may be separated with commas,]	
+  [                        'all' compiles all avvailable drivers.]	
+  [                        possible drivers are:]	
+  [                        BeckmannEgle, CrystalFontz, HD44780,]
+  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11],
+  drivers=$withval, 
+  drivers=all
+)
+if test "$drivers" = "all"; then
+   drivers=[BeckmannEgle,CrystalFontz,HD44780,MatrixOrbital,PalmPilot,PNG,PPM,X11]
+fi
+drivers=`echo $drivers|sed 's/,/ /g'`
+for driver in $drivers; do
+   case "$driver" in
+      BeckmannEgle)
+         DRIVERS="$DRIVERS BeckmannEgle.o"
+         AC_DEFINE(WITH_BECKMANNEGLE)
+         ;;
+      CrystalFontz)
+         DRIVERS="$DRIVERS Crystalfontz.o"
+         AC_DEFINE(WITH_CRYSTALFONTZ)
+         ;;
+      HD44780)
+         DRIVERS="$DRIVERS HD44780.o"
+         AC_DEFINE(WITH_HD44780)
+         ;;
+      MatrixOrbital)
+         DRIVERS="$DRIVERS MatrixOrbital.o"
+         AC_DEFINE(WITH_MATRIXORBITAL)
+         ;;
+      PalmPilot)
+         DRIVERS="$DRIVERS PalmPilot.o"
+         AC_DEFINE(WITH_PALMPILOT)
+         ;;
+      PNG)
+         RASTER="Raster.o"
+         AC_DEFINE(WITH_PNG)
+	 DRVLIBS="$DRVLIBS -lgd -lpng -lz"
+         ;;
+      PPM)
+         RASTER="Raster.o"
+         AC_DEFINE(WITH_PPM)
+         ;;
+      SIN)
+         DRIVERS="$DRIVERS SIN.o"
+         AC_DEFINE(WITH_SIN)
+         ;;
+      Skeleton)
+         DRIVERS="$DRIVERS Skeleton.o"
+         AC_DEFINE(WITH_Skeleton)
+         ;;
+      X11)
+         DRIVERS="$DRIVERS XWindow.o"
+	 DRVLIBS="$DRVLIBS -lX11"
+         AC_DEFINE(WITH_X11)
+         ;;
+      *) 	
+         AC_MSG_ERROR([Unknown driver '$driver'])
+         ;;
+   esac
+done
+
+DRIVERS="$DRIVERS $RASTER"
+
+AC_SUBST(DRIVERS)
+AC_SUBST(DRVLIBS)
 
 dnl Checks for header files.
 AC_HEADER_STDC

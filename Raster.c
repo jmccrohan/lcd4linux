@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.11 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: Raster.c,v 1.12 2001/03/01 11:08:16 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.12  2001/03/01 11:08:16  reinelt
+ *
+ * reworked configure to allow selection of drivers
+ *
  * Revision 1.11  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -289,6 +293,11 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 
 
 LCD Raster[] = {
+#ifdef WITH_PPM  
   { "PPM",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Raster_flush },
+#endif
+#ifdef WITH_PNG
+  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Raster_flush },
+#endif
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.23 2001/02/26 00:33:37 herp Exp $
+/* $Id: XWindow.c,v 1.24 2001/03/01 11:08:16 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.24  2001/03/01 11:08:16  reinelt
+ *
+ * reworked configure to allow selection of drivers
+ *
  * Revision 1.23  2001/02/26 00:33:37  herp
  * fixed X11 signal handler
  *
@@ -114,8 +118,6 @@
  * Tue Mar 21 22:22:03 MET 2000 initial coding
  *
  */
-
-#ifndef X_DISPLAY_MISSING
 
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
@@ -542,4 +544,3 @@ LCD XWindow[] = {
 	{ NULL }
 };
 
-#endif /* X_DISPLAY_MISSING */

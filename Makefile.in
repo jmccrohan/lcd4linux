@@ -59,6 +59,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 AWK = @AWK@
 CC = @CC@
+DRIVERS = @DRIVERS@
+DRVLIBS = @DRVLIBS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -71,12 +73,16 @@ bin_PROGRAMS = lcd4linux
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
-@WITH_X_TRUE@lcd4linux_LDADD = -lX11
+lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
+lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h Skeleton.c MatrixOrbital.c BeckmannEgle.c HD44780.c Crystalfontz.c Crystalfontz.h SIN.c PalmPilot.c Raster.c XWindow.c
+lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster
+EXTRA_lcd4linux_SOURCES =  BeckmannEgle.c Crystalfontz.c Crystalfontz.h HD44780.c MatrixOrbital.c PalmPilot.c PNG.c PPM.c SIN.c Skeleton.c XWindow.c	
+
+
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster README.Png
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -94,9 +100,7 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 lcd4linux_OBJECTS =  lcd4linux.o debug.o cfg.o lock.o parser.o \
 processor.o system.o isdn.o mail.o seti.o filter.o udelay.o display.o \
-pixmap.o fontmap.o Skeleton.o MatrixOrbital.o BeckmannEgle.o HD44780.o \
-Crystalfontz.o SIN.o PalmPilot.o Raster.o XWindow.o
-@WITH_X_TRUE@lcd4linux_DEPENDENCIES = 
+pixmap.o fontmap.o
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -110,13 +114,13 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/HD44780.P \
-.deps/MatrixOrbital.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
-.deps/Skeleton.P .deps/XWindow.P .deps/cfg.P .deps/debug.P \
+.deps/MatrixOrbital.P .deps/PNG.P .deps/PPM.P .deps/PalmPilot.P \
+.deps/SIN.P .deps/Skeleton.P .deps/XWindow.P .deps/cfg.P .deps/debug.P \
 .deps/display.P .deps/filter.P .deps/fontmap.P .deps/isdn.P \
 .deps/lcd4linux.P .deps/lock.P .deps/mail.P .deps/parser.P \
 .deps/pixmap.P .deps/processor.P .deps/seti.P .deps/system.P \
 .deps/udelay.P
-SOURCES = $(lcd4linux_SOURCES)
+SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 
 all: all-redirect

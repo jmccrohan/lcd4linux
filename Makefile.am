@@ -7,9 +7,8 @@ bin_PROGRAMS = lcd4linux
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
-if WITH_X
-lcd4linux_LDADD = -lX11
-endif
+lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
+lcd4linux_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
@@ -26,16 +25,19 @@ filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
-fontmap.c fontmap.h \
-Skeleton.c \
-MatrixOrbital.c \
+fontmap.c fontmap.h
+
+EXTRA_lcd4linux_SOURCES= \
 BeckmannEgle.c \
-HD44780.c \
 Crystalfontz.c Crystalfontz.h \
-SIN.c \
+HD44780.c \
+MatrixOrbital.c \
 PalmPilot.c \
-Raster.c \
-XWindow.c
+PNG.c \
+PPM.c \
+SIN.c \
+Skeleton.c \
+XWindow.c	
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \
@@ -52,4 +54,6 @@ README.HD44780 \
 README.Crystalfontz \
 README.X11 \
 README.KDE \
-README.Raster
+README.Raster \
+README.Png
+
