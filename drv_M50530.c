@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.2 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.3 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.3  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.2  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -122,31 +127,33 @@ static void drv_M5_command (unsigned int cmd, int delay)
 }
 
 
-static void drv_M5_write (unsigned char *string, int len)
+static void drv_M5_write (int row, int col, unsigned char *data, int len)
 {
   unsigned int cmd;
-
+  unsigned int pos;
+  
+  pos=row*48+col;
+  if (row>3) pos-=168;
+  drv_M5_command (0x300|pos, 20);
+  
   while (len--) {
-    cmd=*string++;
+    cmd=*data++;
     drv_M5_command (0x100|cmd, 20);
   }
 }
 
 
-static void drv_M5_goto (int row, int col)
-{
-  int pos=row*48+col;
-  if (row>3) pos-=168;
-  drv_M5_command (0x300|pos, 20);
-}
-
-
 static void drv_M5_defchar (int ascii, unsigned char *buffer)
 {
+  int i;
+  
   drv_M5_command (0x300+192+8*(ascii-CHAR0), 20);
+
   // Fixme: looks like the M50530 cannot control the bottom line
   // therefore we have only 7 bytes here
-  drv_M5_write (buffer, 7);
+  for (i=0; i<7; i++) {
+    drv_M5_command (0x100|buffer[i], 20);
+  }
 }
 
 
@@ -283,7 +290,6 @@ int drv_M5_init (char *section)
   
   // real worker functions
   drv_generic_text_real_write   = drv_M5_write;
-  drv_generic_text_real_goto    = drv_M5_goto;
   drv_generic_text_real_defchar = drv_M5_defchar;
 
 

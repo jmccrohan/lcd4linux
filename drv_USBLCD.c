@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.1 2004/02/15 08:22:47 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.2 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.2  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.1  2004/02/15 08:22:47  reinelt
  * ported USBLCD driver to NextGeneration
  * added drv_M50530.c (I forgot yesterday, sorry)
@@ -109,28 +114,30 @@ static void drv_UL_command (unsigned char cmd)
 }
 
 
-static void drv_UL_write (unsigned char *string, int len)
-{
-  while (len--) {
-    if(*string==0) *BufPtr++=*string;
-    *BufPtr++=*string++;
-  }
-  drv_UL_send();
-}
-
-
-static void drv_UL_goto (int row, int col)
+static void drv_UL_write (int row, int col, unsigned char *data, int len)
 {
   int pos=(row%2)*64+(row/2)*20+col;
   drv_UL_command (0x80|pos);
-}
 
+  while (len--) {
+    if(*data==0) *BufPtr++=*data;
+    *BufPtr++=*data++;
+  }
+
+  drv_UL_send();
+}
 
 static void drv_UL_defchar (int ascii, unsigned char *buffer)
 {
+  int i;
+  
   drv_UL_command (0x40|8*ascii);
-  drv_UL_write (buffer, 8);
-  // drv_UL_write() will call drv_UL_send(), so don't call it here!
+
+  for (i=0; i<8; i++) {
+    *BufPtr++ = *buffer++;
+  }
+
+  drv_UL_send();
 }
 
 
@@ -283,7 +290,6 @@ int drv_UL_init (char *section)
   
   // real worker functions
   drv_generic_text_real_write   = drv_UL_write;
-  drv_generic_text_real_goto    = drv_UL_goto;
   drv_generic_text_real_defchar = drv_UL_defchar;
 
 

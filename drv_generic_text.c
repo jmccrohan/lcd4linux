@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.12 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.13 2004/03/19 09:17:46 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.13  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.12  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -211,7 +216,7 @@ int drv_generic_text_draw (WIDGET *W)
 {
   WIDGET_TEXT *Text=W->data;
   char *txt, *fb1, *fb2;
-  int row, col, len, end;
+  int row, col, col0, len, end;
   
   row=W->row;
   col=W->col;
@@ -232,7 +237,7 @@ int drv_generic_text_draw (WIDGET *W)
     for (; col<=end && col<DCOLS; col++) {
       int pos1, pos2, equal;
       if (fb1[col]==fb2[col]) continue;
-      drv_generic_text_real_goto (row, col);
+      col0 = col;
       for (pos1=col, pos2=pos1, col++, equal=0; col<=end && col<DCOLS; col++) {
 	if (fb1[col]==fb2[col]) {
 	  // If we find just one equal byte, we don't break, because this 
@@ -243,8 +248,8 @@ int drv_generic_text_draw (WIDGET *W)
 	  equal=0;
 	}
       }
-      memcpy                      (fb2+pos1, fb1+pos1, pos2-pos1+1);
-      drv_generic_text_real_write (fb2+pos1,           pos2-pos1+1);
+      memcpy                      (           fb2+pos1, fb1+pos1, pos2-pos1+1);
+      drv_generic_text_real_write (row, col0, fb2+pos1,           pos2-pos1+1);
     }
   }
 
@@ -297,8 +302,7 @@ int drv_generic_text_icon_draw (WIDGET *W)
   // maybe send icon to the display
   if (DisplayFB[row*DCOLS+col]!=ascii) {
     DisplayFB[row*DCOLS+col]=ascii;
-    drv_generic_text_real_goto (row, col);
-    drv_generic_text_real_write (DisplayFB+row*DCOLS+col, 1);
+    drv_generic_text_real_write (row, col, DisplayFB+row*DCOLS+col, 1);
   }
 
   return 0;
@@ -577,7 +581,7 @@ static void drv_generic_text_bar_define_chars(void)
 int drv_generic_text_bar_draw (WIDGET *W)
 {
   WIDGET_BAR *Bar = W->data;
-  int row, col, len, res, max, val1, val2;
+  int row, col, col0, len, res, max, val1, val2;
   int c, n, s;
   DIRECTION dir;
   
@@ -639,7 +643,7 @@ int drv_generic_text_bar_draw (WIDGET *W)
     for (col=0; col<DCOLS; col++) {
       int pos1, pos2, equal;
       if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) continue;
-      drv_generic_text_real_goto (row, col);
+      col0 = col;
       for (pos1=col, pos2=pos1, col++, equal=0; col<DCOLS; col++) {
 	if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) {
 	  // If we find just one equal byte, we don't break, because this 
@@ -650,8 +654,8 @@ int drv_generic_text_bar_draw (WIDGET *W)
 	  equal=0;
 	}
       }
-      memcpy                      (DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
-      drv_generic_text_real_write (DisplayFB+row*DCOLS+pos1,                          pos2-pos1+1);
+      memcpy                      (           DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
+      drv_generic_text_real_write (row, col0, DisplayFB+row*DCOLS+pos1,                          pos2-pos1+1);
     }
   }
   

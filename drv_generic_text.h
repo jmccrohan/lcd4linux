@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.7 2004/02/18 06:39:20 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.8 2004/03/19 09:17:46 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.8  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.7  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -76,8 +81,7 @@ extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first
 extern int ICONS;        // number of user-defineable characters reserved for icons
 
 // these functions must be implemented by the real driver
-void (*drv_generic_text_real_goto)(int row, int col);
-void (*drv_generic_text_real_write)(unsigned char *buffer, int len);
+void (*drv_generic_text_real_write)(int row, int col, unsigned char *data, int len);
 void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
 
 // generic functions and widget callbacks

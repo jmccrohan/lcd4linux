@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.20 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.21 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.21  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.20  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -187,12 +192,15 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_MO_goto (int row, int col)
+static void drv_MO_write (int row, int col, unsigned char *data, int len)
 {
   char cmd[5]="\376Gyx";
+
   cmd[2]=(char)col+1;
   cmd[3]=(char)row+1;
   drv_generic_serial_write(cmd,4);
+
+  drv_generic_serial_write (data, len);
 }
 
 
@@ -468,8 +476,7 @@ int drv_MO_init (char *section)
   GOTO_COST=4; // number of bytes a goto command requires
   
   // real worker functions
-  drv_generic_text_real_write   = drv_generic_serial_write;
-  drv_generic_text_real_goto    = drv_MO_goto;
+  drv_generic_text_real_write   = drv_MO_write;
   drv_generic_text_real_defchar = drv_MO_defchar;
 
 

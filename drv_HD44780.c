@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.16 2004/03/11 06:39:58 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.17 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,11 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.17  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.16  2004/03/11 06:39:58  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -480,9 +485,10 @@ static void drv_HD_goto (int row, int col)
 }
 
 
-static void drv_HD_write (unsigned char *string, int len)
+static void drv_HD_write (int row, int col, unsigned char *data, int len)
 {
-  drv_HD_data (currController, string, len, T_EXEC);
+  drv_HD_goto (row, col);
+  drv_HD_data (currController, data, len, T_EXEC);
 }
 
 
@@ -730,7 +736,6 @@ int drv_HD_init (char *section)
   
   // real worker functions
   drv_generic_text_real_write   = drv_HD_write;
-  drv_generic_text_real_goto    = drv_HD_goto;
   drv_generic_text_real_defchar = drv_HD_defchar;
 
 

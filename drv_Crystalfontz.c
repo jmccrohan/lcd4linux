@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.13 2004/03/03 03:41:02 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.14 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.14  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.13  2004/03/03 03:41:02  reinelt
  * Crystalfontz Contrast issue fixed
  *
@@ -105,7 +110,6 @@ static char Name[]="Crystalfontz";
 
 static int Model;
 static int Protocol;
-static int Row, Col;
 
 // ring buffer for bytes received from the display
 static unsigned char RingBuffer[256];
@@ -328,56 +332,41 @@ static void drv_CF_send (int cmd, int len, char *data)
 }
 
 
-static void drv_CF_write1 (unsigned char *string, int len)
-{
-  drv_generic_serial_write (string, len);
-}
-
-
-static void drv_CF_write2 (unsigned char *string, int len)
-{
-  // limit length
-  if (Col+len>16) len=16-Col;
-  if (len<0) len=0;
-  
-  // sanity check
-  if (Row>=2 || Col+len>16) {
-    error ("%s: internal error: write outside linebuffer bounds!", Name);
-    return;
-  }
-  memcpy (Line+16*Row+Col, string, len);
-  drv_CF_send (7+Row, 16, Line+16*Row);
-}
-
-
-static void drv_CF_write3 (unsigned char *string, int len)
-{
-  debug ("write3(<%.*s>,%d)", len, string, len);
-
-  
-}
-
-
-static void drv_CF_goto1 (int row, int col)
+static void drv_CF_write1 (int row, int col, unsigned char *data, int len)
 {
   char cmd[3]="\021xy"; // set cursor position
   
   if (row==0 && col==0) {
-    drv_CF_write1("\001", 1); // cursor home
+    drv_generic_serial_write ("\001", 1); // cursor home
   } else {
     cmd[1]=(char)col;
     cmd[2]=(char)row;
-    drv_CF_write1(cmd, 3);
+    drv_generic_serial_write (cmd, 3);
   }
+  
+  drv_generic_serial_write (data, len);
 }
 
-static void drv_CF_goto23 (int row, int col)
+
+static void drv_CF_write2 (int row, int col, unsigned char *data, int len)
 {
-  // as the 633 does not have random access to the display content,
-  // and the 631 needs coordinates with random access, 
-  // we just store the needed cursor position
-  Row=row;
-  Col=col;
+  // limit length
+  if (col+len>16) len=16-col;
+  if (len<0) len=0;
+  
+  // sanity check
+  if (row>=2 || col+len>16) {
+    error ("%s: internal error: write outside linebuffer bounds!", Name);
+    return;
+  }
+  memcpy (Line+16*row+col, data, len);
+  drv_CF_send (7+row, 16, Line+16*row);
+}
+
+
+static void drv_CF_write3 (int row, int col, unsigned char *data, int len)
+{
+  debug ("write3(<%.*s>,%d)", len, data, len);
 }
 
 
@@ -387,8 +376,8 @@ static void drv_CF_defchar1 (int ascii, unsigned char *buffer)
   
   // user-defineable chars start at 128, but are defined at 0
   cmd[1]=(char)(ascii-CHAR0); 
-  drv_CF_write1 (cmd, 2);
-  drv_CF_write1 (buffer, 8);
+  drv_generic_serial_write (cmd, 2);
+  drv_generic_serial_write (buffer, 8);
 }
 
 
@@ -422,7 +411,7 @@ static int drv_CF_contrast (int contrast)
     if (Contrast > 100) Contrast = 100;
     buffer[0] = 15; // Set LCD Contrast
     buffer[1] = Contrast;
-    drv_CF_write1 (buffer, 2);
+    drv_generic_serial_write (buffer, 2);
     break;
 
   case 2:
@@ -457,7 +446,7 @@ static int drv_CF_backlight (int backlight)
   case 1:
     buffer[0] = 14; // Set LCD Backlight
     buffer[1] = Backlight;
-    drv_CF_write1 (buffer, 2);
+    drv_generic_serial_write (buffer, 2);
     break;
 
   case 2:
@@ -611,10 +600,10 @@ static int drv_CF_scan_DOW (unsigned char index)
 // init sequences for 626, 632, 634, 636 
 static void drv_CF_start_1 (void)
 {
-  drv_CF_write1 ("\014", 1);  // Form Feed (Clear Display)
-  drv_CF_write1 ("\004", 1);  // hide cursor
-  drv_CF_write1 ("\024", 1);  // scroll off
-  drv_CF_write1 ("\030", 1);  // wrap off
+  drv_generic_serial_write ("\014", 1);  // Form Feed (Clear Display)
+  drv_generic_serial_write ("\004", 1);  // hide cursor
+  drv_generic_serial_write ("\024", 1);  // scroll off
+  drv_generic_serial_write ("\030", 1);  // wrap off
 }
 
 
@@ -852,14 +841,12 @@ int drv_CF_init (char *section)
   case 1:
     CHAR0 = 128;   // ASCII of first user-defineable char
     GOTO_COST = 3; // number of bytes a goto command requires
-    drv_generic_text_real_goto    = drv_CF_goto1;
     drv_generic_text_real_write   = drv_CF_write1;
     drv_generic_text_real_defchar = drv_CF_defchar1;
     break;
   case 2:
     CHAR0 = 0; // ASCII of first user-defineable char
     GOTO_COST = 20; // there is no goto on 633
-    drv_generic_text_real_goto    = drv_CF_goto23;
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
@@ -867,7 +854,6 @@ int drv_CF_init (char *section)
     CHAR0 = 0; // ASCII of first user-defineable char
     // Fixme: 
     GOTO_COST = 3; // number of bytes a goto command requires
-    drv_generic_text_real_goto    = drv_CF_goto23;
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;

@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.3 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.4 2004/03/19 09:17:46 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.4  2004/03/19 09:17:46  reinelt
+ *
+ * removed the extra 'goto' function, row and col are additional parameters
+ * of the write() function now.
+ *
  * Revision 1.3  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -95,12 +100,15 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
-static void drv_CW_goto (int row, int col)
+static void drv_CW_write (int row, int col, unsigned char *data, int len)
 {
   char cmd[6]="\376Gxy\375";
+  
   cmd[2]=(char)col;
   cmd[3]=(char)row;
-  drv_generic_serial_write(cmd, 5);
+  drv_generic_serial_write (cmd, 5);
+
+  drv_generic_serial_write (data, len);
 }
 
 
@@ -279,8 +287,7 @@ int drv_CW_init (char *section)
   GOTO_COST = 3;  // number of bytes a goto command requires
 
   // real worker functions
-  drv_generic_text_real_write   = drv_generic_serial_write;
-  drv_generic_text_real_goto    = drv_CW_goto;
+  drv_generic_text_real_write = drv_CW_write;
 
   switch (Protocol) {
     case 1:
