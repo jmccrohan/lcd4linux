@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.3 2003/10/11 06:01:52 reinelt Exp $
+/* $Id: evaluator.c,v 1.4 2004/01/06 15:19:12 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.4  2004/01/06 15:19:12  reinelt
+ * Evaluator rearrangements...
+ *
  * Revision 1.3  2003/10/11 06:01:52  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -113,7 +116,7 @@
 
 
 typedef struct {
-  char *name;
+  char   *name;
   RESULT *value;
 } VARIABLE;
 
@@ -129,7 +132,7 @@ typedef struct {
 
 static FUNCTION *Function=NULL;
 static int      nFunction=0;
-
+static int       FunctionSorted=0;
 
 static char *Expression=NULL;
 static char *Token=NULL;
@@ -154,52 +157,38 @@ char* ErrMsg[] = {
 
 
 
-static void FreeResult (RESULT *result)
-{
-  if (result==NULL) return;
-  if (result->string!=NULL) {
-    free (result->string);
-    result->string=NULL;
-  }
-  free (result);
-}
-
-
 static void DelResult (RESULT *result)
 {
   result->type=0;
   result->number=0.0;
-  if (result->string) free (result->string);
-  result->string=NULL;
+  if (result->string) {
+    free (result->string);
+    result->string=NULL;
+  }
 }
 
 
-RESULT* SetResult (RESULT **result, int type, void *value)
+static void FreeResult (RESULT *result)
 {
-  if (*result==NULL) {
-    *result=malloc(sizeof(RESULT));
-    if (*result==NULL) {
-      debug ("cannot allocate result: out of memory!");
-      return NULL;
-    }
-  } else if ((*result)->string!=NULL) {
-    free ((*result)->string);
-    (*result)->string=NULL;
+  if (result!=NULL) {
+    DelResult(result);
+    free (result);
   }
+}
 
-  if (type & R_NUMBER) {
-    (*result)->type=R_NUMBER;
-    (*result)->number=*(double*)value;
-    (*result)->string=NULL;
-  } else if (type & R_STRING) {
-    (*result)->type=R_STRING;
-    (*result)->string=strdup(value);
-  } else {
-    debug ("internal error: invalid result type %d", type); 
+
+static RESULT* NewResult (void)
+{
+  RESULT *result = malloc(sizeof(RESULT));
+  if (result==NULL) {
+    error ("cannot allocate result: out of memory!");
     return NULL;
   }
+  result->type=0;
+  result->number=0.0;
+  result->string=NULL;
   
-  return *result;
+  return result;
 }
 
 
@@ -207,12 +196,9 @@ static RESULT* DupResult (RESULT *result)
 {
   RESULT *result2;
   
-  result2=malloc(sizeof(RESULT));
-  if (result2==NULL) {
-    debug ("cannot allocate result: out of memory!");
+  if ((result2=NewResult())==NULL) 
     return NULL;
-  }
-
+  
   result2->type=result->type;
   result2->number=result->number;
   if (result->string!=NULL)
@@ -224,10 +210,35 @@ static RESULT* DupResult (RESULT *result)
 }
 
 
+RESULT* SetResult (RESULT **result, int type, void *value)
+{
+  if (*result) {
+    DelResult(*result);
+  } else {
+    if ((*result=NewResult())==NULL) 
+      return NULL;
+  }
+  
+  if (type==R_NUMBER) {
+    (*result)->type=R_NUMBER;
+    (*result)->number=*(double*)value;
+    (*result)->string=NULL;
+  } else if (type==R_STRING) {
+    (*result)->type=R_STRING;
+    (*result)->string=strdup(value);
+  } else {
+    error ("internal error: invalid result type %d", type); 
+    return NULL;
+  }
+  
+  return *result;
+}
+
+
 double R2N (RESULT *result)
 {
   if (result==NULL) {
-    debug ("internal error: NULL result");
+    error ("internal error: NULL result");
     return 0.0;
   }
 
@@ -241,7 +252,7 @@ double R2N (RESULT *result)
     return result->number;
   }
   
-  debug ("internal error: invalid result type %d", result->type); 
+  error ("internal error: invalid result type %d", result->type); 
   return 0.0;
 }
 
@@ -251,7 +262,7 @@ char* R2S (RESULT *result)
   char buffer[16];
   
   if (result==NULL) {
-    debug ("internal error: NULL result");
+    error ("internal error: NULL result");
     return NULL;
   }
 
@@ -260,13 +271,13 @@ char* R2S (RESULT *result)
   }
   
   if (result->type & R_NUMBER) {
-    result->type |= R_STRING;
     sprintf(buffer, "%g", result->number);
+    result->type |= R_STRING;
     result->string=strdup(buffer);
     return result->string;
   }
   
-  debug ("internal error: invalid result type %d", result->type); 
+  error ("internal error: invalid result type %d", result->type); 
   return NULL;
   
 }
@@ -337,8 +348,10 @@ static int SetVariable (char *name, RESULT *value)
     return 1;
   }
   
-  // Fixme: we append the var at the end and re-sort
-  // the whole array! This should be optimized...
+  // we append the var at the end and re-sort
+  // the whole array. As every SetVariable call
+  // implies a bsearch(), this is ok and cannot
+  // be optimized.
   nVariable++;
   Variable=realloc(Variable, nVariable*sizeof(VARIABLE));
   Variable[nVariable-1].name=strdup(name);
@@ -346,6 +359,30 @@ static int SetVariable (char *name, RESULT *value)
   qsort(Variable, nVariable, sizeof(VARIABLE), v_sort);
 
   return 0;
+}
+
+
+int AddNumericVariable (char *name, double value)
+{
+  RESULT result;
+  
+  result.type=R_NUMBER;
+  result.number=value;
+  result.string=NULL;
+  
+  return SetVariable (name, &result);
+}
+
+
+int AddStringVariable (char *name, char *value)
+{
+  RESULT result;
+  
+  result.type=R_STRING;
+  result.number=0.0;
+  result.string=strdup(value);
+  
+  return SetVariable (name, &result);
 }
 
 
@@ -367,9 +404,41 @@ static int f_sort (const void *a, const void *b)
 }
 
 
+static FUNCTION* GetFunction (char *name)
+{
+  FUNCTION *F;
+  
+  if (!FunctionSorted) {
+    FunctionSorted=1;
+    qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
+  }
+  
+  F=bsearch(name, Function, nFunction, sizeof(FUNCTION), f_lookup);
+  
+  return F;
+}
+
+
+int AddFunction (char *name, int args, void (*func)())
+{
+  // we append the func at the end, and flag
+  // the function table as unsorted. It will be
+  // sorted again on the next GetFunction call.
+  FunctionSorted=0;
+  nFunction++;
+  Function=realloc(Function, nFunction*sizeof(FUNCTION));
+  Function[nFunction-1].name=strdup(name);
+  Function[nFunction-1].args=args;
+  Function[nFunction-1].func=func;
+  
+  return 0;
+}
+
+
+
 // Prototypes
-static void Level01  (RESULT *result);
-static void Level02  (RESULT *result);
+static void Level01 (RESULT *result);
+static void Level02 (RESULT *result);
 static void Level03 (RESULT *result);
 static void Level04 (RESULT *result);
 static void Level05 (RESULT *result);
@@ -683,7 +752,7 @@ static void Level11 (RESULT *result)
     } else if (Type == T_NAME) {
 
       if (*Expression == '(') {
-	FUNCTION *F=bsearch(Token, Function, nFunction, sizeof(FUNCTION), f_lookup);
+	FUNCTION *F=GetFunction(Token);
 	if (F!=NULL) {
 	  int n=0;
 	  Parse();
@@ -720,63 +789,25 @@ static void Level11 (RESULT *result)
 }
 
 
-int AddNumericVariable (char *name, double value)
-{
-  RESULT result;
-  
-  result.type=R_NUMBER;
-  result.number=value;
-  result.string=NULL;
-  
-  return SetVariable (name, &result);
-}
-
-
-int AddStringVariable (char *name, char *value)
-{
-  RESULT result;
-  
-  result.type=R_STRING;
-  result.number=0.0;
-  result.string=strdup(value);
-  
-  return SetVariable (name, &result);
-}
-
-
-int AddFunction (char *name, int args, void (*func)())
-{
-  FUNCTION *F;
-
-  F=bsearch(name, Function, nFunction, sizeof(FUNCTION), f_lookup);
-  if (F!=NULL) {
-    if (F->name) free (F->name);
-    F->name=strdup(name);
-    F->args=args;
-    F->func=func;
-    return 1;
-  }
-  
-  // Fixme: we append the func at the end and re-sort
-  // the whole array! This should be optimized...
-  nFunction++;
-  Function=realloc(Function, nFunction*sizeof(FUNCTION));
-  Function[nFunction-1].name=strdup(name);
-  Function[nFunction-1].args=args;
-  Function[nFunction-1].func=func;
-  qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
-
-  return 0;
-}
-
-
 int Eval (char* expression, RESULT *result)
 {
-  int err;
+  int i, err;
   
   if ((err=setjmp(jb))) {
     error ("Error: %s in expression <%s>", ErrMsg[err], expression);
     return -1;
+  }
+  
+  // maybe sort function table
+  if (!FunctionSorted) {
+    FunctionSorted=1;
+    qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
+    // sanity check: two functions with the same name?
+    for (i=1; i<nFunction; i++) {
+      if (strcmp(Function[i].name, Function[i-1].name)==0) {
+	error ("internal error: Function '%s' defined twice!", Function[i].name);
+      }
+    }
   }
   
   Expression=expression;
