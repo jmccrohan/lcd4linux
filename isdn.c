@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.8 2000/08/10 18:42:20 reinelt Exp $
+/* $Id: isdn.c,v 1.9 2001/05/27 07:19:28 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.9  2001/05/27 07:19:28  reinelt
+ *
+ * fixed a warning in pixmap.c
+ * temporarily fixed a bug in isdn.c (ISDN_MAX_CHANNELS is no longer defined?)
+ * fixed a bug in configure.in (--with-drivers=xyz did not work)
+ *
  * Revision 1.8  2000/08/10 18:42:20  reinelt
  *
  * fixed some bugs with the new syslog code
@@ -72,6 +78,11 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <linux/isdn.h>
+
+// Fixme: ISDN_MAX_CHANNELS seems undefined in recent kernels
+#ifndef ISDN_MAX_CHANNELS
+#define ISDN_MAX_CHANNELS 64
+#endif
 
 #include "debug.h"
 #include "isdn.h"

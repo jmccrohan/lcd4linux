@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.8 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: pixmap.c,v 1.9 2001/05/27 07:19:28 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.9  2001/05/27 07:19:28  reinelt
+ *
+ * fixed a warning in pixmap.c
+ * temporarily fixed a bug in isdn.c (ISDN_MAX_CHANNELS is no longer defined?)
+ * fixed a bug in configure.in (--with-drivers=xyz did not work)
+ *
  * Revision 1.8  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -159,7 +165,7 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     time_t old;
   } vals[N_BAR_T];
   time_t now;
-  int i;
+  int i=0;
   
   row*=YRES;
   col*=XRES;

@@ -2277,7 +2277,7 @@ if test "$RASTER" = "yes"; then
 fi
 
 
-if test "$DRVLIBS" = ""; then
+if test "$DRIVERS" = ""; then
    { echo "configure: error: You should include at least one driver..." 1>&2; exit 1; }
 fi
    
