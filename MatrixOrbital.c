@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.48 2003/11/16 09:45:49 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.49 2003/12/19 05:35:14 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.49  2003/12/19 05:35:14  reinelt
+ * renamed 'client' to 'plugin'
+ *
  * Revision 1.48  2003/11/16 09:45:49  reinelt
  * Crystalfontz changes, small glitch in getopt() fixed
  *
@@ -227,7 +230,7 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "client.h"
+#include "plugin.h"
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
@@ -429,7 +432,7 @@ int MO_clear2 (int full)
 }
 
 
-static void client_contrast (RESULT *result, RESULT *arg1)
+static void plugin_contrast (RESULT *result, RESULT *arg1)
 {
   char buffer[4];
   double contrast;
@@ -444,7 +447,7 @@ static void client_contrast (RESULT *result, RESULT *arg1)
 }
 
 
-static void client_backlight (RESULT *result, RESULT *arg1)
+static void plugin_backlight (RESULT *result, RESULT *arg1)
 {
   char buffer[4];
   double backlight;
@@ -465,7 +468,7 @@ static void client_backlight (RESULT *result, RESULT *arg1)
 }
 
 
-static void client_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
 {
   int num;
   double val;
@@ -514,7 +517,7 @@ static void client_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
 }
 
 
-static void client_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void plugin_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
 {
   int    num;
   double val;
@@ -536,7 +539,7 @@ static void client_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
 }
 
 
-static void client_rpm (RESULT *result, RESULT *arg1)
+static void plugin_rpm (RESULT *result, RESULT *arg1)
 {
   int    num;
   double val;
@@ -659,12 +662,12 @@ static int MO_init (LCD *Self, int protocol)
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
 
-  // register as a client
-  AddFunction ("contrast",  1, client_contrast);
-  AddFunction ("backlight", 1, client_backlight);
-  AddFunction ("gpo",       2, client_gpo);
-  AddFunction ("pwm",       2, client_pwm);
-  AddFunction ("rpm",       1, client_rpm);
+  // register as a plugin
+  AddFunction ("contrast",  1, plugin_contrast);
+  AddFunction ("backlight", 1, plugin_backlight);
+  AddFunction ("gpo",       2, plugin_gpo);
+  AddFunction ("pwm",       2, plugin_pwm);
+  AddFunction ("rpm",       1, plugin_rpm);
 
   return 0;
 }

@@ -101,7 +101,7 @@ AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD = liblcd4linux.la @DRVLIBS@ 
 
-lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h parser.c parser.h processor.c processor.h evaluator.c evaluator.h client.c client.h system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h widget.c widget.h exec.c exec.h mail2.c socket.c socket.h imon.c imon.h
+lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h parser.c parser.h processor.c processor.h evaluator.c evaluator.h plugin.c plugin.h system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h widget.c widget.h exec.c exec.h mail2.c socket.c socket.h imon.c imon.h
 
 
 liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -137,7 +137,7 @@ bin_PROGRAMS =  lcd4linux$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 lcd4linux_OBJECTS =  lcd4linux.$(OBJEXT) pid.$(OBJEXT) parser.$(OBJEXT) \
-processor.$(OBJEXT) evaluator.$(OBJEXT) client.$(OBJEXT) \
+processor.$(OBJEXT) evaluator.$(OBJEXT) plugin.$(OBJEXT) \
 system.$(OBJEXT) isdn.$(OBJEXT) wifi.$(OBJEXT) mail.$(OBJEXT) \
 seti.$(OBJEXT) battery.$(OBJEXT) dvb.$(OBJEXT) filter.$(OBJEXT) \
 widget.$(OBJEXT) exec.$(OBJEXT) mail2.$(OBJEXT) socket.$(OBJEXT) \
@@ -162,13 +162,13 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/HD44780.P .deps/M50530.P .deps/MatrixOrbital.P \
 .deps/MilfordInstruments.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
 .deps/Skeleton.P .deps/T6963.P .deps/Text.P .deps/USBLCD.P \
-.deps/XWindow.P .deps/bar.P .deps/battery.P .deps/cfg.P .deps/client.P \
-.deps/debug.P .deps/display.P .deps/dvb.P .deps/evaluator.P \
-.deps/exec.P .deps/filter.P .deps/fontmap.P .deps/icon.P .deps/imon.P \
-.deps/isdn.P .deps/lcd4linux.P .deps/lock.P .deps/mail.P .deps/mail2.P \
+.deps/XWindow.P .deps/bar.P .deps/battery.P .deps/cfg.P .deps/debug.P \
+.deps/display.P .deps/dvb.P .deps/evaluator.P .deps/exec.P \
+.deps/filter.P .deps/fontmap.P .deps/icon.P .deps/imon.P .deps/isdn.P \
+.deps/lcd4linux.P .deps/lock.P .deps/mail.P .deps/mail2.P \
 .deps/parport.P .deps/parser.P .deps/pid.P .deps/pixmap.P \
-.deps/processor.P .deps/seti.P .deps/socket.P .deps/system.P \
-.deps/udelay.P .deps/widget.P .deps/wifi.P
+.deps/plugin.P .deps/processor.P .deps/seti.P .deps/socket.P \
+.deps/system.P .deps/udelay.P .deps/widget.P .deps/wifi.P
 SOURCES = $(liblcd4linux_la_SOURCES) $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(liblcd4linux_la_OBJECTS) $(lcd4linux_OBJECTS)
 

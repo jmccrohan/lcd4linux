@@ -18,7 +18,7 @@ pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
 evaluator.c evaluator.h \
-client.c client.h \
+plugin.c plugin.h \
 system.c system.h \
 isdn.c isdn.h \
 wifi.c wifi.h \

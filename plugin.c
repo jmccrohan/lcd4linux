@@ -1,6 +1,6 @@
-/* $Id: client.c,v 1.1 2003/10/11 06:01:52 reinelt Exp $
+/* $Id: plugin.c,v 1.1 2003/12/19 05:35:14 reinelt Exp $
  *
- * client function handling
+ * plugin handler for the Evaluator
  *
  * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
  *
@@ -21,7 +21,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: client.c,v $
+ * $Log: plugin.c,v $
+ * Revision 1.1  2003/12/19 05:35:14  reinelt
+ * renamed 'client' to 'plugin'
+ *
  * Revision 1.1  2003/10/11 06:01:52  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -43,7 +46,7 @@
 /* 
  * exported functions:
  *
- * int Client_init (void)
+ * int plugin_init (void)
  *  initializes the expression evaluator
  *  adds some handy constants and functions
  *
@@ -56,7 +59,7 @@
 #include <string.h>
 
 #include "debug.h"
-#include "client.h"
+#include "plugin.h"
 
 
 
@@ -127,7 +130,7 @@ static void my_strlen (RESULT *result, RESULT *arg1)
 }
 
 
-int client_init (void)
+int plugin_init (void)
 {
   // set some handy constants
   AddNumericVariable ("Pi", M_PI);

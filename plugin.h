@@ -1,6 +1,6 @@
-/* $Id: client.h,v 1.1 2003/10/11 06:01:52 reinelt Exp $
+/* $Id: plugin.h,v 1.1 2003/12/19 05:35:14 reinelt Exp $
  *
- * client function handling
+ * plugin handler for the Evaluator
  *
  * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
  *
@@ -21,7 +21,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: client.h,v $
+ * $Log: plugin.h,v $
+ * Revision 1.1  2003/12/19 05:35:14  reinelt
+ * renamed 'client' to 'plugin'
+ *
  * Revision 1.1  2003/10/11 06:01:52  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -37,9 +40,9 @@
 
 #include "evaluator.h"
 
-#ifndef _CLIENT_H_
-#define _CLIENT_H_
+#ifndef _PLUGIN_H_
+#define _PLUGIN_H_
 
-int client_init (void);
+int plugin_init (void);
 
 #endif

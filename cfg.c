@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.18 2003/10/11 06:01:52 reinelt Exp $^
+/* $Id: cfg.c,v 1.19 2003/12/19 05:35:14 reinelt Exp $^
  *
  * config file stuff
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.19  2003/12/19 05:35:14  reinelt
+ * renamed 'client' to 'plugin'
+ *
  * Revision 1.18  2003/10/11 06:01:52  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -142,7 +145,7 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "client.h"
+#include "plugin.h"
 
 typedef struct {
   char *key;
@@ -315,7 +318,7 @@ static int check_cfg_source(char *file)
 }
 
 
-static void cfg_client (RESULT *result, RESULT *arg1)
+static void cfg_plugin (RESULT *result, RESULT *arg1)
 {
   char *value=cfg_get(R2S(arg1), "");
   SetResult(&result, R_STRING, value); 
@@ -365,8 +368,8 @@ int l4l_cfg_init (char *file)
   }
   fclose (stream);
 
-  // register as a client
-  AddFunction ("cfg", 1, cfg_client);
+  // register as a plugin
+  AddFunction ("cfg", 1, cfg_plugin);
 
   return 0;
 }

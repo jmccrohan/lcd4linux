@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.52 2003/12/01 07:08:50 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.53 2003/12/19 05:35:14 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.53  2003/12/19 05:35:14  reinelt
+ * renamed 'client' to 'plugin'
+ *
  * Revision 1.52  2003/12/01 07:08:50  reinelt
  *
  * Patches from Xavier:
@@ -267,7 +270,7 @@
 #include "udelay.h"
 #include "display.h"
 #include "processor.h"
-#include "client.h"
+#include "plugin.h"
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
@@ -435,7 +438,7 @@ int main (int argc, char *argv[])
     info ("invoked without full path; restart may not work!");
   }
   
-  if (client_init()==-1)
+  if (plugin_init()==-1)
     exit (1);
   
   if (cfg_init(cfg)==-1)
