@@ -1,4 +1,4 @@
-/* $Id: plugin_math.c,v 1.7 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_math.c,v 1.8 2005/04/05 04:46:06 reinelt Exp $
  *
  * math plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_math.c,v $
+ * Revision 1.8  2005/04/05 04:46:06  reinelt
+ * ceil/floor patch from Maxime
+ *
  * Revision 1.7  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -135,6 +138,18 @@ static void my_max (RESULT *result, RESULT *arg1, RESULT *arg2)
   SetResult(&result, R_NUMBER, &value); 
 }
 
+static void my_floor (RESULT *result, RESULT *arg)
+{
+  double value = floor(R2N(arg));
+  SetResult(&result, R_NUMBER, &value);
+}
+
+static void my_ceil (RESULT *result, RESULT *arg)
+{
+  double value = ceil(R2N(arg));
+  SetResult(&result, R_NUMBER, &value);
+}
+
 
 int plugin_init_math (void)
 {
@@ -154,6 +169,10 @@ int plugin_init_math (void)
   /* min, max */
   AddFunction ("min",  2, my_min);
   AddFunction ("max",  2, my_max);
+
+  /* floor, ceil */
+  AddFunction ("floor", 1, my_floor);
+  AddFunction ("ceil",  1, my_ceil);
 
   return 0;
 }
