@@ -42,6 +42,8 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+#include "config.h"
+
 #ifndef HAVE_LINUX_DVB_FRONTEND_H
 
 #warning linux/dvb/frontend.h not found.
