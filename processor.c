@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.24 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: processor.c,v 1.25 2001/03/17 11:11:31 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.25  2001/03/17 11:11:31  ltoetsch
+ * bugfix: max for BAR_T
+ *
  * Revision 1.24  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -593,7 +596,7 @@ static char *process_row (int r)
       if (type & BAR_H)
 	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
       else if (type & BAR_T)
-	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*yres, val2*xres);
+	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*xres);
       else
 	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*len*yres);
       
