@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.17 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.18 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.18  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.17  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -242,14 +245,14 @@ int BE_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port", NULL);
+  port=cfg_get (NULL, "Port", NULL);
   if (port==NULL || *port=='\0') {
     error ("BeckmannEgle: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
 
-  s=cfg_get("Type", NULL);
+  s=cfg_get(NULL, "Type", NULL);
   if (s==NULL || *s=='\0') {
     error ("BeckmannEgle: no 'Type' entry in %s", cfg_source());
     return -1;
@@ -292,7 +295,7 @@ int BE_init (LCD *Self)
   BE_write (buffer, 4);    // select display type
   BE_write ("\033&D", 3);  // cursor off
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number("", "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, BE_define_char);

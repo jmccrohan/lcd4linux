@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.54 2004/01/08 05:28:12 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.55 2004/01/09 04:16:06 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.55  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.54  2004/01/08 05:28:12  reinelt
  * Luk Claes added to AUTHORS
  * cfg: group handling ('{}') added
@@ -448,7 +451,7 @@ int main (int argc, char *argv[])
   if (cfg_init(cfg)==-1)
     exit (1);
   
-  driver=cfg_get("display",NULL);
+  driver=cfg_get(NULL, "display", NULL);
   if (driver==NULL || *driver=='\0') {
     error ("missing 'display' entry in %s!", cfg_source());
     exit (1);
@@ -542,7 +545,7 @@ int main (int argc, char *argv[])
 
   // check the conf to see if quiet startup is wanted 
   if (!quiet) {
-    quiet = atoi(cfg_get("Quiet", "0"));
+    quiet = atoi(cfg_get(NULL, "Quiet", "0"));
   }
   
   if (!quiet && hello()) {

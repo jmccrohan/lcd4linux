@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.16 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: M50530.c,v 1.17 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.17  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.16  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -200,7 +203,7 @@ int M5_init (LCD *Self)
   int rows=-1, cols=-1, gpos=-1;
   char *s;
   
-  s=cfg_get("Size",NULL);
+  s=cfg_get(NULL, "Size", NULL);
   if (s==NULL || *s=='\0') {
     error ("M50530: no 'Size' entry in %s", cfg_source());
     return -1;
@@ -210,7 +213,7 @@ int M5_init (LCD *Self)
     return -1;
   }
 
-  if (cfg_number("GPOs", 0, 0, 8, &gpos)<0) return -1;
+  if (cfg_number(NULL, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   
   Self->rows=rows;
   Self->cols=cols;
@@ -244,7 +247,7 @@ int M5_init (LCD *Self)
   M5_command (0x0050, 20); // set entry mode
   M5_command (0x0030, 20); // set display mode
   
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, M5_define_char);

@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.31 2003/12/01 07:08:51 reinelt Exp $
+/* $Id: system.c,v 1.32 2004/01/09 04:16:06 reinelt Exp $
  *
  * system status retreivement
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.32  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.31  2003/12/01 07:08:51  reinelt
  *
  * Patches from Xavier:
@@ -792,7 +795,7 @@ int Sensor (int index, double *val, double *min, double *max)
 
   if (fd[index]==-2) {
     snprintf(buffer, 32, "Sensor%d", index);
-    sensor[index]=cfg_get(buffer, NULL);
+    sensor[index]=cfg_get(NULL, buffer, NULL);
     if (sensor[index]==NULL || *sensor[index]=='\0') {
       error ("no entry for '%s' in %s", buffer, cfg_source());
       fd[index]=-1;
@@ -800,18 +803,18 @@ int Sensor (int index, double *val, double *min, double *max)
     }
 
     snprintf(buffer, 32, "Sensor%d_min", index);
-    min_buf[index]=atof(cfg_get(buffer,"0"));
+    min_buf[index]=atof(cfg_get(NULL, buffer, "0"));
     *min=min_buf[index];
 
     snprintf(buffer, 32, "Sensor%d_max", index);
-    max_buf[index]=atof(cfg_get(buffer,"100"));
+    max_buf[index]=atof(cfg_get(NULL, buffer, "100"));
     *max=max_buf[index];
 
     snprintf(buffer, 32, "Sensor%d_factor", index);
-    factor_buf[index]=atof(cfg_get(buffer,"1"));
+    factor_buf[index]=atof(cfg_get(NULL, buffer, "1"));
 
     snprintf(buffer, 32, "Sensor%d_offset", index);
-    offset_buf[index]=atof(cfg_get(buffer,"0"));
+    offset_buf[index]=atof(cfg_get(NULL, buffer, "0"));
 
     fd[index]=open(sensor[index], O_RDONLY);
     if (fd[index]==-1) {

@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.13 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: T6963.c,v 1.14 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.14  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.13  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -349,7 +352,7 @@ int T6_init (LCD *Self)
     return -1;
   }
   
-  if (cfg_number("Icons", 0, 0, 8, &Icons) < 0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, 8, &Icons) < 0) return -1;
   if (Icons>0) {
     info ("allocating %d icons", Icons);
     icon_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, 8, Icons, pix_icon);

@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.13 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: mail.c,v 1.14 2004/01/09 04:16:06 reinelt Exp $
  *
  * email specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.14  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.13  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -129,7 +132,7 @@ int Mail (int index, int *num, int *unseen)
   }
   if (now[index] > 0) {	/* not first time, delay  */
     sprintf(txt1, "Delay_e%d", index); 
-    if (time(NULL)<=now[index]+atoi(cfg_get(txt1,"5"))) 
+    if (time(NULL)<=now[index]+atoi(cfg_get(NULL, txt1, "5"))) 
       return 0;   // no more then 5/Delay_eX seconds after last check?
   }
   time(&now[index]);                      // for Mailbox #index
@@ -137,7 +140,7 @@ int Mail (int index, int *num, int *unseen)
     Build the filename from the config
   */
   snprintf(buffer, sizeof(buffer), "Mailbox%d", index);
-  fnp1=cfg_get(buffer,NULL);
+  fnp1=cfg_get(NULL, buffer, NULL);
   if (fnp1==NULL || *fnp1=='\0') {
     cfgmbx[index]=FALSE;                  // There is now entry for Mailbox #index
   }

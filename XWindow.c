@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.37 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: XWindow.c,v 1.38 2004/01/09 04:16:06 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.38  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.37  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -411,22 +414,22 @@ int xlcdinit(LCD *Self)
 {
   char *s;
 
-  if (sscanf(s=cfg_get("size","20x4"),"%dx%d",&cols,&rows)!=2
+  if (sscanf(s=cfg_get(NULL, "size", "20x4"),"%dx%d",&cols,&rows)!=2
       || rows<1 || cols<1) {
     error ("X11: bad size '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("font","5x8"),"%dx%d",&xres,&yres)!=2
+  if (sscanf(s=cfg_get(NULL, "font", "5x8"),"%dx%d",&xres,&yres)!=2
       || xres<5 || yres>10) {
     error ("X11: bad font '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("pixel","4+1"),"%d+%d",&pixel,&pgap)!=2
+  if (sscanf(s=cfg_get(NULL, "pixel", "4+1"),"%d+%d",&pixel,&pgap)!=2
       || pixel<1 || pgap<0) {
     error ("X11: bad pixel '%s'",s);
     return -1;
   }
-  if (sscanf(s=cfg_get("gap","-1x-1"),"%dx%d",&cgap,&rgap)!=2
+  if (sscanf(s=cfg_get(NULL, "gap", "-1x-1"),"%dx%d",&cgap,&rgap)!=2
       || cgap<-1 || rgap<-1) {
     error ("X11: bad gap '%s'",s);
     return -1;
@@ -434,18 +437,18 @@ int xlcdinit(LCD *Self)
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
-  if (cfg_number("border", 0, 0, 1000000, &border)<0) return -1;
+  if (cfg_number(NULL, "border", 0, 0, 1000000, &border)<0) return -1;
 
-  rgbfg=cfg_get("foreground","#000000");
-  rgbbg=cfg_get("background","#80d000");
-  rgbhg=cfg_get("halfground","#70c000");
+  rgbfg=cfg_get(NULL, "foreground", "#000000");
+  rgbbg=cfg_get(NULL, "background", "#80d000");
+  rgbhg=cfg_get(NULL, "halfground", "#70c000");
   if (*rgbfg=='\\') rgbfg++;
   if (*rgbbg=='\\') rgbbg++;
   if (*rgbhg=='\\') rgbhg++;
 
   if (pix_init(rows,cols,xres,yres)==-1) return -1;
 
-  if (cfg_number("Icons", 0, 0, 8, &icons) < 0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, 8, &icons) < 0) return -1;
   if (icons>0) {
     info ("allocating %d icons", icons);
     icon_init(rows, cols, xres, yres, 8, icons, pix_icon);

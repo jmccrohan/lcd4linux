@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.11 2003/10/22 04:32:25 reinelt Exp $
+/* $Id: icon.c,v 1.12 2004/01/09 04:16:06 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.12  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.11  2003/10/22 04:32:25  reinelt
  * fixed icon bug found by Rob van Nieuwkerk
  *
@@ -114,7 +117,7 @@ static int icon_read_bitmap (int num)
   
   for (row=0; row<YRES; row++) {
     snprintf (key, sizeof(key), "Icon%d.Bitmap%d", num+1, row+1);
-    val=cfg_get(key, ""); 
+    val=cfg_get(NULL, key, ""); 
     map=bm->Data+row;
     n=0;
     for (v=val; *v!='\0'; v++) {

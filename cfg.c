@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.22 2004/01/08 06:00:28 reinelt Exp $^
+/* $Id: cfg.c,v 1.23 2004/01/09 04:16:06 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,13 +23,16 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.23  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.22  2004/01/08 06:00:28  reinelt
  * allowed '.' in key names
- * allowed empty group keys (not only "group anything {", but "anything {")
+ * allowed empty section keys (not only "section anything {", but "anything {")
  *
  * Revision 1.21  2004/01/08 05:28:12  reinelt
  * Luk Claes added to AUTHORS
- * cfg: group handling ('{}') added
+ * cfg: section handling ('{}') added
  *
  * Revision 1.20  2004/01/07 10:15:41  reinelt
  * small glitch in evaluator fixed
@@ -141,10 +144,15 @@
  *   cfg_cmd can be called _before_ cfg_read()
  *   returns 0 if ok, -1 if arg cannot be parsed
  *
- * cfg_get (key, defval) 
- *   return the a value for a given key 
+ * cfg_get (section, key, defval) 
+ *   return the a value for a given key in a given section 
  *   or <defval> if key does not exist
  *
+ * cfg_number (section, key, defval, min, int max, *value) 
+ *   return the a value for a given key in a given section 
+ *   convert it into a number with syntax checking
+ *   check if its in a given range
+ * 
  */
 
 
@@ -247,26 +255,29 @@ static int validchars (char *string)
 }
 
 
-static void cfg_add (char *group, char *key, char *val, int lock)
+static void cfg_add (char *section, char *key, char *val, int lock)
 {
   char *buffer;
   ENTRY *entry;
   
   // allocate buffer 
-  buffer=malloc(strlen(group)+strlen(key)+2);
+  buffer=malloc(strlen(section)+strlen(key)+2);
   *buffer='\0';
   
-  // prepare group:key
-  if (*group!='\0') {
-    strcpy(buffer, group);
+  // prepare section.key
+  if (section!=NULL && *section!='\0') {
+    strcpy(buffer, section);
     strcat(buffer, ".");
   }
   strcat (buffer, key);
   
+  // does the key already exist?
   entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
   
   if (entry!=NULL) {
+    free (buffer);
     if (entry->lock>lock) return;
+    debug ("Warning: key '%s': value '%s' overwritten with '%s'", buffer, entry->val, val);
     if (entry->val) free (entry->val);
     entry->val=dequote(strdup(val));
     return;
@@ -303,11 +314,33 @@ int l4l_cfg_cmd (char *arg)
 }
 
 
-char *l4l_cfg_get (char *key, char *defval)
+char *l4l_cfg_get (char *section, char *key, char *defval)
 {
+  int len;
+  char *buffer;
   ENTRY *entry;
 
-  entry=bsearch(key, Config, nConfig, sizeof(ENTRY), c_lookup);
+  // calculate key length
+  len=strlen(key)+1;
+  if (section!=NULL)
+    len+=strlen(section)+1;
+
+  // allocate buffer 
+  buffer=malloc(len);
+  *buffer='\0';
+  
+  // prepare section:key
+  if (section!=NULL && *section!='\0') {
+    strcpy(buffer, section);
+    strcat(buffer, ".");
+  }
+  strcat (buffer, key);
+  
+  // search entry
+  entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
+
+  // free buffer again
+  free (buffer);
   
   if (entry!=NULL)
     return entry->val;
@@ -316,12 +349,12 @@ char *l4l_cfg_get (char *key, char *defval)
 }
 
 
-int l4l_cfg_number (char *key, int defval, int min, int max, int *value) 
+int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int *value) 
 {
   
   char *s, *e;
   
-  s=cfg_get(key, NULL);
+  s=cfg_get(section, key, NULL);
   if (s==NULL) {
     *value=defval;
     return 0;
@@ -392,9 +425,9 @@ static int cfg_read (char *file)
 {
   FILE *stream;
   char buffer[256];
-  char group[256];
+  char section[256];
   char *line, *key, *val, *end;
-  int group_open, group_close;
+  int section_open, section_close;
   int error, lineno;
   
   stream=fopen (file, "r");
@@ -403,8 +436,8 @@ static int cfg_read (char *file)
     return -1;
   }
 
-  // start with empty group
-  strcpy(group, "");
+  // start with empty section
+  strcpy(section, "");
   
   error=0;
   lineno=0;
@@ -416,9 +449,9 @@ static int cfg_read (char *file)
     // skip empty lines
     if (*(line=strip(line, 1))=='\0') continue;
 
-    // reset group flags
-    group_open=0;
-    group_close=0;
+    // reset section flags
+    section_open=0;
+    section_close=0;
     
     // key is first word
     key=line;
@@ -438,9 +471,9 @@ static int cfg_read (char *file)
     if (*val) for (end=val; *(end+1); end++);
     else end=val;
 
-    // if last char is '{', a group has been opened
+    // if last char is '{', a section has been opened
     if (*end=='{') {
-      group_open=1;
+      section_open=1;
       *end='\0';
       val=strip(val, 0);
     }
@@ -457,14 +490,14 @@ static int cfg_read (char *file)
       val++;
     }
     
-    // if key is '}', a group has been closed
+    // if key is '}', a section has been closed
     if (strcmp(key, "}")==0) {
-      group_close=1;
+      section_close=1;
       *key='\0';
     }
 
     // sanity check: '}' should be the only char in a line
-    if (group_close && (group_open || *val!='\0')) {
+    if (section_close && (section_open || *val!='\0')) {
       error ("error in config file '%s' line %d: garbage after '}'", file, lineno);
       error=1;
       break;
@@ -477,55 +510,54 @@ static int cfg_read (char *file)
       break;
     }
 
-    // on group-open, check value for valid chars
-    if (group_open && !validchars(val)) {
-      error ("error in config file '%s' line %d: group '%s' is invalid", file, lineno, val);
+    // on section-open, check value for valid chars
+    if (section_open && !validchars(val)) {
+      error ("error in config file '%s' line %d: section '%s' is invalid", file, lineno, val);
       error=1;
       break;
     }
 
-    // on group-open, append new group name
-    if (group_open) {
-      // is the group[] array big enough?
-      if (strlen(group)+strlen(key)+3 > sizeof(group)) {
-	error ("error in config file '%s' line %d: group buffer overflow", file, lineno);
+    // on section-open, append new section name
+    if (section_open) {
+      // is the section[] array big enough?
+      if (strlen(section)+strlen(key)+3 > sizeof(section)) {
+	error ("error in config file '%s' line %d: section buffer overflow", file, lineno);
 	error=1;
 	break;
       }
-      if (*group!='\0') strcat (group, ".");
-      strcat (group, key);
+      if (*section!='\0') strcat (section, ".");
+      strcat (section, key);
       if (*val!='\0') {
-	strcat (group, ":");
-	strcat (group, val);
+	strcat (section, ":");
+	strcat (section, val);
       }
       continue;
     }
 
-    // on group-close, remove last group name
-    if (group_close) {
-      // sanity check: group already empty?
-      if (*group=='\0') {
+    // on section-close, remove last section name
+    if (section_close) {
+      // sanity check: section already empty?
+      if (*section=='\0') {
 	error ("error in config file '%s' line %d: unmatched closing brace", file, lineno);
 	error=1;
 	break;
       }
 	
-      end=strrchr(group, '.');
+      end=strrchr(section, '.');
       if (end==NULL)
-	*group='\0';
+	*section='\0';
       else
 	*end='\0';
       continue;
     }
 
     // finally: add key
-    debug ("Michi: add group=<%s> key=<%s> val=<%s>", group, key, val);
-    cfg_add (group, key, val, 0);
+    cfg_add (section, key, val, 0);
     
   }
   
   // sanity check: are the braces balanced?
-  if (!error && *group!='\0') {
+  if (!error && *section!='\0') {
     error ("error in config file '%s' line %d: unbalanced braces", file, lineno);
     error=1;
   }
@@ -536,9 +568,35 @@ static int cfg_read (char *file)
 }
 
 
-static void cfg_plugin (RESULT *result, RESULT *arg1)
+static void cfg_plugin (RESULT *result, int argc, RESULT *argv[])
 {
-  char *value=cfg_get(R2S(arg1), "");
+  int i, len;
+  char *value;
+  char *buffer;
+  
+  // calculate key length
+  len=0;
+  for (i=0; i<argc; i++) {
+    len+=strlen(R2S(argv[i]))+1;
+  }
+
+  // allocate key buffer
+  buffer=malloc(len+1);
+  
+  // prepare key buffer
+  *buffer='\0';
+  for (i=0; i<argc; i++) {
+    strcat (buffer, ".");
+    strcat (buffer, R2S(argv[i]));
+  }
+  
+  // buffer starts with '.', so cut off first char
+  value=cfg_get("", buffer+1, "");
+  
+  // free buffer again
+  free (buffer);
+  
+  // store result
   SetResult(&result, R_STRING, value); 
 }
 
@@ -556,7 +614,7 @@ int l4l_cfg_init (char *file)
   Config_File=strdup(file);
   
   // register as a plugin
-  AddFunction ("cfg", 1, cfg_plugin);
+  AddFunction ("cfg", -1, cfg_plugin);
   
   return 0;
 }
@@ -571,9 +629,9 @@ char *l4l_cfg_source (void)
 }
 
 
-int   (*cfg_init)   (char *source)                 = l4l_cfg_init;
-char *(*cfg_source) (void)                         = l4l_cfg_source;
-int   (*cfg_cmd)    (char *arg)                    = l4l_cfg_cmd;
-char *(*cfg_get)    (char *key, char *defval)      = l4l_cfg_get;
-int   (*cfg_number) (char *key, int   defval, 
-		     int min, int max, int *value) = l4l_cfg_number;
+int   (*cfg_init)   (char *source)                           = l4l_cfg_init;
+char *(*cfg_source) (void)                                   = l4l_cfg_source;
+int   (*cfg_cmd)    (char *arg)                              = l4l_cfg_cmd;
+char *(*cfg_get)    (char *section, char *key, char *defval) = l4l_cfg_get;
+int   (*cfg_number) (char *section, char *key, int   defval, 
+		     int min, int max, int *value)           = l4l_cfg_number;

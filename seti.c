@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.11 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: seti.c,v 1.12 2004/01/09 04:16:06 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.12  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.11  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -111,7 +114,7 @@ int Seti (double *perc, double *cput)
   time(&now);
   
   if (fd==-2) {
-    char *dir=cfg_get("SetiDir",NULL);
+    char *dir=cfg_get(NULL, "SetiDir", NULL);
     if (dir==NULL || *dir=='\0') {
       error ("no 'SetiDir' entry in %s!\n", cfg_source());
       fd=-1;

@@ -1,4 +1,4 @@
-/* $Id: MilfordInstruments.c,v 1.4 2004/01/06 22:33:13 reinelt Exp $
+/* $Id: MilfordInstruments.c,v 1.5 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -24,6 +24,9 @@
  *
  *
  * $Log: MilfordInstruments.c,v $
+ * Revision 1.5  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.4  2004/01/06 22:33:13  reinelt
  * Copyright statements cleaned up
  *
@@ -166,14 +169,14 @@ static int MI_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port",NULL);
+  port=cfg_get (NULL, "Port", NULL);
   if (port==NULL || *port=='\0') {
     error ("MilfordInstruments: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
 
-  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
+  if (cfg_number(NULL, "Speed", 19200, 1200,19200, &speed)<0) return -1;
   switch (speed) {
   case 2400:
     Speed=B2400;
@@ -191,7 +194,7 @@ static int MI_init (LCD *Self)
   Device=MI_open();
   if (Device==-1) return -1;
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MI_define_char);

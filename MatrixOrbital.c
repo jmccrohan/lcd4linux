@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.49 2003/12/19 05:35:14 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.50 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.50  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.49  2003/12/19 05:35:14  reinelt
  * renamed 'client' to 'plugin'
  *
@@ -370,7 +373,7 @@ static int MO_contrast (void)
   char buffer[4];
   int  contrast;
 
-  if (cfg_number("Contrast", 160, 0, 255, &contrast)<0) return -1;
+  if (cfg_number(NULL, "Contrast", 160, 0, 255, &contrast)<0) return -1;
   snprintf (buffer, 4, "\376P%c", contrast);
   MO_write (buffer, 3);
   return 0;
@@ -588,14 +591,14 @@ static int MO_init (LCD *Self, int protocol)
     Port=NULL;
   }
 
-  port=cfg_get ("Port",NULL);
+  port=cfg_get (NULL, "Port", NULL);
   if (port==NULL || *port=='\0') {
     error ("MatrixOrbital: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
 
-  if (cfg_number("Speed", 19200, 1200, 19200, &i)<0) return -1;
+  if (cfg_number(NULL, "Speed", 19200, 1200, 19200, &i)<0) return -1;
   switch (i) {
   case 1200:
     Speed=B1200;
@@ -641,7 +644,7 @@ static int MO_init (LCD *Self, int protocol)
   info ("Display on %s has Firmware Version 0x%x", Port, *buffer);
 
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);

@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.9 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: mail2.c,v 1.10 2004/01/09 04:16:06 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.10  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.9  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -209,7 +212,7 @@ static int check_nntp(char *user, char *pass, char *machine,
   *total = 0;
   *unseen = 0;
   
-  strcpy(buf, cfg_get("Newsrc",".newsrc"));
+  strcpy(buf, cfg_get(NULL, "Newsrc", ".newsrc"));
   if (*buf == 0 || ((fp = fopen(buf, "r")) == NULL)) {
     error("Couldn't open .newsrc-file '%s'", buf);
     return -1;

@@ -1,4 +1,4 @@
-/* $Id: imon.c,v 1.2 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: imon.c,v 1.3 2004/01/09 04:16:06 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: imon.c,v $
+ * Revision 1.3  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.2  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -221,19 +224,19 @@ int init(){
  int port;
  int connect;
 
- host=cfg_get ("Imon_Host","127.0.0.1");
+ host=cfg_get (NULL, "Imon_Host", "127.0.0.1");
  if (*host=='\0') {
   error ("Imon: no 'Imon_Host' entry in %s", cfg_source());
   return -1;
  } 
 
- if (cfg_number("Imon_Port",5000,1,65536,&port)<0){
+ if (cfg_number(NULL, "Imon_Port", 5000,1,65536,&port)<0){
    return -1;	
  }
  
  connect=service_connect(host,port);
 
- s=cfg_get ("Imon_Pass",NULL);
+ s=cfg_get (NULL, "Imon_Pass", NULL);
  if ((s!=NULL) && (*s!='\0')) { // Passwort senden
    char buf[40];
    sprintf(buf,"pass %s",s);
@@ -255,7 +258,7 @@ int ImonCh(int index, struct imonchannel *ch, int token_usage[]) {
 	 
  if ((*ch).max_in == 0){ // not initializied
   sprintf(buf, "Imon_%d_Dev", index);
-  s=cfg_get(buf,NULL);
+  s=cfg_get(NULL, buf, NULL);
   if (s==NULL) {
    error ("Imon: no 'Imon_%i_Dev' entry in %s", index, cfg_source());
    err[index]=1;
@@ -264,10 +267,10 @@ int ImonCh(int index, struct imonchannel *ch, int token_usage[]) {
   strcpy((*ch).dev,s);
   
   sprintf(buf, "Imon_%d_MaxIn", index);
-  cfg_number(buf,768,1,65536,&(*ch).max_in);
+  cfg_number(NULL, buf,768,1,65536,&(*ch).max_in);
 
   sprintf(buf, "Imon_%d_MaxOut", index);
-  cfg_number(buf,128,1,65536,&(*ch).max_out);
+  cfg_number(NULL, buf, 128,1,65536,&(*ch).max_out);
  }
 
  sprintf(buf, "status %s", (*ch).dev);
@@ -377,7 +380,7 @@ void phonebook(char *number){
   FILE *  fp;
   char line[256];
   
-  fp = fopen (cfg_get ("Telmon_Phonebook","/etc/phonebook"), "r");
+  fp = fopen (cfg_get (NULL, "Telmon_Phonebook","/etc/phonebook"), "r");
   
   if (! fp) return;
   
@@ -408,7 +411,7 @@ int Telmon(struct telmon *t){
  if (tick++ % 50 != 0) return 0;
 
  if (telmond_fd == -2){ //not initializied
-  char *s=cfg_get ("Telmon_Host","127.0.0.1");
+  char *s=cfg_get (NULL, "Telmon_Host","127.0.0.1");
   if (*s=='\0') {
    error ("Telmon: no 'Telmon_Host' entry in %s", cfg_source());
    telmond_fd=-1;
@@ -416,7 +419,7 @@ int Telmon(struct telmon *t){
   } 
   strcpy(host,s);
   
-  if (cfg_number("Telmon_Port",5000,1,65536,&port)<0){
+  if (cfg_number(NULL, "Telmon_Port",5000,1,65536,&port)<0){
    telmond_fd=-1;
    return -1;	
   }

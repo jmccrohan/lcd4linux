@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.16 2003/11/30 16:18:36 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.17 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.17  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.16  2003/11/30 16:18:36  reinelt
  * Cwlinux: invalidate Framebuffer in case a char got redefined
  *
@@ -261,7 +264,7 @@ static void CW_Brightness(void)
   int level;
   char cmd[5]="\376A_\375";
   
-  if (cfg_number("Brightness", 8, 0, 8, &level)<0) return;
+  if (cfg_number(NULL, "Brightness", 8, 0, 8, &level)<0) return;
   
   switch (level) {
   case 0:
@@ -302,14 +305,14 @@ int CW_init(LCD * Self)
     Port = NULL;
   }
 
-  port = cfg_get("Port",NULL);
+  port = cfg_get(NULL, "Port",NULL);
   if (port == NULL || *port == '\0') {
     error("Cwlinux: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port = strdup(port);
 
-  if (cfg_number("Speed", 19200, 9600,19200, &speed)<0) return -1;
+  if (cfg_number(NULL, "Speed", 19200, 9600,19200, &speed)<0) return -1;
   switch (speed) {
   case 9600:
     Speed = B9600;
@@ -360,7 +363,7 @@ int CW_init(LCD * Self)
   // backlight brightness
   CW_Brightness();
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, CHARS, Icons, CW12232_define_char);

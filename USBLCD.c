@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.19 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: USBLCD.c,v 1.20 2004/01/09 04:16:06 reinelt Exp $
  *
  * Driver for USBLCD (see http://www.usblcd.de)
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.20  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.19  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -251,7 +254,7 @@ int USBLCD_init (LCD *Self)
     free(Port);
     Port=NULL;
   }
-  if ((port=cfg_get("Port",NULL))==NULL || *port=='\0') {
+  if ((port=cfg_get(NULL, "Port", NULL))==NULL || *port=='\0') {
     error ("USBLCD: no 'Port' entry in %s", cfg_source());
     return -1;
   }
@@ -264,7 +267,7 @@ int USBLCD_init (LCD *Self)
 
   debug ("using device %s ", Port);
 
-  s=cfg_get("Size",NULL);
+  s=cfg_get(NULL, "Size", NULL);
   if (s==NULL || *s=='\0') {
     error ("USBLCD: no 'Size' entry in %s", cfg_source());
     return -1;
@@ -296,7 +299,7 @@ int USBLCD_init (LCD *Self)
   if (USBLCD_open()!=0)
     return -1;
   
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, USBLCD_define_char);

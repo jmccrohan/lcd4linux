@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.17 2003/11/16 09:45:49 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.18 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -21,6 +21,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.18  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.17  2003/11/16 09:45:49  reinelt
  * Crystalfontz changes, small glitch in getopt() fixed
  *
@@ -161,7 +164,7 @@ static int CF_backlight (void)
   char buffer[3];
   int  backlight;
 
-  if (cfg_number("Backlight", 0, 0, 100, &backlight)<0) return -1;
+  if (cfg_number(NULL, "Backlight", 0, 0, 100, &backlight)<0) return -1;
   snprintf (buffer, 3, "\016%c", backlight);
   CF_write (buffer, 2);
   return 0;
@@ -173,7 +176,7 @@ static int CF_contrast (void)
   char buffer[3];
   int  contrast;
 
-  if (cfg_number("Contrast", 50, 0, 100, &contrast)<0) return -1;
+  if (cfg_number(NULL, "Contrast", 50, 0, 100, &contrast)<0) return -1;
   snprintf (buffer, 3, "\017%c", contrast);
   CF_write (buffer, 2);
   return 0;
@@ -227,7 +230,7 @@ static int CF_init (LCD *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("Port",NULL);
+  port=cfg_get (NULL, "Port", NULL);
   if (port==NULL || *port=='\0') {
     error ("Crystalfontz: no 'Port' entry in %s", cfg_source());
     return -1;
@@ -235,7 +238,7 @@ static int CF_init (LCD *Self)
   Port=strdup(port);
 
   
-  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
+  if (cfg_number(NULL, "Speed", 19200, 1200,19200, &speed)<0) return -1;
   
   switch (speed) {
   case 1200:
@@ -260,7 +263,7 @@ static int CF_init (LCD *Self)
   Device=CF_open();
   if (Device==-1) return -1;
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, CF_define_char);

@@ -1,4 +1,4 @@
-/* $Id: expr.c,v 1.1 2004/01/05 11:57:38 reinelt Exp $
+/* $Id: expr.c,v 1.2 2004/01/09 04:16:06 reinelt Exp $
  *
  * expr ('y*') functions
  * This is only a workaround to make the Evaluator usable until
@@ -24,6 +24,9 @@
  *
  *
  * $Log: expr.c,v $
+ * Revision 1.2  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.1  2004/01/05 11:57:38  reinelt
  * added %y tokens to make the Evaluator useable
  *
@@ -56,7 +59,7 @@ int Expr(int index, char result[EXPR_TXT_LEN], double *val)
     return -1;
 
   sprintf(yn, "y%d", index);
-  expression = cfg_get(yn,NULL);
+  expression = cfg_get(NULL, yn, NULL);
 					    
   if (!expression || !*expression) {
     error("Empty expression for 'y%d'", index);
@@ -73,9 +76,9 @@ int Expr(int index, char result[EXPR_TXT_LEN], double *val)
     double max, min;
     *val = atof(result);
     sprintf(yn, "Max_y%d", index);
-    max = atof(cfg_get(yn,"100"));
+    max = atof(cfg_get(NULL, yn, "100"));
     sprintf(yn, "Min_y%d", index);
-    min = atof(cfg_get(yn,"0"));
+    min = atof(cfg_get(NULL, yn, "0"));
     if (max != min)
       *val = (*val - min)/(max - min);
   }

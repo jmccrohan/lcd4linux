@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.28 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: Raster.c,v 1.29 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.29  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.28  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -360,39 +363,39 @@ int Raster_init (LCD *Self)
     return -1;
   }
     
-  if (sscanf(s=cfg_get("size","20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+  if (sscanf(s=cfg_get(NULL, "size", "20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("Raster: bad size '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("font","5x8"), "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
+  if (sscanf(s=cfg_get(NULL, "font", "5x8"), "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
     error ("Raster: bad font '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("pixel","4+1"), "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
+  if (sscanf(s=cfg_get(NULL, "pixel", "4+1"), "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
     error ("Raster: bad pixel '%s'", s);
     return -1;
   }
 
-  if (sscanf(s=cfg_get("gap","3x3"), "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
+  if (sscanf(s=cfg_get(NULL, "gap", "3x3"), "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
     error ("Raster: bad gap '%s'", s);
     return -1;
   }
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
-  if (cfg_number("border", 0, 0, 1000000, &border)<0) return -1;
+  if (cfg_number(NULL, "border", 0, 0, 1000000, &border)<0) return -1;
 
-  if (sscanf(s=cfg_get("foreground","#102000"), "#%x", &foreground)!=1) {
+  if (sscanf(s=cfg_get(NULL, "foreground", "#102000"), "#%x", &foreground)!=1) {
     error ("Raster: bad foreground color '%s'", s);
     return -1;
   }
-  if (sscanf(s=cfg_get("halfground","#70c000"), "#%x", &halfground)!=1) {
+  if (sscanf(s=cfg_get(NULL, "halfground", "#70c000"), "#%x", &halfground)!=1) {
     error ("Raster: bad halfground color '%s'", s);
     return -1;
   }
-  if (sscanf(s=cfg_get("background","#80d000"), "#%x", &background)!=1) {
+  if (sscanf(s=cfg_get(NULL, "background", "#80d000"), "#%x", &background)!=1) {
     error ("Raster: bad background color '%s'", s);
     return -1;
   }
@@ -402,7 +405,7 @@ int Raster_init (LCD *Self)
     return -1;
   }
 
-  if (cfg_number("Icons", 0, 0, 8, &icons) < 0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, 8, &icons) < 0) return -1;
   if (icons>0) {
     info ("allocating %d icons", icons);
     icon_init(rows, cols, xres, yres, 8, icons, pix_icon);

@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.48 2004/01/06 22:33:13 reinelt Exp $
+/* $Id: HD44780.c,v 1.49 2004/01/09 04:16:06 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -28,6 +28,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.49  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.48  2004/01/06 22:33:13  reinelt
  * Copyright statements cleaned up
  *
@@ -463,7 +466,7 @@ int HD_init (LCD *Self)
   int rows=-1, cols=-1, gpos=-1;
   char *s;
   
-  s=cfg_get("Size",NULL);
+  s=cfg_get(NULL, "Size", NULL);
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Size' entry in %s", cfg_source());
     return -1;
@@ -473,10 +476,10 @@ int HD_init (LCD *Self)
     return -1;
   }
   
-  if (cfg_number("GPOs", 0, 0, 8, &gpos)<0) return -1;
+  if (cfg_number(NULL, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("HD44780: controlling %d GPO's", gpos);
 
-  if (cfg_number("Controllers", 1, 1, 2, &Controllers)<0) return -1;
+  if (cfg_number(NULL, "Controllers", 1, 1, 2, &Controllers)<0) return -1;
   info ("wiring: using display with %d controllers", Controllers);
   
   // current controller
@@ -495,7 +498,7 @@ int HD_init (LCD *Self)
     return -1;
   }
   
-  if (cfg_number("Bits", 8, 4, 8, &Bits)<0) return -1;
+  if (cfg_number(NULL, "Bits", 8, 4, 8, &Bits)<0) return -1;
   if (Bits!=4 && Bits!=8) {
     error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_source());
     return -1;
@@ -548,7 +551,7 @@ int HD_init (LCD *Self)
   HD_command (0x03, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x03, 0x06, T_EXEC);  // curser moves to right, no shift
 
-  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, HD_define_char);

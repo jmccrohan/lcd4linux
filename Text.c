@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.12 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: Text.c,v 1.13 2004/01/09 04:16:06 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.13  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.12  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -138,7 +141,7 @@ int Text_init (LCD *Self)
     return -1;
   }
   
-  if (sscanf(s=cfg_get("size","20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
+  if (sscanf(s=cfg_get(NULL, "size", "20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("Text: bad size '%s'", s);
     return -1;
   }
@@ -223,7 +226,7 @@ int Text_put (int row, int col, char *text)
 int Text_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int len, i;
-  if (cfg_get("TextBar", NULL)) 
+  if (cfg_get(NULL, "TextBar", NULL)) 
     mvwprintw(w, row+1 , col+1, "%d %d %d", max, len1, len2);
   else {
     len = min(len1, len2);

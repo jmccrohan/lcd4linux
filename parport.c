@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.11 2003/10/08 14:21:10 reinelt Exp $
+/* $Id: parport.c,v 1.12 2004/01/09 04:16:06 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.12  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.11  2003/10/08 14:21:10  reinelt
  * Changelog; small type in parport.c
  *
@@ -159,12 +162,12 @@ int parport_open (void)
   char *s, *e;
   
 #ifdef USE_OLD_UDELAY
-  if (cfg_number("Delay", 0, 1, 1000000000, &loops_per_usec)<0) return -1;
+  if (cfg_number(NULL, "Delay", 0, 1, 1000000000, &loops_per_usec)<0) return -1;
 #else
   udelay_init();
 #endif
   
-  s=cfg_get ("Port",NULL);
+  s=cfg_get (NULL, "Port", NULL);
   if (s==NULL || *s=='\0') {
     error ("parport: no 'Port' entry in %s", cfg_source());
     return -1;
@@ -265,7 +268,7 @@ unsigned char parport_wire_ctrl (char *name, unsigned char *deflt)
   char *s;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (wire,deflt);
+  s=cfg_get (NULL, wire, deflt);
   if (strcasecmp(s,"STROBE")==0) {
     w=PARPORT_CONTROL_STROBE;
   } else if(strcasecmp(s,"AUTOFD")==0) {
@@ -309,7 +312,7 @@ unsigned char parport_wire_data (char *name, unsigned char *deflt)
   char *s;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (wire,deflt);
+  s=cfg_get (NULL, wire, deflt);
   if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
     w=s[2]-'0';
   } else if(strcasecmp(s,"GND")==0) {

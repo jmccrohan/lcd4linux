@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.8 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: filter.c,v 1.9 2004/01/09 04:16:06 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.9  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.8  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -147,7 +150,7 @@ double damp(char *name, double value)
   int i, j;
   
   if (tau==-1) 
-    if (cfg_number("tau", 500, 0, 1000000, &tau)<0) tau=0.0;
+    if (cfg_number(NULL, "tau", 500, 0, 1000000, &tau)<0) tau=0.0;
   
   if (tau==0.0)
     return value;

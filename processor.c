@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.52 2004/01/05 11:57:38 reinelt Exp $
+/* $Id: processor.c,v 1.53 2004/01/09 04:16:06 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.53  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.52  2004/01/05 11:57:38  reinelt
  * added %y tokens to make the Evaluator useable
  *
@@ -474,7 +477,7 @@ static double query_bar (int token)
     {
       static int alarm;
       alarm=((alarm+1) % 3);
-      if(value < atoi(cfg_get("battwarning","10")) && !alarm) /* flash bar */
+      if(value < atoi(cfg_get(NULL, "battwarning", "10")) && !alarm) /* flash bar */
 	value = 0;
       return value/100;
     }
@@ -947,7 +950,7 @@ void process_init (void)
 {
   int i;
 
-  load.overload=atof(cfg_get("overload","2.0"));
+  load.overload=atof(cfg_get(NULL, "overload", "2.0"));
 
 
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &icons, &gpos);
@@ -966,7 +969,7 @@ void process_init (void)
   debug ("Display: %d rows, %d columns, %dx%d pixels, %d icons, %d GPOs", rows, cols, xres, yres, icons, gpos);
 
 
-  if (cfg_number("Rows", 1, 1, 1000, &lines)<0) {
+  if (cfg_number(NULL, "Rows", 1, 1, 1000, &lines)<0) {
     lines=1;
     error ("ignoring bad 'Rows' value and using '%d'", lines);
   }
@@ -975,7 +978,7 @@ void process_init (void)
     lines=ROWS;
   }
   if (lines>rows) {
-    if (cfg_number("Scroll", 1, 1, 1000, &scroll)<0) {
+    if (cfg_number(NULL, "Scroll", 1, 1, 1000, &scroll)<0) {
       scroll=1;
       error ("ignoring bad 'Scroll' value and using '%d'", scroll);
     }
@@ -983,7 +986,7 @@ void process_init (void)
       error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_source(), scroll, rows);
       error ("This may lead to unexpected results!");
     }
-    if (cfg_number("Fixed", 0, -1000000, 1000000, &fixed)<0) {
+    if (cfg_number(NULL, "Fixed", 0, -1000000, 1000000, &fixed)<0) {
       fixed=0;
       error ("ignoring bad 'Fixed' value and using '%d'", fixed);
     }
@@ -992,7 +995,7 @@ void process_init (void)
       fixed=(fixed<0)? -rows+1 : rows-1;
       error ("ignoring bad 'Fixed' value and using '%d'", fixed);
     }
-    if (cfg_number("Turn", 1000, 1, 1000000, &turn)<0) {
+    if (cfg_number(NULL, "Turn", 1000, 1, 1000000, &turn)<0) {
       turn=1000;
       error ("ignoring bad 'Scroll' value and using '%d'", turn);
     }
@@ -1004,19 +1007,19 @@ void process_init (void)
     fixed=0;
   }
 
-  if (cfg_number("Tick.Text", 500, 1, 1000000, &tick_text)<0) {
+  if (cfg_number(NULL, "Tick.Text", 500, 1, 1000000, &tick_text)<0) {
     tick_text=500;
     error ("ignoring bad 'Tick.Text' value and using '%d'", tick_text);
   }
-  if (cfg_number("Tick.Bar", 100, 1, 1000000, &tick_bar)<0) {
+  if (cfg_number(NULL, "Tick.Bar", 100, 1, 1000000, &tick_bar)<0) {
     tick_bar=100;
     error ("ignoring bad 'Tick.Bar' value and using '%d'", tick_bar);
   }
-  if (cfg_number("Tick.Icon", 100, 1, 1000000, &tick_icon)<0) {
+  if (cfg_number(NULL, "Tick.Icon", 100, 1, 1000000, &tick_icon)<0) {
     tick_icon=100;
     error ("ignoring bad 'Tick.Icon' value and using '%d'", tick_icon);
   }
-  if (cfg_number("Tick.GPO", 100, 1, 1000000, &tick_gpo)<0) {
+  if (cfg_number(NULL, "Tick.GPO", 100, 1, 1000000, &tick_gpo)<0) {
     tick_gpo=100;
     error ("ignoring bad 'Tick.GPO' value and using '%d'", tick_gpo);
   }
@@ -1044,7 +1047,7 @@ void process_init (void)
   for (i=1; i<=lines; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
-    p=cfg_get(buffer,"");
+    p=cfg_get(NULL, buffer, "");
     debug ("%s: %s", buffer, p);
     row[i]=strdup(parse_row(p, supported_bars, token_usage));
   }
@@ -1053,7 +1056,7 @@ void process_init (void)
   for (i=1; i<=gpos; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "GPO%d", i);
-    p=cfg_get(buffer,"");
+    p=cfg_get(NULL, buffer, "");
     debug ("%s: %s", buffer, p);
     gpo[i]=parse_gpo(p, token_usage);
   }

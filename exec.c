@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.10 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: exec.c,v 1.11 2004/01/09 04:16:06 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.11  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.10  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -105,7 +108,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   if (now[index] > 0) {
     /* delay in Ticks ? */
     sprintf(xn, "Tick_x%d", index);
-    p = cfg_get(xn,NULL);
+    p = cfg_get(NULL, xn, NULL);
     if (p && *p) {
       if (ticks[index]++ % atoi(p) != 0)
         return 0;
@@ -113,7 +116,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     else {
       sprintf(xn, "Delay_x%d", index);
       /* delay in Delay_x* sec ? */
-      if (time(NULL) <= now[index] + atoi(cfg_get(xn,"1"))) {
+      if (time(NULL) <= now[index] + atoi(cfg_get(NULL, xn, "1"))) {
         return 0;
       }
     }
@@ -122,7 +125,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   *val = -1;
   
   sprintf(xn, "x%d", index);
-  command = cfg_get(xn,NULL);
+  command = cfg_get(NULL, xn, NULL);
 					    
   if (!command || !*command) {
     error("Empty command for 'x%d'", index);
@@ -162,9 +165,9 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     double max, min;
     *val = atof(buff);
     sprintf(xn, "Max_x%d", index);
-    max = atof(cfg_get(xn,"100"));
+    max = atof(cfg_get(NULL, xn, "100"));
     sprintf(xn, "Min_x%d", index);
-    min = atof(cfg_get(xn,"0"));
+    min = atof(cfg_get(NULL, xn, "0"));
     if (max != min)
       *val = (*val - min)/(max - min);
   }

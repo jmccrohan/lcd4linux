@@ -1,4 +1,4 @@
-/* $Id: wifi.c,v 1.4 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: wifi.c,v 1.5 2004/01/09 04:16:06 reinelt Exp $
  *
  * WIFI specific functions
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.5  2004/01/09 04:16:06  reinelt
+ * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
+ *
  * Revision 1.4  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -75,7 +78,7 @@ int Wifi (int *signal, int *link, int *noise)
   char buffer[4096];  
   char *p;
 
-  char *interface=cfg_get("Wifi.Interface","wlan0");
+  char *interface=cfg_get(NULL, "Wifi.Interface", "wlan0");
 
   *signal=0;
   *link=0;
