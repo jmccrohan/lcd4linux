@@ -145,3 +145,7 @@ Either make it configurabel, or add new tokens.
 > something like horizontally scrolling, say, the title of the currently
 > playing mp3.  I've toyed with trying to dive in and add it, but I'm a
 > pretty lazy guy and haven't done it.  What do you think?
+
+2003-12-31 Stefan ???  <nef17@gmx.net>
+add support for software-controlled backlight for HD44780
+http://www.jalcds.de/images/4x20backlight.gif

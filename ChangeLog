@@ -1,3 +1,100 @@
+2003-12-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, plugin.c, plugin_xmms.c:
+	added XMMS plugin from Markus Keil
+
+	* .cvsignore: added .cvsignore containing '*.lo'
+
+	* plugin_math.c, plugin_string.c:
+	added plugin_math.c and plugin_string.c
+
+	* Makefile.am, Makefile.in, plugin.c:
+	extracted plugin_math and plugin_string into extra files
+
+	* MatrixOrbital.c, cfg.c, client.c, client.h, lcd4linux.c, plugin.c, plugin.h, Makefile.am, Makefile.in:
+	renamed 'client' to 'plugin'
+
+2003-12-01  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* system.c, wifi.c, lcd4linux.c:
+	Patches from Xavier:
+	 - WiFi: make interface configurable
+	 - "quiet" as an option from the config file
+	 - ignore missing "MemShared" on Linux 2.6
+
+2003-11-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Cwlinux.c:
+	Cwlinux: invalidate Framebuffer in case a char got redefined
+
+2003-11-28  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* wifi.c: Minor bugfixes
+
+2003-11-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* isdn.c, processor.c:
+	'Fixed' Rows which do not scroll by Lars Kempe
+	temporary workaround for debian kernel-header bug
+
+2003-11-16  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Crystalfontz.c, MatrixOrbital.c, lcd4linux.c:
+	Crystalfontz changes, small glitch in getopt() fixed
+
+2003-11-14  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* wifi.c, wifi.h:
+	added wifi.c wifi.h which have been forgotten at the last checkin
+
+2003-11-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* HD44780.c: small changes to the 16x4 handling
+
+2003-11-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, parser.c, parser.h, processor.c:
+	WIFI patch from Xavier Vello
+
+	* TODO, dvb.c: very minor changes
+
+2003-10-27  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* README.Rows, README.Tokens, lcd4linux.conf.sample:
+	README.Rows, README.Tokens, lcd4linux.conf.sample from Thomas Siedentopf
+
+2003-10-22  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* XWindow.c, icon.c: fixed icon bug found by Rob van Nieuwkerk
+
+	* Makefile.in, MatrixOrbital.c, icon.c, lcd4linux.c:
+	Makefile.in for imon.c/.h, some MatrixOrbital clients
+
+2003-10-12  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* Makefile.am, imon.c, imon.h, parser.c, parser.h, processor.c:
+	imond/telmond support
+
+2003-10-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* MatrixOrbital.c, processor.c, udelay.c:
+
+	first try to integrate the Evaluator into a display driver (MatrixOrbital here)
+	small warning in processor.c fixed (thanks to Zachary Giles)
+	workaround for udelay() on alpha (no msr.h avaliable) (thanks to Zachary Giles)
+
+2003-10-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* evaluator.h, expression.c, expression.h, lcd4linux.c, Makefile.am, Makefile.in, cfg.c, client.c, client.h, config.guess, config.sub, evaluator.c:
+	renamed expression.{c,h} to client.{c,h}
+	added config file client
+	new functions 'AddNumericVariable()' and 'AddStringVariable()'
+	new parameter '-i' for interactive mode
+
+2003-10-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog, parport.c: Changelog; small type in parport.c
+
 2003-10-08  andy-b  <andy-b@merlin.ethnet>
 
 	* MilfordInstruments.c:
