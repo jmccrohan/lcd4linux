@@ -1061,9 +1061,9 @@ Optional Packages:
                           drivers may be excluded with 'all,!<driver>',
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
-                          BeckmannEgle, CrystalFontz, Cwlinux, HD44780,
-                          M50530, T6963, USBLCD, MatrixOrbital,
-                          MilfordInstruments, PalmPilot, PNG, PPM, X11, Text
+                          BeckmannEgle, CrystalFontz, Curses, Cwlinux,
+                          HD44780, M50530, T6963, USBLCD, MatrixOrbital,
+                          MilfordInstruments, PalmPilot, PNG, PPM, X11
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -20860,6 +20860,7 @@ for driver in $drivers; do
       all)
          BECKMANNEGLE="yes"
          CRYSTALFONTZ="yes"
+         CURSES="yes"
          CWLINUX="yes"
          HD44780="yes"
          M50530="yes"
@@ -20870,7 +20871,6 @@ for driver in $drivers; do
          PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
-         TEXT="yes"
          X11="yes"
          ;;
       BeckmannEgle)
@@ -20878,6 +20878,9 @@ for driver in $drivers; do
          ;;
       CrystalFontz)
          CRYSTALFONTZ=$val
+         ;;
+      Curses)
+         CURSES=$val
          ;;
       Cwlinux)
          CWLINUX=$val
@@ -20908,15 +20911,6 @@ for driver in $drivers; do
          ;;
       PPM)
          PPM=$val
-         ;;
-      SIN)
-         SIN=$val
-         ;;
-      Skeleton)
-         SKELETON=$val
-         ;;
-      Text)
-         TEXT=$val
          ;;
       X11)
          X11=$val
@@ -20957,6 +20951,23 @@ cat >>confdefs.h <<\_ACEOF
 #define WITH_CRYSTALFONTZ 1
 _ACEOF
 
+fi
+
+if test "$CURSES" = "yes"; then
+   if test "$has_curses" = true; then
+#     DRIVERS="$DRIVERS Text.lo"
+#     DRIVERS="$DRIVERS Text.o"
+      DRVLIBS="$DRVLIBS $CURSES_LIBS"
+      CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_TEXT 1
+_ACEOF
+
+   else
+      { echo "$as_me:$LINENO: WARNING: curses not found: Curses driver disabled" >&5
+echo "$as_me: WARNING: curses not found: Curses driver disabled" >&2;}
+   fi
 fi
 
 if test "$CWLINUX" = "yes"; then
@@ -21076,23 +21087,6 @@ _ACEOF
    else
       { echo "$as_me:$LINENO: WARNING: gd.h not found: PNG driver disabled" >&5
 echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
-   fi
-fi
-
-if test "$TEXT" = "yes"; then
-   if test "$has_curses" = true; then
-#     DRIVERS="$DRIVERS Text.lo"
-#     DRIVERS="$DRIVERS Text.o"
-      DRVLIBS="$DRVLIBS $CURSES_LIBS"
-      CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
-
-cat >>confdefs.h <<\_ACEOF
-#define WITH_TEXT 1
-_ACEOF
-
-   else
-      { echo "$as_me:$LINENO: WARNING: curses not found: Text driver disabled" >&5
-echo "$as_me: WARNING: curses not found: Text driver disabled" >&2;}
    fi
 fi
 

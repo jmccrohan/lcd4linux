@@ -45,9 +45,9 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]	
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, Cwlinux, HD44780,]
-  [                        M50530, T6963, USBLCD, MatrixOrbital,]
-  [                        MilfordInstruments, PalmPilot, PNG, PPM, X11, Text],
+  [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux,]
+  [                        HD44780, M50530, T6963, USBLCD, MatrixOrbital,]
+  [                        MilfordInstruments, PalmPilot, PNG, PPM, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -70,6 +70,7 @@ for driver in $drivers; do
       all)
          BECKMANNEGLE="yes"
          CRYSTALFONTZ="yes"
+         CURSES="yes"
          CWLINUX="yes"
          HD44780="yes"
          M50530="yes"
@@ -80,7 +81,6 @@ for driver in $drivers; do
          PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
-         TEXT="yes"
          X11="yes"
          ;;
       BeckmannEgle)
@@ -88,6 +88,9 @@ for driver in $drivers; do
          ;;
       CrystalFontz)
          CRYSTALFONTZ=$val
+         ;;
+      Curses)
+         CURSES=$val
          ;;
       Cwlinux)
          CWLINUX=$val
@@ -119,15 +122,6 @@ for driver in $drivers; do
       PPM)
          PPM=$val
          ;;
-      SIN)
-         SIN=$val
-         ;;
-      Skeleton)
-         SKELETON=$val
-         ;;
-      Text)
-         TEXT=$val
-         ;;
       X11)
          X11=$val
          ;;
@@ -156,6 +150,18 @@ if test "$CRYSTALFONTZ" = "yes"; then
 #  DRIVERS="$DRIVERS drv_Crystalfontz.lo"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[Crystalfontz driver])
+fi
+
+if test "$CURSES" = "yes"; then
+   if test "$has_curses" = true; then
+#     DRIVERS="$DRIVERS Text.lo"
+#     DRIVERS="$DRIVERS Text.o"
+      DRVLIBS="$DRVLIBS $CURSES_LIBS"
+      CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
+      AC_DEFINE(WITH_TEXT,1,[Curses driver])
+   else
+      AC_MSG_WARN(curses not found: Curses driver disabled)
+   fi   
 fi
 
 if test "$CWLINUX" = "yes"; then
@@ -234,18 +240,6 @@ if test "$PPM" = "yes"; then
    else
       AC_MSG_WARN(gd.h not found: PNG driver disabled)
    fi
-fi
-
-if test "$TEXT" = "yes"; then
-   if test "$has_curses" = true; then
-#     DRIVERS="$DRIVERS Text.lo"
-#     DRIVERS="$DRIVERS Text.o"
-      DRVLIBS="$DRVLIBS $CURSES_LIBS"
-      CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
-      AC_DEFINE(WITH_TEXT,1,[Curses driver])
-   else
-      AC_MSG_WARN(curses not found: Text driver disabled)
-   fi   
 fi
 
 if test "$X11" = "yes"; then
