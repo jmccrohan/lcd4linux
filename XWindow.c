@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.10 2000/03/31 04:41:22 reinelt Exp $
+/* $Id: XWindow.c,v 1.11 2000/04/01 16:22:38 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,9 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
- * Revision 1.10  2000/03/31 04:41:22  reinelt
+ * Revision 1.11  2000/04/01 16:22:38  reinelt
  *
- * X11 driver: semaphore bug fixed
+ * bug that caused a segfault in processor.c fixed (thanks to herp)
  *
  * Revision 1.10  2000/03/31 01:42:11  herp
  *

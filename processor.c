@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: processor.c,v 1.3 2000/04/01 16:22:38 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.3  2000/04/01 16:22:38  reinelt
+ *
+ * bug that caused a segfault in processor.c fixed (thanks to herp)
+ *
  * Revision 1.2  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -378,7 +382,7 @@ void process_init (void)
 
   for (i=1; i<=rows; i++) {
     snprintf (buffer, sizeof(buffer), "row%d", i);
-    row[i]=strdup(parse(cfg_get(buffer), supported_bars, token_usage));
+    row[i]=strdup(parse(cfg_get(buffer)?:"", supported_bars, token_usage));
   }
 }
 

@@ -14,14 +14,14 @@
 #background \#80d000
 
 Display X11
-size 20x5
+size 20x6
 font 5x8
 pixel 5+1
-gap 5x5
+gap 6x6
 border 3
 foreground \#102000
-halfground \#70c000
-background \#80d000
+halfground \#90c000
+background \#a0d000
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
