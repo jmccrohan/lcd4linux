@@ -23,10 +23,14 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.12  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.11  2004/06/26 09:27:21  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.10  2004/06/20 10:09:55  reinelt

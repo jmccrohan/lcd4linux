@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.33 2004/06/26 09:27:21 reinelt Exp $
+/* $Id: plugin.c,v 1.34 2004/06/26 12:04:59 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,10 +22,14 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.34  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.33  2004/06/26 09:27:21  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.32  2004/06/07 06:56:55  reinelt

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.41 2004/06/26 09:27:20 reinelt Exp $^
+/* $Id: cfg.c,v 1.42 2004/06/26 12:04:59 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,10 +23,14 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.42  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.41  2004/06/26 09:27:20  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.40  2004/06/20 10:09:52  reinelt

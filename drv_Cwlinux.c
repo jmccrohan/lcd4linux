@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.18 2004/06/26 09:27:20 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.19 2004/06/26 12:04:59 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,10 +23,14 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.19  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.18  2004/06/26 09:27:20  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.17  2004/06/20 10:09:54  reinelt

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.73 2004/06/26 09:27:21 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.74 2004/06/26 12:04:59 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,11 +23,14 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.74  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.73  2004/06/26 09:27:21  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
- * cleaned up a lot of signed/unsigned mistakes
+ * changed all C++ comments to C ones * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.72  2004/06/06 06:51:59  reinelt
  *

@@ -1,4 +1,4 @@
-/* $Id: qprintf.h,v 1.3 2004/06/26 09:27:21 reinelt Exp $
+/* $Id: qprintf.h,v 1.4 2004/06/26 12:05:00 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,11 +26,14 @@
  *
  *
  * $Log: qprintf.h,v $
+ * Revision 1.4  2004/06/26 12:05:00  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.3  2004/06/26 09:27:21  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
- * cleaned up a lot of signed/unsigned mistakes
+ * changed all C++ comments to C ones * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.2  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin

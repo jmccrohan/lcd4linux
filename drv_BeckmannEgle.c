@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.10 2004/06/26 09:27:20 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.11 2004/06/26 12:04:59 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,10 +22,14 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.11  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.10  2004/06/26 09:27:20  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.9  2004/06/26 06:12:15  reinelt

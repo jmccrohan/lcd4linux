@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.5 2004/06/26 09:27:21 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.6 2004/06/26 12:04:59 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,10 +23,14 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.6  2004/06/26 12:04:59  reinelt
+ *
+ * uh-oh... the last CVS log message messed up things a lot...
+ *
  * Revision 1.5  2004/06/26 09:27:21  reinelt
  *
  * added '-W' to CFLAGS
- * changed all C++ comments to C ones ('//' => '/* */')
+ * changed all C++ comments to C ones
  * cleaned up a lot of signed/unsigned mistakes
  *
  * Revision 1.4  2004/06/20 10:09:54  reinelt
