@@ -110,3 +110,9 @@ remove bar code from drivers and create a common bar library
 
 2001-09-12 Carsten Nau <info@cnau.de>
 make the output for emails shorter (at the moment up to 9999 emails)
+
+2001-09-13 Michael Reinelt <reinelt@eunet.at>
+combine mail.c and mail2.c
+if there's an error getting mail info, display "?" instead of "0"
+
+
