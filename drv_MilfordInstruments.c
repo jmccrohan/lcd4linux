@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.6 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.7 2004/06/05 06:13:12 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,10 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.7  2004/06/05 06:13:12  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.6  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -66,6 +70,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -100,6 +105,12 @@ static int  Model;
 // ***  hardware dependant functions    ***
 // ****************************************
 
+static void drv_MI_clear (void)
+{
+  drv_generic_serial_write ("\376\001", 2);  // clear screen
+}
+
+
 static void drv_MI_write (int row, int col, unsigned char *data, int len)
 {
   char cmd[2] = "\376x";
@@ -132,7 +143,7 @@ static void drv_MI_defchar (int ascii, unsigned char *matrix)
 }
 
 
-static int drv_MI_start (char *section)
+static int drv_MI_start (char *section, int quiet)
 {
   int i;  
   char *model;
@@ -159,8 +170,15 @@ static int drv_MI_start (char *section)
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   
-  drv_generic_serial_write ("\376\001", 2);  // clear screen
+  drv_MI_clear();
   drv_generic_serial_write ("\376\014", 2);  // cursor off
+
+  if (!quiet) {
+    if (drv_generic_text_greet (Models[Model].name)) {
+      sleep (3);
+      drv_MI_clear();
+    }
+  }
 
   return 0;
 }
@@ -218,7 +236,7 @@ int drv_MI_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_MI_start (section))!=0)
+  if ((ret=drv_MI_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -263,8 +281,16 @@ int drv_MI_init (char *section, int quiet)
 int drv_MI_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_serial_close();
+
   drv_generic_text_quit();
+
+  // clear display
+  drv_MI_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  drv_generic_serial_close();
   
   return (0);
 }

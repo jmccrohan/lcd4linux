@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.29 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.30 2004/06/05 06:13:12 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.30  2004/06/05 06:13:12  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.29  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -163,6 +167,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -228,6 +233,19 @@ static MODEL Models[] = {
 // ****************************************
 // ***  hardware dependant functions    ***
 // ****************************************
+
+static void drv_MO_clear (void)
+{
+  switch (Protocol) {
+  case 1:
+    drv_generic_serial_write ("\014", 1);  // Clear Screen
+    break;
+  case 2:
+    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
+    break;
+  }
+}
+
 
 static void drv_MO_write (int row, int col, unsigned char *data, int len)
 {
@@ -395,7 +413,7 @@ static int drv_MO_rpm (int num)
 }
 
 
-static int drv_MO_start (char *section)
+static int drv_MO_start (char *section, int quiet)
 {
   int i;  
   char *model;
@@ -468,14 +486,7 @@ static int drv_MO_start (char *section)
     }
   }
   
-  switch (Protocol) {
-  case 1:
-    drv_generic_serial_write ("\014", 1);  // Clear Screen
-    break;
-  case 2:
-    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
-    break;
-  }
+  drv_MO_clear();
   
   drv_generic_serial_write ("\376B", 3);  // backlight on
   drv_generic_serial_write ("\376K", 2);  // cursor off
@@ -493,6 +504,15 @@ static int drv_MO_start (char *section)
     drv_MO_backlight(i);
   }
 
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_MO_clear();
+    }
+  }
+    
   return 0;
 }
 
@@ -636,7 +656,7 @@ int drv_MO_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_MO_start (section))!=0)
+  if ((ret=drv_MO_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -685,8 +705,16 @@ int drv_MO_init (char *section, int quiet)
 int drv_MO_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_serial_close();
+
   drv_generic_text_quit();
+
+  // clear display
+  drv_MO_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  drv_generic_serial_close();
   
   return (0);
 }

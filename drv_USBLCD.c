@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.6 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.7 2004/06/05 06:13:12 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.7  2004/06/05 06:13:12  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.6  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -77,6 +81,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
 #include "widget.h"
@@ -131,6 +136,12 @@ static void drv_UL_command (unsigned char cmd)
 }
 
 
+static void drv_UL_clear (void)
+{
+  drv_UL_command (0x01); // clear display
+}
+
+
 static void drv_UL_write (int row, int col, unsigned char *data, int len)
 {
   int pos = (row%2)*64 + (row/2)*20 + col;
@@ -159,7 +170,7 @@ static void drv_UL_defchar (int ascii, unsigned char *matrix)
 }
 
 
-static int drv_UL_start (char *section)
+static int drv_UL_start (char *section, int quiet)
 {
   int rows=-1, cols=-1;
   int major, minor;
@@ -252,12 +263,22 @@ static int drv_UL_start (char *section)
   drv_UL_command (0x08); // Display off, cursor off, blink off
   drv_UL_command (0x0c); // Display on, cursor off, blink off
   drv_UL_command (0x06); // curser moves to right, no shift
-  drv_UL_command (0x01); // clear display
+  drv_UL_clear();        // clear display
   drv_UL_command (0x03); // return home
 
   // flush buffer
   drv_UL_send();
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_UL_clear();
+      drv_UL_send();
+    }
+  }
+    
   return 0;
 }
 
@@ -312,7 +333,7 @@ int drv_UL_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_UL_start (section))!=0)
+  if ((ret=drv_UL_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -368,6 +389,17 @@ int drv_UL_quit (void)
   // flush buffer
   drv_UL_send();
   
+  drv_generic_text_quit();
+  
+  // clear display
+  drv_UL_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  // flush buffer
+  drv_UL_send();
+  
   debug ("closing port %s", Port);
   close(usblcd_file);
   
@@ -376,8 +408,6 @@ int drv_UL_quit (void)
     Buffer=NULL;
     BufPtr=Buffer;
   }
-  
-  drv_generic_text_quit();
   
   return (0);
 }

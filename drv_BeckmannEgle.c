@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.4 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.5 2004/06/05 06:13:11 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,10 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.5  2004/06/05 06:13:11  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.4  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -60,6 +64,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -138,7 +143,13 @@ static void drv_BE_defchar (int ascii, unsigned char *matrix)
 }
 
 
-static int drv_BE_start (char *section)
+static void drv_BE_clear (void)
+{
+  drv_generic_serial_write ("\033&#", 3); // clear
+}
+
+
+static int drv_BE_start (char *section, int quiet)
 {
   int i;  
   char *model;
@@ -170,8 +181,17 @@ static int drv_BE_start (char *section)
   buffer[4] = Models[Model].type;
   drv_generic_serial_write (buffer,   4); // select display type
   drv_generic_serial_write ("\033&D", 3); // cursor off
-  drv_generic_serial_write ("\033&#", 3); // clear
 
+  drv_BE_clear();
+
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "B+E %s", Models[Model].name);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_BE_clear();
+    }
+  }
   return 0;
 }
 
@@ -228,7 +248,7 @@ int drv_BE_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_BE_start (section))!=0)
+  if ((ret=drv_BE_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -273,9 +293,17 @@ int drv_BE_init (char *section, int quiet)
 int drv_BE_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_serial_close();
+
   drv_generic_text_quit();
   
+  // clear display 
+  drv_BE_clear();
+
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  drv_generic_serial_close();
+
   return (0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.26 2004/06/02 10:09:22 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.27 2004/06/05 06:13:11 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.27  2004/06/05 06:13:11  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.26  2004/06/02 10:09:22  reinelt
  *
  * splash screen for HD44780
@@ -497,6 +501,12 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
 }
 
 
+static void drv_HD_clear (void)
+{
+  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+}
+
+
 static void drv_HD_goto (int row, int col)
 {
   int pos;
@@ -722,7 +732,7 @@ static int drv_HD_start (char *section, int quiet)
     drv_HD_command (allControllers, Bits==8?0x38:0x28, T_EXEC); // clear extended register enable bit
   }
 
-  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  drv_HD_clear(); // clear *both* displays
   drv_HD_command (allControllers, 0x03, T_CLEAR); // return home
   
   // maybe set brightness
@@ -738,7 +748,7 @@ static int drv_HD_start (char *section, int quiet)
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
     if (drv_generic_text_greet (buffer)) {
       sleep (3);
-      drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+      drv_HD_clear();
     }
   }
     
@@ -862,8 +872,18 @@ int drv_HD_quit (void) {
 
   drv_generic_text_quit();
 
-  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
-  drv_generic_text_greet ("good bye!");
+  // clear *both* displays
+  drv_HD_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  // clear all signals
+  if (Bits==8) {
+    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
+  } else {
+    drv_generic_parport_data (0);
+  }
 
   drv_generic_parport_close();
   

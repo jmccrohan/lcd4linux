@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.8 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.9 2004/06/05 06:13:12 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.9  2004/06/05 06:13:12  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.8  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -86,6 +90,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
 #include "widget.h"
@@ -151,6 +156,12 @@ static void drv_M5_command (unsigned int cmd, int delay)
 }
 
 
+static void drv_M5_clear (void)
+{
+  drv_M5_command (0x0001, 1250); // clear display
+}
+
+
 static void drv_M5_write (int row, int col, unsigned char *data, int len)
 {
   unsigned int cmd;
@@ -201,7 +212,7 @@ static void drv_M5_setGPO (int bits)
 #endif
 
 
-static int drv_M5_start (char *section)
+static int drv_M5_start (char *section, int quiet)
 {
   char *model, *s;
   int rows=-1, cols=-1, gpos=-1;
@@ -260,8 +271,18 @@ static int drv_M5_start (char *section)
   drv_M5_command (0x0020, 20);   // set display mode
   drv_M5_command (0x0050, 20);   // set entry mode
   drv_M5_command (0x0030, 20);   // set display mode
-  drv_M5_command (0x0001, 1250); // clear display
+
+  drv_M5_clear();
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_M5_clear();
+    }
+  }
+
   return 0;
 }
 
@@ -318,7 +339,7 @@ int drv_M5_init (char *section, int quiet)
 
 
   // start display
-  if ((ret=drv_M5_start (section))!=0)
+  if ((ret=drv_M5_start (section, quiet))!=0)
     return ret;
   
   // initialize generic text driver
@@ -363,11 +384,18 @@ int drv_M5_quit (void) {
 
   info("%s: shutting down.", Name);
 
+  drv_generic_text_quit();
+
+  // clear display
+  drv_M5_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
   // clear all signals
   drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);
   
   drv_generic_parport_close();
-  drv_generic_text_quit();
   
   return (0);
 }

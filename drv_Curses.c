@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.2 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.3 2004/06/05 06:13:11 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.3  2004/06/05 06:13:11  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.2  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -55,6 +59,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -75,6 +80,14 @@ static int EROWS;
 // ***  hardware dependant functions    ***
 // ****************************************
 
+static void drv_Curs_clear (void)
+{
+  werase (w);
+  box (w, 0, 0);
+  wrefresh (w);
+}
+
+
 static void drv_Curs_write (int row, int col, unsigned char *data, int len)
 {
   char *p;
@@ -86,7 +99,6 @@ static void drv_Curs_write (int row, int col, unsigned char *data, int len)
   if (col < DCOLS) {
     if (DCOLS-col < len ) len = DCOLS-col;
     mvwprintw(w, row+1 , col+1, "%.*s", DCOLS-col, data);
-    box(w, 0, 0);
     wmove(w, DROWS+1, 0);
     wrefresh(w);  
   }
@@ -141,7 +153,7 @@ int curses_error(char *buffer)
 }
 
 
-static int drv_Curs_start (char *section)
+static int drv_Curs_start (char *section, int quiet)
 {
   char *s;
   
@@ -181,10 +193,17 @@ static int drv_Curs_start (char *section)
     wrefresh(e);
   }
 
-  werase (w);
-  box (w, 0, 0);
-  wrefresh (w);
+  drv_Curs_clear();
 
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_Curs_clear();
+    }
+  }
+  
   return 0;
 }
 
@@ -235,8 +254,9 @@ int drv_Curs_init (char *section, int quiet)
   drv_generic_text_real_defchar = drv_Curs_defchar;
 
   // start display
-  if ((ret = drv_Curs_start (section)) != 0)
+  if ((ret = drv_Curs_start (section, quiet)) != 0) {
     return ret;
+  }
   
   // initialize generic text driver
   if ((ret = drv_generic_text_init(section, Name)) != 0)
@@ -271,7 +291,15 @@ int drv_Curs_init (char *section, int quiet)
 int drv_Curs_quit (void) {
 
   info("%s: shutting down.", Name);
+
   drv_generic_text_quit();
+  
+  // clear display
+  drv_Curs_clear();
+
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
   endwin();
   
   return (0);

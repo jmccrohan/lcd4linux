@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.23 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.24 2004/06/05 06:13:11 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.24  2004/06/05 06:13:11  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.23  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -135,6 +139,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "timer.h"
 #include "plugin.h"
 #include "widget.h"
@@ -667,6 +672,21 @@ static int drv_CF_scan_DOW (unsigned char index)
 }
 
 
+// clear display
+static void drv_CF_clear (void)
+{
+  switch (Protocol) {
+  case 1:
+    drv_generic_serial_write ("\014", 1);
+    break;
+  case 2:
+  case 3:
+    drv_CF_send ( 6, 0, NULL); 
+    break;
+  }
+}
+
+
 // init sequences for 626, 632, 634, 636 
 static void drv_CF_start_1 (void)
 {
@@ -780,24 +800,29 @@ static int drv_CF_start (char *section)
   Protocol = Models[Model].protocol;
   Payload  = Models[Model].payload;
   
-  // regularly process display answers
-  // Fixme: make 100msec configurable
-  timer_add (drv_CF_timer, NULL, 100, 0);
 
   switch (Protocol) {
+
   case 1:
     drv_CF_start_1();
     break;
+
   case 2:
+    // regularly process display answers
+    // Fixme: make 100msec configurable
+    timer_add (drv_CF_timer, NULL, 100, 0);
     drv_CF_start_2();
+    // clear 633 linebuffer
+    memset (Line, ' ', sizeof(Line));
     break;
+
   case 3:
+    // regularly process display answers
+    // Fixme: make 100msec configurable
+    timer_add (drv_CF_timer, NULL, 100, 0);
     drv_CF_start_3();
     break;
   }
-  
-  // clear 633 linebuffer
-  memset (Line, ' ', sizeof(Line));
   
   // set contrast
   if (cfg_number(section, "Contrast", 0, 0, 255, &i)>0) {
@@ -914,8 +939,9 @@ int drv_CF_init (char *section, int quiet)
   int ret;  
   
   // start display
-  if ((ret=drv_CF_start (section))!=0)
+  if ((ret = drv_CF_start (section)) != 0) {
     return ret;
+  }
   
   // display preferences
   XRES  = 6;      // pixel width of one char 
@@ -944,6 +970,15 @@ int drv_CF_init (char *section, int quiet)
     break;
   }
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_CF_clear();
+    }
+  }
+    
   // initialize generic text driver
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
@@ -991,8 +1026,16 @@ int drv_CF_init (char *section, int quiet)
 int drv_CF_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_serial_close();
+
   drv_generic_text_quit();
+
+  // clear display
+  drv_CF_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  drv_generic_serial_close();
   
   return (0);
 }

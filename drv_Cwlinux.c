@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.12 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.13 2004/06/05 06:13:11 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.13  2004/06/05 06:13:11  reinelt
+ *
+ * splash screen for all text-based display drivers
+ *
  * Revision 1.12  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -97,6 +101,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -189,6 +194,22 @@ static void drv_CW12232_defchar (int ascii, unsigned char *buffer)
 }
 
 
+static void drv_CW_clear (void)
+{
+#if 0
+  drv_generic_serial_write("\376X\375",3); // Clear Display
+#else
+  // for some mysterious reason, we have to sleep after 
+  // the command _and_ after the CMD_END...
+  usleep(20);
+  drv_generic_serial_write("\376X",2); // Clear Display
+  usleep(20);
+  drv_generic_serial_write("\375",1);  // Command End
+  usleep(20);
+#endif
+}
+
+
 static int drv_CW_brightness (int brightness)
 {
   static unsigned char Brightness = 0;
@@ -221,7 +242,7 @@ static int drv_CW_brightness (int brightness)
 }
 
 
-static int drv_CW_start (char *section)
+static int drv_CW_start (char *section, int quiet)
 {
   int i;  
   char *model;
@@ -267,17 +288,7 @@ static int drv_CW_start (char *section)
   GPOS     = Models[Model].gpos;
   Protocol = Models[Model].protocol;
 
-#if 0
-  drv_generic_serial_write("\376X\375",3); // Clear Display
-#else
-  // for some mysterious reason, we have to sleep after 
-  // the command _and_ after the CMD_END...
-  usleep(20);
-  drv_generic_serial_write("\376X",2); // Clear Display
-  usleep(20);
-  drv_generic_serial_write("\375",1);  // Command End
-  usleep(20);
-#endif
+  drv_CW_clear();
 
   drv_generic_serial_write ("\376D\375", 3); // auto line wrap off
   drv_generic_serial_write ("\376R\375", 3); // auto scroll off
@@ -287,6 +298,15 @@ static int drv_CW_start (char *section)
   // set brightness
   if (cfg_number(section, "Brightness", 0, 0, 8, &i) > 0) {
     drv_CW_brightness(i);
+  }
+
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
+    if (drv_generic_text_greet (buffer)) {
+      sleep (3);
+      drv_CW_clear();
+    }
   }
 
   return 0;
@@ -358,7 +378,7 @@ int drv_CW_init (char *section, int quiet)
   GOTO_COST = 3;  // number of bytes a goto command requires
 
   // start display
-  if ((ret=drv_CW_start (section))!=0)
+  if ((ret=drv_CW_start (section, quiet))!=0)
     return ret;
   
   // real worker functions
@@ -414,8 +434,15 @@ int drv_CW_init (char *section, int quiet)
 int drv_CW_quit (void) {
 
   info("%s: shutting down.", Name);
-  drv_generic_serial_close();
   drv_generic_text_quit();
+
+  // clear *both* displays
+  drv_CW_clear();
+  
+  // say goodbye...
+  drv_generic_text_greet ("goodbye!");
+
+  drv_generic_serial_close();
   
   return (0);
 }
