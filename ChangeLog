@@ -1,4 +1,19 @@
+2003-08-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* cfg.c, lcd4linux.c: remove PID file if driver initialisation fails
+
+2003-08-12  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, config.h.in, configure:
+	first version of HD44780 4Bit-Mode patch
+
+2003-08-11  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* configure.in: another uClibc issue: realloc
+
 2003-08-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* ChangeLog, configure, configure.in: *** empty log message ***
 
 	* dvb.c, dvb.h: CVS Id and Log missing from dvb.{c,h}
 
