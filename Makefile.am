@@ -21,6 +21,7 @@ evaluator.c evaluator.h \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
+plugin_xmms.c \
 system.c system.h \
 isdn.c isdn.h \
 wifi.c wifi.h \

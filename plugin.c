@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.2 2003/12/19 05:49:23 reinelt Exp $
+/* $Id: plugin.c,v 1.3 2003/12/19 06:27:33 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.3  2003/12/19 06:27:33  reinelt
+ * added XMMS plugin from Markus Keil
+ *
  * Revision 1.2  2003/12/19 05:49:23  reinelt
  * extracted plugin_math and plugin_string into extra files
  *
@@ -66,6 +69,7 @@
 
 int plugin_init_math (void);
 int plugin_init_string (void);
+int plugin_init_xmms (void);
 
 
 int plugin_init (void)
@@ -73,6 +77,7 @@ int plugin_init (void)
   // math plugin
   plugin_init_math();
   plugin_init_string();
+  plugin_init_xmms();
   
   
   return 0;
