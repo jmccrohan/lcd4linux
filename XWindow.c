@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.15 2000/04/03 04:01:31 reinelt Exp $
+/* $Id: XWindow.c,v 1.16 2000/04/03 23:53:23 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.16  2000/04/03 23:53:23  herp
+ * fixed a bug that caused pixel-errors ("fliegendreck") under high load
+ *
  * Revision 1.15  2000/04/03 04:01:31  reinelt
  *
  * if 'gap' is specified as -1, a gap of (pixelsize+pixelgap) is selected automatically
@@ -69,6 +72,8 @@
 
 
 /*
+ * Tue Apr  4 02:37:38 MET 2000 fixed a bug that caused pixelerrors under h/load
+ * Sun Apr  2 22:07:10 MET 2000 fixed a bug that occasionally caused Xlib error
  * Sun Apr  2 01:32:48 MET 2000 geometric correction (too many pixelgaps)
  * Sat Apr  1 22:18:04 MET 2000 colors in format \#RRGGBB in config-file
  * Fri Mar 31 01:42:11 MET 2000 semaphore bug fixed
@@ -375,7 +380,7 @@ int x,y;
 		y+=pixel+pgap;
 		if (++igap==yres) { y+=rgap-pgap; igap=0; }
 	}
-	if (dirty) XFlush(dp);
+	if (dirty) XSync(dp,False);
 	release_lock();
 	return 0;
 }
@@ -456,6 +461,7 @@ int dx,wx,wy;
 		pos+=xpix;
 		wpos=pos;
 	}
+	XSync(dp,False);
 }
 
 static int async_update() {
