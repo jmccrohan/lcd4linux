@@ -1,5 +1,5 @@
 #
-# $Id: README.MatrixOrbital,v 1.1 2000/03/19 08:41:28 reinelt Exp $
+# $Id: README.MatrixOrbital,v 1.2 2000/03/22 07:33:50 reinelt Exp $
 #
 
 This is the README file for the MatrixOrbital display driver for lcd4linux
@@ -38,3 +38,16 @@ fails, this characters will be redefined, too.
 
 The displays have a GPO (general purpose output), where you can connect a LED or something. 
 The driver supports controlling this GPO, but this function is unused by now.
+
+
+Configuration:
+
+The driver needs/supports the following entries in lcd4linux.conf:
+
+Display: a valid Matrix Orbital Display name (e.g. "LCD2041")
+Port: serial device the display is attached to (e.g. /dev/ttyS2)
+Speed: the baud rate from the display (configured via jumpers) must match 
+       this value. Possible values are 1200, 2400, 9600 and 19200
+Contrast: sets the LCD display contrast to a level between 0 (light) 
+          and 256 (dark). Default value: 160
+

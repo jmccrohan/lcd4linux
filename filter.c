@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: filter.c,v 1.3 2000/03/22 07:33:50 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -20,10 +20,14 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.3  2000/03/22 07:33:50  reinelt
+ *
+ * FAQ added
+ * new modules 'processor.c' contains all data processing
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
- *
  *
  */
 
@@ -37,7 +41,6 @@
  *
  * damp (name, value)
  *   damps a value with exp(-t/tau) 
- *   uses global variable "tau"
  *
  */
 
@@ -47,10 +50,10 @@
 #include <math.h>
 #include <sys/time.h>
 
+#include "cfg.h"
 #include "filter.h"
 
 extern int tick;
-extern int tau;
 
 #define SLOTS 64
 #define SECONDS(x) (x.tv_sec+x.tv_usec/1000000.0)
@@ -116,12 +119,16 @@ double smooth(char *name, int period, double value)
 
 double damp(char *name, double value)
 {
+  static int tau=-1;
   static FILTER *Filter=NULL;
   static int nFilter=0;
   struct timeval now;
   double max;
   int i, j;
   
+  if (tau==-1)
+    tau=atoi(cfg_get("tau"));
+
   if (tau==0.0)
     return value;
   

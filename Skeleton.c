@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.1 2000/03/19 08:41:28 reinelt Exp $
+/* $Id: Skeleton.c,v 1.2 2000/03/22 07:33:50 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.2  2000/03/22 07:33:50  reinelt
+ *
+ * FAQ added
+ * new modules 'processor.c' contains all data processing
+ *
  * Revision 1.1  2000/03/19 08:41:28  reinelt
  *
  * documentation available! README, README.MatrixOrbital, README.Drivers
@@ -51,6 +56,9 @@ int Skel_clear (void)
 int Skel_init (DISPLAY *Self)
 {
   Display=*Self;
+
+  fprintf (stderr, "Skeleton: This driver does not drive anything!");
+  return -1;
 
   Skel_clear();
   return 0;

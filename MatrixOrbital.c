@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.8 2000/03/19 08:41:28 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.9 2000/03/22 07:33:50 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.9  2000/03/22 07:33:50  reinelt
+ *
+ * FAQ added
+ * new modules 'processor.c' contains all data processing
+ *
  * Revision 1.8  2000/03/19 08:41:28  reinelt
  *
  * documentation available! README, README.MatrixOrbital, README.Drivers
@@ -96,7 +101,7 @@ static char Txt[4][40];
 static BAR  Bar[4][40];
 
 static int nSegment=2;
-static SEGMENT Segment[256] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
+static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
