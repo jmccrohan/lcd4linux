@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.12 2000/04/01 19:33:45 herp Exp $
+/* $Id: XWindow.c,v 1.13 2000/04/01 22:40:42 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.13  2000/04/01 22:40:42  herp
+ * geometric correction (too many pixelgaps)
+ * lcd4linux main should return int, not void
+ *
  * Revision 1.12  2000/04/01 19:33:45  herp
  *
  * colors in format \#RRGGBB in config-file now understood
@@ -58,6 +62,7 @@
 
 
 /*
+ * Sun Apr  2 01:32:48 MET 2000 geometric correction (too many pixelgaps)
  * Sat Apr  1 22:18:04 MET 2000 colors in format \#RRGGBB in config-file
  * Fri Mar 31 01:42:11 MET 2000 semaphore bug fixed
  * Sun Mar 26 15:28:23 MET 2000 various rewrites
@@ -237,10 +242,10 @@ XEvent ev;
 			rgbhg);
 		return -1;
 	}
-	boxw=xres*(pixel+pgap)+cgap;
-	boxh=yres*(pixel+pgap)+rgap;
-	dimx=(cols-1)*cgap+cols*xres*(pixel+pgap);
-	dimy=(rows-1)*rgap+rows*yres*(pixel+pgap);
+	boxw=xres*pixel+(xres-1)*pgap+cgap;
+	boxh=yres*pixel+(yres-1)*pgap+rgap;
+	dimx=cols*xres*pixel+cols*(xres-1)*pgap+(cols-1)*cgap;
+	dimy=rows*yres*pixel+rows*(yres-1)*pgap+(rows-1)*rgap;
 	wa.event_mask=ExposureMask|ButtonPressMask|ButtonReleaseMask;
 	w=XCreateWindow(dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,
 		InputOutput,vi,CWEventMask,&wa);
@@ -351,11 +356,11 @@ int x,y;
 				dirty=1;
 			}
 			x+=pixel+pgap;
-			if (++jgap==xres) { x+=cgap; jgap=0; }
+			if (++jgap==xres) { x+=cgap-pgap; jgap=0; }
 			pos++;
 		}
 		y+=pixel+pgap;
-		if (++igap==yres) { y+=rgap; igap=0; }
+		if (++igap==yres) { y+=rgap-pgap; igap=0; }
 	}
 	if (dirty) XFlush(dp);
 	release_lock();
@@ -393,7 +398,7 @@ int dx,wx,wy;
 	/* upper left corner */
 	xfrom=xres*(x/boxw);			/*start at col.no*/
 	i=(x%boxw);				/*pixelpos rel. char*/
-	if (i>xres*(pixel+pgap))		/*in cgap zone*/
+	if (i>xres*pixel+(xres-1)*pgap)		/*in cgap zone*/
 		xfrom+=xres;
 	else {
 		xfrom+=i/(pixel+pgap);		/*character element*/
@@ -402,7 +407,7 @@ int dx,wx,wy;
 	}
 	yfrom=yres*(y/boxh);			/*start at row.no*/
 	i=(y%boxh);				/*pixelpos rel. char*/
-	if (i>yres*(pixel+pgap))		/*in rgap zone*/
+	if (i>yres*pixel+(yres-1)*pgap)		/*in rgap zone*/
 		yfrom+=yres;
 	else {
 		yfrom+=i/(pixel+pgap);		/*character element*/
@@ -412,12 +417,14 @@ int dx,wx,wy;
 	/*lower right corner*/
 	x+=width-1;
 	y+=height-1;
-	xto=xres*(x/boxw)+(x%boxw)/(pixel+pgap);
-	yto=yres*(y/boxh)+(y%boxh)/(pixel+pgap);
-	
+	xto=xres*(x/boxw)+(x%boxw)/(pixel+pgap)
+		-((x%boxw>xres*pixel+(xres-1)*pgap)?1:0);
+	yto=yres*(y/boxh)+(y%boxh)/(pixel+pgap)
+		-((y%boxh>yres*pixel+(yres-1)*pgap)?1:0);
+
 	pos=yfrom*xres*cols+xfrom;
-	wy=border+yfrom*(pixel+pgap)+rgap*(yfrom/yres);
-	wx=border+xfrom*(pixel+pgap)+cgap*(xfrom/xres);
+	wy=border+yfrom*(pixel+pgap)+(yfrom/yres)*(rgap-pgap);
+	wx=border+xfrom*(pixel+pgap)+(xfrom/xres)*(cgap-pgap);
 	wpos=pos; xpix=xres*cols;
 	igap=yfrom%yres; wjgap=xfrom%xres;
 	for(i=yfrom;i<=yto;i++) {
@@ -429,10 +436,10 @@ int dx,wx,wy;
 				dx,wy,
 				pixel,pixel);
 			dx+=pixel+pgap;
-			if (++jgap==xres) { dx+=cgap; jgap=0; }
+			if (++jgap==xres) { dx+=cgap-pgap; jgap=0; }
 		}
 		wy+=pixel+pgap;
-		if (++igap==yres) { wy+=rgap; igap=0; }
+		if (++igap==yres) { wy+=rgap-pgap; igap=0; }
 		pos+=xpix;
 		wpos=pos;
 	}
@@ -443,7 +450,7 @@ XEvent ev;
 
 	for(;;) {
 		XWindowEvent(dp,w,
-			ExposureMask,
+			ExposureMask|ButtonPressMask|ButtonReleaseMask,
 			&ev);
 		if (ev.type==Expose) {
 			acquire_lock();

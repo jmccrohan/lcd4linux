@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.14 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.15 2000/04/01 22:40:42 herp Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.15  2000/04/01 22:40:42  herp
+ * geometric correction (too many pixelgaps)
+ * lcd4linux main should return int, not void
+ *
  * Revision 1.14  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -107,7 +111,7 @@ static void usage(void)
   printf ("usage: lcd4linux [-h] [-l] [-f config-file] [-o output-file]\n");
 }
 
-void main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
