@@ -12,6 +12,10 @@ AC_PROG_LN_S
 dnl Checks for libraries.
 AC_CHECK_LIB(m, log)
 
+dnl curses
+sinclude(curses.m4)
+AC_CHECK_CURSES
+
 dnl Checks for X11
 AC_PATH_XTRA
 
@@ -151,18 +155,29 @@ if test "$SKELETON" = "yes"; then
 fi
 
 if test "$TEXT" = "yes"; then
-   DRIVERS="$DRIVERS Text.o"
-   DRVLIBS="$DRVLIBS -lncurses"
-   AC_DEFINE(WITH_TEXT)
+   if test "$has_curses" = true; then
+      DRIVERS="$DRIVERS Text.o"
+      DRVLIBS="$DRVLIBS $CURSES_LIBS"
+      CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
+      AC_DEFINE(WITH_TEXT)
+   else
+      AC_MSG_WARN(curses not found: Text driver disabled)
+   fi   
 fi
 
 if test "$X11" = "yes"; then
-   if test "$no_x" = "yes"; then
-      AC_MSG_ERROR([cannot build X11 driver: headers or libraries not available])
-   fi
-   DRIVERS="$DRIVERS XWindow.o"
-   DRVLIBS="$DRVLIBS -lX11"
-   AC_DEFINE(WITH_X11)
+   if test "$have_x" != yes; then
+     AC_MSG_WARN(X not found: X11 driver disabled)
+   else  
+     if test "$no_x" = "yes"; then
+        AC_MSG_ERROR([cannot build X11 driver: headers or libraries not available])
+     fi
+     DRIVERS="$DRIVERS XWindow.o"
+     # DRVLIBS="$DRVLIBS -lX11"
+     DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
+     # CPPFLAGS="$CPPFLAGS -I$ac_x_includes"
+     AC_DEFINE(WITH_X11)
+   fi  
 fi
 
 dnl Raster.o depends on PPM or PNG
