@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.18 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: Raster.c,v 1.19 2001/09/10 13:55:53 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.19  2001/09/10 13:55:53  reinelt
+ * M50530 driver
+ *
  * Revision 1.18  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -125,6 +128,9 @@
 #include <gd.h>
 #else
 #error "gd.h not found!"
+#error "cannot compile PNG driver"
+#error "exclude the driver with"
+#error "configure --drivers=all,\!PNG"
 #endif
 #endif
 #endif

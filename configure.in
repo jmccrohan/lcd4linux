@@ -29,7 +29,7 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]	
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, HD44780,]
+  [                        BeckmannEgle, CrystalFontz, HD44780, M50530]
   [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
@@ -54,6 +54,7 @@ for driver in $drivers; do
          BECKMANNEGLE="yes"
          CRYSTALFONTZ="yes"
          HD44780="yes"
+         M50530="yes"
          MATRIXORBITAL="yes"
          PALMPILOT="yes"
          PNG="yes"
@@ -69,6 +70,9 @@ for driver in $drivers; do
          ;;
       HD44780)
          HD44780=$val
+	 ;;
+      M50530)
+         M50530=$val
          ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
@@ -117,6 +121,11 @@ fi
 if test "$HD44780" = "yes"; then
    DRIVERS="$DRIVERS HD44780.o"
    AC_DEFINE(WITH_HD44780)
+fi
+
+if test "$M50530" = "yes"; then
+   DRIVERS="$DRIVERS M50530.o"
+   AC_DEFINE(WITH_M50530)
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then

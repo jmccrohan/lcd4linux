@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.28 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: display.c,v 1.29 2001/09/10 13:55:53 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.29  2001/09/10 13:55:53  reinelt
+ * M50530 driver
+ *
  * Revision 1.28  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -184,6 +187,7 @@
 extern LCD BeckmannEgle[];
 extern LCD Crystalfontz[];
 extern LCD HD44780[];
+extern LCD M50530[];
 extern LCD MatrixOrbital[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
@@ -201,6 +205,9 @@ FAMILY Driver[] = {
 #endif
 #ifdef WITH_HD44780
   { "HD 44780 based", HD44780 },
+#endif
+#ifdef WITH_M50530
+  { "M50530 based", M50530 },
 #endif
 #ifdef WITH_MATRIXORBITAL
   { "Matrix Orbital", MatrixOrbital },
@@ -221,7 +228,7 @@ FAMILY Driver[] = {
   { "X Window System", XWindow },
 #endif
 #ifdef WITH_TEXT
-  { "X Ncurses Text", Text },
+  { "ncurses Text", Text },
 #endif
   { NULL }
 };

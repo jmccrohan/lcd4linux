@@ -45,6 +45,9 @@
 /* Define if you want the HD44780 driver compiled */
 #undef WITH_HD44780
 
+/* Define if you want the M50530 driver compiled */
+#undef WITH_M50530
+
 /* Define if you want the Matrix Orbital driver compiled */
 #undef WITH_MATRIXORBITAL
 
