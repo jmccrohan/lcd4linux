@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.7 2003/09/11 04:09:53 reinelt Exp $
+/* $Id: icon.c,v 1.8 2003/09/19 03:51:29 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.8  2003/09/19 03:51:29  reinelt
+ * minor fixes, widget.c added
+ *
  * Revision 1.7  2003/09/11 04:09:53  reinelt
  * minor cleanups
  *
@@ -143,28 +146,20 @@ int icon_init (int rows, int cols, int xres, int yres, int chars, int icons,
   CHARS=chars,
   ICONS=icons;
 
-  if (Screen) {
-    free (Screen);
-  }
-  
   if ((Screen=malloc(ROWS*COLS*sizeof(*Screen)))==NULL) {
-    error ("icon buffer allocation failed: out of memory");
+    error ("icon buffer allocation failed: out of memory?");
     return -1;
   }
 
-  icon_clear();
-
-  if (Bitmap) {
-    free (Bitmap);
-  }
-
   if ((Bitmap=malloc(icons*sizeof(*Bitmap)))==NULL) {
-    error ("icon allocation failed: out of memory");
+    error ("icon allocation failed: out of memory?");
     return -1;
   }
   
   Defchar=defchar;
   
+  icon_clear();
+
   for (n=0; n<icons; n++) {
     Bitmap[n].nData=1;
     Bitmap[n].lData=0;

@@ -32,6 +32,7 @@ filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
+widget.c widget.h \
 bar.c bar.h \
 icon.c icon.h \
 fontmap.c fontmap.h \

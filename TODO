@@ -133,3 +133,7 @@ don't know if displays support this feature...
 at least one of my HD44780 displays use an inverted "P" instead of 
 a full block. Therefore a bar my look strange. Make the ASCII code
 of the full block configurable...
+
+2003-09-14 Markus <markus@norad.de>
+change %t tokens from Byte/sec to kB/sec, ith one decimal places. 
+Either make it configurabel, or add new tokens.
