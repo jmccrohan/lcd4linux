@@ -1,4 +1,4 @@
-/* $Id: drv_RouterBoard.c,v 1.2 2004/08/29 20:07:55 reinelt Exp $
+/* $Id: drv_RouterBoard.c,v 1.3 2004/08/30 12:48:52 rjoco77 Exp $
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com
@@ -25,6 +25,9 @@
  *
  *
  * $Log: drv_RouterBoard.c,v $
+ * Revision 1.3  2004/08/30 12:48:52  rjoco77
+ *  * Added backlight update immediatelly
+ *
  * Revision 1.2  2004/08/29 20:07:55  reinelt
  *
  * Patch from Joco: Make RouterBoard Backlight configurable
@@ -248,27 +251,6 @@ static void drv_RB_poll_data ( void __attribute__((unused)) *notused)
 
 #endif
 
-
-static int drv_RB_backlight ( int backlight)
-{
-  /* -1 is used to query  the current Backlight */
-  if(backlight == -1 ) {
-    if (RB_BackLight > 0) return 1;  // because RB_Backlight actually is 0x0800 or 0
-    return 0;
-  }
-  
-  if (backlight < 0) backlight = 0;
-  if (backlight > 1) backlight = 1;
-
-  RB_BackLight = backlight ? LCD_BACKLIGHT : 0;
-  
-  /* The status will be updated on next lcd operation! */
-  /* Fixme: should be updated immediately! */
-     
-  return backlight;    
-}
-
-
 /* IOCS0 port number can read from PCI Configuration Space Function 0 (F0) */
 /* at index 74h as 16 bit value (see [GEODE] 5.3.1 pg.151 and pg.176 Table 5-29 */
 
@@ -285,6 +267,28 @@ static unsigned getIocs0Port (void)
   }
   return ret;
 }  
+
+
+static int drv_RB_backlight ( int backlight)
+{
+  /* -1 is used to query  the current Backlight */
+  if(backlight == -1 ) {
+    if (RB_BackLight > 0) return 1;  // because RB_Backlight actually is 0x0800 or 0
+    return 0;
+  }
+  
+  if (backlight < 0) backlight = 0;
+  if (backlight > 1) backlight = 1;
+
+  RB_BackLight = backlight ? LCD_BACKLIGHT : 0;
+  
+  /* Set backlight output */
+  outw( RB_Leds | RB_BackLight , getIocs0Port());
+     
+  return backlight;    
+}
+
+
 
 
 static void drv_RB_command ( const unsigned char cmd, const int delay)
@@ -490,6 +494,7 @@ static void plugin_backlight (RESULT *result , const int argc, RESULT *argv[])
   case 1:
     backlight = drv_RB_backlight(R2N(argv[0]));
     SetResult(&result, R_NUMBER, &backlight);
+    break;
   default:
     error ("%s::backlight(): wrong number of parameters", Name);
     SetResult(&result, R_STRING, "");
