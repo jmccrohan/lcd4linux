@@ -37,9 +37,10 @@ widget_bar.c  widget_bar.h  \
 widget_icon.c widget_icon.h \
                             \
 plugin.c      plugin.h      \
+plugin_cfg.c                \
 plugin_math.c               \
 plugin_string.c             \
-plugin_cfg.c
+plugin_time.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9

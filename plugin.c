@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.28 2004/04/12 11:12:26 reinelt Exp $
+/* $Id: plugin.c,v 1.29 2004/05/20 07:47:51 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.29  2004/05/20 07:47:51  reinelt
+ * added plugin_time
+ *
  * Revision 1.28  2004/04/12 11:12:26  reinelt
  * added plugin_isdn, removed old ISDN client
  * fixed some real bad bugs in the evaluator
@@ -165,12 +168,14 @@
 
 
 // Prototypes
+int  plugin_init_cfg    (void);
+void plugin_exit_cfg    (void);
 int  plugin_init_math   (void);
 void plugin_exit_math   (void);
 int  plugin_init_string (void);
 void plugin_exit_string (void);
-int  plugin_init_cfg    (void);
-void plugin_exit_cfg    (void);
+int  plugin_init_time   (void);
+void plugin_exit_time   (void);
 
 int  plugin_init_apm (void);
 void plugin_exit_apm (void);
@@ -212,9 +217,10 @@ void plugin_exit_xmms (void);
 
 int plugin_init (void)
 {
+  plugin_init_cfg();
   plugin_init_math();
   plugin_init_string();
-  plugin_init_cfg();
+  plugin_init_time();
   
 #ifdef PLUGIN_APM
   plugin_init_apm();
@@ -270,8 +276,10 @@ int plugin_init (void)
 #ifdef PLUGIN_XMMS
   plugin_init_xmms();
 #endif
+
   return 0;
 }
+
 
 void plugin_exit(void) {
 #ifdef PLUGIN_APM
@@ -330,9 +338,9 @@ void plugin_exit(void) {
 #endif
 
   plugin_exit_cfg();
-  plugin_exit_string();
   plugin_exit_math();
-
+  plugin_exit_string();
+  plugin_exit_time();
 
   DeleteFunctions();
   DeleteVariables();
