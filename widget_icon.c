@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.1 2004/01/23 04:54:03 reinelt Exp $
+/* $Id: widget_icon.c,v 1.2 2004/01/23 07:04:39 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.2  2004/01/23 07:04:39  reinelt
+ * icons finished!
+ *
  * Revision 1.1  2004/01/23 04:54:03  reinelt
  * icon widget added (not finished yet!)
  *
@@ -153,6 +156,11 @@ int widget_icon_init (WIDGET *Self)
   // The timer will be reactivated on every call to widget_icon_update(). 
   // We do the initial call here...
   Icon->prvmap=-1;
+
+  // reset ascii 
+  Icon->ascii=-1;
+  
+  // just do it!
   widget_icon_update(Self);
 
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.3 2004/01/23 04:53:55 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.4 2004/01/23 07:04:24 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.4  2004/01/23 07:04:24  reinelt
+ * icons finished!
+ *
  * Revision 1.3  2004/01/23 04:53:55  reinelt
  * icon widget added (not finished yet!)
  *
@@ -54,32 +57,26 @@
 
 extern int DROWS, DCOLS; // display size
 extern int LROWS, LCOLS; // layout size
-extern int XRES,  YRES;  // pixels of one char cell
+extern int XRES,  YRES;  // pixel width/height of one char 
+extern int GOTO_COST;    // number of bytes a goto command requires
 extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
 extern int ICONS;        // number of user-defineable characters reserved for icons
 
-extern char *LayoutFB;
-extern char *DisplayFB;
+// these functions must be implemented by the real driver
+void (*drv_generic_text_real_goto)(int row, int col);
+void (*drv_generic_text_real_write)(char *buffer, int len);
+void (*drv_generic_text_real_defchar)(int ascii, char *buffer);
 
 
-int  drv_generic_text_init      (char *section, char *driver);
-
-void drv_generic_text_resizeFB  (int rows, int cols);
-
-int  drv_generic_text_draw_text (WIDGET *W, int goto_len, 
-				 void (*drv_goto)(int row, int col), 
-				 void (*drv_write)(char *buffer, int len));
-
-int  drv_generic_text_icon_init  (void);
-
-int  drv_generic_text_bar_init  (void);
+int  drv_generic_text_init            (char *section, char *driver);
+void drv_generic_text_resizeFB        (int rows, int cols);
+int  drv_generic_text_draw            (WIDGET *W);
+int  drv_generic_text_icon_init       (void);
+int  drv_generic_text_icon_draw       (WIDGET *W);
+int  drv_generic_text_bar_init        (void);
 void drv_generic_text_bar_add_segment (int val1, int val2, DIRECTION dir, int ascii);
-int  drv_generic_text_draw_bar  (WIDGET *W, int goto_len, 
-				 void (*drv_defchar)(int ascii, char *buffer),
-				 void (*drv_goto)(int row, int col), 
-				 void (*drv_write)(char *buffer, int len));
-
-int  drv_generic_text_quit      (void);
+int  drv_generic_text_bar_draw        (WIDGET *W);
+int  drv_generic_text_quit            (void);
 
 
 

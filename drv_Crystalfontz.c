@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.3 2004/01/23 04:53:34 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.4 2004/01/23 07:04:03 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.4  2004/01/23 07:04:03  reinelt
+ * icons finished!
+ *
  * Revision 1.3  2004/01/23 04:53:34  reinelt
  * icon widget added (not finished yet!)
  *
@@ -53,8 +56,8 @@
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
-#include "widget_bar.h"
 #include "widget_icon.h"
+#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_serial.h"
@@ -110,7 +113,7 @@ static void drv_CF_goto (int row, int col)
 }
 
 
-static void drv_CF_define_char (int ascii, char *buffer)
+static void drv_CF_defchar (int ascii, char *buffer)
 {
   char cmd[2]="\031n"; // set custom char bitmap
 
@@ -206,23 +209,9 @@ static void plugin_backlight (RESULT *result, RESULT *arg1)
 // ***        widget callbacks          ***
 // ****************************************
 
-
-int drv_CF_draw_text (WIDGET *W)
-{
-  return drv_generic_text_draw_text(W, 4, drv_CF_goto, drv_generic_serial_write);
-}
-
-
-int drv_CF_draw_icon (WIDGET *W)
-{
-  return drv_generic_text_draw_icon(W, drv_CF_define_char, drv_CF_goto, drv_generic_serial_write);
-}
-
-
-int drv_CF_draw_bar (WIDGET *W)
-{
-  return drv_generic_text_draw_bar(W, 4, drv_CF_define_char, drv_CF_goto, drv_generic_serial_write);
-}
+// using drv_generic_text_draw(W)
+// using drv_generic_text_icon_draw(W)
+// using drv_generic_text_bar_draw(W)
 
 
 // ****************************************
@@ -248,11 +237,19 @@ int drv_CF_init (char *section)
   WIDGET_CLASS wc;
   int ret;  
   
-  XRES=6;    // pixel width  of one char 
-  YRES=8;    // pixel height of one char 
-  CHARS=8;   // number of user-defineable chars
-  CHAR0=128; // ascii of first user-defineable chars
-  
+  // display preferences
+  XRES  = 6;      // pixel width of one char 
+  YRES  = 8;      // pixel height of one char 
+  CHARS = 8;      // number of user-defineable characters
+  CHAR0 = 128;    // ASCII of first user-defineable char
+  GOTO_COST = 3;  // number of bytes a goto command requires
+
+  // real worker functions
+  drv_generic_text_real_write   = drv_generic_serial_write;
+  drv_generic_text_real_goto    = drv_CF_goto;
+  drv_generic_text_real_defchar = drv_CF_defchar;
+
+
   // start display
   if ((ret=drv_CF_start (section))!=0)
     return ret;
@@ -274,17 +271,17 @@ int drv_CF_init (char *section)
   
   // register text widget
   wc=Widget_Text;
-  wc.draw=drv_CF_draw_text;
-  widget_register(&wc);
-  
-  // register bar widget
-  wc=Widget_Bar;
-  wc.draw=drv_CF_draw_bar;
+  wc.draw=drv_generic_text_draw;
   widget_register(&wc);
   
   // register icon widget
   wc=Widget_Icon;
-  wc.draw=drv_CF_draw_icon;
+  wc.draw=drv_generic_text_icon_draw;
+  widget_register(&wc);
+  
+  // register bar widget
+  wc=Widget_Bar;
+  wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
   // register plugins

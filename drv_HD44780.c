@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.4 2004/01/23 04:53:48 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.5 2004/01/23 07:04:17 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.5  2004/01/23 07:04:17  reinelt
+ * icons finished!
+ *
  * Revision 1.4  2004/01/23 04:53:48  reinelt
  * icon widget added (not finished yet!)
  *
@@ -69,6 +72,7 @@
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
+#include "widget_icon.h"
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
@@ -101,7 +105,6 @@ static char Name[]="HD44780";
 
 
 static int Bits=0;
-static int GPO=0;
 static int Controllers = 0;
 static int Controller  = 0;
 
@@ -113,6 +116,8 @@ static unsigned char SIGNAL_GPO;
 
 // Fixme
 static int GPOS;
+// static int GPO=0;
+
 
 // ****************************************
 // ***  hardware dependant functions    ***
@@ -371,7 +376,7 @@ static void drv_HD_write (char *string, int len)
 }
 
 
-static void drv_HD_define_char (int ascii, char *buffer)
+static void drv_HD_defchar (int ascii, char *buffer)
 {
   // define chars on *both* controllers!
   drv_HD_command (0x03, 0x40|8*ascii, T_EXEC);
@@ -408,16 +413,9 @@ static void drv_HD_setGPO (int bits)
 // ****************************************
 
 
-int drv_HD_draw_text (WIDGET *W)
-{
-  return drv_generic_text_draw_text(W, 2, drv_HD_goto, drv_HD_write);
-}
-
-
-int drv_HD_draw_bar (WIDGET *W)
-{
-  return drv_generic_text_draw_bar(W, 2, drv_HD_define_char, drv_HD_goto, drv_HD_write);
-}
+// using drv_generic_text_draw(W)
+// using drv_generic_text_icon_draw(W)
+// using drv_generic_text_bar_draw(W)
 
 
 // ****************************************
@@ -440,11 +438,19 @@ int drv_HD_init (char *section)
   int asc255bug;
   int ret;  
   
-  XRES=5;  // pixel width  of one char 
-  YRES=8;  // pixel height of one char 
-  CHARS=8; // number of user-defineable chars
-  CHAR0=0; // ascii of first user-defineable chars
+  // display preferences
+  XRES  = 5;      // pixel width of one char 
+  YRES  = 8;      // pixel height of one char 
+  CHARS = 8;      // number of user-defineable characters
+  CHAR0 = 0;      // ASCII of first user-defineable char
+  GOTO_COST = 2;  // number of bytes a goto command requires
   
+  // real worker functions
+  drv_generic_text_real_write   = drv_HD_write;
+  drv_generic_text_real_goto    = drv_HD_goto;
+  drv_generic_text_real_defchar = drv_HD_defchar;
+
+
   // start display
   if ((ret=drv_HD_start (section))!=0)
     return ret;
@@ -453,6 +459,10 @@ int drv_HD_init (char *section)
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
+  // initialize generic icon driver
+  if ((ret=drv_generic_text_icon_init())!=0)
+    return ret;
+  
   // initialize generic bar driver
   if ((ret=drv_generic_text_bar_init())!=0)
     return ret;
@@ -468,12 +478,17 @@ int drv_HD_init (char *section)
   
   // register text widget
   wc=Widget_Text;
-  wc.draw=drv_HD_draw_text;
+  wc.draw=drv_generic_text_draw;
+  widget_register(&wc);
+  
+  // register icon widget
+  wc=Widget_Icon;
+  wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
   // register bar widget
   wc=Widget_Bar;
-  wc.draw=drv_HD_draw_bar;
+  wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
   // register plugins

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.17 2004/01/23 04:53:50 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.18 2004/01/23 07:04:22 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.18  2004/01/23 07:04:22  reinelt
+ * icons finished!
+ *
  * Revision 1.17  2004/01/23 04:53:50  reinelt
  * icon widget added (not finished yet!)
  *
@@ -112,6 +115,7 @@
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
+#include "widget_icon.h"
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
@@ -183,7 +187,7 @@ static void drv_MO_goto (int row, int col)
 }
 
 
-static void drv_MO_define_char (int ascii, char *buffer)
+static void drv_MO_defchar (int ascii, char *buffer)
 {
   char cmd[3]="\376N";
 
@@ -419,17 +423,9 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
 // ***        widget callbacks          ***
 // ****************************************
 
-
-int drv_MO_draw_text (WIDGET *W)
-{
-  return drv_generic_text_draw_text(W, 5, drv_MO_goto, drv_generic_serial_write);
-}
-
-
-int drv_MO_draw_bar (WIDGET *W)
-{
-  return drv_generic_text_draw_bar(W, 5, drv_MO_define_char, drv_MO_goto, drv_generic_serial_write);
-}
+// using drv_generic_text_draw(W)
+// using drv_generic_text_icon_draw(W)
+// using drv_generic_text_bar_draw(W)
 
 
 // ****************************************
@@ -455,11 +451,19 @@ int drv_MO_init (char *section)
   WIDGET_CLASS wc;
   int ret;  
   
-  XRES=5;  // pixel width  of one char 
-  YRES=8;  // pixel height of one char 
-  CHARS=8; // number of user-defineable chars
-  CHAR0=0; // ascii of first user-defineable chars
+  // display preferences
+  XRES=5;      // pixel width of one char 
+  YRES=8;      // pixel height of one char 
+  CHARS=8;     // number of user-defineable characters
+  CHAR0=0;     // ASCII of first user-defineable char
+  GOTO_COST=4; // number of bytes a goto command requires
   
+  // real worker functions
+  drv_generic_text_real_write   = drv_generic_serial_write;
+  drv_generic_text_real_goto    = drv_MO_goto;
+  drv_generic_text_real_defchar = drv_MO_defchar;
+
+
   // start display
   if ((ret=drv_MO_start (section))!=0)
     return ret;
@@ -468,6 +472,10 @@ int drv_MO_init (char *section)
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
+  // initialize generic icon driver
+  if ((ret=drv_generic_text_icon_init())!=0)
+    return ret;
+  
   // initialize generic bar driver
   if ((ret=drv_generic_text_bar_init())!=0)
     return ret;
@@ -478,12 +486,17 @@ int drv_MO_init (char *section)
   
   // register text widget
   wc=Widget_Text;
-  wc.draw=drv_MO_draw_text;
+  wc.draw=drv_generic_text_draw;
+  widget_register(&wc);
+  
+  // register icon widget
+  wc=Widget_Icon;
+  wc.draw=drv_generic_text_icon_draw;
   widget_register(&wc);
   
   // register bar widget
   wc=Widget_Bar;
-  wc.draw=drv_MO_draw_bar;
+  wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
   // register plugins

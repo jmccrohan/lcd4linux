@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.5 2004/01/23 04:53:54 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.6 2004/01/23 07:04:23 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.6  2004/01/23 07:04:23  reinelt
+ * icons finished!
+ *
  * Revision 1.5  2004/01/23 04:53:54  reinelt
  * icon widget added (not finished yet!)
  *
@@ -93,16 +96,18 @@ static char *Driver=NULL;
 int DROWS, DCOLS; // display size
 int LROWS, LCOLS; // layout size
 int XRES,  YRES;  // pixels of one char cell
+int GOTO_COST;    // number of bytes a goto command requires
 int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
 int ICONS;        // number of user-defineable characters reserved for icons
 
-char *LayoutFB    = NULL;
-char *DisplayFB   = NULL;
-static BAR *BarFB = NULL;
+
+static char *LayoutFB    = NULL;
+static char *DisplayFB   = NULL;
 
 static int nSegment=0;
 static int fSegment=0;
 static SEGMENT Segment[128];
+static BAR *BarFB = NULL;
 
 
 
@@ -169,9 +174,7 @@ void drv_generic_text_resizeFB (int rows, int cols)
 
 
 
-int drv_generic_text_draw_text (WIDGET *W, int goto_len, 
-			       void (*drv_goto)(int row, int col), 
-			       void (*drv_write)(char *buffer, int len))
+int drv_generic_text_draw (WIDGET *W)
 {
   WIDGET_TEXT *Text=W->data;
   char *txt, *fb1, *fb2;
@@ -196,19 +199,19 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
     for (; col<=end && col<DCOLS; col++) {
       int pos1, pos2, equal;
       if (fb1[col]==fb2[col]) continue;
-      drv_goto (row, col);
+      drv_generic_text_real_goto (row, col);
       for (pos1=col, pos2=pos1, col++, equal=0; col<=end && col<DCOLS; col++) {
 	if (fb1[col]==fb2[col]) {
 	  // If we find just one equal byte, we don't break, because this 
 	  // would require a goto, which takes several bytes, too.
-	  if (++equal>goto_len) break;
+	  if (++equal>GOTO_COST) break;
 	} else {
 	  pos2=col;
 	  equal=0;
 	}
       }
-      memcpy    (fb2+pos1, fb1+pos1, pos2-pos1+1);
-      drv_write (fb2+pos1,           pos2-pos1+1);
+      memcpy                      (fb2+pos1, fb1+pos1, pos2-pos1+1);
+      drv_generic_text_real_write (fb2+pos1,           pos2-pos1+1);
     }
   }
 
@@ -220,11 +223,9 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
 // *** generic icon handling            ***
 // ****************************************
 
-int drv_generic_text_draw_icon (WIDGET *W,
-				void (*drv_defchar)(int ascii, char *buffer),
-				void (*drv_goto)(int row, int col), 
-				void (*drv_write)(char *buffer, int len))
+int drv_generic_text_icon_draw (WIDGET *W)
 {
+  static int icon_counter=0;
   WIDGET_ICON *Icon = W->data;
   int row, col;
   
@@ -234,11 +235,35 @@ int drv_generic_text_draw_icon (WIDGET *W,
   // maybe grow layout framebuffer
   drv_generic_text_resizeFB (row+1, col+1);
   
+  // icon deactivated?
+  if (Icon->ascii==-2) return 0;
+  
+  // ASCII already assigned?
+  if (Icon->ascii==-1) {
+    if (icon_counter>=ICONS) {
+      error ("cannot process icon '%s': out of icons", W->name);
+      Icon->ascii=-2;
+      return -1;
+    }
+    icon_counter++;
+    Icon->ascii=CHAR0+CHARS-icon_counter;
+  }
+
   // maybe redefine icon
   if (Icon->curmap!=Icon->prvmap) {
-    debug ("Michi: I'm redefining me...");
+    drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap+YRES*Icon->curmap);
   }
+
+  // transfer icon into layout buffer
+  LayoutFB[row*LCOLS+col]=Icon->ascii;
   
+  // maybe send icon to the display
+  if (DisplayFB[row*DCOLS+col]!=Icon->ascii) {
+    DisplayFB[row*DCOLS+col]=Icon->ascii;
+    drv_generic_text_real_goto (row, col);
+    drv_generic_text_real_write (DisplayFB+row*DCOLS+col, 1);
+  }
+
   return 0;
   
 }
@@ -462,7 +487,7 @@ static void drv_generic_text_bar_pack_segments (void)
 }
 
 
-static void drv_generic_text_bar_define_chars (void(*defchar)(int ascii, char *matrix))
+static void drv_generic_text_bar_define_chars(void)
 {
   int c, i, j;
   char buffer[8];
@@ -507,15 +532,12 @@ static void drv_generic_text_bar_define_chars (void(*defchar)(int ascii, char *m
       }
       break;
     }
-    defchar(CHAR0+c, buffer);
+    drv_generic_text_real_defchar(CHAR0+c, buffer);
   }
 }
 
 
-int drv_generic_text_draw_bar (WIDGET *W, int goto_len, 
-			       void (*drv_defchar)(int ascii, char *buffer),
-			       void (*drv_goto)(int row, int col), 
-			       void (*drv_write)(char *buffer, int len))
+int drv_generic_text_bar_draw (WIDGET *W)
 {
   WIDGET_BAR *Bar = W->data;
   int row, col, len, res, max, val1, val2;
@@ -552,7 +574,7 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
   // process all bars
   drv_generic_text_bar_create_segments ();
   drv_generic_text_bar_pack_segments ();
-  drv_generic_text_bar_define_chars(drv_defchar);
+  drv_generic_text_bar_define_chars();
   
   // reset usage flags
   for (s=0; s<nSegment; s++) {
@@ -580,19 +602,19 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
     for (col=0; col<DCOLS; col++) {
       int pos1, pos2, equal;
       if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) continue;
-      drv_goto (row, col);
+      drv_generic_text_real_goto (row, col);
       for (pos1=col, pos2=pos1, col++, equal=0; col<DCOLS; col++) {
 	if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) {
 	  // If we find just one equal byte, we don't break, because this 
 	  // would require a goto, which takes several bytes, too.
-	  if (++equal>goto_len) break;
+	  if (++equal>GOTO_COST) break;
 	} else {
 	  pos2=col;
 	  equal=0;
 	}
       }
-      memcpy    (DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
-      drv_write (DisplayFB+row*DCOLS+pos1,                          pos2-pos1+1);
+      memcpy                      (DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
+      drv_generic_text_real_write (DisplayFB+row*DCOLS+pos1,                          pos2-pos1+1);
     }
   }
   

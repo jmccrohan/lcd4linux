@@ -1,4 +1,4 @@
-/* $Id: widget_icon.h,v 1.1 2004/01/23 04:54:04 reinelt Exp $
+/* $Id: widget_icon.h,v 1.2 2004/01/23 07:04:39 reinelt Exp $
  *
  * icon widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_icon.h,v $
+ * Revision 1.2  2004/01/23 07:04:39  reinelt
+ * icons finished!
+ *
  * Revision 1.1  2004/01/23 04:54:04  reinelt
  * icon widget added (not finished yet!)
  *
@@ -35,6 +38,7 @@
 typedef struct WIDGET_ICON {
   char *speed_expr; // expression for update interval
   int   speed;      // update interval (msec)
+  int   ascii;      // ascii code of icon (depends on the driver)
   int   curmap;     // current bitmap sequence
   int   prvmap;     // previous bitmap sequence 
   int   maxmap;     // number of bitmap sequences
