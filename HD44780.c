@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.33 2003/08/19 04:28:41 reinelt Exp $
+/* $Id: HD44780.c,v 1.34 2003/08/19 05:23:55 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -6,6 +6,9 @@
  *
  * Modification for 4-Bit mode
  * 2003 Martin Hejl (martin@hejl.de)
+ *
+ * Modification for 2nd controller support
+ * 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.34  2003/08/19 05:23:55  reinelt
+ * HD44780 dual-controller patch from Jesse Brook Kovach
+ *
  * Revision 1.33  2003/08/19 04:28:41  reinelt
  * more Icon stuff, minor glitches fixed
  *
@@ -203,6 +209,8 @@
 static LCD Lcd;
 static int Bits=0;
 static int GPO=0;
+static int Controllers = 0;
+static int Controller  = 0;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -210,12 +218,21 @@ static char *FrameBuffer2=NULL;
 static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
 static unsigned char SIGNAL_ENABLE;
+static unsigned char SIGNAL_ENABLE2;
 static unsigned char SIGNAL_GPO;
 
-
-static void HD_nibble(unsigned char nibble)
+static void HD_nibble(unsigned char controller, unsigned char nibble)
 {
+  unsigned char enable;
 
+  // enable signal: 'controller' is a bitmask
+  // bit 0 .. send to controller #0
+  // bit 1 .. send to controller #1
+  // so we can send a byte to both controllers at the same time!
+  enable=0;
+  if (controller&0x01) enable|=SIGNAL_ENABLE;
+  if (controller&0x02) enable|=SIGNAL_ENABLE2;
+  
   // clear ENABLE
   // put data on DB1..DB4
   // nibble already contains RS bit!
@@ -225,7 +242,7 @@ static void HD_nibble(unsigned char nibble)
   ndelay(T_AS);
   
   // rise ENABLE
-  parport_data(nibble | SIGNAL_ENABLE);
+  parport_data(nibble | enable);
   
   // Enable pulse width
   ndelay(T_PW);
@@ -235,23 +252,32 @@ static void HD_nibble(unsigned char nibble)
 }
 
 
-static void HD_byte (unsigned char data, unsigned char RS)
+static void HD_byte (unsigned char controller, unsigned char data, unsigned char RS)
 {
   // send high nibble of the data
-  HD_nibble (((data>>4)&0x0f)|RS);
+  HD_nibble (controller, ((data>>4)&0x0f)|RS);
 
   // Make sure we honour T_CYCLE
   ndelay(T_CYCLE-T_AS-T_PW);
 
   // send low nibble of the data
-  HD_nibble((data&0x0f)|RS);
+  HD_nibble(controller, (data&0x0f)|RS);
 }
 
 
-static void HD_command (unsigned char cmd, int delay)
+static void HD_command (unsigned char controller, unsigned char cmd, int delay)
 {
-    
+  unsigned char enable;
+   
   if (Bits==8) {
+    
+    // enable signal: 'controller' is a bitmask
+    // bit 0 .. send to controller #0
+    // bit 1 .. send to controller #1
+    // so we can send a byte to both controllers at the same time!
+    enable=0;
+    if (controller&0x01) enable|=SIGNAL_ENABLE;
+    if (controller&0x02) enable|=SIGNAL_ENABLE2;
     
     // put data on DB1..DB8
     parport_data (cmd);
@@ -263,11 +289,11 @@ static void HD_command (unsigned char cmd, int delay)
     ndelay(T_AS);
 
     // send command
-    parport_toggle (SIGNAL_ENABLE, 1, T_PW);
-
+    parport_toggle (enable, 1, T_PW);
+    
   } else {
 
-    HD_byte (cmd, 0);
+    HD_byte (controller, cmd, 0);
 
   }
   
@@ -277,11 +303,20 @@ static void HD_command (unsigned char cmd, int delay)
 }
 
 
-static void HD_write (char *string, int len, int delay)
+static void HD_write (unsigned char controller, char *string, int len, int delay)
 {
+  unsigned char enable;
 
   if (Bits==8) {
 
+    // enable signal: 'controller' is a bitmask
+    // bit 0 .. send to controller #0
+    // bit 1 .. send to controller #1
+    // so we can send a byte to both controllers at the same time!
+    enable=0;
+    if (controller&0x01) enable|=SIGNAL_ENABLE;
+    if (controller&0x02) enable|=SIGNAL_ENABLE2;
+    
     // clear RW, set RS
     parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
 
@@ -294,26 +329,25 @@ static void HD_write (char *string, int len, int delay)
       parport_data (*(string++));
       
       // send command
-      parport_toggle (SIGNAL_ENABLE, 1, T_PW);
+      parport_toggle (enable, 1, T_PW);
       
       // wait for command completion
       udelay(delay);
     }
-
+    
   } else { // 4 bit mode
-
+    
     while (len--) {
 
       // send data with RS enabled
-      HD_byte (*(string++), SIGNAL_RS);
-
+      HD_byte (controller, *(string++), SIGNAL_RS);
+      
       // wait for command completion
       udelay(delay);
     }
-
   }
-
 }
+
 
 static void HD_setGPO (int bits)
 {
@@ -334,8 +368,9 @@ static void HD_setGPO (int bits)
 
 static void HD_define_char (int ascii, char *buffer)
 {
-  HD_command (0x40|8*ascii, 40);
-  HD_write (buffer, 8, 120); // 120 usec delay for CG RAM write
+  // define chars on *both* controllers!
+  HD_command (0x03, 0x40|8*ascii, 40);
+  HD_write (0x03, buffer, 8, 120); // 120 usec delay for CG RAM write
 }
 
 
@@ -348,10 +383,10 @@ int HD_clear (int full)
   
   if (full) {
     memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
-    HD_command (0x01, 1640); // clear display
-    HD_setGPO (GPO);         // All GPO's off
+    HD_command (0x03, 0x01, 1640); // clear *both* displays
+    HD_setGPO (GPO);               // all GPO's off
   }
-
+  
   return 0;
 }
 
@@ -383,6 +418,17 @@ int HD_init (LCD *Self)
     }    
   }
   
+  s=cfg_get("Controllers", "1");
+  Controllers=strtol(s, &e, 0);
+  if (*e!='\0' || Controllers<1 || Controllers>2) {
+    error ("HD44780: bad Controllers '%s' in %s, should be '1' or '2'", s, cfg_file());
+    return -1;
+  }    
+  info ("wiring: using display with %d controllers", Controllers);
+  
+  // current controller
+  Controller=1;
+
   Self->rows=rows;
   Self->cols=cols;
   Self->gpos=gpos;
@@ -405,15 +451,17 @@ int HD_init (LCD *Self)
   info ("wiring: using %d bit mode", Bits);
 
   if (Bits==8) {
-    if ((SIGNAL_RS     = parport_wire_ctrl ("RS",     "AUTOFD"))==0xff) return -1;
-    if ((SIGNAL_RW     = parport_wire_ctrl ("RW",     "GND")   )==0xff) return -1;
-    if ((SIGNAL_ENABLE = parport_wire_ctrl ("ENABLE", "STROBE"))==0xff) return -1;
-    if ((SIGNAL_GPO    = parport_wire_ctrl ("GPO",    "INIT")  )==0xff) return -1;
+    if ((SIGNAL_RS      = parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
+    if ((SIGNAL_RW      = parport_wire_ctrl ("RW",      "GND")   )==0xff) return -1;
+    if ((SIGNAL_ENABLE  = parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = parport_wire_ctrl ("ENABLE2", "SELECT"))==0xff) return -1;
+    if ((SIGNAL_GPO     = parport_wire_ctrl ("GPO",     "INIT")  )==0xff) return -1;
   } else {
-    if ((SIGNAL_RS     = parport_wire_data ("RS",     "DB4"))==0xff) return -1;
-    if ((SIGNAL_RW     = parport_wire_data ("RW",     "DB5"))==0xff) return -1;
-    if ((SIGNAL_ENABLE = parport_wire_data ("ENABLE", "DB6"))==0xff) return -1;
-    if ((SIGNAL_GPO    = parport_wire_data ("GPO",    "DB7"))==0xff) return -1;
+    if ((SIGNAL_RS      = parport_wire_data ("RS",      "DB4"))==0xff) return -1;
+    if ((SIGNAL_RW      = parport_wire_data ("RW",      "DB5"))==0xff) return -1;
+    if ((SIGNAL_ENABLE  = parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = parport_wire_data ("ENABLE2", "DB7"))==0xff) return -1;
+    if ((SIGNAL_GPO     = parport_wire_data ("GPO",     "GND"))==0xff) return -1;
   }
   
   if (parport_open() != 0) {
@@ -431,24 +479,23 @@ int HD_init (LCD *Self)
   // set direction: write
   parport_direction (0);
 
-  // initialize display
+  // initialize *both* displays
   if (Bits==8) {
-    HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-    HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
-    HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-    HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+    HD_command (0x03, 0x30, 4100); // 8 Bit mode, wait 4.1 ms
+    HD_command (0x03, 0x30, 100);  // 8 Bit mode, wait 100 us
+    HD_command (0x03, 0x30, 4100); // 8 Bit mode, wait 4.1 ms
+    HD_command (0x03, 0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
   } else {
-    HD_nibble(0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
-    HD_nibble(0x03); udelay(100);  // 4 Bit mode, wait 100 us
-    HD_nibble(0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
-    HD_nibble(0x02); udelay(100);  // 4 Bit mode, wait 100 us
-    HD_command (0x28, 40);	   // 4 Bit mode, 1/16 duty cycle, 5x8 font
+    HD_nibble(0x03, 0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x03, 0x03); udelay(100);  // 4 Bit mode, wait 100 us
+    HD_nibble(0x03, 0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x03, 0x02); udelay(100);  // 4 Bit mode, wait 100 us
+    HD_command (0x03, 0x28, 40);	 // 4 Bit mode, 1/16 duty cycle, 5x8 font
   }
   
-  HD_command (0x08, 40);   // Display off, cursor off, blink off
-  HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
-  HD_command (0x06, 40);   // curser moves to right, no shift
-
+  HD_command (0x03, 0x08, 40);   // Display off, cursor off, blink off
+  HD_command (0x03, 0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
+  HD_command (0x03, 0x06, 40);   // curser moves to right, no shift
 
   bar_init(rows, cols, XRES, YRES, CHARS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
@@ -464,8 +511,15 @@ void HD_goto (int row, int col)
 {
   int pos;
 
+  if (Controllers>1 && row>=2) {
+    row -= 2;
+    Controller = 2;
+  } else {
+    Controller = 1;
+  }
+   
   pos=(row%2)*64+(row/2)*20+col;
-  HD_command (0x80|pos, 40);
+  HD_command (Controller, (0x80|pos), 40);
 }
 
 
@@ -528,7 +582,7 @@ int HD_flush (void)
 	  equal=0;
 	}
       }
-      HD_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, 40); // 40 usec delay for write
+      HD_write (Controller, FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, 50); // 50 usec delay for write
     }
   }
 

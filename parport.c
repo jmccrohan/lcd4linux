@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.4 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: parport.c,v 1.5 2003/08/19 05:23:55 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.5  2003/08/19 05:23:55  reinelt
+ * HD44780 dual-controller patch from Jesse Brook Kovach
+ *
  * Revision 1.4  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -340,7 +343,6 @@ void parport_control (unsigned char mask, unsigned char value)
 
   // Strobe, Select and AutoFeed are inverted!
   value = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
-  // value ^= PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD;
 
 #ifdef WITH_PPDEV
   if (PPdev) {
@@ -358,45 +360,50 @@ void parport_control (unsigned char mask, unsigned char value)
 }
 
 
-void parport_toggle (unsigned char bit, int level, int delay)
+void parport_toggle (unsigned char bits, int level, int delay)
 {
+  unsigned char value1, value2;
 
   // any signal affected?
   // Note: this may happen in case a signal is hardwired to GND
-  if (bit==0) return;
+  if (bits==0) return;
 
+  // prepare value
+  value1=level?bits:0;
+  value2=level?0:bits;
+  
   // Strobe, Select and AutoFeed are inverted!
-  if (bit & (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD)) {
-    level=!level;
-  }
+  value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+  value2 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+  
  
 #ifdef WITH_PPDEV
   if (PPdev) {
     struct ppdev_frob_struct frob;
-    frob.mask=bit;
+    frob.mask=bits;
     
     // rise
-    frob.val=level?bit:0;
+    frob.val=value1;
     ioctl (PPfd, PPFCONTROL, &frob);
     
     // pulse width
     ndelay(delay);      
     
     // lower
-    frob.val=level?0:bit;
+    frob.val=value2;
     ioctl (PPfd, PPFCONTROL, &frob);
   } else
 #endif
     {
       // rise
-      ctr = (ctr & ~bit) ^ (level?bit:0);
+      ctr = (ctr & ~bits) ^ value1;
       outb (ctr, Port+2);
 
       // pulse width
       ndelay(delay);      
       
       // lower
-      ctr = (ctr & ~bit) ^ (level?0:bit);
+      ctr = (ctr & ~bits) ^ value2;
       outb (ctr, Port+2);
     }
 }
