@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.4 2004/01/21 12:36:19 reinelt Exp $
+/* $Id: drv.c,v 1.5 2004/01/27 06:34:14 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.5  2004/01/27 06:34:14  reinelt
+ * Cwlinux driver portet to NextGeneration (compiles, but not tested!)
+ *
  * Revision 1.4  2004/01/21 12:36:19  reinelt
  * Crystalfontz NextGeneration driver added
  *
@@ -117,11 +120,9 @@ DRIVER *Driver[] = {
 #ifdef WITH_CRYSTALFONTZ
   &drv_Crystalfontz,
 #endif
-  /* Fixme
-     #ifdef WITH_CWLINUX
-     &Cwlinux,
-     #endif
-  */
+#ifdef WITH_CWLINUX
+  &drv_Cwlinux,
+#endif
 #ifdef WITH_HD44780
   &drv_HD44780,
 #endif

@@ -125,7 +125,7 @@ lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h pro
 #fontmap.c fontmap.h \
 #udelay.c udelay.h
 
-EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c drv_Crystalfontz.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c drv_MatrixOrbital.c MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c XWindow.c Text.c
+EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c drv_Crystalfontz.c Crystalfontz.c drv_Cwlinux.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c drv_MatrixOrbital.c MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c XWindow.c Text.c
 
 
 EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Rows README.Tokens README.Drivers README.Plugins README.KDE Skeleton.c plugin_sample.c
@@ -182,7 +182,7 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/MilfordInstruments.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
 .deps/T6963.P .deps/Text.P .deps/USBLCD.P .deps/XWindow.P .deps/bar.P \
 .deps/battery.P .deps/cfg.P .deps/debug.P .deps/display.P .deps/drv.P \
-.deps/drv_Crystalfontz.P .deps/drv_MatrixOrbital.P \
+.deps/drv_Crystalfontz.P .deps/drv_Cwlinux.P .deps/drv_MatrixOrbital.P \
 .deps/drv_generic_parport.P .deps/drv_generic_serial.P \
 .deps/drv_generic_text.P .deps/dvb.P .deps/evaluator.P .deps/exec.P \
 .deps/expr.P .deps/filter.P .deps/fontmap.P .deps/hash.P .deps/icon.P \

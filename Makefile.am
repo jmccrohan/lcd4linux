@@ -88,7 +88,7 @@ EXTRA_lcd4linux_SOURCES= \
 parport.c parport.h \
 BeckmannEgle.c \
 drv_Crystalfontz.c Crystalfontz.c \
-Cwlinux.c \
+drv_Cwlinux.c Cwlinux.c \
 HD44780.c \
 M50530.c \
 T6963.c \

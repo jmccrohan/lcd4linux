@@ -20955,8 +20955,8 @@ _ACEOF
 fi
 
 if test "$CWLINUX" = "yes"; then
-#  DRIVERS="$DRIVERS Cwlinux.lo"
-   DRIVERS="$DRIVERS Cwlinux.o"
+#  DRIVERS="$DRIVERS Cwlinux.lo drv_Cwlinux.lo"
+   DRIVERS="$DRIVERS Cwlinux.o drv_Cwlinux.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CWLINUX 1

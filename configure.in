@@ -152,8 +152,8 @@ if test "$CRYSTALFONTZ" = "yes"; then
 fi
 
 if test "$CWLINUX" = "yes"; then
-#  DRIVERS="$DRIVERS Cwlinux.lo"
-   DRIVERS="$DRIVERS Cwlinux.o"
+#  DRIVERS="$DRIVERS Cwlinux.lo drv_Cwlinux.lo"
+   DRIVERS="$DRIVERS Cwlinux.o drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[junk])
 fi
 
