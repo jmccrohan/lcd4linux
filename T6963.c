@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.3 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: T6963.c,v 1.4 2002/08/21 06:09:53 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.4  2002/08/21 06:09:53  reinelt
+ * some T6963 fixes, ndelay wrap
+ *
  * Revision 1.3  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -93,7 +96,6 @@
 
 #define XRES 6
 #define YRES 8
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T)
 
 static LCD Lcd;
 
@@ -169,7 +171,6 @@ void T6_status2 (void)
       break;
     }
     ioctl (PPfd, PPRDATA, &data);
-    // } while ((data & 0x08) == 0);
   } while ((data & 0x08) != 0x08);
 
   // rise RD and CE
@@ -408,10 +409,10 @@ int T6_init (LCD *Self)
   debug ("setting %d columns", Lcd.cols);
 
   T6_send_word (0x40, 0x0000);    // Set Text Home Address
-  T6_send_word (0x41, 40);        // Set Text Area
+  T6_send_word (0x41, Lcd.cols);  // Set Text Area
 
   T6_send_word (0x42, 0x0200);    // Set Graphic Home Address
-  T6_send_word (0x43, 40);        // Set Graphic Area
+  T6_send_word (0x43, Lcd.cols);  // Set Graphic Area
 
   T6_write_cmd (0x80);            // Mode Set: OR mode, Internal CG RAM mode
   T6_send_word (0x22, 0x0002);    // Set Offset Register
@@ -437,7 +438,8 @@ int T6_bar (int type, int row, int col, int max, int len1, int len2)
 int T6_flush (void)
 {
   int i, j, e;
-  
+  int count=0;
+
   memset(Buffer1,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
   
   for (i=0; i<Lcd.cols*Lcd.rows*Lcd.yres; i++) {
@@ -457,6 +459,7 @@ int T6_flush (void)
       }
     }
     T6_memcpy (j, Buffer1+j, i-j-e+1);
+    count+=i-j-e+1;
   }
 
   memcpy(Buffer2,Buffer1,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
@@ -478,7 +481,35 @@ int T6_quit (void)
 }
 
 LCD T6963[] = {
-  { "TLC1091", 16,40,XRES,YRES,BARS,0,T6_init,T6_clear,T6_put,T6_bar,NULL,T6_flush,T6_quit },
-  { "DMF5002N",14,40,XRES,YRES,BARS,0,T6_init,T6_clear,T6_put,T6_bar,NULL,T6_flush,T6_quit },
+  { name: "TLC1091", 
+    rows:  16,
+    cols:  40,
+    xres:  6,
+    yres:  8,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    gpos:  0,
+    init:  T6_init,
+    clear: T6_clear,
+    put:   T6_put,
+    bar:   T6_bar,
+    gpo:   NULL,
+    flush: T6_flush,
+    quit:  T6_quit 
+  },
+  { name: "DMF5002N",
+    rows:  14,
+    cols:  16,
+    xres:  8,
+    yres:  8,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    gpos:  0,
+    init:  T6_init,
+    clear: T6_clear,
+    put:   T6_put,
+    bar:   T6_bar,
+    gpo:   NULL,
+    flush: T6_flush,
+    quit:  T6_quit
+  },
   { NULL }
 };

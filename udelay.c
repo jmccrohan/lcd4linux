@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.8 2002/08/17 14:14:21 reinelt Exp $
+/* $Id: udelay.c,v 1.9 2002/08/21 06:09:53 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.9  2002/08/21 06:09:53  reinelt
+ * some T6963 fixes, ndelay wrap
+ *
  * Revision 1.8  2002/08/17 14:14:21  reinelt
  *
  * USBLCD fixes
@@ -246,10 +249,14 @@ void ndelay (unsigned long nsec)
     do {
       rep_nop();
       rdtscl(t2);
+      // Fixme
+      if (t2<t1) {
+	debug ("ndelay wrap: t1=%d t2=%d", t1, t2);
+      }
     } while ((t2-t1)<nsec);
     
   } else
-
+    
 #endif
 
     {
