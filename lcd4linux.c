@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.44 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.45 2003/09/09 05:30:34 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.45  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.44  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -239,7 +242,6 @@
 char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
 int got_signal=0;
-int tick, tack;
 
 extern char* output;
 
@@ -319,7 +321,9 @@ int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
-  int c, smooth;
+  char *s, *e;
+  int c;
+  int tick;
   int quiet=0;
   
   // save arguments for restart
@@ -462,27 +466,29 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  tick=atoi(cfg_get("tick","100"));
-  tack=atoi(cfg_get("tack","500"));
-
+  s=cfg_get("tick", "100");
+  tick=strtol(s, &e, 0);
+  if (*e!='\0' || tick<0) {
+    error ("bad tick entry '%s' in %s", s, cfg_source());
+    pid_exit(PIDFILE);
+    exit (1);
+  }
+  
   process_init();
   lcd_clear(1);
-
+  
   if (!quiet && hello()) {
     sleep (3);
     lcd_clear(1);
   }
   
   debug ("starting main loop");
-
-  smooth=0;
+  
   while (got_signal==0) {
-    process (smooth);
-    smooth+=tick;
-    if (smooth>tack) smooth=0;
+    process ();
     usleep(tick*1000);
   }
-
+  
   debug ("leaving main loop");
   
   lcd_clear(1);

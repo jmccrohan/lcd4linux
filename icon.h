@@ -1,4 +1,4 @@
-/* $Id: icon.h,v 1.2 2003/09/01 04:09:35 reinelt Exp $
+/* $Id: icon.h,v 1.3 2003/09/09 05:30:34 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.h,v $
+ * Revision 1.3  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.2  2003/09/01 04:09:35  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -35,7 +38,7 @@
 int  icon_init (int rows, int cols, int xres, int yres, int chars, int icons, 
 		void(*defchar)(int ascii, char *bitmap));
 void icon_clear(void);
-int  icon_draw (int num, int row, int col);
+int  icon_draw (int num, int seq, int row, int col);
 int  icon_peek (int row, int col);
 
 #endif

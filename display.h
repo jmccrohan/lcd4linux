@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.20 2003/09/01 04:09:34 reinelt Exp $
+/* $Id: display.h,v 1.21 2003/09/09 05:30:34 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.21  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.20  2003/09/01 04:09:34  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -115,7 +118,7 @@ typedef struct LCD {
   int (*clear) (int full);
   int (*put)   (int x, int y, char *text);
   int (*bar)   (int type, int x, int y, int max, int len1, int len2);
-  int (*icon)  (int num, int row, int col);
+  int (*icon)  (int num, int seq, int row, int col);
   int (*gpo)   (int num, int val);
   int (*flush) (void);
   int (*quit)  (void);
@@ -138,7 +141,7 @@ int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons
 int lcd_clear (int full);
 int lcd_put   (int row, int col, char *text);
 int lcd_bar   (int type, int row, int col, int max, int len1, int le2);
-int lcd_icon  (int num, int row, int col);
+int lcd_icon  (int num, int seq, int row, int col);
 int lcd_gpo   (int num, int val);
 int lcd_flush (void);
 int lcd_quit  (void);

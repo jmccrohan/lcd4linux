@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.40 2003/09/01 04:09:34 reinelt Exp $
+/* $Id: display.c,v 1.41 2003/09/09 05:30:34 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.41  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.40  2003/09/01 04:09:34  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -199,6 +202,9 @@
  * int lcd_bar (int type, int row, int col, int max, int len1, int len2)
  *    draws a specified bar at row, col with len
  *
+ * int lcd_icon (int num, int seq, int row, int col)
+ *    draws icon #num sequence #seq at row, col
+ *
  * int lcd_gpo (int num, int val)
  *    sets GPO #num to val
  *
@@ -290,6 +296,7 @@ FAMILY Driver[] = {
 
 static LCD *Lcd = NULL;
 
+
 int lcd_list (void)
 {
   int i, j;
@@ -305,6 +312,7 @@ int lcd_list (void)
   printf ("\n");
   return 0;
 }
+
 
 int lcd_init (char *driver)
 {
@@ -322,6 +330,7 @@ int lcd_init (char *driver)
   return -1;
 }
 
+
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons, int *gpos)
 {
   if (Lcd==NULL)
@@ -338,6 +347,7 @@ int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons
   return 0;
 }
 
+
 int lcd_clear (int full)
 {
   if (Lcd->clear==NULL) return 0;
@@ -352,8 +362,10 @@ int lcd_put (int row, int col, char *text)
   return Lcd->put(row-1, col-1, text);
 }
 
+
 int lcd_bar (int type, int row, int col, int max, int len1, int len2)
 {
+  if (Lcd->bar==NULL) return 0;
   if (row<1 || row>Lcd->rows) return -1;
   if (col<1 || col>Lcd->cols) return -1;
   if (!(type & (BAR_H2 | BAR_V2 | BAR_T))) len2=len1;
@@ -362,31 +374,35 @@ int lcd_bar (int type, int row, int col, int max, int len1, int len2)
     if (!(type & BAR_T))
       len2=(double)max*log(len2+1)/log(max); 
   }
-  if (Lcd->bar==NULL) return 0;
   return Lcd->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
 }
 
-int lcd_icon (int num, int row, int col)
+
+int lcd_icon (int num, int seq, int row, int col)
 {
+  if (Lcd->icon==NULL)         return  0;
   if (num<1 || num>Lcd->icons) return -1;
+  if (seq<1)                   return -1;
   if (row<1 || row>Lcd->rows)  return -1;
   if (col<1 || col>Lcd->cols)  return -1;
-  if (Lcd->icon==NULL)         return  0;
-  return Lcd->icon(num-1, row-1, col-1);
+  return Lcd->icon(num-1, seq-1, row-1, col-1);
 }
+
 
 int lcd_gpo (int num, int val)
 {
-  if (num<1 || num>Lcd->gpos) return -1;
   if (Lcd->gpo==NULL) return 0;
+  if (num<1 || num>Lcd->gpos) return -1;
   return Lcd->gpo(num-1, val);
 }
+
 
 int lcd_flush (void)
 {
   if (Lcd->flush==NULL) return 0;
   return Lcd->flush();
 }
+
 
 int lcd_quit (void)
 {

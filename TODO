@@ -58,10 +58,11 @@ will be done with the big config-rework
 // at least try to....
 // done 2001-03-14 -mr
 
-2001-03-09 Leo Tötsch <lt@toetsch.at>
-read configuration file earlier (before forking) so that specific drivers
-(especially 'Text') would not fork.
-There's a reason for forking that early, but I forgot...
+// 2001-03-09 Leo Tötsch <lt@toetsch.at>
+// read configuration file earlier (before forking) so that specific drivers
+// (especially 'Text') would not fork.
+// There's a reason for forking that early, but I forgot...
+// done somewhere in mid 2003 MR
 
 2001-03-12 Michael Reinelt <reinelt@eunet.at>
 remove USE_OLD_UDELAY after wide testing of new udelay code
@@ -89,10 +90,11 @@ change network clients to support different devices
 at the moment the sum of all eth* devices is calculated
 %n* should be extended tokens
 
-2001-03-24 Brian Cleven <lcleven@home.com>
-support 40x4 displays with two HD44780 chips on it
-we need another 'Enable' line for this
-this way one could connect two displays to one parallel port, too
+// 2001-03-24 Brian Cleven <lcleven@home.com>
+// support 40x4 displays with two HD44780 chips on it
+// we need another 'Enable' line for this
+// this way one could connect two displays to one parallel port, too
+// done with 0.9.11 MR
 
 // 2001-05-25 Jens Garthe <outline@xslan.de>
 // detect wether curses.h and libncurses is installed, and
@@ -126,3 +128,8 @@ should resume
 2002-02-15 Udo Altmann (udo.altmann@web.de)
 support for inversed/blinking text
 don't know if displays support this feature...
+
+2003-09-08 Michael Reinelt (reinelt@eunet.at>
+at least one of my HD44780 displays use an inverted "P" instead of 
+a full block. Therefore a bar my look strange. Make the ASCII code
+of the full block configurable...

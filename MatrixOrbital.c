@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.35 2003/09/01 04:09:34 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.36 2003/09/09 05:30:33 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.36  2003/09/09 05:30:33  reinelt
+ * even more icons stuff
+ *
  * Revision 1.35  2003/09/01 04:09:34  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -274,6 +277,7 @@ static int MO_clear (int protocol)
   int gpo;
   
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
   icon_clear();
   bar_clear();
   GPO=0;
@@ -365,17 +369,15 @@ static int MO_init (LCD *Self, int protocol)
   s=cfg_get("Icons", "0");
   Icons=strtol(s, &e, 0);
   if (*e!='\0' || Icons<0 || Icons>8) {
-    debug ("Icons=%d e=<%s>", Icons, e);
     error ("MatrixOrbital: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_source());
     return -1;
   }    
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);
     Self->icons=Icons;
     Lcd.icons=Icons;
   }
-
-  icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);
 
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
@@ -446,9 +448,9 @@ int MO_icon_old (int num, int row, int col, unsigned char *bitmap)
 }
 
 
-int MO_icon (int num, int row, int col)
+int MO_icon (int num, int seq, int row, int col)
 {
-  return icon_draw (num, row, col);
+  return icon_draw (num, seq, row, col);
 }
 
 

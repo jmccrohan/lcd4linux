@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.7 2003/09/01 04:09:34 reinelt Exp $
+/* $Id: bar.c,v 1.8 2003/09/09 05:30:34 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.8  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.7  2003/09/01 04:09:34  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -211,8 +214,10 @@ int bar_draw (int type, int row, int col, int max, int len1, int len2)
 
 static void create_segments (void)
 {
+  int RES;
   int i, j, n;
-  
+  int l1, l2;
+
   /* find first unused segment */
   for (i=fSegment; i<nSegment && Segment[i].used; i++);
 
@@ -226,10 +231,13 @@ static void create_segments (void)
   /* create needed segments */
   for (n=0; n<ROWS*COLS; n++) {
     if (Bar[n].type==0) continue;
+    RES=Bar[n].type & BAR_H ? XRES:YRES;
     for (i=0; i<nSegment; i++) {
-      if (Segment[i].type & Bar[n].type &&
-	  Segment[i].len1== Bar[n].len1 &&
-	  Segment[i].len2== Bar[n].len2) break;
+      if (Segment[i].type & Bar[n].type) {
+	l1=Segment[i].len1; if (l1>RES) l1=RES;
+	l2=Segment[i].len2; if (l2>RES) l2=RES;
+	if (l1 == Bar[n].len1 && l2 == Bar[n].len2) break;
+      }
     }
     if (i==nSegment) {
       nSegment++;

@@ -1,4 +1,4 @@
-/* $Id: processor.h,v 1.1 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: processor.h,v 1.2 2003/09/09 05:30:34 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.h,v $
+ * Revision 1.2  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.1  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -31,6 +34,6 @@
 #define _PROCESSOR_H_
 
 void process_init (void);
-void process (int smooth);
+void process (void);
 
 #endif

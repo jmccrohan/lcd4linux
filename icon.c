@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.3 2003/09/01 04:09:34 reinelt Exp $
+/* $Id: icon.c,v 1.4 2003/09/09 05:30:34 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.4  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.3  2003/09/01 04:09:34  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -29,6 +32,24 @@
  * Revision 1.1  2003/08/24 04:31:56  reinelt
  * icon.c icon.h added
  *
+ *
+ */
+
+/* 
+ * exported functions:
+ *
+ * int icon_init (int rows, int cols, int xres, int yres, int chars, int icons, 
+ *                void(*defchar)(int ascii, char *bitmap))
+ *   initializes all icons stuff and reads the bitmaps from config file.
+ *
+ * void icon_clear(void)
+ *   clears the icon framebuffer
+ *
+ * int icon_draw (int num, int seq, int row, int col)
+ *   puts icon #num sequence #seq at position row, col in the icon framebuffer
+ *
+ * int icon_peek (int row, int col)
+ *   returns icon# or -1 if none from position row, col 
  *
  */
 
@@ -42,6 +63,12 @@
 #include "icon.h"
 
 
+typedef struct BITMAP {
+  int  nData;
+  int  lData;
+  char *Data;
+} BITMAP;
+
 static int ROWS=0;
 static int COLS=0;
 static int XRES=0;
@@ -49,33 +76,47 @@ static int YRES=0;
 static int CHARS;
 static int ICONS=0;
 
-static int *Screen=NULL;
-static char *Bitmap=NULL;
+static int  *Screen=NULL;
+static struct BITMAP *Bitmap=NULL;
+static void(*Defchar)(int ascii, char *bitmap);
 
-static int icon_read_bitmap (int num, char *bitmap)
+
+static int icon_read_bitmap (int num)
 {
-  int row, col, len;
+  struct BITMAP *bm = Bitmap+num;
+  int row, n;
   char  key[15];
-  char *val;
-  char map;
+  char *val, *v;
+  char *map;
   
   for (row=0; row<YRES; row++) {
     snprintf (key, sizeof(key), "Icon%d.Bitmap%d", num+1, row+1);
-    val=cfg_get(key, "");
-    len=strlen(val);
-    map=0;
-    debug ("read_bitmap: num=%d row=%d val=<%s> len=%d", num, row, val, len);
-    for (col=0; col<XRES; col++) {
-      map<<=1;
-      if (col<len && val[col]=='*') {
-	map|=1;
+    val=cfg_get(key, ""); 
+    map=bm->Data+row;
+    n=0;
+    for (v=val; *v!='\0'; v++) {
+      if (n>=bm->nData) {
+	bm->nData++;
+	bm->Data=realloc(bm->Data, bm->nData*YRES*sizeof(char));
+	memset (bm->Data+n*YRES, 0, YRES*sizeof(char));
+	map=bm->Data+n*YRES+row;
+      }
+      switch (*v) {
+      case '|':
+	n++;
+	map+=YRES;
+	break;
+      case '*':
+	(*map)<<=1;
+	(*map)|=1;
+	break;
+      default:
+	(*map)<<=1;
       }
     }
-    *(bitmap+row-1)=map;
   }
   return 0;
 }
-
 
 
 int icon_init (int rows, int cols, int xres, int yres, int chars, int icons, 
@@ -108,19 +149,23 @@ int icon_init (int rows, int cols, int xres, int yres, int chars, int icons,
     free (Bitmap);
   }
 
-  if ((Bitmap=malloc(YRES*icons*sizeof(*Bitmap)))==NULL) {
-    error ("icon bitmap allocation failed: out of memory");
+  if ((Bitmap=malloc(icons*sizeof(*Bitmap)))==NULL) {
+    error ("icon allocation failed: out of memory");
     return -1;
   }
-
-  memset (Bitmap, 0, YRES*icons*sizeof(*Bitmap));
+  
+  Defchar=defchar;
   
   for (n=0; n<icons; n++) {
-    icon_read_bitmap(n, Bitmap+YRES*n);
+    Bitmap[n].nData=1;
+    Bitmap[n].lData=0;
+    Bitmap[n].Data=malloc(YRES*sizeof(char));
+    memset (Bitmap[n].Data, 0, YRES*sizeof(char));
+    icon_read_bitmap(n);
     // icons use last ascii codes from userdef chars
-    defchar (CHARS-n-1, Bitmap+YRES*n);
+    Defchar (CHARS-n-1, Bitmap[n].Data);
   }
-
+  
   return 0;
 }
 
@@ -136,10 +181,24 @@ void icon_clear(void)
 }
 
 
-int icon_draw (int num, int row, int col)
+int icon_draw (int num, int seq, int row, int col)
 {
+  if (num>=ICONS) return -1;
+  if (row>=ROWS)  return -1;
+  if (col>=COLS)  return -1;
+
+  seq%=Bitmap[num].nData;
+  if (seq!=Bitmap[num].lData) {
+    Bitmap[num].lData=seq;
+    Defchar (CHARS-num-1, Bitmap[num].Data+seq*YRES);
+  }
+  
+  // just redefine icon?
+  if (row<0 || col<0) return 0;
+  
   // icons use last ascii codes from userdef chars
   Screen[row*COLS+col]=CHARS-num-1;
+
   return 0;
 }
 

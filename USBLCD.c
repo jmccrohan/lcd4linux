@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: USBLCD.c,v 1.13 2003/09/09 05:30:34 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.13  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.12  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -90,6 +93,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "icon.h"
 #include "bar.h"
 
 #define GET_HARD_VERSION	1
@@ -102,6 +106,7 @@
 static LCD Lcd;
 static char *Port=NULL;
 static int usblcd_file;
+static int Icons;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -203,6 +208,8 @@ int USBLCD_clear (int full)
 {
 
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
   
   if (full) {
@@ -217,7 +224,7 @@ int USBLCD_clear (int full)
 int USBLCD_init (LCD *Self)
 {
   int rows=-1, cols=-1 ;
-  char *port,*s ;
+  char *port, *s, *e;
 
   if (Port) {
     free(Port);
@@ -268,7 +275,21 @@ int USBLCD_init (LCD *Self)
   if (USBLCD_open()!=0)
     return -1;
   
-  bar_init(rows, cols, XRES, YRES, CHARS);
+  s=cfg_get("Icons", "0");
+  Icons=strtol(s, &e, 0);
+  if (*e!='\0' || Icons<0 || Icons>8) {
+    debug ("Icons=%d e=<%s>", Icons, e);
+    error ("USBLCD: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_source());
+    return -1;
+  }    
+  if (Icons>0) {
+    info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, USBLCD_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(rows, cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
@@ -304,11 +325,18 @@ int USBLCD_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int USBLCD_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int USBLCD_flush (void)
 {
   int row, col, pos1, pos2;
   int c, equal;
-  
+  static int junk=0; //Fixme
+
   bar_process(USBLCD_define_char);
 
   for (row=0; row<Lcd.rows; row++) {
@@ -316,6 +344,11 @@ int USBLCD_flush (void)
       c=bar_peek(row, col);
       if (c!=-1) {
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
+      } else {
+	c=icon_peek(row, col);
+	if (c!=-1) {
+	  FrameBuffer1[row*Lcd.cols+col]=(char)c;
+	}
       }
     }
     for (col=0; col<Lcd.cols; col++) {
@@ -377,11 +410,13 @@ LCD USBLCD[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  USBLCD_init,
     clear: USBLCD_clear,
     put:   USBLCD_put,
     bar:   USBLCD_bar,
+    icon:  USBLCD_icon,
     gpo:   NULL,
     flush: USBLCD_flush,
     quit:  USBLCD_quit 

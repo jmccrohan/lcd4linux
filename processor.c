@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.38 2003/09/01 04:09:35 reinelt Exp $
+/* $Id: processor.c,v 1.39 2003/09/09 05:30:34 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.39  2003/09/09 05:30:34  reinelt
+ * even more icons stuff
+ *
  * Revision 1.38  2003/09/01 04:09:35  reinelt
  * icons nearly finished, but MatrixOrbital only
  *
@@ -174,12 +177,11 @@
  * void process_init (void);
  *   does all necessary initializations
  *
- * void process (int smooth);
+ * void process ();
  *   processes a whole screen
- *   bars will always be processed
- *   texts only if smooth=0
  *
  */
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -223,6 +225,7 @@ static struct { double perc, cput; } seti;
 static struct { int num, unseen;} mail[MAILBOXES+1];
 static struct { double val, min, max; } sensor[SENSORS+1];
 static struct { double strength, snr; } dvb;
+
 
 static double query (int token)
 {
@@ -332,6 +335,7 @@ static double query (int token)
   return 0.0;
 }
 
+
 /* return a value 0..1 */
 static double query_bar (int token)
 {
@@ -400,6 +404,7 @@ static double query_bar (int token)
   }
   return value;
 }
+
 
 static void print_token (int token, char **p, char *start)
 {
@@ -513,12 +518,12 @@ static void print_token (int token, char **p, char *start)
     break;
   case T_BATT_STAT:  
     { int ival = (int) query(token);
-      switch (ival) {
-        case 0: **p = '='; break;
-        case 1: **p = '+'; break;
-        case 2: **p = '-'; break;
-        default: **p = '?'; break;
-      }
+    switch (ival) {
+    case 0: **p = '='; break;
+    case 1: **p = '+'; break;
+    case 2: **p = '-'; break;
+    default: **p = '?'; break;
+    }
     }
     (*p)++;
     break;
@@ -553,9 +558,10 @@ static void print_token (int token, char **p, char *start)
     break;
     
   default:
-      *p+=sprintf (*p, "%5.0f", query(token));
+    *p+=sprintf (*p, "%5.0f", query(token));
   }
 }
+
 
 static void collect_data (void) 
 {
@@ -635,6 +641,7 @@ static void collect_data (void)
 
 }
 
+
 static char *process_row (char *data, int row, int len)
 {
   static char buffer[256];
@@ -674,14 +681,14 @@ static char *process_row (char *data, int row, int len)
       
       if (type & BAR_H) {
 	for (i=0; i<len && p-buffer<cols; i++)
-	  *p++='\t';
+	  *p++=' ';
       } else {
-	*p++='\t';
+	*p++=' ';
       }
       
     } else if (*s=='&') {
-      lcd_icon(*(++s)-'0', row, p-buffer+1);
-      *p++='\t';
+      lcd_icon(*(++s)-'0', 1, row, p-buffer+1);
+      *p++=' ';
       
     } else {
       *p++=*s;
@@ -698,6 +705,7 @@ static char *process_row (char *data, int row, int len)
   return buffer;
 }
 
+
 static int process_gpo (int n)
 {
   int token;
@@ -708,6 +716,7 @@ static int process_gpo (int n)
 
   return (val > 0.0);
 }
+
 
 static int Turn (void)
 {
@@ -735,6 +744,7 @@ static int Turn (void)
   }
   return 0;
 }
+
 
 void process_init (void)
 {
@@ -809,7 +819,8 @@ void process_init (void)
   }
 }
 
-void process (int smooth)
+
+void process (void)
 {
   int i, j, val;
   char *txt;
