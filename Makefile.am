@@ -30,6 +30,7 @@ fontmap.c fontmap.h \
 exec.c exec.h
 
 EXTRA_lcd4linux_SOURCES= \
+acconfig.h \
 BeckmannEgle.c \
 Crystalfontz.c Crystalfontz.h \
 HD44780.c \
