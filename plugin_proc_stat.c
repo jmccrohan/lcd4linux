@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.10 2004/01/22 08:55:30 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.11 2004/01/25 05:30:09 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.11  2004/01/25 05:30:09  reinelt
+ * plugin_netdev for parsing /proc/net/dev added
+ *
  * Revision 1.10  2004/01/22 08:55:30  reinelt
  * fixed unhandled kernel-2.6 entries in /prco/stat
  *
@@ -125,7 +128,8 @@ static int parse_proc_stat (void)
   
   while (!feof(stream)) {
     char buffer[1024];
-    if (fgets (buffer, sizeof(buffer), stream) ==NULL) break;
+    if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
+
     if (strncmp(buffer, "cpu", 3)==0) {
       char *cpu;
       cpu=strtok(buffer, " \t\n");

@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.3 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.4 2004/01/25 05:30:09 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.4  2004/01/25 05:30:09  reinelt
+ * plugin_netdev for parsing /proc/net/dev added
+ *
  * Revision 1.3  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -65,12 +68,11 @@ static HASH MemInfo = { 0, };
 static int parse_meminfo (void)
 {
   int age;
-  int line;
   FILE *stream;
   
-  // reread every 100 msec only
+  // reread every 10 msec only
   age=hash_age(&MemInfo, NULL, NULL);
-  if (age>0 && age<=100) return 0;
+  if (age>0 && age<=10) return 0;
   
   stream=fopen("/proc/meminfo", "r");
   if (stream==NULL) {
@@ -78,7 +80,6 @@ static int parse_meminfo (void)
     return -1;
   }
     
-  line=0;
   while (!feof(stream)) {
     char buffer[256];
     char *c, *key, *val;

@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.4 2004/01/23 07:04:03 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.5 2004/01/25 05:30:09 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.5  2004/01/25 05:30:09  reinelt
+ * plugin_netdev for parsing /proc/net/dev added
+ *
  * Revision 1.4  2004/01/23 07:04:03  reinelt
  * icons finished!
  *
@@ -88,7 +91,9 @@ typedef struct {
 
 static MODEL Models[] = {
   { 0x26, "626",      2, 16, 0, 1 },
+  { 0x31, "631",      2, 16, 0, 2 },
   { 0x32, "632",      2, 16, 0, 1 },
+  { 0x33, "633",      2, 16, 0, 2 },
   { 0x34, "634",      4, 20, 0, 1 },
   { 0x36, "636",      2, 16, 0, 1 },
   { 0xff, "Unknown", -1, -1, 0, 0 }
@@ -128,6 +133,7 @@ static int drv_CF_start (char *section)
 {
   int i;  
   char *model;
+  char buffer[17];
   
   model=cfg_get(section, "Model", NULL);
   if (model!=NULL && *model!='\0') {
@@ -141,21 +147,36 @@ static int drv_CF_start (char *section)
     Model=i;
     info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
-    error ("%s: no '%s.Model' entry from %s", Name, section, cfg_source());
-    return -1;
+    info ("%s: no '%s.Model' entry from %s, auto-dedecting", Name, section, cfg_source());
+    Model=-1;
   }
   
-  // initialize global variables
-  DROWS    = Models[Model].rows;
-  DCOLS    = Models[Model].cols;
-  GPOS     = Models[Model].gpos;
-  Protocol = Models[Model].protocol;
-
   // open serial port
   if (drv_generic_serial_open(section, Name)<0) return -1;
 
   // MR: why such a large delay?
   usleep(350*1000);
+
+  // read display type
+  memset(buffer, 0, sizeof(buffer));
+  drv_generic_serial_write ("\1", 2);
+  usleep(250*1000);
+#if 1
+  {
+    int len=drv_generic_serial_read (buffer, 16);
+    debug ("Michi: len=<%d> buffer=<%s>", len, buffer);
+  }
+#else
+  if (drv_generic_serial_read (buffer, 16)==16) {
+    info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
+  }
+#endif
+
+  // initialize global variables
+  DROWS    = Models[Model].rows;
+  DCOLS    = Models[Model].cols;
+  GPOS     = Models[Model].gpos;
+  Protocol = Models[Model].protocol;
 
   drv_generic_serial_write ("\014", 1);  // Form Feed (Clear Display)
   drv_generic_serial_write ("\004", 1);  // hide cursor

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.1 2004/01/20 14:26:09 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.2 2004/01/25 05:30:09 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.2  2004/01/25 05:30:09  reinelt
+ * plugin_netdev for parsing /proc/net/dev added
+ *
  * Revision 1.1  2004/01/20 14:26:09  reinelt
  * moved drv_generic to drv_generic_serial
  *
@@ -219,14 +222,16 @@ int drv_generic_serial_open (char *section, char *driver)
     return -1;
   }
   
-  if (cfg_number(section, "Speed", 19200, 1200, 38400, &i)<0) return -1;
+  if (cfg_number(section, "Speed", 19200, 1200, 115200, &i)<0) return -1;
   switch (i) {
-  case 1200:  Speed = B1200;  break;
-  case 2400:  Speed = B2400;  break;
-  case 4800:  Speed = B4800;  break;
-  case 9600:  Speed = B9600;  break;
-  case 19200: Speed = B19200; break;
-  case 38400: Speed = B38400; break;
+  case 1200:   Speed = B1200;   break;
+  case 2400:   Speed = B2400;   break;
+  case 4800:   Speed = B4800;   break;
+  case 9600:   Speed = B9600;   break;
+  case 19200:  Speed = B19200;  break;
+  case 38400:  Speed = B38400;  break;
+  case 57600:  Speed = B57600;  break;
+  case 115200: Speed = B115200; break;
   default:
     error ("%s: unsupported speed '%d' from %s", Driver, i, cfg_source());
     return -1;

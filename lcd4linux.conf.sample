@@ -8,6 +8,14 @@ Display LK204 {
 }
 
 
+Display CF631 {
+    Icons 2
+    Driver 'Crystalfontz'
+    Model '631'
+    Port '/dev/usb/tts/0'
+    Speed 115200
+}
+
 Display CF632 {
     Icons 7
     Driver 'Crystalfontz'
@@ -239,7 +247,8 @@ Layout L16x2 {
 
 #Display 'LK204'
 #Display 'HD44780-20x4'
-Display 'CF632'
+#Display 'CF632'
+Display 'CF631'
 
 #Layout  'Default'
 Layout  'L16x2'

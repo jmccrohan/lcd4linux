@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.13 2004/01/16 05:04:53 reinelt Exp $
+/* $Id: plugin.c,v 1.14 2004/01/25 05:30:09 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.14  2004/01/25 05:30:09  reinelt
+ * plugin_netdev for parsing /proc/net/dev added
+ *
  * Revision 1.13  2004/01/16 05:04:53  reinelt
  * started plugin proc_stat which should parse /proc/stat
  * which again is a paint in the a**
@@ -123,6 +126,7 @@ int plugin_init_loadavg (void);
 int plugin_init_proc_stat (void);
 int plugin_init_cpuinfo (void);
 int plugin_init_meminfo (void);
+int plugin_init_netdev (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 
@@ -137,6 +141,7 @@ int plugin_init (void)
   plugin_init_proc_stat();
   plugin_init_cpuinfo();
   plugin_init_meminfo();
+  plugin_init_netdev();
   // MR: segfaults here
   // plugin_init_i2c_sensors();
   plugin_init_xmms();

@@ -37,6 +37,7 @@ plugin_loadavg.c \
 plugin_proc_stat.c \
 plugin_cpuinfo.c \
 plugin_meminfo.c \
+plugin_netdev.c \
 plugin_i2c_sensors.c \
 plugin_xmms.c \
 system.c system.h \
