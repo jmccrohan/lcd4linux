@@ -6,20 +6,23 @@ Lcd4Linux NextGeneration porting status
              Cwlinux -> Ported (Text,Bar,Icon) + blacklight [gpo,gpi,inverted text,relay]
              HD44780 -> Ported (Text,Bar,Icon) + soft brightness,'busy flag',gpo [soft contrast]
               M50530 -> Ported (Text,Bar,Icon) + gpo
-       MatrixOrbital -> Ported (Text,Bar,Icon) + blacklight,contrast,gpo,pwm,rpm [?]
-              T6963* -> Ported (Text,Bar,Icon) [?]
-              USBLCD -> Ported (Text,Bar,Icon) [?]
+       MatrixOrbital -> Ported (Text,Bar,Icon) + blacklight,contrast,gpo,pwm,rpm
+              T6963* -> Ported (Text,Bar,Icon)
+              USBLCD -> Ported (Text,Bar,Icon)
             XWindow* -> Ported (Text,Bar,Icon) [gnome applet ?]
+             Raster* -> Ported (Text,Bar,Icon)
 
         BeckmannEgle ->     
               Curses ->    
   MilfordInstruments ->
-           PalmPilot ->
-             Raster* ->
-                SIN* ->
+
+           PalmPilot -> Obsolete
+                 SIN -> Obsolete
 
 
 * graphic displays
+
+
 
  PLUGINS :  format : status (functions) {old tokens} [todo]
 ------------------------------------------------------------
@@ -39,12 +42,13 @@ Lcd4Linux NextGeneration porting status
         plugin_uname -> Finished (uname) {o v}
      plugin_wireless -> Finished (level, noise, quality, ...) {ws wl wn}
          plugin_xmms -> Finished (xmms) NEW
+         plugin_isdn -> Finished (info, cps) {ic ii im io it}
+       plugin_uptime -> Finished (uptime) NEW
+         plugin_time -> Finished (time strftime) NEW
+         plugin_pop3 -> Finished (POP3check) {e* u*}
 
 (special plugins : plugin_cfg, plugin_math, plugin_string)
 
-tokens not ported :
-mail {e* u*}
-ISDN {ic ii im io it}
 
  TODO : task {assigned to}
 --------
