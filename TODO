@@ -13,4 +13,17 @@ show partition information (used, free, ...)
 2000-04-25 Michael Mueller <m.mueller@netsystec.de>
 show process information            
 
-$Id: TODO,v 1.2 2000/04/28 05:19:55 reinelt Exp $
+2000-12-03 Ghassan Matar <gmatar@hexapods.com>
+show other sensors than temperature
+we have to use libsensors instead of parsing the proc files directly
+
+2000-12-03 Ghassan Matar <gmatar@hexapods.com>
+show contents of any text file
+the file should only contain one line, with a fixed format
+there are two possibilities: text and numbers
+numbers can be used for bars, too
+
+2000-12-03 Ghassan Matar <gmatar@hexapods.com>
+accept data from external sources (fifo?)
+
+$Id: TODO,v 1.3 2000/12/07 20:47:54 reinelt Exp $

@@ -42,7 +42,7 @@
 #background \#a0d000
 
 Display SIN
-Port /dev/ttyS1
+Port /dev/tty9
 
 Row1 "Disk%dm $R10dr+dw"
 Row2 "Net %nm $R10nr+nw"

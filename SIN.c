@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.4 2000/12/01 20:42:37 reinelt Exp $
+/* $Id: SIN.c,v 1.5 2000/12/07 20:47:54 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.5  2000/12/07 20:47:54  reinelt
+ *
+ * first try for SIN bars
+ *
  * Revision 1.4  2000/12/01 20:42:37  reinelt
  *
  * added debugging of SIN driver output, probably found the positioning bug (format %02x instead of %2x)
@@ -43,8 +47,7 @@
  *
  * exported fuctions:
  *
- * struct LCD SIN[]
- *
+ * struct LCD SIN[] *
  */
 
 #include <stdlib.h>
@@ -61,11 +64,11 @@
 #include "lock.h"
 #include "display.h"
 
-#define XRES 5
-#define YRES 8
+// FIXME: 6x8
+#define XRES 1
+#define YRES 1
 
-// Fixme: Bar Support disabled
-#define BARS 0
+#define BARS ( BAR_L | BAR_R )
 
 static LCD Lcd;
 static char *Port=NULL;
@@ -193,6 +196,35 @@ int SIN_put (int row, int col, char *text)
   return 0;
 }
 
+int SIN_bar (int type, int row, int col, int max, int len, int dummy)
+{
+  int rev=0;
+  
+  if (len<1) len=1;
+  else if (len>max) len=max;
+  
+  switch (type) {
+  case BAR_L:
+    len=max-len;
+    rev=1;
+    
+  case BAR_R:
+    while (max>0 && col<=Lcd.cols) {
+      if (len>=XRES) {
+	Txt[row][col]=rev?0x19:0x18;
+	len-=XRES;
+      } else {
+	Txt[row][col]=rev?0x18:0x19;
+	len=0;
+      }
+      max-=XRES;
+      col++;
+    }
+    break;
+  }
+  return 0;
+}
+
 int SIN_flush (void)
 {
   char buffer[256]="\015\033T"; // place text
@@ -223,6 +255,6 @@ int SIN_quit (void)
 }
 
 LCD SIN[] = {
-  { "SIN", 8, 40, XRES, YRES, BARS, SIN_init, SIN_clear, SIN_put, NULL, SIN_flush, SIN_quit },
+  { "SIN", 8, 40, XRES, YRES, BARS, SIN_init, SIN_clear, SIN_put, SIN_bar, SIN_flush, SIN_quit },
   { NULL }
 };
