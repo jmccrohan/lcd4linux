@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.20 2001/09/09 12:26:03 reinelt Exp $
+/* $Id: HD44780.c,v 1.21 2002/04/30 07:20:15 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.21  2002/04/30 07:20:15  reinelt
+ *
+ * implemented the new ndelay(nanoseconds) in all parallel port drivers
+ *
  * Revision 1.20  2001/09/09 12:26:03  reinelt
  * GPO bug: INIT is _not_ inverted
  *
@@ -202,15 +206,20 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 #ifdef WITH_PPDEV
-static void HD_toggle (int bit, int inv)
+static void HD_toggle (int bit, int inv, int delay)
 {
   struct ppdev_frob_struct frob;
-
   frob.mask=bit;
-  frob.val=inv?0:bit; // rise
+
+  // rise
+  frob.val=inv?0:bit;
   ioctl (PPfd, PPFCONTROL, &frob);
-  udelay(1);
-  frob.val=inv?bit:0; // lower
+  
+  // pulse width
+  ndelay(delay);      
+
+  // lower
+  frob.val=inv?bit:0;
   ioctl (PPfd, PPFCONTROL, &frob);
 }
 #endif
@@ -222,18 +231,22 @@ static void HD_command (unsigned char cmd, int delay)
 
     struct ppdev_frob_struct frob;
     
+    // put data on DB1..DB8
+    ioctl(PPfd, PPWDATA, &cmd);
+    
     // clear RS (inverted)
     frob.mask=PARPORT_CONTROL_AUTOFD;
     frob.val=PARPORT_CONTROL_AUTOFD;
     ioctl (PPfd, PPFCONTROL, &frob);
     
-    // put data on DB1..DB8
-    ioctl(PPfd, PPWDATA, &cmd);
-    
+    // Address set-up time
+    ndelay(40);
+
     // send command
-    HD_toggle(PARPORT_CONTROL_STROBE, 1);
+    // Enable cycle time = 230ns
+    HD_toggle(PARPORT_CONTROL_STROBE, 1, 230);
     
-    // wait
+    // wait for command completion
     udelay(delay);
 
   } else
@@ -242,11 +255,12 @@ static void HD_command (unsigned char cmd, int delay)
 
     {
       outb (cmd, Port);    // put data on DB1..DB8
+      outb (0x03, Port+2); // clear RS = bit 2 invertet
+      ndelay(40);          // Address set-up time
       outb (0x02, Port+2); // set Enable = bit 0 invertet
-      udelay (1);
+      ndelay(230);         // Enable cycle time
       outb (0x03, Port+2); // clear Enable
-      udelay (delay);
-    
+      udelay (delay);      // wait for command completion
     }
 }
 
@@ -262,16 +276,18 @@ static void HD_write (char *string, int len, int delay)
     frob.val=0;
     ioctl (PPfd, PPFCONTROL, &frob);
     
+    // Address set-up time
+    ndelay(40);
+    
     while (len--) {
 
       // put data on DB1..DB8
       ioctl(PPfd, PPWDATA, string++);
       
-      udelay(1);
       // send command
-      HD_toggle(PARPORT_CONTROL_STROBE, 1);
+      HD_toggle(PARPORT_CONTROL_STROBE, 1, 230);
 
-      // wait
+      // wait for command completion
       udelay(delay);
     }
     
@@ -280,10 +296,12 @@ static void HD_write (char *string, int len, int delay)
 #endif
 
     {
+      outb (0x01, Port+2); // set RS = bit 2 invertet
+      ndelay(40);          // Address set-up time
       while (len--) {
 	outb (*string++, Port); // put data on DB1..DB8
 	outb (0x00, Port+2);    // set Enable = bit 0 invertet
-	udelay (1);
+	ndelay(230);            // Enable cycle time
 	outb (0x01, Port+2);    // clear Enable
 	udelay (delay);
       }
@@ -302,8 +320,12 @@ static void HD_setGPO (int bits)
       // put data on DB1..DB8
       ioctl(PPfd, PPWDATA, &bits);
 
+      // 74HCT573 set-up time
+      ndelay(20);
+      
       // toggle INIT
-      HD_toggle(PARPORT_CONTROL_INIT, 0);
+      // 74HCT573 enable pulse width = 24ns
+      HD_toggle(PARPORT_CONTROL_INIT, 0, 24);
       
     } else
       
@@ -311,10 +333,10 @@ static void HD_setGPO (int bits)
       
       {
 	outb (bits, Port);    // put data on DB1..DB8
+	ndelay(20);           // 74HCT573 set-up time
 	outb (0x05, Port+2);  // set INIT = bit 2 invertet
-	udelay (1);
+	ndelay(24);           // 74HCT573 enable pulse width
 	outb (0x03, Port+2);  // clear INIT
-	udelay (1);
       }
   }
 }
