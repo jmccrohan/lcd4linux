@@ -1,4 +1,4 @@
-/* $Id
+/* $Id: dvb.h,v 1.2 2003/08/08 23:08:38 reinelt Exp $
  *
  * DVB specific functions
  *
@@ -19,7 +19,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log
+ * $Log: dvb.h,v $
+ * Revision 1.2  2003/08/08 23:08:38  reinelt
+ * CVS Id and Log missing from dvb.{c,h}
+ *
  */
 
 #ifndef _DVB_H_
