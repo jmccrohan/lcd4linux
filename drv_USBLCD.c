@@ -1,12 +1,12 @@
-/* $Id: drv_USBLCD.c,v 1.18 2004/12/22 20:24:02 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.19 2005/01/18 06:30:23 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
- * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old-style USBLCD driver which is 
- * Copyright 2002 Robin Adams, Adams IT Services <info@usblcd.de>
+ * Copyright (C) 2002 Robin Adams, Adams IT Services <info@usblcd.de>
  *
  * This file is part of LCD4Linux.
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.19  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.18  2004/12/22 20:24:02  reinelt
  * T6963 fix for displays > 8 rows
  *

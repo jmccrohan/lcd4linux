@@ -1,9 +1,9 @@
-/* $Id: drv_MatrixOrbital.c,v 1.36 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.37 2005/01/18 06:30:23 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.37  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.36  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

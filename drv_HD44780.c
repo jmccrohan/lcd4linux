@@ -1,15 +1,15 @@
-/* $Id: drv_HD44780.c,v 1.42 2005/01/17 06:38:48 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.43 2005/01/18 06:30:23 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
- * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Modification for 4-Bit mode
- * Copyright 2003 Martin Hejl (martin@hejl.de)
+ * Copyright (C) 2003 Martin Hejl (martin@hejl.de)
  *
  * Modification for 2nd controller support
- * Copyright 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
+ * Copyright (C) 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
  *
  * This file is part of LCD4Linux.
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.43  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.42  2005/01/17 06:38:48  reinelt
  * info about backlight and brightness
  *

@@ -1,13 +1,13 @@
-/* $Id: plugin_wireless.c,v 1.7 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_wireless.c,v 1.8 2005/01/18 06:30:23 reinelt Exp $
  *
  * Wireless Extension plugin
  *
- * Copyright 2004 Xavier Vello <xavier66@free.fr>
- * Copyright 2004 Martin Hejl <martin@hejl.de> 
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net> 
+ * Copyright (C) 2004 Xavier Vello <xavier66@free.fr>
+ * Copyright (C) 2004 Martin Hejl <martin@hejl.de> 
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net> 
  *
  * Losts of code borrowed from Wireless Tools, which is
- *         Copyright (c) 1997-2002 Jean Tourrilhes <jt@hpl.hp.com>
+ *         Copyright (C) 1997-2002 Jean Tourrilhes <jt@hpl.hp.com>
  * (avaible at http://web.hpl.hp.com/personal/Jean_Tourrilhes/Linux/)
  *
  * This file is part of LCD4Linux.
@@ -28,6 +28,9 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.8  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.7  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

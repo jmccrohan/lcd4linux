@@ -1,13 +1,13 @@
-/* $Id: drv_MilfordInstruments.c,v 1.12 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.13 2005/01/18 06:30:23 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
  *
- * Copyright 2003,2004 Andy Baxter <andy@earthsong.free-online.co.uk>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003, 2004 Andy Baxter <andy@earthsong.free-online.co.uk>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the MatrixOrbital driver which is
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.13  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.12  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

@@ -1,9 +1,9 @@
-/* $Id: drv_Cwlinux.c,v 1.20 2004/11/28 15:50:24 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.21 2005/01/18 06:30:22 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.21  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.20  2004/11/28 15:50:24  reinelt
  * Cwlinux fixes (invalidation of user-defined chars)
  *

@@ -1,13 +1,13 @@
-/* $Id: plugin_pop3.c,v 1.6 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_pop3.c,v 1.7 2005/01/18 06:30:23 reinelt Exp $
  *
  * Plugin to check POP3 mail accounts
  *
- * Copyright 2004 Javi Garcia Dominguez (aka Stolz) <javi@gsmlandia.com>
- * Based on code from  pop3check (c) 1999 http://sourceforge.net/projects/pop3check
+ * Copyright (C) 2004 Javi Garcia Dominguez (aka Stolz) <javi@gsmlandia.com>
+ * Based on code from  pop3check (C) 1999 http://sourceforge.net/projects/pop3check
  *     Simon Liddington <squidly@users.sourceforge.net> is the pop3check current maintainer.
  *     The pop3check original author is Steven Radack <steve@lconn.net>.
  *
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is a pluging for LCD4Linux.
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.7  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.6  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

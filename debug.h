@@ -1,8 +1,9 @@
-/* $Id: debug.h,v 1.8 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: debug.h,v 1.9 2005/01/18 06:30:22 reinelt Exp $
  *
  * debug messages
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,9 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.9  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.8  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source

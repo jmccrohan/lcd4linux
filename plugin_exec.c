@@ -1,12 +1,12 @@
-/* $Id: plugin_exec.c,v 1.7 2004/09/24 21:41:00 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.8 2005/01/18 06:30:23 reinelt Exp $
  *
  * plugin for external processes
  *
- * Copyright 2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old 'exec' client which is
- * Copyright 2001 Leopold Tötsch <lt@toetsch.at>
+ * Copyright (C) 2001 Leopold Tötsch <lt@toetsch.at>
  *
  *
  * This file is part of LCD4Linux.
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.8  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.7  2004/09/24 21:41:00  reinelt
  * new driver for the BWCT USB LCD interface board.
  *

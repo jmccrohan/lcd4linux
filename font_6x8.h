@@ -1,9 +1,9 @@
-/* $Id: font_6x8.h,v 1.1 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: font_6x8.h,v 1.2 2005/01/18 06:30:23 reinelt Exp $
  *
  * 6x8 font
  *
- * Copyright 1999, 2000, 2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000, 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: font_6x8.h,v $
+ * Revision 1.2  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.1  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done

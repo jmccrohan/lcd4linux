@@ -1,9 +1,9 @@
-/* $Id: cfg.c,v 1.44 2005/01/17 06:29:24 reinelt Exp $^
+/* $Id: cfg.c,v 1.45 2005/01/18 06:30:21 reinelt Exp $^
  *
  * config file stuff
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.45  2005/01/18 06:30:21  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.44  2005/01/17 06:29:24  reinelt
  * added software-controlled backlight support to HD44780
  *

@@ -1,9 +1,9 @@
-/* $Id: lcd4linux.c,v 1.75 2004/09/24 21:41:00 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.76 2005/01/18 06:30:23 reinelt Exp $
  *
  * LCD4Linux
  *
- * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.76  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.75  2004/09/24 21:41:00  reinelt
  * new driver for the BWCT USB LCD interface board.
  *
@@ -385,7 +388,7 @@
 #define PIDFILE "/var/run/lcd4linux.pid"
 
 static char *release   = "LCD4Linux " VERSION;
-static char *copyright = "Copyright 1999-2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
+static char *copyright = "Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
 extern char* output;
 

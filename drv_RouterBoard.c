@@ -1,9 +1,10 @@
-/* $Id: drv_RouterBoard.c,v 1.3 2004/08/30 12:48:52 rjoco77 Exp $
+/* $Id: drv_RouterBoard.c,v 1.4 2005/01/18 06:30:23 reinelt Exp $
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com
  *
  * Copyright (C) 2004  Roman Jozsef <rjoco77@freemail.hu> 
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the HD44780 parallel port driver and RB SDK example 
  *
@@ -25,6 +26,9 @@
  *
  *
  * $Log: drv_RouterBoard.c,v $
+ * Revision 1.4  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.3  2004/08/30 12:48:52  rjoco77
  *  * Added backlight update immediatelly
  *

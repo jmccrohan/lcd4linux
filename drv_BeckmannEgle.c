@@ -1,8 +1,8 @@
-/* $Id: drv_BeckmannEgle.c,v 1.13 2004/07/14 04:44:44 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.14 2005/01/18 06:30:22 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
- * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.14  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.13  2004/07/14 04:44:44  reinelt
  *
  * Beckmann+Egle fix

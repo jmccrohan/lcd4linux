@@ -1,9 +1,9 @@
-/* $Id: timer.h,v 1.4 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: timer.h,v 1.5 2005/01/18 06:30:24 reinelt Exp $
  *
  * generic timer handling
  *
- * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003, 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: timer.h,v $
+ * Revision 1.5  2005/01/18 06:30:24  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.4  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source

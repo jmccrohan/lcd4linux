@@ -1,9 +1,9 @@
-/* $Id: plugin_mysql.c,v 1.3 2004/03/21 22:05:53 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.4 2005/01/18 06:30:23 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
- * Copyright 2004 Javier Garcia <javi@gsmlandia.com>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004 Javier Garcia <javi@gsmlandia.com>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.4  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.3  2004/03/21 22:05:53  reinelt
  * MySQL plugin fixes from Javi
  *

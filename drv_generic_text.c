@@ -1,9 +1,9 @@
-/* $Id: drv_generic_text.c,v 1.23 2005/01/09 10:53:24 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.24 2005/01/18 06:30:23 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.24  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.23  2005/01/09 10:53:24  reinelt
  * small type in plugin_uname fixed
  * new homepage lcd4linux.bulix.org

@@ -1,9 +1,9 @@
-/* $Id: drv_BWCT.c,v 1.1 2004/09/24 21:41:00 reinelt Exp $
+/* $Id: drv_BWCT.c,v 1.2 2005/01/18 06:30:22 reinelt Exp $
  *
  * new style driver for BWCT USB LCD displays
  *
- * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_BWCT.c,v $
+ * Revision 1.2  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.1  2004/09/24 21:41:00  reinelt
  * new driver for the BWCT USB LCD interface board.
  *

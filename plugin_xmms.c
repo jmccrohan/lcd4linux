@@ -1,7 +1,7 @@
-/* $Id: plugin_xmms.c,v 1.12 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.13 2005/01/18 06:30:23 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
- * Copyright 2003 Markus Keil <markus_keil@t-online.de>
+ * Copyright (C) 2003 Markus Keil <markus_keil@t-online.de>
  *
  * This file is part of LCD4Linux.
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.13  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.12  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

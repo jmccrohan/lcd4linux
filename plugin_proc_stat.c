@@ -1,9 +1,9 @@
-/* $Id: plugin_proc_stat.c,v 1.24 2005/01/11 10:19:33 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.25 2005/01/18 06:30:23 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
- * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.25  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.24  2005/01/11 10:19:33  reinelt
  * changes to lcd4linux.conf.sample
  *

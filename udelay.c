@@ -1,8 +1,9 @@
-/* $Id: udelay.c,v 1.18 2004/09/18 09:48:29 reinelt Exp $
+/* $Id: udelay.c,v 1.19 2005/01/18 06:30:24 reinelt Exp $
  *
  * short delays
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.19  2005/01/18 06:30:24  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.18  2004/09/18 09:48:29  reinelt
  * HD44780 cleanup and prepararation for I2C backend
  * LCM-162 submodel framework

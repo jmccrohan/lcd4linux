@@ -1,8 +1,8 @@
-/* $Id: pid.c,v 1.8 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: pid.c,v 1.9 2005/01/18 06:30:23 reinelt Exp $
  *
  * PID file handling
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.9  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.8  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

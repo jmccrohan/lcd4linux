@@ -1,12 +1,12 @@
-/* $Id: plugin_seti.c,v 1.5 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_seti.c,v 1.6 2005/01/18 06:30:23 reinelt Exp $
  *
  * plugin for seti@home status reporting
  *
- * Copyright 2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old seti client which is 
- * Copyright 2001 Axel Ehnert <axel@ehnert.net>
+ * Copyright (C) 2001 Axel Ehnert <axel@ehnert.net>
  *
  *
  * This file is part of LCD4Linux.
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_seti.c,v $
+ * Revision 1.6  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.5  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

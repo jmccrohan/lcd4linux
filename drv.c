@@ -1,9 +1,9 @@
-/* $Id: drv.c,v 1.24 2005/01/15 13:10:15 reinelt Exp $
+/* $Id: drv.c,v 1.25 2005/01/18 06:30:22 reinelt Exp $
  *
  * new framework for display drivers
  *
- * Copyright 1999-2003 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.25  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.24  2005/01/15 13:10:15  reinelt
  * LCDTerm driver added
  *

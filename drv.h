@@ -1,9 +1,9 @@
-/* $Id: drv.h,v 1.8 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv.h,v 1.9 2005/01/18 06:30:22 reinelt Exp $
  *
  * new framework for display drivers
  *
- * Copyright 1999-2003 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999-2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.9  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.8  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

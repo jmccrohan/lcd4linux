@@ -1,9 +1,9 @@
-/* $Id: plugin_i2c_sensors.c,v 1.21 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.22 2005/01/18 06:30:23 reinelt Exp $
  *
  * I2C sensors plugin
  *
- * Copyright 2003,2004 Xavier Vello <xavier66@free.fr>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net> 
+ * Copyright (C) 2003, 2004 Xavier Vello <xavier66@free.fr>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net> 
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.22  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.21  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

@@ -1,9 +1,9 @@
-/* $Id: drv_generic_text.h,v 1.16 2004/11/28 15:50:24 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.17 2005/01/18 06:30:23 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.17  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.16  2004/11/28 15:50:24  reinelt
  * Cwlinux fixes (invalidation of user-defined chars)
  *

@@ -1,12 +1,12 @@
-/* $Id: plugin_isdn.c,v 1.5 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_isdn.c,v 1.6 2005/01/18 06:30:23 reinelt Exp $
  *
  * plugin for ISDN subsystem
  *
- * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Based on the old isdn client (isdn.c) which is
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: plugin_isdn.c,v $
+ * Revision 1.6  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.5  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

@@ -1,9 +1,9 @@
-/* $Id: timer.c,v 1.11 2004/09/19 09:31:19 reinelt Exp $
+/* $Id: timer.c,v 1.12 2005/01/18 06:30:24 reinelt Exp $
  *
  * generic timer handling
  *
- * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003, 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.12  2005/01/18 06:30:24  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.11  2004/09/19 09:31:19  reinelt
  * HD44780 busy flag checking improved: fall back to busy-waiting if too many errors occur
  *

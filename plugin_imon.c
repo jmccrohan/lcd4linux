@@ -1,8 +1,8 @@
-/* $Id: plugin_imon.c,v 1.13 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.14 2005/01/18 06:30:23 reinelt Exp $
  *
  * imond/telmond data processing
  *
- * Copyright 2003 Nico Wallmeier <nico.wallmeier@post.rwth-aachen.de>
+ * Copyright (C) 2003 Nico Wallmeier <nico.wallmeier@post.rwth-aachen.de>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.14  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.13  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

@@ -1,9 +1,9 @@
-/* $Id: drv_T6963.c,v 1.13 2004/12/22 20:24:02 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.14 2005/01/18 06:30:23 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
- * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
- * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.14  2005/01/18 06:30:23  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.13  2004/12/22 20:24:02  reinelt
  * T6963 fix for displays > 8 rows
  *

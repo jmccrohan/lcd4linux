@@ -1,8 +1,9 @@
-/* $Id: debug.c,v 1.11 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: debug.c,v 1.12 2005/01/18 06:30:22 reinelt Exp $
  *
  * debug() and error() functions
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.12  2005/01/18 06:30:22  reinelt
+ * added (C) to all copyright statements
+ *
  * Revision 1.11  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...

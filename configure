@@ -5371,7 +5371,6 @@ done
 
 
 # drivers
-# Drivers conf part
 
 echo "$as_me:$LINENO: checking which drivers to compile" >&5
 echo $ECHO_N "checking which drivers to compile... $ECHO_C" >&6
@@ -5726,7 +5725,6 @@ fi
 
 
 # plugins
-# Plugins conf part
 
 echo "$as_me:$LINENO: checking which plugins to compile" >&5
 echo $ECHO_N "checking which plugins to compile... $ECHO_C" >&6
