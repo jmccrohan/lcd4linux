@@ -1,12 +1,12 @@
-Display LCD2041
-Port /dev/ttyS2
-Speed 19200
-Contrast 160
+#Display LCD2041
+#Port /dev/ttyS2
+#Speed 19200
+#Contrast 160
 
-#Display HD44780
-#Port 0x378
-#Size 16x2
-#Delay 398
+Display HD44780
+Port 0x378
+Size 24x2
+Delay 503
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -44,10 +44,13 @@ Contrast 160
 #Display SIN
 #Port /dev/tty9
 
-Row1 "Disk%dm $R10dr+dw"
-Row2 "Net %nm $R10nr+nw"
+Row1 "Disk%dm $R14dr+dw"
+Row2 "Net %nm $R14nr+nw"
 Row3 "%s1 %s2 %s3"
 Row4 "%hc %ht %e1"
+
+#Row1 "abcdefghijklmnopqrstuvwxyz"
+#Row2 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.13 2001/03/01 15:11:30 ltoetsch Exp $
+/* $Id: Raster.c,v 1.14 2001/03/01 22:33:50 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.14  2001/03/01 22:33:50  reinelt
+ *
+ * renamed Raster_flush() to PPM_flush()
+ *
  * Revision 1.13  2001/03/01 15:11:30  ltoetsch
  * added PNG,Webinterface
  *
@@ -98,7 +102,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef WITH_PNG
-#include <gd.h>
+#include <gd/gd.h>
 #endif
 
 #include "debug.h"
@@ -123,7 +127,8 @@ static unsigned int background=0;
 extern char* output;
 
 
-int Raster_flush (void)
+#ifdef WITH_PPM
+int PPM_flush (void)
 {
   static int seq=0;
   static unsigned char *bitbuf=NULL;
@@ -214,10 +219,10 @@ int Raster_flush (void)
   
   return 0;
 }
-
+#endif
 
 #ifdef WITH_PNG
-int Png_flush (void)
+int PNG_flush (void)
 {
   static int seq=0;
   int xsize, ysize, row, col;
@@ -364,10 +369,10 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 
 LCD Raster[] = {
 #ifdef WITH_PPM  
-  { "PPM",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Raster_flush },
+  { "PPM",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,PPM_flush },
 #endif
 #ifdef WITH_PNG
-  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Png_flush },
+  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,PNG_flush },
 #endif
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.2 2000/07/31 10:43:44 reinelt Exp $
+/* $Id: udelay.c,v 1.3 2001/03/01 22:33:50 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.3  2001/03/01 22:33:50  reinelt
+ *
+ * renamed Raster_flush() to PPM_flush()
+ *
  * Revision 1.2  2000/07/31 10:43:44  reinelt
  *
  * some changes to support kernel-2.4 (different layout of various files in /proc)
@@ -55,7 +59,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "debug.h"
 #include "udelay.h"
 
 unsigned long loops_per_usec;
