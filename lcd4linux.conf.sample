@@ -14,6 +14,7 @@ Display myHD44780 {
 #   Port '0x378'
     Bits '8'
     Size '20x4'
+    asc255bug 1
     Wire {
 	RW     'GND'
 	RS     'AUTOFD'

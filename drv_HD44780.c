@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.1 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.2 2004/01/21 06:39:27 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,11 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.2  2004/01/21 06:39:27  reinelt
+ * HD44780 missed the "clear display' sequence
+ * asc255bug handling added
+ * HD44780 tested, works here!
+ *
  * Revision 1.1  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -347,7 +352,9 @@ static int drv_HD_start (char *section)
   drv_HD_command (0x03, 0x08, T_EXEC);  // Display off, cursor off, blink off
   drv_HD_command (0x03, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
   drv_HD_command (0x03, 0x06, T_EXEC);  // curser moves to right, no shift
-  
+  drv_HD_command (0x03, 0x01, T_CLEAR); // clear *both* displays
+  drv_HD_command (0x03, 0x03, T_CLEAR); // return home
+ 
   return 0;
 }
 
@@ -424,6 +431,7 @@ int drv_HD_list (void)
 int drv_HD_init (char *section)
 {
   WIDGET_CLASS wc;
+  int asc255bug;
   int ret;  
   
   XRES=5;
@@ -443,8 +451,13 @@ int drv_HD_init (char *section)
     return ret;
   
   // add fixed chars to the bar driver
+  // most displays have a full block on ascii 255, but some have kind of 
+  // an 'inverted P'. If you specify 'asc255bug 1 in the config, this
+  // char will not be used, but rendered by the bar driver
+  cfg_number(section, "asc255bug", 0, 0, 1, &asc255bug);
   drv_generic_text_bar_add_segment (  0,  0,255, 32); // ASCII  32 = blank
-  drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
+  if (!asc255bug) 
+    drv_generic_text_bar_add_segment (255,255,255,255); // ASCII 255 = block
   
   // register text widget
   wc=Widget_Text;
