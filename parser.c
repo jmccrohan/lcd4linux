@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.14 2001/03/13 08:34:15 reinelt Exp $
+/* $Id: parser.c,v 1.15 2001/03/14 13:19:29 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.15  2001/03/14 13:19:29  ltoetsch
+ * Added pop3/imap4 mail support
+ *
  * Revision 1.14  2001/03/13 08:34:15  reinelt
  *
  * corrected a off-by-one bug with sensors
@@ -162,6 +165,7 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "bs", T_BATT_STAT,  C_BATT,    0 },
 			  { "bd", T_BATT_DUR,   C_BATT,    0 },
 			  { "e*", T_MAIL,       C_MAIL,    0 },
+			  { "u*", T_MAIL_UNSEEN,C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },
 			  { "x*", T_EXEC,       C_EXEC,    1 },
 			  { "",  -1,            0 }};

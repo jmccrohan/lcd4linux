@@ -40,3 +40,8 @@ lcd4linux-0.98
 - seti@home client: new tokens 'hc' (% completed) and 'ht' (cpu time needed)
 
 - simple web-server driver (see README.Webinterface)
+
+- mail suport for pop3 and imap4, token 'u1' ..'u9' show unseen mail
+  (which is propably incorrect for normal mbox)
+
+- added another verbose level (-vvv) for debugging socket traffic

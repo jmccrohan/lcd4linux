@@ -27,7 +27,9 @@ udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
 fontmap.c fontmap.h \
-exec.c exec.h
+exec.c exec.h \
+mail2.c \
+socket.c socket.h
 
 EXTRA_lcd4linux_SOURCES= \
 acconfig.h \

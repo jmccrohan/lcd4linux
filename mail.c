@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.5 2001/03/13 08:34:15 reinelt Exp $
+/* $Id: mail.c,v 1.6 2001/03/14 13:19:29 ltoetsch Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.6  2001/03/14 13:19:29  ltoetsch
+ * Added pop3/imap4 mail support
+ *
  * Revision 1.5  2001/03/13 08:34:15  reinelt
  *
  * corrected a off-by-one bug with sensors
@@ -69,7 +72,7 @@
 #include "debug.h"
 #include "mail.h"
 
-int Mail (int index, int *num)
+int Mail (int index, int *num, int *unseen)
 {
   FILE *fstr;
   char buffer[32];
@@ -89,7 +92,15 @@ int Mail (int index, int *num)
 
   if (index<0 || index>MAILBOXES) return -1;
 
-  if (time(NULL)==now[index]) return 0;   // More then 1 second after last check
+  if (now[index] == 0) { /* not first time, to give faster a chance */
+    now[index] = -1;
+    return 0;
+  }
+  if (now[index] > 0) {	/* first time, immediately, else wait  */
+    sprintf(txt1, "Delay_e%d", index); 
+    if (time(NULL)<=now[index]+atoi(cfg_get(txt1)?:"5")) 
+      return 0;   // More then 5/Delay_eX seconds after last check?
+  }
   time(&now[index]);                      // for Mailbox #index
   /*
     Build the filename from the config
@@ -109,7 +120,15 @@ int Mail (int index, int *num)
   */
     rc=stat(fnp1, &fst);
     if ( rc != 0 ) {
-      error ("Error getting stat of Mailbox%d", index );
+      /* 
+        is it pop3 or imap4? 
+      */
+      rc = Mail_pop_imap(fnp1, num, unseen);
+      if (rc == 0)
+	return 0;
+      else
+	cfgmbx[index] = FALSE; /* don't try again */
+      error ("Error getting stat of Mailbox%d", index);
       return (-1);
     }
     if ( mbxlt[index] != fst.st_mtime ) {
@@ -145,6 +164,10 @@ int Mail (int index, int *num)
       }
     }
   }
+  /* FIXME look at the Status of Mails */
+  *unseen = v1 - mbxnum[index];
+  if (*unseen < 0)
+    *unseen = 0;
   mbxnum[index]=v1;
   *num=v1;
   return (0);

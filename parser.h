@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.10 2001/03/07 18:10:21 ltoetsch Exp $
+/* $Id: parser.h,v 1.11 2001/03/14 13:19:29 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.11  2001/03/14 13:19:29  ltoetsch
+ * Added pop3/imap4 mail support
+ *
  * Revision 1.10  2001/03/07 18:10:21  ltoetsch
  * added e(x)ec commands
  *
@@ -84,7 +87,7 @@ typedef enum {
   T_SETI_PRC, T_SETI_CPU,
   T_BATT_PERC, T_BATT_STAT, T_BATT_DUR,
   T_EXTENDED,
-  T_MAIL,
+  T_MAIL, T_MAIL_UNSEEN,
   T_SENSOR,
   T_EXEC  
 } TOKEN;

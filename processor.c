@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.19 2001/03/13 08:34:15 reinelt Exp $
+/* $Id: processor.c,v 1.20 2001/03/14 13:19:29 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.20  2001/03/14 13:19:29  ltoetsch
+ * Added pop3/imap4 mail support
+ *
  * Revision 1.19  2001/03/13 08:34:15  reinelt
  *
  * corrected a off-by-one bug with sensors
@@ -152,7 +155,7 @@ struct { int usage, in, out, total, max, peak; } isdn;
 struct { int rx, tx, total, max, peak; } ppp;
 struct { int perc, stat; double dur; } batt;
 struct { double perc, cput; } seti;
-struct { int num; } mail[MAILBOXES+1];
+struct { int num, unseen;} mail[MAILBOXES+1];
 struct { double val, min, max; } sensor[SENSORS+1];
 
 static double query (int token)
@@ -244,6 +247,9 @@ static double query (int token)
     
   case T_MAIL:
     return mail[(token>>8)-'0'].num;
+
+  case T_MAIL_UNSEEN:
+    return mail[(token>>8)-'0'].unseen;
 
   case T_SENSOR:
     return sensor[(token>>8)-'0'].val;
@@ -450,6 +456,7 @@ static void print_token (int token, char **p, char *start, int maxlen)
     break;
 
   case T_MAIL:
+  case T_MAIL_UNSEEN:
     val=query(token);
     *p+=sprintf (*p, "%3.0f", val);
     break;
@@ -521,8 +528,8 @@ static void collect_data (void)
   }
   
   for (i=0; i<=MAILBOXES; i++) {
-    if (token_usage[T_MAIL]&(1<<i)) {
-      Mail (i, &mail[i].num);
+    if (token_usage[T_MAIL]&(1<<i) || token_usage[T_MAIL_UNSEEN]&(1<<i) ) {
+      Mail (i, &mail[i].num, &mail[i].unseen);
     }
   }
   

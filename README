@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.17 2001/03/13 07:41:22 reinelt Exp $
+# $Id: README,v 1.18 2001/03/14 13:19:29 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -8,8 +8,8 @@ This is the README file for lcd4linux
 INTRODUCTION 
 
 lcd4linux is a small program that reads various information from the kernel
-(and probably from other subsystems, especially ISDN) and displays them on a
-LCD.
+(and from other subsystems, especially ISDN) and displays them on a LCD or
+other display device.
 
 It supports displaying text values and different types of bars: Horizontal and
 vertical bars, logarithmic bars, split bars (two independent bars in one row).
@@ -37,6 +37,8 @@ lcd4linux [-c key=val] [-F] [-f config-file] [-o output] [-q] [-v]
   suppress startup splash screen with '-q'
   generate info messages with '-v'
   generate debugging messages with '-vv'
+  debug socket traffic too, with '-vvv'
+  
   
 DIAGNOSTICS
 
@@ -154,6 +156,18 @@ Data-specific options:
      Min_x1 ..9 min value for bars (default 0)
      
   battery: Battwarning 10 (default 10)
+  
+  Mailbox:
+     The option string may be a plain mbox file or a pop3/imap4 server
+     string with the following format:
+     
+       pop3:[user[:pass]@]machine[:port]
+       imap4:[user[:pass]@]machine[:port][/dir]
+       
+     Port defaults to 110 and 143 respectively.
+     If /dir is not given, INBOX is assumed.
+       
+     Delay_e1..e9 delay in seconds for querying the MailboxN (default 5)  
    
  
 Driver-specific options:
@@ -228,9 +242,10 @@ Tokens:
   'bp', battery percentage (APM by now)
   'bs', battery status ('=' = online, '+' = charging, '-' discharging)
   'bd', battery duration in s{econds}, m{ins}, h{ours} or d{ays}
-  'e*', mails in mailbox 1-9,
+  'e*', mails in mailbox 1-9, total mail
+  'u*', mails in mailbox 1-9, unseen mail
   'x*', output of command 1-9
   
 Please have a look at lcd4linux.conf.sample, where you can find examples
-of all options.
+of all options and there usage.
 

@@ -1,8 +1,8 @@
-/* $Id: mail.h,v 1.3 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: socket.h,v 1.1 2001/03/14 13:19:29 ltoetsch Exp $
  *
- * email specific functions
+ * simple socket functions
  *
- * Copyright 2001 by Axel Ehnert <Axel@Ehnert.net>
+ * Copyright 2001 by Leopold Tötsch (lt@toetsch.at)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +19,22 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: mail.h,v $
- * Revision 1.3  2001/03/14 13:19:29  ltoetsch
+ * $Log: socket.h,v $
+ * Revision 1.1  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
- * Revision 1.2  2001/03/08 09:02:04  reinelt
- *
- * seti client cleanup
- *
- * Revision 1.1  2001/02/18 22:11:34  reinelt
- * *** empty log message ***
  *
  */
 
-#ifndef _MAIL_H
-#define _MAIL_H_
+#ifndef __SOCKET_H_
+#define __SOCKET_H_
 
-#define MAILBOXES 9
+int open_socket(char *machine, int port);
+int read_socket(int fd, char *buf, size_t size);
+int read_socket_match(int fd, char *buf, size_t size, char *match);
+int write_socket(int fd, char *buf);
 
-int Mail (int index, int *num, int *unseen);
-int Mail_pop_imap(char *mbx, int *num, int *unseen); /* mail2.c */
 #endif
+
+
+
