@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.7 2001/03/17 11:44:10 ltoetsch Exp $
+/* $Id: pixmap.c,v 1.8 2001/04/27 05:04:57 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,8 +20,14 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.8  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.7  2001/03/17 11:44:10  ltoetsch
- * allow more then 1 BAR_T
+ * allow more than 1 BAR_T
  *
  * Revision 1.6  2001/03/16 16:40:17  ltoetsch
  * implemented time bar

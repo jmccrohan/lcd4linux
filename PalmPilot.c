@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.5 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: PalmPilot.c,v 1.6 2001/04/27 05:04:57 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.6  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.5  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -98,16 +104,19 @@ static int Palm_open (void)
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
     error ("PalmPilot: open(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   if (tcgetattr(fd, &portset)==-1) {
     error ("PalmPilot: tcgetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   cfmakeraw(&portset);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     error ("PalmPilot: tcsetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   return fd;

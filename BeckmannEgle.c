@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.5 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.6 2001/04/27 05:04:57 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.6  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.5  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -137,10 +143,12 @@ static int BE_open (void)
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
     error ("BeckmannEgle: open(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   if (tcgetattr(fd, &portset)==-1) {
     error ("BeckmannEgle: tcgetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   cfmakeraw(&portset);           // 8N1
@@ -148,6 +156,7 @@ static int BE_open (void)
   cfsetospeed(&portset, B9600);  // 9600 baud
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     error ("BeckmannEgle: tcsetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   return fd;

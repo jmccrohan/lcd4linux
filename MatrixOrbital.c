@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.21 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.22 2001/04/27 05:04:57 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.22  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.21  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -184,16 +190,19 @@ static int MO_open (void)
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
     error ("MatrixOrbital: open(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   if (tcgetattr(fd, &portset)==-1) {
     error ("MatrixOrbital: tcgetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   cfmakeraw(&portset);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     error ("MatrixOrbital: tcsetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
     return -1;
   }
   return fd;

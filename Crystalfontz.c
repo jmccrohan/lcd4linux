@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.6 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.7 2001/04/27 05:04:57 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.7  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.6  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -93,16 +99,19 @@ struct termios portset;
 	fd=open(Port,O_RDWR|O_NOCTTY|O_NDELAY);
 	if (fd==-1) {
 		error ("Crystalfontz: open(%s) failed: %s", Port, strerror(errno));
+		unlock_port(Port);
 		return -1;
 	}
 	if (tcgetattr(fd,&portset)==-1) {
 		error ("Crystalfontz: tcgetattr(%s) failed: %s", Port, strerror(errno));
+		unlock_port(Port);
 		return -1;
 	}
 	cfmakeraw(&portset);
 	cfsetospeed(&portset,Speed);
 	if (tcsetattr(fd, TCSANOW, &portset)==-1) {
 		error ("Crystalfontz: tcsetattr(%s) failed: %s", Port, strerror(errno));
+		unlock_port(Port);
 		return -1;
 	}
 	return fd;

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.32 2001/03/13 07:41:22 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.33 2001/04/27 05:04:57 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.33  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.32  2001/03/13 07:41:22  reinelt
  *
  * added NEWS file
@@ -181,7 +187,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <errno.h>
 #include <signal.h>
 
@@ -431,12 +436,13 @@ int main (int argc, char *argv[])
   lcd_quit();
   
   if (got_signal==SIGHUP) {
-    int i, j;
+    long fd;
     debug ("restarting...");
     // close all files on exec
-    for (i=3; i<OPEN_MAX; i++) {
-      if ((j=fcntl(i,F_GETFD,0))!=-1)
-	fcntl(i,F_SETFD,j|FD_CLOEXEC);
+    for (fd=sysconf(_SC_OPEN_MAX); fd>2; fd--) {
+      int flag;
+      if ((flag=fcntl(fd,F_GETFD,0))!=-1)
+	fcntl(fd,F_SETFD,flag|FD_CLOEXEC);
     }
     execv (my_argv[0], my_argv);
     error ("execv() failed: %s", strerror(errno));

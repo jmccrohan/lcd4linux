@@ -1,4 +1,4 @@
-/* $Id: lock.c,v 1.2 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: lock.c,v 1.3 2001/04/27 05:04:57 reinelt Exp $
  *
  * UUCP style locking
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lock.c,v $
+ * Revision 1.3  2001/04/27 05:04:57  reinelt
+ *
+ * replaced OPEN_MAX with sysconf()
+ * replaced mktemp() with mkstemp()
+ * unlock serial port if open() fails
+ *
  * Revision 1.2  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -76,13 +82,15 @@ pid_t lock_port (char *port)
   snprintf(lockfile, sizeof(lockfile), LOCK, p);
   snprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
 
-  if (mktemp(tempfile)==NULL) {
-    error ("mktemp(%s) failed.", tempfile);
+  if ((fd=mkstemp(tempfile))==-1) {
+    error ("mkstemp(%s) failed: %s", tempfile, strerror(errno));
     return -1;
   }
   
-  if ((fd=creat(tempfile, 0664))==-1) {
-    error ("creat(%s) failed: %s", tempfile, strerror(errno));
+  if (fchmod(fd,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)==-1) {
+    error ("fchmod(%s) failed: %s", tempfile, strerror(errno));
+    close(fd);
+    unlink(tempfile);
     return -1;
   }
   
@@ -95,7 +103,7 @@ pid_t lock_port (char *port)
   }
   close (fd);
   
-
+  
   while (link(tempfile, lockfile)==-1) {
 
     if (errno!=EEXIST) {
