@@ -5482,8 +5482,8 @@ GRAPHIC="no"
 IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
-#  DRIVERS="$DRIVERS BeckmannEgle.lo"
-#  DRIVERS="$DRIVERS BeckmannEgle.o"
+#  DRIVERS="$DRIVERS drv_BeckmannEgle.lo"
+   DRIVERS="$DRIVERS drv_BeckmannEgle.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_BECKMANNEGLE 1

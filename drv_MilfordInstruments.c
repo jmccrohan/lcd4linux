@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.2 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.3 2004/05/28 13:51:42 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,11 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.3  2004/05/28 13:51:42  reinelt
+ *
+ * ported driver for Beckmann+Egle Mini-Terminals
+ * added 'flags' parameter to serial_init()
+ *
  * Revision 1.2  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -137,7 +142,7 @@ static int drv_MI_start (char *section)
   Model=i;
   info ("%s: using model '%s'", Name, Models[Model].name);
   
-  if (drv_generic_serial_open(section, Name)<0) return -1;
+  if (drv_generic_serial_open(section, Name, 0)<0) return -1;
   
   // initialize global variables
   DROWS    = Models[Model].rows;
@@ -194,7 +199,7 @@ int drv_MI_init (char *section)
   YRES  = 8;     // pixel height of one char 
   CHARS = 8;     // number of user-defineable characters
   CHAR0 = 0;     // ASCII of first user-defineable char
-  GOTO_COST = 4; // number of bytes a goto command requires
+  GOTO_COST = 2; // number of bytes a goto command requires
   
   // real worker functions
   drv_generic_text_real_write   = drv_MI_write;

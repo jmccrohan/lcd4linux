@@ -24,7 +24,6 @@ drv.c         drv.h         \
 evaluator.c   evaluator.h   \
 hash.c        hash.h        \
 layout.c      layout.h      \
-lock.c 	      lock.h        \
 pid.c         pid.h         \
 timer.c       timer.h       \
 thread.c      thread.h      \
@@ -57,7 +56,7 @@ drv_generic_serial.c        \
 drv_generic_serial.h        \
 drv_generic_parport.c       \
 drv_generic_parport.h       \
-BeckmannEgle.c              \
+drv_BeckmannEgle.c          \
 drv_Crystalfontz.c          \
 drv_Curses.c                \
 drv_Cwlinux.c               \

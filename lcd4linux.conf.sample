@@ -177,7 +177,7 @@ Widget RAM {
 
 Widget Busy {
     class 'Text'
-    expression cpu('busy', 500)
+    expression proc_stat::cpu('busy', 500)
     prefix 'Busy'	
     postfix '%'	
     width 10	
@@ -188,8 +188,8 @@ Widget Busy {
 
 Widget BusyBar {
     class 'Bar'
-    expression  cpu('busy',   500)
-    expression2 cpu('system', 500)
+    expression  proc_stat::cpu('busy',   500)
+    expression2 proc_stat::cpu('system', 500)
     length 10	
     direction 'E'
     update tack
@@ -220,7 +220,7 @@ Widget Disk {
     class 'Text'
     # disk.[rw]blk return blocks, we assume a blocksize of 512
     # to get the number in kB/s we would do blk*512/1024, which is blk/2 
-    expression (disk('.*', 'rblk', 500)+disk('.*', 'wblk', 500))/2
+    expression (proc_stat::disk('.*', 'rblk', 500)+proc_stat::disk('.*', 'wblk', 500))/2
     prefix 'disk'
     postfix ' '
     width 10	
@@ -231,8 +231,8 @@ Widget Disk {
 
 Widget DiskBar {
     class 'Bar'
-    expression  disk('.*', 'rblk', 500)
-    expression2 disk('.*', 'wblk', 500)
+    expression  proc_stat::disk('.*', 'rblk', 500)
+    expression2 proc_stat::disk('.*', 'wblk', 500)
     length 14	
     direction 'E'
     update tack

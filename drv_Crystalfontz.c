@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.17 2004/05/27 03:39:47 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.18 2004/05/28 13:51:42 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.18  2004/05/28 13:51:42  reinelt
+ *
+ * ported driver for Beckmann+Egle Mini-Terminals
+ * added 'flags' parameter to serial_init()
+ *
  * Revision 1.17  2004/05/27 03:39:47  reinelt
  *
  * changed function naming scheme to plugin::function
@@ -683,7 +688,7 @@ static int drv_CF_start (char *section)
   }
   
   // open serial port
-  if (drv_generic_serial_open(section, Name)<0) return -1;
+  if (drv_generic_serial_open(section, Name, 0)<0) return -1;
   
   // Fixme: why such a large delay?
   usleep(350*1000);

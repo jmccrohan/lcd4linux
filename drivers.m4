@@ -101,8 +101,8 @@ GRAPHIC="no"
 IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
-#  DRIVERS="$DRIVERS BeckmannEgle.lo"
-#  DRIVERS="$DRIVERS BeckmannEgle.o"
+#  DRIVERS="$DRIVERS drv_BeckmannEgle.lo"
+   DRIVERS="$DRIVERS drv_BeckmannEgle.o"
    AC_DEFINE(WITH_BECKMANNEGLE,1,[Beckmann&Egle driver])
 fi
 

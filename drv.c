@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.13 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv.c,v 1.14 2004/05/28 13:51:42 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.14  2004/05/28 13:51:42  reinelt
+ *
+ * ported driver for Beckmann+Egle Mini-Terminals
+ * added 'flags' parameter to serial_init()
+ *
  * Revision 1.13  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -145,11 +150,9 @@ extern DRIVER drv_X11;
 char *output=NULL;
 
 DRIVER *Driver[] = {
-  /* Fixme
-     #ifdef WITH_BECKMANNEGLE
-     &BeckmannEgle,
-     #endif
-  */
+#ifdef WITH_BECKMANNEGLE
+  &drv_BeckmannEgle,
+#endif
 #ifdef WITH_CRYSTALFONTZ
   &drv_Crystalfontz,
 #endif

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.h,v 1.3 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_generic_serial.h,v 1.4 2004/05/28 13:51:42 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_serial.h,v $
+ * Revision 1.4  2004/05/28 13:51:42  reinelt
+ *
+ * ported driver for Beckmann+Egle Mini-Terminals
+ * added 'flags' parameter to serial_init()
+ *
  * Revision 1.3  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -56,7 +61,7 @@
 #ifndef _DRV_GENERIC_SERIALH_
 #define _DRV_GENERIC_SERIAL_H_
 
-int   drv_generic_serial_open  (char *section, char *driver);
+int   drv_generic_serial_open  (char *section, char *driver, unsigned int flags);
 int   drv_generic_serial_poll  (unsigned char *string, int len);
 int   drv_generic_serial_read  (unsigned char *string, int len);
 void  drv_generic_serial_write (unsigned char *string, int len);

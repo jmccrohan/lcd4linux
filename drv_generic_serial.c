@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.8 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.9 2004/05/28 13:51:42 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.9  2004/05/28 13:51:42  reinelt
+ *
+ * ported driver for Beckmann+Egle Mini-Terminals
+ * added 'flags' parameter to serial_init()
+ *
  * Revision 1.8  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -242,7 +247,7 @@ static pid_t drv_generic_serial_unlock_port (char *Port)
 }
 
 
-int drv_generic_serial_open (char *section, char *driver)
+int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
 {
   int i, fd;
   pid_t pid;
@@ -295,6 +300,7 @@ int drv_generic_serial_open (char *section, char *driver)
   }
 
   cfmakeraw(&portset);
+  portset.c_cflag |= flags;
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     error ("%s: tcsetattr(%s) failed: %s", Driver, Port, strerror(errno));
