@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.15 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: hash.c,v 1.16 2004/03/03 08:40:07 hejl Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.16  2004/03/03 08:40:07  hejl
+ * Fixed memory leak in hash_get_regex
+ *
  * Revision 1.15  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -352,6 +355,7 @@ double hash_get_regex (HASH *Hash, char *key, int delay)
     char buffer[32];
     regerror(err, &preg, buffer, sizeof(buffer));
     error ("error in regular expression: %s", buffer);
+    regfree(&preg);
     return 0.0;
   }
 
@@ -363,6 +367,7 @@ double hash_get_regex (HASH *Hash, char *key, int delay)
       sum+=hash_get_delta(Hash, Hash->Items[i].key, delay);
     }
   }
+  regfree(&preg);
   return sum;
 }
 
