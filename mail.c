@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.7 2001/03/15 14:25:05 ltoetsch Exp $
+/* $Id: mail.c,v 1.8 2001/03/15 15:49:23 ltoetsch Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.8  2001/03/15 15:49:23  ltoetsch
+ * fixed compile HD44780.c, cosmetics
+ *
  * Revision 1.7  2001/03/15 14:25:05  ltoetsch
  * added unread/total news
  *
@@ -95,14 +98,18 @@ int Mail (int index, int *num, int *unseen)
 
   if (index<0 || index>MAILBOXES) return -1;
 
-  if (now[index] == 0) { /* not first time, to give faster a chance */
-    now[index] = -1;
+  if (now[index] == 0) { /* first time, to give faster a chance */
+    now[index] = -1-index;
     return 0;
   }
-  if (now[index] > 0) {	/* first time, immediately, else wait  */
+  if (now[index] < -1) { /* wait different time to avoid long startup */
+    now[index]++;
+    return 0;
+  }
+  if (now[index] > 0) {	/* not first time, delay  */
     sprintf(txt1, "Delay_e%d", index); 
     if (time(NULL)<=now[index]+atoi(cfg_get(txt1)?:"5")) 
-      return 0;   // More then 5/Delay_eX seconds after last check?
+      return 0;   // no more then 5/Delay_eX seconds after last check?
   }
   time(&now[index]);                      // for Mailbox #index
   /*

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.21 2001/03/15 09:47:13 reinelt Exp $
+/* $Id: processor.c,v 1.22 2001/03/15 15:49:23 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.22  2001/03/15 15:49:23  ltoetsch
+ * fixed compile HD44780.c, cosmetics
+ *
  * Revision 1.21  2001/03/15 09:47:13  reinelt
  *
  * some fixes to ppdef
@@ -458,12 +461,6 @@ static void print_token (int token, char **p, char *start, int maxlen)
       }
       *p+=sprintf(*p, "%2.0f%c", val, eh);
     }
-    break;
-
-  case T_MAIL:
-  case T_MAIL_UNSEEN:
-    val=query(token);
-    *p+=sprintf (*p, "%3.0f", val);
     break;
 
   case T_EXEC:

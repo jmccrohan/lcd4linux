@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.18 2001/03/15 09:47:13 reinelt Exp $
+/* $Id: HD44780.c,v 1.19 2001/03/15 15:49:22 ltoetsch Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.19  2001/03/15 15:49:22  ltoetsch
+ * fixed compile HD44780.c, cosmetics
+ *
  * Revision 1.18  2001/03/15 09:47:13  reinelt
  *
  * some fixes to ppdef
@@ -182,7 +185,10 @@ static LCD Lcd;
 static unsigned short Port=0;
 
 static char *PPdev=NULL;
+
+#ifdef WITH_PPDEV
 static int   PPfd=-1;
+#endif
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -754,6 +760,7 @@ int HD_flush (void)
 
 int HD_quit (void)
 {
+#ifdef WITH_PPDEV
   if (PPdev) {
     debug ("closing ppdev %s", PPdev);
     if (ioctl(PPfd, PPRELEASE)) {
@@ -763,7 +770,9 @@ int HD_quit (void)
       error ("close(%s) failed: %s", PPdev, strerror(errno));
       return -1;
     }
-  } else {
+  } else 
+#endif    
+   {
     debug ("closing raw port 0x%x", Port);
     if (ioperm(Port, 3, 0)!=0) {
       error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
