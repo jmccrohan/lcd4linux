@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.8 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: widget_bar.c,v 1.9 2004/03/06 20:31:16 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.9  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.8  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -94,22 +100,22 @@ void widget_bar_update (void *Self)
   
   // evaluate expressions
   val1 = 0.0;
-  if (Bar->expression1!=NULL && *Bar->expression1!='\0') {
-    Eval(Bar->expression1, &result); 
+  if (Bar->tree1 != NULL) {
+    Eval(Bar->tree1, &result); 
     val1 = R2N(&result); 
     DelResult(&result);
   }
   
   val2 = val1;
-  if (Bar->expression2!=NULL && *Bar->expression2!='\0') {
-    Eval(Bar->expression2, &result); 
+  if (Bar->tree2!=NULL) {
+    Eval(Bar->tree2, &result); 
     val2 = R2N(&result); 
     DelResult(&result);
   }
   
   // minimum: if expression is empty, do auto-scaling
-  if (Bar->expr_min!=NULL && *Bar->expr_min!='\0') {
-    Eval(Bar->expr_min, &result); 
+  if (Bar->tree_min!=NULL) {
+    Eval(Bar->tree_min, &result); 
     min = R2N(&result); 
     DelResult(&result);
   } else {
@@ -119,8 +125,8 @@ void widget_bar_update (void *Self)
   }
   
   // maximum: if expression is empty, do auto-scaling
-  if (Bar->expr_max!=NULL && *Bar->expr_max!='\0') {
-    Eval(Bar->expr_max, &result); 
+  if (Bar->tree_max!=NULL) {
+    Eval(Bar->tree_max, &result); 
     max = R2N(&result); 
     DelResult(&result);
   } else {
@@ -145,7 +151,6 @@ void widget_bar_update (void *Self)
     W->class->draw(W);
   
 }
-
 
 
 int widget_bar_init (WIDGET *Self) 
@@ -175,6 +180,12 @@ int widget_bar_init (WIDGET *Self)
   // minimum and maximum value
   Bar->expr_min = cfg_get_raw (section, "min", NULL);
   Bar->expr_max = cfg_get_raw (section, "max", NULL);
+
+  // compile all expressions
+  Compile (Bar->expression1, &Bar->tree1);
+  Compile (Bar->expression2, &Bar->tree2);
+  Compile (Bar->expr_min,    &Bar->tree_min);
+  Compile (Bar->expr_max,    &Bar->tree_max);
 
   // bar length, default 1
   cfg_number (section, "length", 1,  0, 99999, &(Bar->length));

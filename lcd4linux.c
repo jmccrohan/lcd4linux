@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.66 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.67 2004/03/06 20:31:16 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.67  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.66  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -569,19 +575,22 @@ int main (int argc, char *argv[])
   // maybe go into interactive mode
   if (interactive) {
     char line[1024];
+    void *tree;
     RESULT result = {0, 0.0, NULL};
     
     printf("\neval> ");
     for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
       if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
       if (strlen(line)>0) {
-	Eval(line, &result);
-	if (result.type==R_NUMBER) {
-	  printf ("%g\n", R2N(&result));
-	} else if (result.type==R_STRING) {
-	  printf ("'%s'\n", R2S(&result));
+	if (Compile(line, &tree)!=-1) {
+	  Eval (tree, &result);
+	  if (result.type==R_NUMBER) {
+	    printf ("%g\n", R2N(&result));
+	  } else if (result.type==R_STRING) {
+	    printf ("'%s'\n", R2S(&result));
+	  }
+	  DelResult (&result);
 	}
-	DelResult (&result);
       }
       printf("eval> ");
     }

@@ -1,15 +1,34 @@
-/* $Id: evaluator.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: evaluator.c,v 1.15 2004/03/06 20:31:16 reinelt Exp $
  *
  * expression evaluation
  *
- * based on EE (Expression Evaluator) which is 
- * (c) 1992 Mark Morley <morley@Camosun.BC.CA>
- * 
- * heavily modified 2003 by Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
- * FIXME: GPL or not GPL????
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * LCD4Linux is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.15  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.14  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -69,58 +88,24 @@
  */
 
 
-/***************************************************************************
- **                                                                       **
- ** EE.C         Expression Evaluator                                     **
- **                                                                       **
- ** AUTHOR:      Mark Morley                                              **
- ** COPYRIGHT:   (c) 1992 by Mark Morley                                  **
- ** DATE:        December 1991                                            **
- ** HISTORY:     Jan 1992 - Made it squash all command line arguments     **
- **                         into one big long string.                     **
- **                       - It now can set/get VMS symbols as if they     **
- **                         were variables.                               **
- **                       - Changed max variable name length from 5 to 15 **
- **              Jun 1992 - Updated comments and docs                     **
- **                                                                       **
- ** You are free to incorporate this code into your own works, even if it **
- ** is a commercial application.  However, you may not charge anyone else **
- ** for the use of this code!  If you intend to distribute your code,     **
- ** I'd appreciate it if you left this message intact.  I'd like to       **
- ** receive credit wherever it is appropriate.  Thanks!                   **
- **                                                                       **
- ** I don't promise that this code does what you think it does...         **
- **                                                                       **
- ** Please mail any bug reports/fixes/enhancments to me at:               **
- **      morley@camosun.bc.ca                                             **
- ** or                                                                    **
- **      Mark Morley                                                      **
- **      3889 Mildred Street                                              **
- **      Victoria, BC  Canada                                             **
- **      V8Z 7G1                                                          **
- **      (604) 479-7861                                                   **
- **                                                                       **
- ***************************************************************************/
-
-
 /* 
  * exported functions:
- *
- * void DelResult (RESULT *result)
- *   sets a result to none
- *   frees a probably allocated memory
  *
  * int SetVariable (char *name, RESULT *value)
  *   adds a generic variable to the evaluator
  *
- * int AddNumericVariable(char *name, double value)
+ * int SetVariableNumeric (char *name, double value)
  *   adds a numerical variable to the evaluator
  *
- * int AddStringVariable(char *name, char *value)
+ * int SetVariableString (char *name, char *value)
  *   adds a numerical variable to the evaluator
  *
- * int AddFunction (char *name, int args, void (*func)())
+ * int AddFunction (char *name, int argc, void (*func)())
  *   adds a function to the evaluator
+ *
+ * void DelResult (RESULT *result)
+ *   sets a result to none
+ *   frees a probably allocated memory
  *
  * RESULT* SetResult (RESULT **result, int type, void *value)
  *   initializes a result
@@ -135,7 +120,6 @@
  *   evaluates an expression
  *
  */
-
 
 
 #include "config.h"
@@ -155,59 +139,110 @@
 #endif
 
 
-// Token types
-#define T_DELIMITER 1
-#define T_NUMBER    2
-#define T_STRING    3
-#define T_NAME      4
+typedef enum {
+  T_NAME, 
+  T_NUMBER, 
+  T_STRING,
+  T_OPERATOR,
+  T_VARIABLE,
+  T_FUNCTION
+} TOKEN;
 
+typedef enum {
+  O_LST, // expression lists
+  O_SET, // variable assignements
+  O_CND, // conditional a?b:c
+  O_COL, // colon in a?b:c
+  O_OR,  // logical OR
+  O_AND, // logical AND
+  O_EQ,  // equal
+  O_NE,  // not equal
+  O_LT,  // less than
+  O_LE,  // less or equal
+  O_GT,  // greater than
+  O_GE,  // greater or equal
+  O_ADD, // addition
+  O_SUB, // subtraction
+  O_SGN, // sign '-'
+  O_CAT, // string concatenation
+  O_MUL, // multiplication
+  O_DIV, // division
+  O_MOD, // modulo
+  O_POW, // power
+  O_NOT, // logical NOT
+  O_BRO, // open brace
+  O_COM, // comma (argument seperator)
+  O_BRC  // closing brace
+} OPERATOR;
 
-#define is_blank(c)  (c==' ' || c=='\t')
-#define is_number(c) (isdigit(c) || c=='.')
-#define is_name(c)   (isalnum(c) || c=='_')
-#define is_delim(c)  (strchr("+-*/%^().,;:=<>?!&|", c)!=NULL)
-
+typedef struct {
+  char *pattern;
+  int   len;
+  OPERATOR op;
+} PATTERN;
 
 typedef struct {
   char   *name;
   RESULT *value;
 } VARIABLE;
 
-static VARIABLE *Variable=NULL;
-static int      nVariable=0;
-
-
 typedef struct {
   char *name;
-  int   args;
+  int   argc;
   void (*func)();
 } FUNCTION;
 
-static FUNCTION *Function=NULL;
-static int      nFunction=0;
-static int       FunctionSorted=0;
+typedef struct _NODE {
+  TOKEN     Token;
+  OPERATOR  Operator;
+  RESULT   *Result;
+  VARIABLE *Variable;
+  FUNCTION *Function;
+  int Children;
+  struct _NODE **Child;} NODE;
 
-static char *Expression=NULL;
-static char *Token=NULL;
-static int   Type=0;
 
 
-// error handling
-#define ERROR(n) longjmp(jb,n)
-jmp_buf jb;
-
-char* ErrMsg[] = {
-  "",
-  "Syntax error",
-  "Unbalanced parenthesis",
-  "Division by zero",
-  "Unknown variable",
-  "Unrecognized function",
-  "Wrong number of arguments",
-  "Missing an argument",
-  "Empty expression"
+// operators
+// IMPORTANT! list must be sorted by length!
+static PATTERN Pattern[] = {
+  { ";",  1, O_LST }, // expression lists
+  { "=",  1, O_SET }, // variable assignements
+  { "?",  1, O_CND }, // conditional a?b:c
+  { ":",  1, O_COL }, // colon a?b:c
+  { "|",  1, O_OR  }, // logical OR
+  { "&",  1, O_AND }, // logical AND
+  { "<",  1, O_LT  }, // less than
+  { ">",  1, O_GT  }, // greater than
+  { "+",  1, O_ADD }, // addition
+  { "-",  1, O_SUB }, // subtraction or sign
+  { ".",  1, O_CAT }, // string concatenation
+  { "*",  1, O_MUL }, // multiplication
+  { "/",  1, O_DIV }, // division
+  { "%",  1, O_MOD }, // modulo
+  { "^",  1, O_POW }, // power
+  { "!",  1, O_NOT }, // logical NOT
+  { "(",  1, O_BRO }, // open brace
+  { ",",  1, O_COM }, // comma (argument seperator)
+  { ")",  1, O_BRC }, // closing brace
+  { "==", 2, O_EQ  }, // equal
+  { "!=", 2, O_NE  }, // not equal
+  { "<=", 2, O_LE  }, // less or equal
+  { ">=", 2, O_GE  }  // greater or equal
 };
 
+
+static char *Expression = NULL;
+static char *ExprPtr = NULL;
+static char *Word = NULL;
+static TOKEN Token = -1;
+static OPERATOR Operator = -1;
+
+static VARIABLE *Variable=NULL;
+static int      nVariable=0;
+
+static FUNCTION *Function = NULL;
+static int      nFunction = 0;
 
 
 void DelResult (RESULT *result)
@@ -234,7 +269,7 @@ static RESULT* NewResult (void)
 {
   RESULT *result = malloc(sizeof(RESULT));
   if (result==NULL) {
-    error ("cannot allocate result: out of memory!");
+    error ("Evaluator: cannot allocate result: out of memory!");
     return NULL;
   }
   result->type=0;
@@ -268,19 +303,20 @@ RESULT* SetResult (RESULT **result, int type, void *value)
   if (*result) {
     DelResult(*result);
   } else {
-    if ((*result=NewResult())==NULL) 
+    if ((*result = NewResult()) == NULL) 
       return NULL;
   }
   
-  if (type==R_NUMBER) {
-    (*result)->type=R_NUMBER;
-    (*result)->number=*(double*)value;
-    (*result)->string=NULL;
-  } else if (type==R_STRING) {
-    (*result)->type=R_STRING;
-    (*result)->string=strdup(value);
+  if (type == R_NUMBER) {
+    (*result)->type   = R_NUMBER;
+    (*result)->number = *(double*)value;
+    (*result)->string = NULL;
+  } else if (type == R_STRING) {
+    (*result)->type   = R_STRING;
+    (*result)->number = 0.0;
+    (*result)->string = strdup(value);
   } else {
-    error ("internal error: invalid result type %d", type); 
+    error ("Evaluator: internal error: invalid result type %d", type); 
     return NULL;
   }
   
@@ -291,7 +327,7 @@ RESULT* SetResult (RESULT **result, int type, void *value)
 double R2N (RESULT *result)
 {
   if (result==NULL) {
-    error ("internal error: NULL result");
+    error ("Evaluator: internal error: NULL result");
     return 0.0;
   }
 
@@ -305,7 +341,7 @@ double R2N (RESULT *result)
     return result->number;
   }
   
-  error ("internal error: invalid result type %d", result->type); 
+  error ("Evaluator: internal error: invalid result type %d", result->type); 
   return 0.0;
 }
 
@@ -315,7 +351,7 @@ char* R2S (RESULT *result)
   char buffer[16];
   
   if (result==NULL) {
-    error ("internal error: NULL result");
+    error ("Evaluator: internal error: NULL result");
     return NULL;
   }
 
@@ -331,68 +367,21 @@ char* R2S (RESULT *result)
     return result->string;
   }
   
-  error ("internal error: invalid result type %d", result->type); 
+  error ("Evaluator: internal error: invalid result type %d", result->type); 
   return NULL;
   
 }
 
-
-// bsearch compare function for variables 
-static int v_lookup (const void *a, const void *b)
+static VARIABLE *FindVariable (char *name)
 {
-  char *name=(char*)a;
-  VARIABLE *v=(VARIABLE*)b;
+  int i;
 
-  return strcmp(name, v->name);
-}
-
-
-// qsort compare function for variables
-static int v_sort (const void *a, const void *b)
-{
-  VARIABLE *va=(VARIABLE*)a;
-  VARIABLE *vb=(VARIABLE*)b;
-
-  return strcmp(va->name, vb->name);
-}
-
-
-static int DelVariable (char *name)
-{
-  VARIABLE *V;
-
-  V=bsearch(name, Variable, nVariable, sizeof(VARIABLE), v_lookup);
-  if (V!=NULL) {
-    FreeResult (V->value);
-    memmove (V, V+1, (nVariable-1)*sizeof(VARIABLE)-(V-Variable));
-    nVariable--;
-    Variable=realloc(Variable, nVariable*sizeof(VARIABLE));
-    return 1;
-  }
-  return 0;
-}
-
-
-static int GetVariable (char *name, RESULT *value)
-{
-  VARIABLE *V;
-
-  V=bsearch(name, Variable, nVariable, sizeof(VARIABLE), v_lookup);
-  if (V!=NULL) {
-    value->type=V->value->type;
-    value->number=V->value->number;
-    if(value->string) {
-      free(value->string);
-      value->string=0;
+  for (i=0; i<nVariable; i++) {
+    if (strcmp(name, Variable[i].name)==0) {
+      return &Variable[i];
     }
-    if (V->value->string!=NULL) {
-      value->string=strdup(V->value->string);
-    }
-    return 1;
   }
-  
-  DelResult (value);
-  return 0;
+  return NULL;
 }
 
 
@@ -400,561 +389,807 @@ int SetVariable (char *name, RESULT *value)
 {
   VARIABLE *V;
 
-  V=bsearch(name, Variable, nVariable, sizeof(VARIABLE), v_lookup);
-  if (V!=NULL) {
+  V = FindVariable(name);
+  if (V != NULL) {
     FreeResult (V->value);
-    V->value=(value);
+    V->value = value;
     return 1;
   }
   
-  // we append the var at the end and re-sort
-  // the whole array. As every SetVariable call
-  // implies a bsearch(), this is ok and cannot
-  // be optimized.
   nVariable++;
-  Variable=realloc(Variable, nVariable*sizeof(VARIABLE));
-  Variable[nVariable-1].name=strdup(name);
-  Variable[nVariable-1].value=DupResult(value);
-  qsort(Variable, nVariable, sizeof(VARIABLE), v_sort);
+  Variable = realloc(Variable, nVariable*sizeof(VARIABLE));
+  Variable[nVariable-1].name  = strdup(name);
+  Variable[nVariable-1].value = DupResult(value);
 
   return 0;
 }
 
-void DeleteVariables(void) {
-	int i;
+
+int SetVariableNumeric (char *name, double value)
+{
+  RESULT result;
+  
+  result.type   = R_NUMBER;
+  result.number = value;
+  result.string = NULL;
+  
+  return SetVariable (name, &result);
+}
+
+
+int SetVariableString (char *name, char *value)
+{
+  RESULT result;
+  
+  result.type   =R_STRING;
+  result.number = 0.0;
+  result.string = strdup(value);
+  
+  return SetVariable (name, &result);
+}
+
+
+void DeleteVariables(void) 
+{
+  int i;
 	
-	for (i=0;i<nVariable;i++) {
-		free(Variable[i].name);
-		FreeResult(Variable[i].value);
-	}
-	free(Variable);
-	Variable=NULL;
-	nVariable=0;
-}
-
-int AddNumericVariable (char *name, double value)
-{
-  RESULT result;
-  
-  result.type=R_NUMBER;
-  result.number=value;
-  result.string=NULL;
-  
-  return SetVariable (name, &result);
-}
-
-
-int AddStringVariable (char *name, char *value)
-{
-  RESULT result;
-  
-  result.type=R_STRING;
-  result.number=0.0;
-  result.string=strdup(value);
-  
-  return SetVariable (name, &result);
-}
-
-
-// bsearch compare function for functions 
-static int f_lookup (const void *a, const void *b)
-{
-  char *name=(char*)a;
-  FUNCTION *f=(FUNCTION*)b;
-  return strcasecmp(name, f->name);
-}
-
-
-// qsort compare function for functions
-static int f_sort (const void *a, const void *b)
-{
-  FUNCTION *va=(FUNCTION*)a;
-  FUNCTION *vb=(FUNCTION*)b;
-  return strcasecmp(va->name, vb->name);
-}
-
-
-static FUNCTION* GetFunction (char *name)
-{
-  FUNCTION *F;
-  
-  if (!FunctionSorted) {
-    FunctionSorted=1;
-    qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
+  for (i=0;i<nVariable;i++) {
+    free(Variable[i].name);
+    FreeResult(Variable[i].value);
   }
-  
-  F=bsearch(name, Function, nFunction, sizeof(FUNCTION), f_lookup);
-  
-  return F;
+  free(Variable);
+  Variable  = NULL;
+  nVariable = 0;
 }
 
 
-int AddFunction (char *name, int args, void (*func)())
+static FUNCTION* FindFunction (char *name)
 {
-  // we append the func at the end, and flag
-  // the function table as unsorted. It will be
-  // sorted again on the next GetFunction call.
-  FunctionSorted=0;
+  int i;
+
+  for (i=0; i<nFunction; i++) {
+    if (strcmp(name, Function[i].name)==0) {
+      return &Function[i];
+    }
+  }
+  return NULL;
+}
+
+
+int AddFunction (char *name, int argc, void (*func)())
+{
   nFunction++;
-  Function=realloc(Function, nFunction*sizeof(FUNCTION));
-  Function[nFunction-1].name=strdup(name);
-  Function[nFunction-1].args=args;
-  Function[nFunction-1].func=func;
+  Function = realloc(Function, nFunction*sizeof(FUNCTION));
+  Function[nFunction-1].name = strdup(name);
+  Function[nFunction-1].argc = argc;
+  Function[nFunction-1].func = func;
   
   return 0;
 }
 
-void DeleteFunctions(void) {
-	int i;
+
+void DeleteFunctions(void) 
+{
+  int i;
 	
-	for (i=0;i<nFunction;i++) {
-		free(Function[i].name);
-	}
-	free(Function);
-	Function=NULL;
-	nFunction=0;
+  for (i=0;i<nFunction;i++) {
+    free(Function[i].name);
+  }
+  free(Function);
+  Function=NULL;
+  nFunction=0;
 }
 
 
-
-// Prototypes
-static void Level01 (RESULT *result);
-static void Level02 (RESULT *result);
-static void Level03 (RESULT *result);
-static void Level04 (RESULT *result);
-static void Level05 (RESULT *result);
-static void Level06 (RESULT *result);
-static void Level07 (RESULT *result);
-static void Level08 (RESULT *result);
-static void Level09 (RESULT *result);
-static void Level10 (RESULT *result);
-static void Level11 (RESULT *result);
-static void Level12 (RESULT *result);
-
-
+#define is_space(c)  ((c) == ' ' || (c) == '\t')
+#define is_digit(c)  ((c) >= '0' && (c) <= '9')
+#define is_alpha(c) (((c) >= 'A' && (c) <= 'Z') || ((c) >= 'a' && (c) <= 'z') || ((c) == '_'))
+#define is_alnum(c) (is_alpha(c) || is_digit(c))
 
 static void Parse (void)
 {
-  char *start;
-  
-  Type=0;
-  if (Token) {
-    free (Token);
-    Token=NULL;
+  Token = -1;
+  Operator = -1;
+
+  if (Word) {
+    free (Word);
+    Word = NULL;
   }
   
-  while (is_blank(*Expression)) Expression++;
+  // NULL expression?
+  if (ExprPtr == NULL) {
+    Word = strdup("");
+    return;
+  }
   
-  if (is_delim(*Expression)) {
-    Type=T_DELIMITER;
-    // special case for <=, >=, ==, !=
-    if (strchr("<>=!", *Expression)!=NULL && *(Expression+1)=='=') {
-      Token=strndup(Expression, 2);
-      Expression+=2;
-    } else {
-      Token=strndup(Expression, 1);
-      Expression++;
+  // skip leading whitespace
+  while (is_space(*ExprPtr)) ExprPtr++;
+  
+  // names
+  if (is_alpha(*ExprPtr)) {
+    char *start = ExprPtr;
+    while (is_alnum(*ExprPtr)) ExprPtr++;
+    if (*ExprPtr==':' && *(ExprPtr+1)==':' && is_alpha(*(ExprPtr+2))) {
+      ExprPtr+=3;
+      while (is_alnum(*ExprPtr)) ExprPtr++;
     }
+    Word  = strndup(start, ExprPtr-start);
+    Token = T_NAME;
   }
   
-  else if (isdigit(*Expression)) {
-    Type=T_NUMBER;
-    start=Expression; 
-    while (is_number(*Expression)) Expression++;
-    Token=strndup(start, Expression-start);
+  // numbers
+  else if (is_digit(*ExprPtr) || (*ExprPtr=='.' && is_digit(*(ExprPtr+1)))) {
+    char *start = ExprPtr;
+    while (is_digit(*ExprPtr)) ExprPtr++;
+    if (*ExprPtr=='.') {
+      ExprPtr++;
+      while (is_digit(*ExprPtr)) ExprPtr++;
+    }
+    Word  = strndup(start, ExprPtr-start);
+    Token = T_NUMBER;
   }
   
-  else if (is_name(*Expression)) {
-    Type=T_NAME;
-    start=Expression;
-    while (is_name(*Expression)) Expression++;
-    Token=strndup(start, Expression-start);
+  // strings
+  else if (*ExprPtr=='\'') {
+    char *start=++ExprPtr;
+    while (*ExprPtr!='\0' && *ExprPtr!='\'') ExprPtr++;
+    Word  = strndup(start, ExprPtr-start);
+    Token = T_STRING;
+    if (*ExprPtr=='\'') ExprPtr++;
   }
   
-  else if (*Expression=='\'') {
-    Type=T_STRING;
-    start=++Expression;
-    while (*Expression && *Expression!='\'') Expression++;
-    Token=strndup(start, Expression-start);
-    if (*Expression=='\'') Expression++;
-  }
-  
-  else if (*Expression) {
-    ERROR(E_SYNTAX);
-  }
-  
-  while(is_blank(*Expression)) Expression++;
-
-  // empty token
-  if (Token==NULL) Token=strdup("");
-}
-
-
-
-// expression lists
-static void Level01 (RESULT *result)
-{
-  do {
-    while (Type==T_DELIMITER && *Token==';') Parse();
-    Level02(result);
-  } while (Type==T_DELIMITER && *Token==';');
-}
-
-
-// variable assignments
-static void Level02 (RESULT *result)
-{
-  char *name;
-  
-  if (Type==T_NAME) {
-    if (Expression[0]=='=' && Expression[1]!='=') {
-      name=strdup(Token);
-      Parse();
-      Parse();
-      if (*Token && (Type!=T_DELIMITER || *Token!=';')) {
-	Level03(result);
-	SetVariable(name, result);
-      } else {
-	DelVariable(name);
+  // operators
+  else {
+    int i;
+    for (i=sizeof(Pattern)/sizeof(Pattern[0])-1; i>=0; i--) {
+      int len=Pattern[i].len;
+      if (strncmp (ExprPtr, Pattern[i].pattern, Pattern[i].len)==0) {
+	Word  = strndup(ExprPtr, len);
+	Token = T_OPERATOR;
+	Operator = Pattern[i].op;
+	ExprPtr += len;
+	break;
       }
-      free (name);
-      return;
     }
   }
-  Level03(result);
+  
+  // syntax check
+  if (Token == -1 && *ExprPtr != '\0') {
+    error ("Evaluator: parse error in <%s>: garbage <%s>", Expression, ExprPtr);
+  }
+  
+  // skip trailing whitespace
+  while (is_space(*ExprPtr)) ExprPtr++;
+  
+  // empty token
+  if (Word==NULL) Word=strdup("");
 }
 
 
-// conditional expression a?b:c
-static void Level03 (RESULT *result)
+static NODE* NewNode (NODE *Child)
 {
-  RESULT r_then = {0, 0.0, NULL};
-  RESULT r_else = {0, 0.0, NULL};
+  NODE *N;
+
+  N=malloc(sizeof(NODE));
+  if (N==NULL) return NULL;
+
+  memset (N, 0, sizeof(NODE)); 
+  N->Token = Token;
+  N->Operator = Operator;
   
-  Level04(result);
+  if (Child != NULL) {
+    N->Children = 1;
+    N->Child    = malloc(sizeof(NODE*));
+    N->Child[0] = Child;
+  }
   
-  while(Type==T_DELIMITER && *Token=='?') {
+  return N;
+  
+}
+
+
+static NODE* JunkNode (void)
+{
+  NODE *Junk;
+  
+  Junk = NewNode(NULL);
+  Junk->Token = T_STRING;
+  SetResult (&Junk->Result, R_STRING, "");
+  
+  return Junk;
+}
+
+
+static void LinkNode (NODE *Root, NODE *Child)
+{
+  
+  if (Child == NULL) return;
+
+  Root->Children++;
+  Root->Child = realloc (Root->Child, Root->Children*sizeof(NODE*));
+  if (Root->Child==NULL) return;
+  Root->Child[Root->Children-1]=Child;
+}
+
+
+// forward declaration
+static NODE* Level01 (void);
+
+
+// literal numbers, variables, functions
+static NODE* Level12 (void)
+{
+  NODE *Root = NULL;
+  
+  if (Token == T_OPERATOR && Operator == O_BRO) {
     Parse();
-    Level01 (&r_then);
-    if (Type==T_DELIMITER && *Token==':') {
+    Root = Level01();
+    if (Token != T_OPERATOR || Operator != O_BRC) {
+      error ("Evaluator: unbalanced parentheses in <%s>", Expression);
+      LinkNode (Root, JunkNode());
+    }
+  }
+  
+  else if (Token == T_NUMBER) {
+    double value = atof(Word);
+    Root = NewNode(NULL);
+    SetResult (&Root->Result, R_NUMBER, &value);
+  }
+  
+  else if (Token == T_STRING) {
+    Root = NewNode(NULL);
+    SetResult (&Root->Result, R_STRING, Word);
+  }
+  
+  else if (Token == T_NAME) {
+
+    // look-ahead for opening brace
+    if (*ExprPtr == '(') {
+      int argc=0;
+      Root = NewNode(NULL);
+      Root->Token = T_FUNCTION;
+      Root->Result = NewResult();
+      Root->Function = FindFunction(Word);
+      if (Root->Function == NULL) {
+	error ("Evaluator: unknown function '%s' in <%s>", Word, Expression);
+	Root->Token=T_STRING;
+	SetResult (&Root->Result, R_STRING, "");
+      }
+      
+      // opening brace
       Parse();
-      Level01 (&r_else);
+      do { 
+	Parse(); // read argument
+	if (Token == T_OPERATOR && Operator == O_BRC) {
+	  break;
+	}
+	else if (Token == T_OPERATOR && Operator == O_COM) {
+	  error ("Evaluator: empty argument in <%s>", Expression);
+	  LinkNode (Root, JunkNode());
+	}
+	else {
+	  LinkNode (Root, Level01());
+	}
+	argc++;
+      } while (Token == T_OPERATOR && Operator == O_COM);
+
+      // check for closing brace
+      if (Token != T_OPERATOR || Operator != O_BRC) {
+	error ("Evaluator: missing closing brace in <%s>", Expression);
+      }
+    
+      // check number of arguments
+      if (Root->Function != NULL && Root->Function->argc >= 0 && Root->Function->argc != argc) {
+	error ("Evaluator: wrong number of arguments in <%s>", Expression);
+	while (argc < Root->Function->argc) {
+	  LinkNode (Root, JunkNode());
+	  argc++;
+	}
+      }
+      
     } else {
-      ERROR(E_SYNTAX);
-    }
-    if (R2N(result)!=0.0) {
-      DelResult(result);
-      DelResult(&r_else);
-      *result=r_then;
-    } else {
-      DelResult(result);
-      DelResult(&r_then);
-      *result=r_else;
-    }
-  }
-}
-
-
-// logical 'or'
-static void Level04 (RESULT *result)
-{
-  RESULT operand = {0, 0.0, NULL};
-  double value;
-  
-  Level05(result);
-  
-  while(Type==T_DELIMITER && *Token=='|') {
-    Parse();
-    Level05 (&operand);
-    value = (R2N(result)!=0.0) || (R2N(&operand)!=0.0);
-    SetResult(&result, R_NUMBER, &value); 
-  }
-  DelResult(&operand);
-}
-
-
-// logical 'and'
-static void Level05 (RESULT *result)
-{
-  RESULT operand = {0, 0.0, NULL};
-  double value;
-  
-  Level06(result);
-  
-  while(Type==T_DELIMITER && *Token=='&') {
-    Parse();
-    Level06 (&operand);
-    value = (R2N(result)!=0.0) && (R2N(&operand)!=0.0);
-    SetResult(&result, R_NUMBER, &value); 
-  }
-  DelResult(&operand);
-}
-
-
-// equal, not equal
-static void Level06 (RESULT *result)
-{
-  char operator;
-  RESULT operand = {0, 0.0, NULL};
-  double value;
-  
-  Level07 (result);
-  
-  if (Type==T_DELIMITER && ((operator=Token[0])=='=' || operator=='!') && Token[1]=='=') {
-    Parse();
-    Level07 (&operand);
-    if (operator=='=')
-      value = (R2N(result) == R2N(&operand));
-    else
-      value = (R2N(result) != R2N(&operand));
-      SetResult(&result, R_NUMBER, &value); 
-  }
-  DelResult(&operand);
-}
-
-
-// relational operators
-static void Level07 (RESULT *result)
-{
-  char operator[2];
-  RESULT operand = {0, 0.0, NULL};
-  double value;
-  
-  Level08 (result);
-  
-  if (Type==T_DELIMITER && (*Token=='<' || *Token=='>')) {
-    operator[0]=Token[0];
-    operator[1]=Token[1];
-    Parse();
-    Level08 (&operand);
-    if (operator[0]=='<')
-      if (operator[1]=='=')
-        value = (R2N(result) <= R2N(&operand));
-      else
-        value = (R2N(result) <  R2N(&operand));
-    else
-      if (operator[1]=='=')
-        value = (R2N(result) >= R2N(&operand));
-      else
-        value = (R2N(result) >  R2N(&operand));
-    SetResult(&result, R_NUMBER, &value); 
-  }
-  DelResult(&operand);
-}
-
-
-// addition, subtraction, concatenation
-static void Level08 (RESULT *result)
-{
-  char operator;
-  RESULT operand = {0, 0.0, NULL};
-  double value;
-  
-  Level09(result);
-  
-  while(Type==T_DELIMITER && ((operator=*Token)=='+' || operator=='-' || operator=='.')) {
-    Parse();
-    Level09 (&operand);
-    if (operator=='+') {
-      value = (R2N(result) + R2N(&operand));
-      SetResult(&result, R_NUMBER, &value); 
-    } else if (operator=='-') {
-      value = (R2N(result) - R2N(&operand));
-      SetResult(&result, R_NUMBER, &value); 
-    } else {
-      char *s1=R2S(result);
-      char *s2=R2S(&operand);
-      char *s3=malloc(strlen(s1)+strlen(s2)+1);
-      strcpy (s3, s1);
-      strcat (s3, s2);
-      SetResult (&result, R_STRING, s3);
-      free (s3);
+      Root = NewNode(NULL);
+      Root->Token = T_VARIABLE;
+      Root->Result = NewResult();
+      Root->Variable = FindVariable(Word);
+      if (Root->Variable == NULL) {
+	SetVariableString (Word, "");
+	Root->Variable = FindVariable(Word);
+      }
     }
   }
-  DelResult(&operand);
-}
-
-
-// multiplication, division, modulo
-static void Level09 (RESULT *result)
-{
-  char operator;
-  RESULT operand = {0, 0.0, NULL};
-  double value;
   
-  Level10 (result);
-  
-  while(Type==T_DELIMITER && ((operator=*Token)=='*' || operator=='/' || operator=='%')) {
-    Parse();
-    Level10(&operand);
-    if (operator == '*') {
-      value = (R2N(result) * R2N(&operand));
-    } else if (operator == '/') {
-      if (R2N(&operand) == 0.0) ERROR (E_DIVZERO);
-      value = (R2N(result) / R2N(&operand));
-    } else {
-      if (R2N(&operand) == 0.0) ERROR (E_DIVZERO);
-      value = fmod(R2N(result), R2N(&operand));
-    }
-    SetResult(&result, R_NUMBER, &value); 
+  else {
+    error ("Evaluator: syntax error in <%s>: <%s>", Expression, Word);
+    Root = NewNode(NULL);
+    Root->Token = T_STRING;
+    SetResult (&Root->Result, R_STRING, "");
   }
-  DelResult(&operand);
-}
-
-
-// x^y
-static void Level10 (RESULT *result)
-{
-  RESULT exponent = {0, 0.0, NULL};
-  double value;
-
-  Level11 (result);
   
-  if (Type==T_DELIMITER && *Token == '^') {
-    Parse();
-    Level11 (&exponent);
-    value = pow(R2N(result), R2N(&exponent));
-    SetResult(&result, R_NUMBER, &value); 
-  }
-  DelResult(&exponent);
+  Parse();
+  return Root;
+  
 }
 
 
 // unary + or - signs or logical 'not'
-static void Level11 (RESULT *result)
+static NODE* Level11 (void)
 {
-  char sign=0;
-  double value;
+  NODE *Root;
+  TOKEN sign = -1;
   
-  if (Type==T_DELIMITER && (*Token=='+' || *Token=='-' || *Token=='!')) {
-    sign=*Token;
+  if (Token == T_OPERATOR && (Operator == O_ADD || Operator == O_SUB || Operator == O_NOT)) {
+    sign = Operator;
+    if (sign == O_SUB) sign = O_SGN;
     Parse();
   }
-
-  Level12 (result);
   
-  if (sign == '-') {
-    value = -R2N(result);
-    SetResult(&result, R_NUMBER, &value); 
+  Root = Level12();
+  
+  if (sign == O_SUB || sign == O_NOT) {
+    Root = NewNode (Root);
+    Root->Token = T_OPERATOR;
+    Root->Operator = sign;
   }
-  else if (sign == '!') {
-    value = (R2N(result)==0.0);
-    SetResult(&result, R_NUMBER, &value); 
-  }    
+  
+  return Root;
 }
 
 
-// literal numbers, variables, functions
-static void Level12 (RESULT *result)
+// x^y
+static NODE* Level10 (void)
 {
+  NODE *Root;
+
+  Root = Level11();
+  
+  while (Token == T_OPERATOR && Operator == O_POW) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level11());
+  }
+  
+  return Root;
+}
+
+
+// multiplication, division, modulo
+static NODE* Level09 (void)
+{
+  NODE *Root;
+
+  Root = Level10();
+  
+  while (Token == T_OPERATOR && (Operator == O_MUL || Operator == O_DIV || Operator == O_MOD)) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level10());
+  }
+  
+  return Root;
+}
+
+
+// addition, subtraction, string concatenation
+static NODE* Level08 (void)
+{
+  NODE *Root;
+
+  Root = Level09();
+  
+  while (Token == T_OPERATOR && (Operator == O_ADD || Operator == O_SUB || Operator == O_CAT)) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level09());
+  }
+  
+  return Root;
+}
+
+
+// relational operators
+static NODE* Level07 (void)
+{
+  NODE *Root;
+
+  Root = Level08();
+  
+  while (Token == T_OPERATOR && (Operator == O_GT || Operator == O_GE || Operator == O_LT || Operator == O_LE)) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level08());
+  }
+  
+  return Root;
+}
+
+
+// equal, not equal
+static NODE* Level06 (void)
+{
+  NODE *Root;
+
+  Root = Level07();
+  
+  while (Token == T_OPERATOR && (Operator == O_EQ || Operator == O_NE)) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level07());
+  }
+  
+  return Root;
+}
+
+// logical 'and'
+static NODE* Level05 (void)
+{
+  NODE *Root;
+
+  Root = Level06();
+  
+  while (Token == T_OPERATOR && Operator == O_AND) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level06());
+  }
+  
+  return Root;
+}
+
+
+// logical 'or'
+static NODE* Level04 (void)
+{
+  NODE *Root;
+
+  Root = Level05();
+  
+  while (Token == T_OPERATOR && Operator == O_OR) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level05());
+  }
+  
+  return Root;
+}
+
+
+// conditional expression a?b:c
+static NODE* Level03 (void)
+{
+  NODE *Root;
+  
+  Root = Level04();
+  
+  if (Token == T_OPERATOR && Operator == O_CND) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level04());
+    if (Token == T_OPERATOR && Operator == O_COL) {
+      Parse();
+      LinkNode (Root, Level04());
+    } else {
+      error ("Evaluator: syntax error in <%s>: expecting ':' got '%s'", Expression, Word);
+      LinkNode (Root, JunkNode());
+    }
+  }
+
+  return Root;
+}
+
+
+// variable assignments
+static NODE* Level02 (void)
+{
+  NODE *Root;
+  
+  // we have to do a look-ahead if it's really an assignment
+  if ((Token == T_NAME) && (*ExprPtr == '=') && (*(ExprPtr+1) != '=')) { 
+    char *name = strdup(Word);
+    VARIABLE *V = FindVariable (name);
+    if (V == NULL) {
+      SetVariableString (name, "");
+      V = FindVariable (name);
+    }
+    Parse();
+    Root = NewNode (NULL);
+    Root->Variable = V;
+    Parse();
+    LinkNode (Root, Level03());
+    free (name);
+  } else {
+    Root = Level03();
+  }
+  
+  return Root;
+}
+
+
+// expression lists
+static NODE* Level01 (void)
+{
+  NODE *Root;
+
+  Root = Level02();
+  
+  while (Token == T_OPERATOR && Operator == O_LST) {
+    Root = NewNode (Root);
+    Parse();
+    LinkNode (Root, Level02());
+  }
+  
+  return Root;
+}
+
+
+static int EvalTree (NODE *Root)
+{
+  int     i;
+  int     argc;
+  int     type   = -1;
+  double  number = 0.0;
+  double  dummy;
+  char   *string = NULL;
   RESULT *param[10];
   
-  if (*Token == '(') {
-    
-    Parse();
-    if (*Token == ')') ERROR (E_NOARG);
-    Level01(result);
-    if (*Token != ')') ERROR (E_UNBALAN);
-    Parse();
-    
-  } else {
-    
-    if (Type == T_NUMBER) {
-      double value=atof(Token);
-      SetResult(&result, R_NUMBER, &value);
-      Parse();
-      
-    } else if (Type == T_STRING) {
-      SetResult(&result, R_STRING, Token);
-      Parse();
-      
-    } else if (Type == T_NAME) {
-
-      if (*Expression == '(') {
-	FUNCTION *F=GetFunction(Token);
-	if (F!=NULL) {
-	  int n=0;
-	  Parse(); // read opening brace
-	  do { 
-	    Parse(); // read argument
-	    if (*Token == ',') ERROR (E_NOARG);
-	    if (*Token == ')') {
-	      // immediately closed when no args
-	      if (F->args>0 || n>0) ERROR (E_NOARG);
-	    } else {
-	      param[n]=NewResult();
-	      Level01(param[n]);
-	      n++;
-	    }
-	  } while (n < 10 && *Token == ',');
-	  Parse(); // read closing brace
-	  if (F->args<0) {
-	    // Function with variable argument list: 
-	    // pass number of arguments as first parameter
-	    F->func(result, n, &param); 
-	  } else {
-	    if (n != F->args) ERROR (E_NUMARGS);
-	    F->func(result, 
-		    param[0], param[1], param[2], param[3], param[4], 
-		    param[5], param[6], param[7], param[8], param[9]);
-	  }
-	  // free parameter list
-	  while(n-->0) {
-	    FreeResult(param[n]);
-	  }
-	  
-	  return;
-	  
-	} else {
-	  ERROR(E_BADFUNC);
-	}
-	
-      } else {
-	if (!GetVariable(Token, result)) 
-	  ERROR(E_UNKNOWN);
-      }
-      Parse();
-      
-    } else {
-      ERROR(E_SYNTAX);
-    }
+  for (i = 0; i < Root->Children; i++) {
+    EvalTree (Root->Child[i]);
   }
+  
+  switch (Root->Token) {
+    
+  case T_NUMBER:
+  case T_STRING:
+    // Root->Result already contains the value
+    return 0;
+
+  case T_VARIABLE:
+    DelResult (Root->Result);
+    Root->Result = DupResult (Root->Variable->value);
+    return 0;
+    
+  case T_FUNCTION:
+    DelResult (Root->Result);
+    // prepare parameter list
+    argc = Root->Children;
+    if (argc>10) argc=10;
+    for (i = 0; i < argc; i++) {
+      param[i]=Root->Child[i]->Result;
+    }
+    if (Root->Function->argc < 0) {
+      // Function with variable argument list: 
+      // pass number of arguments as first parameter
+      Root->Function->func(Root->Result, argc, &param); 
+    } else {
+      Root->Function->func(Root->Result, 
+			   param[0], param[1], param[2], param[3], param[4], 
+			   param[5], param[6], param[7], param[8], param[9]);
+    }
+    return 0;
+    
+  case T_OPERATOR:
+    switch (Root->Operator) {
+
+    case O_LST: // expression list: result is last expression
+      i = Root->Children-1;
+      type   = Root->Child[i]->Result->type;
+      number = Root->Child[i]->Result->number;
+      string = Root->Child[i]->Result->string;
+      break;
+
+    case O_SET: // variable assignment
+      DelResult(Root->Variable->value);
+      Root->Variable->value = DupResult (Root->Child[0]->Result);
+      type   = Root->Child[0]->Result->type;
+      number = Root->Child[0]->Result->number;
+      string = Root->Child[0]->Result->string;
+      break;
+
+    case O_CND: // conditional expression
+      i = 1+(R2N(Root->Child[0]->Result) == 0.0);
+      type   = Root->Child[i]->Result->type;
+      number = Root->Child[i]->Result->number;
+      string = Root->Child[i]->Result->string;
+      break;
+      
+    case O_OR: // logical OR
+      type   =   R_NUMBER;
+      number = ((R2N(Root->Child[0]->Result) != 0.0) || (R2N(Root->Child[1]->Result) != 0.0));
+      break;
+
+    case O_AND: // logical AND
+      type   =   R_NUMBER;
+      number = ((R2N(Root->Child[0]->Result) != 0.0) && (R2N(Root->Child[1]->Result) != 0.0));
+      break;
+
+    case O_EQ: // numeric equal
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) == R2N(Root->Child[1]->Result));
+      break;
+
+    case O_NE: // numeric not equal
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) != R2N(Root->Child[1]->Result));
+      break;
+
+    case O_LT: // numeric less than
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) < R2N(Root->Child[1]->Result));
+      break;
+
+    case O_LE: // numeric less equal
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) <= R2N(Root->Child[1]->Result));
+      break;
+
+    case O_GT: // numeric greater than
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) > R2N(Root->Child[1]->Result));
+      break;
+
+    case O_GE: // numeric greater equal
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) >= R2N(Root->Child[1]->Result));
+      break;
+
+    case O_ADD: // addition
+      type   = R_NUMBER;
+      number = R2N(Root->Child[0]->Result) + R2N(Root->Child[1]->Result);
+      break;
+
+    case O_SUB: // subtraction
+      type   = R_NUMBER;
+      number = R2N(Root->Child[0]->Result) - R2N(Root->Child[1]->Result);
+      break;
+
+    case O_SGN: // sign
+      type   =  R_NUMBER;
+      number = -R2N(Root->Child[0]->Result);
+      break;
+
+    case O_CAT: // string concatenation
+      type   = R_STRING;
+      // Fixme!!!!
+      string = ""; 
+      break;
+
+    case O_MUL: // multiplication
+      type   = R_NUMBER;
+      number = R2N(Root->Child[0]->Result) * R2N(Root->Child[1]->Result);
+      break;
+
+    case O_DIV: // division
+      type   = R_NUMBER;
+      dummy  = R2N(Root->Child[1]->Result);
+      if (dummy == 0) {
+	error ("Evaluator: warning: division by zero");
+	number = 0.0;
+      } else {
+	number = R2N(Root->Child[0]->Result) / R2N(Root->Child[1]->Result);
+      }
+      break;
+      
+    case O_MOD: // modulo
+      type   = R_NUMBER;
+      dummy  = R2N(Root->Child[1]->Result);
+      if (dummy == 0) {
+	error ("Evaluator: warning: division by zero");
+	number = 0.0;
+      } else {
+	number = fmod(R2N(Root->Child[0]->Result), R2N(Root->Child[1]->Result));
+      }
+      break;
+
+    case O_POW: // x^y
+      type   = R_NUMBER;
+      number = pow(R2N(Root->Child[0]->Result), R2N(Root->Child[1]->Result));
+      break;
+
+    case O_NOT: // logical NOT
+      type   =  R_NUMBER;
+      number = (R2N(Root->Child[0]->Result) == 0.0);
+      break;
+
+    default:
+      error ("Evaluator: internal error: unhandled operator <%d>", Root->Operator);
+      SetResult (&Root->Result, R_STRING, "");
+      return -1;
+    }
+    
+    if (type==R_NUMBER) {
+      SetResult (&Root->Result, R_NUMBER, &number);
+      return 0;
+    }
+    if (type==R_STRING) {
+      SetResult (&Root->Result, R_STRING, string);
+      // Fixme: if (string) free (string);
+      return 0;
+    }
+    error ("Evaluator: internal error: unhandled type <%d>", type);
+    SetResult (&Root->Result, R_STRING, "");
+    return -1;
+
+  default:
+    error ("Evaluator: internal error: unhandled token <%d>", Root->Token);
+    SetResult (&Root->Result, R_STRING, "");
+    return -1;
+
+  }
+  
+  return 0;
 }
 
 
-int Eval (char* expression, RESULT *result)
+int Compile (char* expression, void **tree)
 {
-  int i, err;
+  NODE *Root;
   
-  if ((err=setjmp(jb))) {
-    error ("Evaluator: %s in expression <%s>", ErrMsg[err], expression);
-    if (Token) {
-      free (Token);
-      Token=NULL;
-    }
+  *tree = NULL;
+  
+  Expression = expression;
+  ExprPtr    = Expression;
+  
+  Parse();
+  if (*Word=='\0') {
+    // error ("Evaluator: empty expression <%s>", Expression);
+    free (Word);
+    Word = NULL;
     return -1;
   }
   
-  // maybe sort function table
-  if (!FunctionSorted) {
-    FunctionSorted=1;
-    qsort(Function, nFunction, sizeof(FUNCTION), f_sort);
-    // sanity check: two functions with the same name?
-    for (i=1; i<nFunction; i++) {
-      if (strcmp(Function[i].name, Function[i-1].name)==0) {
-	error ("Evaluator: internal error: Function '%s' defined twice!", Function[i].name);
-      }
-    }
+  Root = Level01();
+  
+  if (*Word!='\0') {
+    error ("Evaluator: syntax error in <%s>: garbage <%s>", Expression, Word);
+    free (Word);
+    Word = NULL;
+    return -1;
   }
   
-  Expression=expression;
-  DelResult (result);
-  Parse();
-  if (*Token=='\0') ERROR (E_EMPTY);
-  Level01(result);
-  if (*Token!='\0') ERROR (E_SYNTAX);
-  free (Token);
-  Token=NULL;
+  free (Word);
+  Word = NULL;
+  
+  *(NODE**)tree = Root;
   
   return 0;
+}
+
+
+int Eval (void *root, RESULT *result)
+{
+  int ret;
+  NODE *Root = (NODE*)root;
+
+  DelResult (result);
+
+  if (Root==NULL) {
+    SetResult (&result, R_STRING, "");
+    return 0;
+  }
+
+  ret = EvalTree(Root);
+
+  result->type   = Root->Result->type;
+  result->number = Root->Result->number;
+  if (Root->Result->string != NULL) {
+    result->string = strdup(Root->Result->string);
+  }
+
+  return ret;
+}
+
+
+void DelTree (void *root)
+{
+  int i;
+  NODE *Root = (NODE*)root;
+  if (Root==NULL) return;
+
+  for (i=0; i<Root->Children; i++) {
+    DelTree (Root->Child[i]);
+  }
+ 
+  FreeResult (Root->Result);
+  
+  free (Root);
 }

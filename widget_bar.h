@@ -1,4 +1,4 @@
-/* $Id: widget_bar.h,v 1.2 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: widget_bar.h,v 1.3 2004/03/06 20:31:16 reinelt Exp $
  *
  * bar widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget_bar.h,v $
+ * Revision 1.3  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.2  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -43,6 +49,10 @@ typedef struct WIDGET_BAR {
   char      *expression2;  // expression that delivers the value
   char      *expr_min;     // expression that delivers the minimum value
   char      *expr_max;     // expression that delivers the maximum value
+  void      *tree1;        // pre-compiled expression that delivers the value
+  void      *tree2;        // pre-compiled expression that delivers the value
+  void      *tree_min;     // pre-compiled expression that delivers the minimum value
+  void      *tree_max;     // pre-compiled expression that delivers the maximum value
   DIRECTION  direction;    // bar direction
   int        length;       // bar length
   int        update;       // update interval (msec)

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.36 2004/03/03 03:47:04 reinelt Exp $^
+/* $Id: cfg.c,v 1.37 2004/03/06 20:31:16 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.37  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.36  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -471,17 +477,19 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
 {
   char *expression;
   char *retval;
+  void *tree = NULL;
   RESULT result = {0, 0.0, NULL};
   
   expression=cfg_lookup(section, key);
   
   if (expression!=NULL) {
     if (*expression=='\0') return "";
-    if (Eval(expression, &result)==0) {
+    if (Compile(expression, &tree)==0 && Eval(tree, &result)==0) {
       retval=strdup(R2S(&result));
       DelResult(&result);	  
-	  return(retval);
+      return(retval);
     }
+    DelTree(tree);
     DelResult(&result);
   }
   if (defval) return strdup(defval);
@@ -492,6 +500,7 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
 int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int *value) 
 {
   char *expression;
+  void *tree = NULL;
   RESULT result = {0, 0.0, NULL};
    
   // start with default value
@@ -500,15 +509,17 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
   *value=defval;
 
   expression=cfg_get_raw(section, key, NULL);
-  if (expression==NULL) {
+  if (expression==NULL || *expression=='\0') {
     return 0;
   }
   
-  if (Eval(expression, &result)!=0) {
+  if (Compile(expression, &tree) != 0) return -1;
+  if (Eval(tree, &result) != 0) {
     DelResult(&result);
     return -1;
   }
   *value=R2N(&result);
+  DelTree (tree);
   DelResult(&result);
   
   if (*value<min) {

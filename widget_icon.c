@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.9 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: widget_icon.c,v 1.10 2004/03/06 20:31:16 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.10  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.9  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -135,16 +141,16 @@ void widget_icon_update (void *Self)
   
   // evaluate expressions
   Icon->speed = 100;
-  if (Icon->speed_expr!=NULL && *Icon->speed_expr!='\0') {
-    Eval(Icon->speed_expr, &result); 
+  if (Icon->speed_tree!=NULL) {
+    Eval(Icon->speed_tree, &result); 
     Icon->speed = R2N(&result); 
     if (Icon->speed<10) Icon->speed=10;
     DelResult(&result);
   }
   
   Icon->visible = 1;
-  if (Icon->visible_expr!=NULL && *Icon->visible_expr!='\0') {
-    Eval(Icon->visible_expr, &result); 
+  if (Icon->visible_tree!=NULL) {
+    Eval(Icon->visible_tree, &result); 
     Icon->visible = R2N(&result); 
     if (Icon->visible<1) Icon->visible=0;
     DelResult(&result);
@@ -184,8 +190,12 @@ int widget_icon_init (WIDGET *Self)
   memset (Icon, 0, sizeof(WIDGET_ICON));
 
   // get raw expressions (we evaluate them ourselves)
-  Icon->speed_expr = cfg_get_raw (section, "speed",  NULL);
+  Icon->speed_expr   = cfg_get_raw (section, "speed",    NULL);
   Icon->visible_expr = cfg_get_raw (section, "visible",  NULL);  
+  
+  // compile'em
+  Compile (Icon->speed_expr,   &Icon->speed_tree);
+  Compile (Icon->visible_expr, &Icon->visible_tree);
   
   // sanity check
   if (Icon->speed_expr==NULL || *Icon->speed_expr=='\0') {

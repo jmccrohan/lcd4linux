@@ -1,15 +1,34 @@
-/* $Id: evaluator.h,v 1.4 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: evaluator.h,v 1.5 2004/03/06 20:31:16 reinelt Exp $
  *
  * expression evaluation
  *
- * based on EE (Expression Evaluator) which is 
- * (c) 1992 Mark Morley <morley@Camosun.BC.CA>
- * 
- * heavily modified 2003 by Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
- * FIXME: GPL or not GPL????
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * LCD4Linux is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.5  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.4  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -33,40 +52,6 @@
  */
 
 
-/***************************************************************************
- **                                                                       **
- ** EE.C         Expression Evaluator                                     **
- **                                                                       **
- ** AUTHOR:      Mark Morley                                              **
- ** COPYRIGHT:   (c) 1992 by Mark Morley                                  **
- ** DATE:        December 1991                                            **
- ** HISTORY:     Jan 1992 - Made it squash all command line arguments     **
- **                         into one big long string.                     **
- **                       - It now can set/get VMS symbols as if they     **
- **                         were variables.                               **
- **                       - Changed max variable name length from 5 to 15 **
- **              Jun 1992 - Updated comments and docs                     **
- **                                                                       **
- ** You are free to incorporate this code into your own works, even if it **
- ** is a commercial application.  However, you may not charge anyone else **
- ** for the use of this code!  If you intend to distribute your code,     **
- ** I'd appreciate it if you left this message intact.  I'd like to       **
- ** receive credit wherever it is appropriate.  Thanks!                   **
- **                                                                       **
- ** I don't promise that this code does what you think it does...         **
- **                                                                       **
- ** Please mail any bug reports/fixes/enhancments to me at:               **
- **      morley@camosun.bc.ca                                             **
- ** or                                                                    **
- **      Mark Morley                                                      **
- **      3889 Mildred Street                                              **
- **      Victoria, BC  Canada                                             **
- **      V8Z 7G1                                                          **
- **      (604) 479-7861                                                   **
- **                                                                       **
- ***************************************************************************/
-
-
 #ifndef _EVALUATOR_H_
 #define _EVALUATOR_H_
 
@@ -82,31 +67,23 @@ typedef struct {
 } RESULT;
 
 
-// error codes
-#define E_OK      0 /* Successful evaluation */
-#define E_SYNTAX  1 /* Syntax error */
-#define E_UNBALAN 2 /* Unbalanced parenthesis */
-#define E_DIVZERO 3 /* Attempted division by zero */
-#define E_UNKNOWN 4 /* Reference to unknown variable */
-#define E_BADFUNC 5 /* Unrecognised function */
-#define E_NUMARGS 6 /* Wrong number of arguments to function */
-#define E_NOARG   7 /* Missing an argument to a function */
-#define E_EMPTY   8 /* Empty expression */
+int  SetVariable        (char *name, RESULT *value);
+int  SetVariableNumeric (char *name, double  value);
+int  SetVariableString  (char *name, char   *value);
 
+int  AddFunction        (char *name, int argc, void (*func)());
 
-void DelResult         (RESULT *result);
-int SetVariable        (char *name, RESULT *value);
-int AddNumericVariable (char *name, double value);
-int AddStringVariable  (char *name, char *value);
-int AddFunction        (char *name, int args, void (*func)());
-void DeleteVariables   (void);
-void DeleteFunctions   (void);
+void DeleteVariables    (void);
+void DeleteFunctions    (void);
 
+void    DelResult (RESULT *result);
 RESULT* SetResult (RESULT **result, int type, void *value);
 
 double R2N (RESULT *result);
 char*  R2S (RESULT *result);
 
-int Eval (char* expression, RESULT *result);
+int  Compile (char *expression, void **tree);
+int  Eval    (void *tree, RESULT *result);
+void DelTree (void *tree);
 
 #endif

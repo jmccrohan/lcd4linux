@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: widget_text.c,v 1.15 2004/03/06 20:31:16 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.15  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.14  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -211,8 +217,8 @@ void widget_text_update (void *Self)
   int update;
   
   // evaluate prefix
-  if (T->prefix!=NULL && *(T->prefix)!='\0') {
-    Eval(T->prefix, &result);
+  if (T->pretree!=NULL) {
+    Eval(T->pretree, &result);
     preval=strdup(R2S(&result));
     DelResult (&result);
   } else {
@@ -220,8 +226,8 @@ void widget_text_update (void *Self)
   }
   
   // evaluate postfix
-  if (T->postfix!=NULL && *(T->postfix)!='\0') {
-    Eval(T->postfix, &result);
+  if (T->posttree!=NULL) {
+    Eval(T->posttree, &result);
     postval=strdup(R2S(&result));
     DelResult (&result);
   } else {
@@ -229,7 +235,7 @@ void widget_text_update (void *Self)
   }
   
   // evaluate expression
-  Eval(T->expression, &result);
+  Eval(T->tree, &result);
   
   // string or number?
   if (T->precision==0xC0DE) {
@@ -326,9 +332,14 @@ int widget_text_init (WIDGET *Self)
   // get raw pre- and postfix (we evaluate it ourselves)
   Text->prefix  = cfg_get_raw (section, "prefix",  NULL);
   Text->postfix = cfg_get_raw (section, "postfix", NULL);
-
+  
+  // compile pre- and postfix
+  Compile (Text->prefix,  &Text->pretree);
+  Compile (Text->postfix, &Text->posttree);
+  
   // get raw expression (we evaluate it ourselves)
   Text->expression = cfg_get_raw (section, "expression",  "''");
+  Compile (Text->expression, &Text->tree);
   
   // field width, default 10
   cfg_number (section, "width", 10,  0, 99999, &(Text->width));

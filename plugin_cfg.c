@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.6 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.7 2004/03/06 20:31:16 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.7  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.6  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -79,9 +85,10 @@
 
 static void load_variables (void)
 {
-  char *section="Variables";
+  char *section = "Variables";
   char *list, *l, *p;
   char *expression;
+  void *tree;
   RESULT result = {0, 0.0, NULL};
   
   list=cfg_list(section);
@@ -94,13 +101,15 @@ static void load_variables (void)
     } else {
       expression=cfg_get_raw (section, l, "");
       if (expression!=NULL && *expression!='\0') {
-        if (Eval(expression, &result)==0) {
+	tree = NULL;
+        if (Compile(expression, &tree) == 0 && Eval(tree, &result)==0) {
           debug ("Variable %s = '%s' (%f)", l, R2S(&result), R2N(&result));
           SetVariable (l, &result);
           DelResult (&result);
         } else {
           error ("error evaluating variable '%s' from %s", list, cfg_source());
         }
+	DelTree (tree);
       }
     }
     l=p?p+1:NULL;

@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.2 2004/01/15 07:47:03 reinelt Exp $
+/* $Id: widget_text.h,v 1.3 2004/03/06 20:31:16 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.3  2004/03/06 20:31:16  reinelt
+ * Complete rewrite of the evaluator to get rid of the code
+ * from mark Morley (because of license issues).
+ * The new Evaluator does a pre-compile of expressions, and
+ * stores them in trees. Therefore it should be reasonable faster...
+ *
  * Revision 1.2  2004/01/15 07:47:03  reinelt
  * debian/ postinst and watch added (did CVS forget about them?)
  * evaluator: conditional expressions (a?b:c) added
@@ -44,10 +50,13 @@ typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } ALIGN;
 
 typedef struct WIDGET_TEXT {
   char *prefix;      // expression for label on the left side
+  void *pretree;     // pre-compiled expression for label on the left side
   char *preval;      // value for label on the left side
   char *postfix;     // expression for label on the right side
+  void *posttree;    // pre-compiled expression for label on the right side
   char *postval;     // value for label on the right side
   char *expression;  // expression that delivers the value
+  void *tree;        // pre-compiled expression that delivers the value
   char *value;       // evaluated value from expression
   char *buffer;      // string with 'width+1' bytes allocated 
   int   width;       // field width
