@@ -1,4 +1,4 @@
-/* $Id: plugin_dvb.c,v 1.2 2004/02/16 13:03:37 reinelt Exp $
+/* $Id: plugin_dvb.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin for DVB status
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_dvb.c,v $
+ * Revision 1.3  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.2  2004/02/16 13:03:37  reinelt
  * compile problem with missing frontend.h fixed
  *
@@ -147,3 +154,7 @@ int plugin_init_dvb (void)
   return 0;
 }
 
+void plugin_exit_dvb(void) 
+{
+	hash_destroy(&DVB);
+}

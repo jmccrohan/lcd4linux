@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.7 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: widget.h,v 1.8 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.8  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.7  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -80,6 +87,7 @@ typedef struct WIDGET{
 
 
 int widget_register (WIDGET_CLASS *widget);
+void widget_unregister (void);
 int widget_add      (char *name, int row, int col);
 
 #endif

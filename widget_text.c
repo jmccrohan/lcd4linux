@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.13 2004/02/18 06:39:20 reinelt Exp $
+/* $Id: widget_text.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,13 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.14  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.13  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -381,12 +388,18 @@ int widget_text_init (WIDGET *Self)
 
 
 int widget_text_quit (WIDGET *Self) {
-
-  if (Self->data) {
-    free (Self->data);
-    Self->data=NULL;
+  WIDGET_TEXT *Text;
+  if (Self) {
+    Text=Self->data;
+    if (Self->data) {	  
+      if (Text->preval)      free(Text->preval);
+      if (Text->postval)     free(Text->postval);
+      if (Text->value)       free(Text->value);
+      if (Text->buffer)      free(Text->buffer);
+      free (Self->data);
+      Self->data=NULL;
+    }
   }
-  
   return 0;
   
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.12 2004/02/16 08:19:44 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.13  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.12  2004/02/16 08:19:44  reinelt
  * i2c_sensors patch from Xavier
  *
@@ -368,8 +375,9 @@ int plugin_init_i2c_sensors (void)
     debug("if i2c_sensors doesn't work, double check this value !");
     path = realloc(path, strlen(path_cfg)+1);
     strcpy(path, path_cfg);
-    free(path_cfg);
+    
   }
+  free(path_cfg);
 
   // we activate the function only if there's a possibly path found
   if (path!=NULL) {
@@ -385,4 +393,9 @@ int plugin_init_i2c_sensors (void)
   }
   
   return 0;
+}
+
+void plugin_exit_i2c_sensors(void) 
+{
+	hash_destroy(&I2Csensors);
 }

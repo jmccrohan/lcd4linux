@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.8 2004/02/27 06:07:55 reinelt Exp $
+/* $Id: hash.h,v 1.9 2004/03/03 03:47:04 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.9  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.8  2004/02/27 06:07:55  reinelt
  * hash improvements from Martin
  *
@@ -95,4 +102,8 @@ char  *hash_get       (HASH *Hash, char *key);
 double hash_get_delta (HASH *Hash, char *key, int delay);
 double hash_get_regex (HASH *Hash, char *key, int delay);
 void   hash_destroy   (HASH *Hash);
+
+int gettimeofday_ex(struct timeval *tv, struct timezone *tz); 
+void gettimeofday_update();
+
 #endif

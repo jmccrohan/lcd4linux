@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.12 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: exec.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.13  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.12  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -93,7 +100,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   static time_t now[EXECS+1];
   static int errs[EXECS+1];
   static int ticks[EXECS+1];
-  char *command, *p;
+  char *command, *strticks;
   char xn[20];
   char env[EXEC_TXT_LEN];
   FILE *pipe;
@@ -113,12 +120,16 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   if (now[index] > 0) {
     /* delay in Ticks ? */
     sprintf(xn, "Tick_x%d", index);
-    p = cfg_get(NULL, xn, NULL);
+    strticks = cfg_get(NULL, xn, NULL);
     if (p && *p) {
-      if (ticks[index]++ % atoi(p) != 0)
+      if (ticks[index]++ % atoi(strticks) != 0) {
+	    free(strticks);
         return 0;
+      }
+	  free(strticks);
     }
     else {
+	  free(strticks);	
       sprintf(xn, "Delay_x%d", index);
       /* delay in Delay_x* sec ? */
       if (time(NULL) <= now[index] + atoi(cfg_get(NULL, xn, "1"))) {
@@ -135,6 +146,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   if (!command || !*command) {
     error("Empty command for 'x%d'", index);
     errs[index]++;
+	if (command) free(command);
     return -1;
   }
   for (i = 1; i < index; i++) {
@@ -146,6 +158,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   if (pipe == NULL) {
     error("Couldn't run pipe '%s':\n%s", command, strerror(errno));
     errs[index]++;
+	free(command);
     return -1;
   }
   len = fread(buff, 1, EXEC_TXT_LEN-1,  pipe);
@@ -154,6 +167,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     error("Couldn't fread from pipe '%s', len=%d", command, len);
     errs[index]++;
     *buff = '\0';
+	free(command);
     return -1;
   }
   pclose(pipe);
@@ -176,6 +190,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     if (max != min)
       *val = (*val - min)/(max - min);
   }
+  free(command);
   return 0;
 }
 

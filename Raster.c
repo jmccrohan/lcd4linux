@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.30 2004/01/30 20:57:55 reinelt Exp $
+/* $Id: Raster.c,v 1.31 2004/03/03 03:47:04 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.31  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.30  2004/01/30 20:57:55  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -236,14 +243,14 @@ int PPM_flush (void)
   }
   
   snprintf (path, sizeof(path), output, seq++);
-  snprintf (tmp, sizeof(tmp), "%s.tmp", path);
+  qprintf(tmp, sizeof(tmp), "%s.tmp", path);
   
   if ((fd=open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644))<0) {
     error ("Raster: open(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   
-  snprintf (buffer, sizeof(buffer), "P6\n%d %d\n255\n", xsize, ysize);
+  qprintf(buffer, sizeof(buffer), "P6\n%d %d\n255\n", xsize, ysize);
   if (write (fd, buffer, strlen(buffer))<0) {
     error ("Raster: write(%s) failed: %s", tmp, strerror(errno));
     return -1;
@@ -328,7 +335,7 @@ int PNG_flush (void)
   }
   
   snprintf (path, sizeof(path), output, seq++);
-  snprintf (tmp, sizeof(tmp), "%s.tmp", path);
+  qprintf(tmp, sizeof(tmp), "%s.tmp", path);
   
   if ((fp=fopen(tmp, "w")) == NULL) {
     error("Png: fopen(%s) failed: %s\n", tmp, strerror(errno));
@@ -374,22 +381,31 @@ int Raster_init (LCD *Self)
   if (sscanf(s=cfg_get(NULL, "size", "20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("Raster: bad size '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
 
   if (sscanf(s=cfg_get(NULL, "font", "5x8"), "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
     error ("Raster: bad font '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
 
   if (sscanf(s=cfg_get(NULL, "pixel", "4+1"), "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
     error ("Raster: bad pixel '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
 
   if (sscanf(s=cfg_get(NULL, "gap", "3x3"), "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
     error ("Raster: bad gap '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
+  
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
@@ -398,15 +414,23 @@ int Raster_init (LCD *Self)
   if (sscanf(s=cfg_get(NULL, "foreground", "#102000"), "#%x", &foreground)!=1) {
     error ("Raster: bad foreground color '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
+  
   if (sscanf(s=cfg_get(NULL, "halfground", "#70c000"), "#%x", &halfground)!=1) {
     error ("Raster: bad halfground color '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
+  
   if (sscanf(s=cfg_get(NULL, "background", "#80d000"), "#%x", &background)!=1) {
     error ("Raster: bad background color '%s'", s);
     return -1;
+    free(s);
   }
+  free(s);
 
   if (pix_init (rows, cols, xres, yres)!=0) {
     error ("Raster: pix_init(%d, %d, %d, %d) failed", rows, cols, xres, yres);

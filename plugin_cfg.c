@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.5 2004/02/01 19:37:40 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.6 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.6  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.5  2004/02/01 19:37:40  reinelt
  * got rid of every strtok() incarnation.
  *
@@ -87,13 +94,13 @@ static void load_variables (void)
     } else {
       expression=cfg_get_raw (section, l, "");
       if (expression!=NULL && *expression!='\0') {
-	if (Eval(expression, &result)==0) {
-	  debug ("Variable %s = '%s' (%f)", l, R2S(&result), R2N(&result));
-	  SetVariable (l, &result);
-	  DelResult (&result);
-	} else {
-	  error ("error evaluating variable '%s' from %s", list, cfg_source());
-	}
+        if (Eval(expression, &result)==0) {
+          debug ("Variable %s = '%s' (%f)", l, R2S(&result), R2N(&result));
+          SetVariable (l, &result);
+          DelResult (&result);
+        } else {
+          error ("error evaluating variable '%s' from %s", list, cfg_source());
+        }
       }
     }
     l=p?p+1:NULL;
@@ -127,12 +134,14 @@ static void my_cfg (RESULT *result, int argc, RESULT *argv[])
   
   // buffer starts with '.', so cut off first char
   value=cfg_get("", buffer+1, "");
-  
+    
+  // store result
+  SetResult(&result, R_STRING, value); 
+
   // free buffer again
   free (buffer);
   
-  // store result
-  SetResult(&result, R_STRING, value); 
+  free(value);
 }
 
 
@@ -145,4 +154,9 @@ int plugin_init_cfg (void)
   AddFunction ("cfg", -1, my_cfg);
   
   return 0;
+}
+
+void plugin_exit_cfg(void) 
+{
+	
 }

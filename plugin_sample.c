@@ -1,4 +1,4 @@
-/* $Id: plugin_sample.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin template
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.5  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.4  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -229,3 +236,7 @@ int plugin_init_sample (void)
   return 0;
 }
 
+void plugin_exit_sample(void) 
+{
+
+}

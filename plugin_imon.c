@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.2 2004/02/22 17:35:41 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.3  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.2  2004/02/22 17:35:41  reinelt
  * some fixes for generic graphic driver and T6963
  * removed ^M from plugin_imon (Nico, are you editing under Windows?)
@@ -36,6 +43,7 @@
 #include "plugin.h"
 #include "cfg.h"
 #include "hash.h"
+#include "qprintf.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -55,6 +63,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>                          /* decl of inet_addr()      */
 #include <sys/socket.h>
+
 
 static HASH TELMON = { 0, };
 static HASH IMON = { 0, };
@@ -246,7 +255,7 @@ static int parse_telmon(){
 	hash_set (&TELMON, "time", time);
 	date[4]='\0';
 	date[7]='\0';
-	snprintf(time, sizeof(time), "%s.%s.%s",date+8,date+5,date);
+	qprintf(time, sizeof(time), "%s.%s.%s",date+8,date+5,date);
 	hash_set (&TELMON, "number", number);
 	hash_set (&TELMON, "msn", msn);
 	hash_set (&TELMON, "date", time);
@@ -283,7 +292,7 @@ void init(){
   err++;
  } else if ((ipass!=NULL) && (*ipass!='\0')) { // Passwort senden
   char buf[40];
-  snprintf(buf,sizeof(buf),"pass %s",ipass);
+  qprintf(buf,sizeof(buf),"pass %s",ipass);
   send_command(fd,buf);
   get_answer(fd); 
  }
@@ -335,7 +344,7 @@ static int parse_imon_rates(char *channel){
  char *s;
  int age;
   
- snprintf(buf,sizeof(buf),"rate %s in",channel);
+ qprintf(buf,sizeof(buf),"rate %s in",channel);
  
  // reread every half sec only
  age=hash_age(&IMON, buf, NULL);
@@ -345,14 +354,14 @@ static int parse_imon_rates(char *channel){
 
  if (err) return -1;
 
- snprintf(buf, sizeof(buf), "rate %s", channel);
+ qprintf(buf, sizeof(buf), "rate %s", channel);
  s=get_value(buf);
  
  if (sscanf(s,"%s %s",in, out)!=2) return -1;
 
- snprintf(buf, sizeof(buf), "rate %s in", channel);
+ qprintf(buf, sizeof(buf), "rate %s in", channel);
  hash_set (&IMON, buf , in);
- snprintf(buf, sizeof(buf), "rate %s out", channel);
+ qprintf(buf, sizeof(buf), "rate %s out", channel);
  hash_set (&IMON, buf , out);
  
  return 0;
@@ -368,7 +377,7 @@ static void my_imon_rates (RESULT *result, RESULT *arg1, RESULT *arg2){
   return;
  }
  
- snprintf(buf,sizeof(buf),"rate %s %s",R2S(arg1),R2S(arg2));
+ qprintf(buf,sizeof(buf),"rate %s %s",R2S(arg1),R2S(arg2));
 
  val=hash_get(&IMON, buf);
  if (val==NULL) val="";
@@ -397,6 +406,7 @@ int plugin_init_imon (void){
   telmon='\0';
  } 
  strcpy(thost,s);
+ free(s);
   
  if ((telmon=='\01') && (cfg_number("Telmon", "Port",5001,1,65536,&tport)<0)){
   error ("[Telmon] no valid port definition");
@@ -405,6 +415,7 @@ int plugin_init_imon (void){
  
  s=cfg_get ("Telmon", "Phonebook","/etc/phonebook");
  strcpy(phoneb,s);
+ free(s);
  
  s=cfg_get ("Imon", "Host", "127.0.0.1");
  if (*s=='\0') {
@@ -412,6 +423,7 @@ int plugin_init_imon (void){
   imon='\0';
  }
  strcpy(ihost,s); 
+ free(s);
  
  if ((imon=='\01') && (cfg_number("Imon", "Port",5000,1,65536,&iport)<0)){
   error ("[Imon] no valid port definition");
@@ -420,6 +432,7 @@ int plugin_init_imon (void){
  
  s=cfg_get ("Imon", "Pass", "");
  strcpy(ipass,s);
+ free(s);
 	
  if (telmon=='\1') AddFunction ("telmon", 1, my_telmon);
  if (imon=='\1'){
@@ -429,4 +442,10 @@ int plugin_init_imon (void){
  }
 
  return 0;
+}
+
+void plugin_exit_imon(void) 
+{
+	hash_destroy(&TELMON);
+	hash_destroy(&IMON);
 }

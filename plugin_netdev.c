@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.4 2004/02/15 07:23:04 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.5  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.4  2004/02/15 07:23:04  reinelt
  * bug in netdev parsing fixed
  *
@@ -58,6 +65,7 @@
 #include "plugin.h"
 
 #include "hash.h"
+#include "qprintf.h"
 
 
 static HASH NetDev = { 0, };
@@ -67,7 +75,7 @@ static void hash_set3 (char *key1, char *key2, char *key3, char *val)
 {
   char key[32];
   
-  snprintf (key, sizeof(key), "%s.%s.%s", key1, key2, key3);
+  qprintf(key, sizeof(key), "%s.%s.%s", key1, key2, key3);
   hash_set_delta (&NetDev, key, val);
 }
 
@@ -161,3 +169,7 @@ int plugin_init_netdev (void)
   return 0;
 }
 
+void plugin_exit_netdev(void) 
+{
+	hash_destroy(&NetDev);
+}

@@ -1,4 +1,4 @@
-/* $Id: imon.c,v 1.4 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: imon.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: imon.c,v $
+ * Revision 1.5  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.4  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -225,7 +232,7 @@ get_value (char * cmd)
 
 
 int init(){
- char *s, *host;
+ char *pwd, *host, *answer;
  int port;
  int connect;
 
@@ -241,20 +248,23 @@ int init(){
  
  connect=service_connect(host,port);
 
- s=cfg_get (NULL, "Imon_Pass", NULL);
- if ((s!=NULL) && (*s!='\0')) { // Passwort senden
+ pwd=cfg_get (NULL, "Imon_Pass", NULL);
+ if ((pwd!=NULL) && (*pwd!='\0')) { // Passwort senden
    char buf[40];
-   sprintf(buf,"pass %s",s);
+   sprintf(buf,"pass %s",pwd);
    send_command(connect,buf);
-   s=get_answer(connect); 
+   answer=get_answer(connect); 
  }
+ free(host);
+ free(pwd):
+ 
  
  return connect; 	
 }
  
 int ImonCh(int index, struct imonchannel *ch, int token_usage[]) {
  static int err[CHANNELS+1];
- char *s;
+ char *cfg_string;
  char buf[40];
  int result=0;
  
@@ -263,13 +273,14 @@ int ImonCh(int index, struct imonchannel *ch, int token_usage[]) {
 	 
  if ((*ch).max_in == 0){ // not initializied
   sprintf(buf, "Imon_%d_Dev", index);
-  s=cfg_get(NULL, buf, NULL);
-  if (s==NULL) {
+  cfg_string=cfg_get(NULL, buf, NULL);
+  if (cfg_string==NULL) {
    error ("Imon: no 'Imon_%i_Dev' entry in %s", index, cfg_source());
    err[index]=1;
    return -1;
   } 
-  strcpy((*ch).dev,s);
+  strcpy((*ch).dev,cfg_string);
+  free(cfg_string);
   
   sprintf(buf, "Imon_%d_MaxIn", index);
   cfg_number(NULL, buf,768,1,65536,&(*ch).max_in);
@@ -384,9 +395,10 @@ char* ImonVer(){
 void phonebook(char *number){
   FILE *  fp;
   char line[256];
+  char* filename;
   
-  fp = fopen (cfg_get (NULL, "Telmon_Phonebook","/etc/phonebook"), "r");
-  
+  fp = fopen (filename=cfg_get (NULL, "Telmon_Phonebook","/etc/phonebook"), "r");
+  free(filename);
   if (! fp) return;
   
   while (fgets (line, 128, fp)){
@@ -423,6 +435,7 @@ int Telmon(struct telmon *t){
    return -1;
   } 
   strcpy(host,s);
+  free(s);
   
   if (cfg_number(NULL, "Telmon_Port",5000,1,65536,&port)<0){
    telmond_fd=-1;

@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.6  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.5  2004/02/29 14:30:59  reinelt
  * icon visibility fix for generic graphics from Xavier
  *
@@ -310,5 +317,6 @@ int drv_generic_graphic_quit (void)
     drv_generic_graphic_FB=NULL;
   }
   
+  widget_unregister();  
   return (0);
 }

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.12 2004/02/18 06:39:20 reinelt Exp $
+/* $Id: widget.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,13 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.13  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.12  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -129,6 +136,18 @@ int widget_register (WIDGET_CLASS *widget)
   return 0;
 }
 
+void widget_unregister(void) {
+  int i;
+  for (i=0;i<nWidgets;i++) {
+    Widgets[i].class->quit(&(Widgets[i]));
+  }
+  free(Widgets);
+
+  free(Classes);
+
+  nWidgets=0;
+  nClasses=0;
+}
 
 int widget_add (char *name, int row, int col)
 {
@@ -152,7 +171,7 @@ int widget_add (char *name, int row, int col)
     if (class) free (class);
     return -1;
   }
-  
+  free(section);
   // lookup widget class
   Class=NULL;
   for (i=0; i<nClasses; i++) {

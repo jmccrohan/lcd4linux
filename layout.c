@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.9 2004/02/01 19:37:40 reinelt Exp $
+/* $Id: layout.c,v 1.10 2004/03/03 03:47:04 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.10  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.9  2004/02/01 19:37:40  reinelt
  * got rid of every strtok() incarnation.
  *
@@ -125,14 +132,15 @@ int layout_init (char *layout)
     if (i==2 && l[n]=='\0') {
       widget=cfg_get(section, l, NULL);
       if (widget!=NULL && *widget!='\0') {
-	layout_addItem (widget, row, col);
+        layout_addItem (widget, row, col);
       }
+	  free(widget);
     }
     // next field
     l=p?p+1:NULL;
   }
   free (list);
-  
+  free(section);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.1 2004/01/13 08:18:20 reinelt Exp $
+/* $Id: timer.h,v 1.2 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic timer handling
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: timer.h,v $
+ * Revision 1.2  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.1  2004/01/13 08:18:20  reinelt
  * timer queues added
  * liblcd4linux deactivated turing transformation to new layout
@@ -35,5 +42,5 @@
 
 int timer_add (void(*callback)(void *data), void *data, int interval, int one_shot);
 int timer_process (struct timespec *delay);
-
+void timer_exit();
 #endif

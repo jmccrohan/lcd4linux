@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.64 2004/02/27 07:06:25 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.65 2004/03/03 03:47:04 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.65  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.64  2004/02/27 07:06:25  reinelt
  * new function 'qprintf()' (simple but quick snprintf() replacement)
  *
@@ -478,7 +485,8 @@ int main (int argc, char *argv[])
     exit (1);
   }
   
-  snprintf (section, sizeof(section), "Display:%s", display);
+  qprintf(section, sizeof(section), "Display:%s", display);
+  free(display);
   driver=cfg_get(section, "Driver", NULL);
   if (driver==NULL || *driver=='\0') {
     error ("missing '%s.Driver' entry in %s!", section, cfg_source());
@@ -542,6 +550,7 @@ int main (int argc, char *argv[])
     pid_exit(PIDFILE);
     exit (1);
   }
+  free(driver);
   
   // check for new-style layout
   layout=cfg_get(NULL, "Layout", NULL);
@@ -551,6 +560,7 @@ int main (int argc, char *argv[])
   }
   
   layout_init(layout);
+  free(layout);
 
   // maybe go into interactive mode
   if (interactive) {
@@ -613,10 +623,10 @@ int main (int argc, char *argv[])
   if (!quiet) hello();
 #endif
   drv_quit();
-
   pid_exit(PIDFILE);
   cfg_exit();
-    
+  plugin_exit();    
+  timer_exit();
   if (got_signal==SIGHUP) {
     long fd;
     debug ("restarting...");
@@ -630,6 +640,11 @@ int main (int argc, char *argv[])
     error ("execv() failed: %s", strerror(errno));
     exit(1);
   }
+  
+  for(c=0;my_argv[c]!=NULL;c++) {
+    free(my_argv[c]);
+  }
+  free(my_argv);
   exit (0);
 }
   

@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.8 2004/02/05 23:58:18 mkeil Exp $
+/* $Id: plugin_xmms.c,v 1.9 2004/03/03 03:47:04 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,13 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.9  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.8  2004/02/05 23:58:18  mkeil
  * Fixed/Optimized Hashage-timings
  *
@@ -156,4 +163,9 @@ int plugin_init_xmms (void)
   AddFunction ("xmms", 1, my_xmms);
 
   return 0;
+}
+
+void plugin_exit_xmms(void) 
+{
+	hash_destroy(&xmms);
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.6 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.7 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.7  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.6  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -94,6 +101,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "drv_generic_serial.h"
+#include "qprintf.h"
 
 
 static char   *Driver;
@@ -127,8 +135,8 @@ pid_t drv_generic_serial_lock_port (char *Port)
     *p='_';
   }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, port);
-  snprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
+  qprintf(lockfile, sizeof(lockfile), LOCK, port);
+  qprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
 
   free (port);
   
@@ -222,7 +230,7 @@ static pid_t drv_generic_serial_unlock_port (char *Port)
     *p='_';
   }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, port);
+  qprintf(lockfile, sizeof(lockfile), LOCK, port);
   unlink (lockfile);
   free (port);
 
@@ -353,6 +361,7 @@ int drv_generic_serial_close (void)
   info ("%s: closing port %s", Driver, Port);
   close (Device);
   drv_generic_serial_unlock_port(Port);
+  free(Port);
   return 0;
 }
 

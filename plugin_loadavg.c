@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.3 2004/01/30 07:12:35 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.4 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.4  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.3  2004/01/30 07:12:35  reinelt
  * HD44780 busy-flag support from Martin Hejl
  * loadavg() uClibc replacement from Martin Heyl
@@ -59,6 +66,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
 
 #include "debug.h"
@@ -104,14 +112,25 @@ int getloadavg (double loadavg[], int nelem)
 
 static void my_loadavg (RESULT *result, RESULT *arg1)
 {
-  int nelem, index;
-  double loadavg[3];
+  static int nelem;
+  int index,age;
+  static double loadavg[3];
+  static struct timeval last_value;
+  struct timeval now;
   
-  nelem=getloadavg(loadavg, 3);
-  if (nelem<0) {
-    error ("getloadavg() failed!");
-    SetResult(&result, R_STRING, "");
-    return;
+  gettimeofday(&now,NULL);
+  
+  age = (now.tv_sec - last_value.tv_sec)*1000 + (now.tv_usec - last_value.tv_usec)/1000;
+  // reread every 10 msec only
+  if (age==0 || age>10) {
+  
+    nelem=getloadavg(loadavg, 3);
+    if (nelem<0) {
+      error ("getloadavg() failed!");
+      SetResult(&result, R_STRING, "");
+      return;
+    }
+    last_value=now;
   }
 
   index=R2N(arg1);
@@ -120,6 +139,7 @@ static void my_loadavg (RESULT *result, RESULT *arg1)
     SetResult(&result, R_STRING, "");
     return;
   }
+
   
   SetResult(&result, R_NUMBER, &(loadavg[index-1]));
   return;
@@ -133,3 +153,6 @@ int plugin_init_loadavg (void)
   return 0;
 }
 
+void plugin_exit_loadavg(void) 
+{
+}

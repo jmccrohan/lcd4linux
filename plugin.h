@@ -1,4 +1,4 @@
-/* $Id: plugin.h,v 1.1 2003/12/19 05:35:14 reinelt Exp $
+/* $Id: plugin.h,v 1.2 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: plugin.h,v $
+ * Revision 1.2  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.1  2003/12/19 05:35:14  reinelt
  * renamed 'client' to 'plugin'
  *
@@ -44,5 +51,5 @@
 #define _PLUGIN_H_
 
 int plugin_init (void);
-
+void plugin_exit(void);
 #endif

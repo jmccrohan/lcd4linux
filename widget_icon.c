@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.7 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: widget_icon.c,v 1.8 2004/03/03 03:47:04 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,13 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.8  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.7  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -70,6 +77,7 @@
 #include "timer.h"
 #include "widget.h"
 #include "widget_icon.h"
+#include "qprintf.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -86,7 +94,7 @@ static void widget_icon_read_bitmap (char *section, WIDGET_ICON *Icon)
   unsigned char *map;
   
   for (row=0; row<YRES; row++) {
-    snprintf (key, sizeof(key), "Bitmap.Row%d", row+1);
+    qprintf(key, sizeof(key), "Bitmap.Row%d", row+1);
     val=cfg_get(section, key, ""); 
     map=Icon->bitmap+row;
     n=0;
@@ -110,6 +118,7 @@ static void widget_icon_read_bitmap (char *section, WIDGET_ICON *Icon)
 	(*map)<<=1;
       }
     }
+    free(val);
   }
 }
 
@@ -203,12 +212,15 @@ int widget_icon_init (WIDGET *Self)
 
 int widget_icon_quit (WIDGET *Self) 
 {
-  WIDGET_ICON *Icon = Self->data;
+  WIDGET_ICON *Icon;
   
-  if (Self->data) {
-    if (Icon->bitmap) free (Icon->bitmap); 
-    free (Self->data);
-    Self->data=NULL;
+  if (Self) {
+	Icon = Self->data;
+    if (Icon) {
+      if (Icon->bitmap) free (Icon->bitmap); 
+      free(Self->data);
+      Self->data=NULL;
+    }
   }
   
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.2 2004/01/28 06:43:31 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.3  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.2  2004/01/28 06:43:31  reinelt
  * plugin_ppp finished.
  *
@@ -56,7 +63,7 @@
 #include "debug.h"
 #include "plugin.h"
 #include "hash.h"
-
+#include "qprintf.h"
 
 #ifdef HAVE_NET_IF_PPP_H
 
@@ -87,7 +94,7 @@ static int get_ppp_stats (void)
   for (unit=0; unit<8; unit++) {
     memset (&req, 0, sizeof (req));
     req.stats_ptr = (caddr_t) &req.stats;
-    snprintf (req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
+    qprintf(req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
     
     if (ioctl(fd, SIOCGPPPSTATS, &req) == 0) {
       ibytes=req.stats.p.ppp_ibytes;
@@ -95,11 +102,11 @@ static int get_ppp_stats (void)
     } else {
       ibytes=obytes=0;
     }
-    snprintf (key, sizeof(key), "Rx:%d", unit);
-    snprintf (val, sizeof(val), "%d", ibytes);
+    qprintf(key, sizeof(key), "Rx:%d", unit);
+    qprintf(val, sizeof(val), "%d", ibytes);
     hash_set_delta (&PPP, key, val);
-    snprintf (key, sizeof(key), "Tx:%d", unit);
-    snprintf (val, sizeof(val), "%d", obytes);
+    qprintf(key, sizeof(key), "Tx:%d", unit);
+    qprintf(val, sizeof(val), "%d", obytes);
     hash_set_delta (&PPP, key, val);
 
   }
@@ -130,3 +137,7 @@ int plugin_init_ppp (void)
   return 0;
 }
 
+void plugin_exit_ppp(void) 
+{
+	hash_destroy(&PPP);
+}

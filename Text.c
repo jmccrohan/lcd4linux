@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.14 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: Text.c,v 1.15 2004/03/03 03:47:04 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.15  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.14  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -150,6 +157,7 @@ int Text_init (LCD *Self)
     error ("Text: bad size '%s'", s);
     return -1;
   }
+  free(s);
   Self->rows=rows;
   Self->cols=cols;
   Self->xres=1;
@@ -231,9 +239,10 @@ int Text_put (int row, int col, char *text)
 int Text_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int len, i;
-  if (cfg_get(NULL, "TextBar", NULL)) 
+  char* s;
+  if (s=cfg_get(NULL, "TextBar", NULL)) {
     mvwprintw(w, row+1 , col+1, "%d %d %d", max, len1, len2);
-  else {
+  } else {
     len = min(len1, len2);
     len = min(len, Lcd.cols-col-1);
     if (len) {
@@ -251,7 +260,7 @@ int Text_bar (int type, int row, int col, int max, int len1, int len2)
     for (i=0; i<len2;i++)
       waddch(w,ACS_S9);
   }
-  
+  free(s);  
   return 0;
 }
 

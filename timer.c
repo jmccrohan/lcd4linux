@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: timer.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,13 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.5  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.4  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -186,4 +193,11 @@ int timer_process (struct timespec *delay)
 
   return 0;
   
+}
+
+void timer_exit() {
+  if (nTimers>0) {
+    nTimers=0;
+    free(Timers);;	
+  }
 }

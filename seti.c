@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.13 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: seti.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.14  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.13  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -123,16 +130,19 @@ int Seti (double *perc, double *cput)
     if (dir==NULL || *dir=='\0') {
       error ("no 'SetiDir' entry in %s!\n", cfg_source());
       fd=-1;
+      free(dir);
       return -1;
     }
     if (strlen(dir)>sizeof(fn)-sizeof(STATEFILE)-2) {
       error ("entry 'SetiDir' too long in %s!\n", cfg_source());
       fd=-1;
+      free(dir);
       return -1;
     }
     strcpy(fn, dir);
     strcat(fn, "/");
     strcat(fn, STATEFILE);
+    free(dir);
   }
 
   fd = open(fn, O_RDONLY);

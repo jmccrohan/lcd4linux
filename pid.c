@@ -1,4 +1,4 @@
-/* $Id: pid.c,v 1.3 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: pid.c,v 1.4 2004/03/03 03:47:04 reinelt Exp $
  *
  * PID file handling
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.4  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.3  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -62,7 +69,7 @@
 
 #include "debug.h"
 #include "pid.h"
-
+#include "qprintf.h"
 
 int pid_init (const char *pidfile)
 {
@@ -70,7 +77,7 @@ int pid_init (const char *pidfile)
   char buffer[16];
   int fd, len, pid;
   
-  snprintf(tmpfile, sizeof(tmpfile), "%s.%s", pidfile, "XXXXXX");
+  qprintf(tmpfile, sizeof(tmpfile), "%s.%s", pidfile, "XXXXXX");
 
   if ((fd=mkstemp(tmpfile))==-1) {
     error ("mkstemp(%s) failed: %s", tmpfile, strerror(errno));
@@ -84,7 +91,7 @@ int pid_init (const char *pidfile)
     return -1;
   }
   
-  snprintf (buffer, sizeof(buffer), "%d\n", (int)getpid());
+  qprintf(buffer, sizeof(buffer), "%d\n", (int)getpid());
   if (write(fd, buffer, strlen(buffer))!=strlen(buffer)) {
     error ("write(%s) failed: %s", tmpfile, strerror(errno));
     close(fd);

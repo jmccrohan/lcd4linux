@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.13 2004/02/26 21:42:45 reinelt Exp $
+/* $Id: evaluator.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,13 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.14  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.13  2004/02/26 21:42:45  reinelt
  * memory leak fixes from Martin
  *
@@ -396,7 +403,7 @@ int SetVariable (char *name, RESULT *value)
   V=bsearch(name, Variable, nVariable, sizeof(VARIABLE), v_lookup);
   if (V!=NULL) {
     FreeResult (V->value);
-    V->value=DupResult(value);
+    V->value=(value);
     return 1;
   }
   
@@ -413,6 +420,17 @@ int SetVariable (char *name, RESULT *value)
   return 0;
 }
 
+void DeleteVariables(void) {
+	int i;
+	
+	for (i=0;i<nVariable;i++) {
+		free(Variable[i].name);
+		FreeResult(Variable[i].value);
+	}
+	free(Variable);
+	Variable=NULL;
+	nVariable=0;
+}
 
 int AddNumericVariable (char *name, double value)
 {
@@ -484,6 +502,17 @@ int AddFunction (char *name, int args, void (*func)())
   Function[nFunction-1].func=func;
   
   return 0;
+}
+
+void DeleteFunctions(void) {
+	int i;
+	
+	for (i=0;i<nFunction;i++) {
+		free(Function[i].name);
+	}
+	free(Function);
+	Function=NULL;
+	nFunction=0;
 }
 
 
@@ -640,13 +669,14 @@ static void Level04 (RESULT *result)
     value = (R2N(result)!=0.0) || (R2N(&operand)!=0.0);
     SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&operand);
 }
 
 
 // logical 'and'
 static void Level05 (RESULT *result)
 {
-  RESULT operand;
+  RESULT operand = {0, 0.0, NULL};
   double value;
   
   Level06(result);
@@ -657,6 +687,7 @@ static void Level05 (RESULT *result)
     value = (R2N(result)!=0.0) && (R2N(&operand)!=0.0);
     SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&operand);
 }
 
 
@@ -676,8 +707,9 @@ static void Level06 (RESULT *result)
       value = (R2N(result) == R2N(&operand));
     else
       value = (R2N(result) != R2N(&operand));
-    SetResult(&result, R_NUMBER, &value); 
+      SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&operand);
 }
 
 
@@ -697,16 +729,17 @@ static void Level07 (RESULT *result)
     Level08 (&operand);
     if (operator[0]=='<')
       if (operator[1]=='=')
-	value = (R2N(result) <= R2N(&operand));
+        value = (R2N(result) <= R2N(&operand));
       else
-	value = (R2N(result) <  R2N(&operand));
+        value = (R2N(result) <  R2N(&operand));
     else
       if (operator[1]=='=')
-	value = (R2N(result) >= R2N(&operand));
+        value = (R2N(result) >= R2N(&operand));
       else
-	value = (R2N(result) >  R2N(&operand));
+        value = (R2N(result) >  R2N(&operand));
     SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&operand);
 }
 
 
@@ -738,6 +771,7 @@ static void Level08 (RESULT *result)
       free (s3);
     }
   }
+  DelResult(&operand);
 }
 
 
@@ -764,6 +798,7 @@ static void Level09 (RESULT *result)
     }
     SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&operand);
 }
 
 
@@ -781,6 +816,7 @@ static void Level10 (RESULT *result)
     value = pow(R2N(result), R2N(&exponent));
     SetResult(&result, R_NUMBER, &value); 
   }
+  DelResult(&exponent);
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.35 2004/03/01 04:29:51 reinelt Exp $^
+/* $Id: cfg.c,v 1.36 2004/03/03 03:47:04 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.36  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.35  2004/03/01 04:29:51  reinelt
  * cfg_number() returns -1 on error, 0 if value not found (but default val used),
  *  and 1 if value was used from the configuration.
@@ -463,6 +470,7 @@ char *l4l_cfg_get_raw (char *section, char *key, char *defval)
 char *l4l_cfg_get (char *section, char *key, char *defval)
 {
   char *expression;
+  char *retval;
   RESULT result = {0, 0.0, NULL};
   
   expression=cfg_lookup(section, key);
@@ -470,10 +478,14 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
   if (expression!=NULL) {
     if (*expression=='\0') return "";
     if (Eval(expression, &result)==0) {
-      return R2S(&result);
+      retval=strdup(R2S(&result));
+      DelResult(&result);	  
+	  return(retval);
     }
+    DelResult(&result);
   }
-  return strdup(defval);
+  if (defval) return strdup(defval);
+  return NULL;
 }
 
 
@@ -493,6 +505,7 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
   }
   
   if (Eval(expression, &result)!=0) {
+    DelResult(&result);
     return -1;
   }
   *value=R2N(&result);
@@ -724,8 +737,7 @@ char *l4l_cfg_source (void)
 int l4l_cfg_exit (void)
 {
   int i;
-  
-  for (i=0; i<nConfig; i++) {
+  for (i=0; i<nConfig; i++) {	  
     if (Config[i].key) free (Config[i].key);
     if (Config[i].val) free (Config[i].val);
   }

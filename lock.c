@@ -1,4 +1,4 @@
-/* $Id: lock.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: lock.c,v 1.7 2004/03/03 03:47:04 reinelt Exp $
  *
  * UUCP style locking
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: lock.c,v $
+ * Revision 1.7  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.6  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -80,6 +87,7 @@
 
 #include "debug.h"
 #include "lock.h"
+#include "qprintf.h"
 
 
 pid_t lock_port (char *Port)
@@ -100,8 +108,8 @@ pid_t lock_port (char *Port)
     *p='_';
   }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, port);
-  snprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
+  qprintf(lockfile, sizeof(lockfile), LOCK, port);
+  qprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
 
   free (port);
   
@@ -195,7 +203,7 @@ pid_t unlock_port (char *Port)
     *p='_';
   }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, port);
+  qprintf(lockfile, sizeof(lockfile), LOCK, port);
   unlink (lockfile);
   free (port);
 

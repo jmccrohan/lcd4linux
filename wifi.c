@@ -1,4 +1,4 @@
-/* $Id: wifi.c,v 1.6 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: wifi.c,v 1.7 2004/03/03 03:47:04 reinelt Exp $
  *
  * WIFI specific functions
  *
@@ -25,6 +25,13 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.7  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.6  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -139,5 +146,6 @@ int Wifi (int *signal, int *link, int *noise)
   *signal=ws;
   *link=wl;
   *noise=wn;
+  free(interface);
   return 0; 
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.11 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.12 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.12  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.11  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -740,6 +747,7 @@ int drv_generic_text_quit (void) {
     free (BarFB);
     BarFB=NULL;
   }
-  
+  widget_unregister();
+
   return (0);
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_math.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_math.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
  *
  * math plugin
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: plugin_math.c,v $
+ * Revision 1.3  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.2  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -131,3 +138,6 @@ int plugin_init_math (void)
   return 0;
 }
 
+void plugin_exit_math(void) 
+{
+}

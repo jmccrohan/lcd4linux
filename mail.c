@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.15 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: mail.c,v 1.16 2004/03/03 03:47:04 reinelt Exp $
  *
  * email specific functions
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.16  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.15  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -121,6 +128,8 @@ int Mail (int index, int *num, int *unseen)
   int last_line_blank1;                   // Was the last line blank?
   struct stat fst;
   int rc;
+  char *s:
+  int i;
 
   char *txt;
   char txt1[100];
@@ -137,14 +146,17 @@ int Mail (int index, int *num, int *unseen)
   }
   if (now[index] > 0) {	/* not first time, delay  */
     sprintf(txt1, "Delay_e%d", index); 
-    if (time(NULL)<=now[index]+atoi(cfg_get(NULL, txt1, "5"))) 
+    s= cfg_get(NULL, txt1, "5");
+    i=now[index]+atoi(s);
+    free(s);
+    if (time(NULL)<=i)
       return 0;   // no more then 5/Delay_eX seconds after last check?
   }
   time(&now[index]);                      // for Mailbox #index
   /*
     Build the filename from the config
   */
-  snprintf(buffer, sizeof(buffer), "Mailbox%d", index);
+  qprintf(buffer, sizeof(buffer), "Mailbox%d", index);
   fnp1=cfg_get(NULL, buffer, NULL);
   if (fnp1==NULL || *fnp1=='\0') {
     cfgmbx[index]=FALSE;                  // There is now entry for Mailbox #index
@@ -163,10 +175,13 @@ int Mail (int index, int *num, int *unseen)
         is it pop3, imap4 or nntp? 
       */
       rc = Mail_pop_imap_news(fnp1, num, unseen);
-      if (rc == 0)
-	return 0;
+      if (rc == 0) {
+            free(fnp1);
+			return 0;
+		}
       else
 	cfgmbx[index] = FALSE; /* don't try again */
+	
       error ("Error getting stat of Mailbox%d", index);
       return (-1);
     }
@@ -174,7 +189,6 @@ int Mail (int index, int *num, int *unseen)
       mbxlt[index]=fst.st_mtime;
 
       fstr=fopen(fnp1,"r");
-
       if (fstr != NULL) {
         txt=&txt1[0];
         last_line_blank1=TRUE;
@@ -202,6 +216,7 @@ int Mail (int index, int *num, int *unseen)
       }
     }
   }
+  free(fnp1);
   /* FIXME look at the Status of Mails */
   *unseen = v1 - mbxnum[index];
   if (*unseen < 0)

@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.3 2004/01/12 03:51:01 reinelt Exp $
+/* $Id: evaluator.h,v 1.4 2004/03/03 03:47:04 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,13 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.h,v $
+ * Revision 1.4  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.3  2004/01/12 03:51:01  reinelt
  * evaluating the 'Variables' section in the config file
  *
@@ -92,6 +99,8 @@ int SetVariable        (char *name, RESULT *value);
 int AddNumericVariable (char *name, double value);
 int AddStringVariable  (char *name, char *value);
 int AddFunction        (char *name, int args, void (*func)());
+void DeleteVariables   (void);
+void DeleteFunctions   (void);
 
 RESULT* SetResult (RESULT **result, int type, void *value);
 

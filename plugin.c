@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.19 2004/02/18 14:45:42 nicowallmeier Exp $
+/* $Id: plugin.c,v 1.20 2004/03/03 03:47:04 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.20  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.19  2004/02/18 14:45:42  nicowallmeier
  * Imon/Telmon plugin ported
  *
@@ -151,6 +158,21 @@ int plugin_init_xmms (void);
 int plugin_init_imon(void);
 
 
+void plugin_exit_math (void);
+void plugin_exit_string (void);
+void plugin_exit_cfg (void);
+void plugin_exit_uname (void);
+void plugin_exit_loadavg (void);
+void plugin_exit_proc_stat (void);
+void plugin_exit_cpuinfo (void);
+void plugin_exit_meminfo (void);
+void plugin_exit_netdev (void);
+void plugin_exit_ppp (void);
+void plugin_exit_dvb (void);
+void plugin_exit_i2c_sensors (void);
+void plugin_exit_xmms (void);
+void plugin_exit_imon(void);
+
 int plugin_init (void)
 {
   plugin_init_math();
@@ -171,4 +193,22 @@ int plugin_init (void)
   return 0;
 }
 
-
+void plugin_exit(void) {
+  plugin_exit_math();
+  plugin_exit_string();
+  plugin_exit_cfg();
+  plugin_exit_uname();
+  plugin_exit_loadavg();
+  plugin_exit_proc_stat();
+  plugin_exit_cpuinfo();
+  plugin_exit_meminfo();
+  plugin_exit_netdev();
+  plugin_exit_ppp();
+  plugin_exit_dvb();
+  plugin_exit_i2c_sensors();
+  plugin_exit_xmms();
+  plugin_exit_imon();	
+  
+  DeleteFunctions();
+  DeleteVariables();
+}

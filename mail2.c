@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.12 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: mail2.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.13  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.12  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -221,16 +228,18 @@ static int check_nntp(char *user, char *pass, char *machine,
   int err;
   int totg, unsg;
   int first;
+  char *s;
   
   *total = 0;
   *unseen = 0;
   
-  strcpy(buf, cfg_get(NULL, "Newsrc", ".newsrc"));
+  strcpy(buf, (s=cfg_get(NULL, "Newsrc", ".newsrc")));
   if (*buf == 0 || ((fp = fopen(buf, "r")) == NULL)) {
     error("Couldn't open .newsrc-file '%s'", buf);
+	free(s);
     return -1;
   }
-
+  free(s);
   fd = open_socket(machine, port);
   if (fd < 0)
     {

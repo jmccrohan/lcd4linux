@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.2 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.3  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.2  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -85,6 +92,7 @@
 #include "cfg.h"
 #include "udelay.h"
 #include "drv_generic_parport.h"
+#include "qprintf.h"
 
 
 static char *Driver="";
@@ -120,6 +128,7 @@ int drv_generic_parport_open (char *section, char *driver)
     Port=0;
     PPdev=s;
 #else
+    free(s);
     error ("%s: bad %s.Port '%s' from %s", Driver, Section, s, cfg_source());
     return -1;
 #endif
@@ -183,6 +192,7 @@ int drv_generic_parport_close (void)
       error ("%s: close(%s) failed: %s", Driver, PPdev, strerror(errno));
       return -1;
     }
+    free(PPdev);
   } else 
 #endif    
     {
@@ -199,6 +209,7 @@ int drv_generic_parport_close (void)
 	}
       }
     }
+
   return 0;
 }
 
@@ -209,7 +220,7 @@ unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
   char wire[256];
   char *s;
   
-  snprintf (wire, sizeof(wire), "Wire.%s", name);
+  qprintf(wire, sizeof(wire), "Wire.%s", name);
   s=cfg_get (Section, wire, deflt);
   if (strcasecmp(s,"STROBE")==0) {
     w=PARPORT_CONTROL_STROBE;
@@ -226,6 +237,7 @@ unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
     error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
     return 0xff;
   }
+  free(s);
 
   if (w&PARPORT_CONTROL_STROBE) {
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", Driver, name);
@@ -253,7 +265,7 @@ unsigned char drv_generic_parport_wire_data (char *name, unsigned char *deflt)
   char wire[256];
   char *s;
   
-  snprintf (wire, sizeof(wire), "Wire.%s", name);
+  qprintf(wire, sizeof(wire), "Wire.%s", name);
   s=cfg_get (Section, wire, deflt);
   if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
     w=s[2]-'0';
@@ -264,7 +276,7 @@ unsigned char drv_generic_parport_wire_data (char *name, unsigned char *deflt)
     error ("%s: should be DB0..7 or GND", Driver);
     return 0xff;
   }
-  
+  free(s);
   if (w==0) {
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {

@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.13 2004/02/27 06:07:55 reinelt Exp $
+/* $Id: hash.c,v 1.14 2004/03/03 03:47:04 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.14  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.13  2004/02/27 06:07:55  reinelt
  * hash improvements from Martin
  *
@@ -100,6 +107,24 @@
 
 
 #define DELTA_SLOTS 64
+
+static timeval __my_time_of_day;
+
+int gettimeofday_ex(timeval *tv, struct timezone *tz) {
+  if (tv==NULL) return -1;
+
+  if (__my_time_of_day.tv_usec == 0 && __my_time_of_day.tv_sec==0) {
+    gettimeofday_update();
+  }
+
+  tv->tv_sec = __my_time_of_day.tv_sec;
+  tv->tv_usec= __my_time_of_day.tv_usec;
+  return 0;
+}
+
+void gettimeofday_update(){
+  gettimeofday(&__my_time_of_day, NULL);
+}
 
 
 // bsearch compare function for hash entries
@@ -191,7 +216,7 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
 
  hash_got_string:
   // set timestamps
-  gettimeofday(&Hash->time, NULL);
+  gettimeofday_ex(&Hash->time, NULL);
   Item->time=Hash->time;
 
   return Item;
@@ -231,7 +256,7 @@ void hash_set_delta (HASH *Hash, char *key, char *val)
   if (--Item->root < 0) Item->root = DELTA_SLOTS-1;
 
   // set first entry
-  gettimeofday(&(Item->Slot[Item->root].time), NULL);
+  gettimeofday_ex(&(Item->Slot[Item->root].time), NULL);
   Item->Slot[Item->root].val=number;
 
 }
@@ -255,6 +280,8 @@ int hash_age (HASH *Hash, char *key, char **value)
   timeval now, *stamp;
   int age;
   
+  gettimeofday_update();
+  
   if (key!=NULL) {
     Item=hash_lookup(Hash, key, 1);
     if (value) *value=Item?Item->val:NULL;
@@ -266,7 +293,7 @@ int hash_age (HASH *Hash, char *key, char **value)
     stamp=&Hash->time;
   }
   
-  gettimeofday(&now, NULL);
+  gettimeofday_ex(&now, NULL);
   
   age = (now.tv_sec - stamp->tv_sec)*1000 + (now.tv_usec - stamp->tv_usec)/1000;
 

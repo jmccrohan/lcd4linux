@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.14 2004/03/01 04:29:51 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.15 2004/03/03 03:47:04 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,13 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.15  2004/03/03 03:47:04  reinelt
+ * big patch from Martin Hejl:
+ * - use qprintf() where appropriate
+ * - save CPU cycles on gettimeofday()
+ * - add quit() functions to free allocated memory
+ * - fixed lots of memory leaks
+ *
  * Revision 1.14  2004/03/01 04:29:51  reinelt
  * cfg_number() returns -1 on error, 0 if value not found (but default val used),
  *  and 1 if value was used from the configuration.
@@ -519,7 +526,7 @@ static void drv_HD_setGPO (int bits)
 
 static int drv_HD_start (char *section)
 {
-  char *model, *s;
+  char *model, *strsize;
   int rows=-1, cols=-1, gpos=-1;
   
   model=cfg_get(section, "Model", "generic");
@@ -539,17 +546,20 @@ static int drv_HD_start (char *section)
     error ("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());
     return -1;
   }
+  free(model);
 
-  s=cfg_get(section, "Size", NULL);
-  if (s==NULL || *s=='\0') {
+  strsize=cfg_get(section, "Size", NULL);
+  if (strsize==NULL || *strsize=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
+	free(strsize);
     return -1;
   }
-  if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    error ("%s: bad size '%s'", Name, s);
+  if (sscanf(strsize,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
+    error ("%s: bad size '%s'", Name, strsize);
+	free(strsize);
     return -1;
   }
-  
+    
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("%s: controlling %d GPO's", Name, gpos);
 
@@ -568,7 +578,7 @@ static int drv_HD_start (char *section)
   
   if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
   if (Bits!=4 && Bits!=8) {
-    error ("%s: bad %s.Bits '%s' from %s, should be '4' or '8'", Name, section, s, cfg_source());
+    error ("%s: bad %s.Bits '%s' from %s, should be '4' or '8'", Name, section, strsize, cfg_source());
     return -1;
   }    
   info ("%s: using %d bit mode", Name, Bits);
@@ -638,6 +648,7 @@ static int drv_HD_start (char *section)
   }
   
   info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
+  free(strsize);
 
   drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
   drv_HD_command (allControllers, 0x03, T_CLEAR); // return home
