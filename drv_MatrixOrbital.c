@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.26 2004/05/31 16:39:06 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.27 2004/05/31 21:23:16 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.27  2004/05/31 21:23:16  reinelt
+ *
+ * some cleanups in the MatrixOrbital driver
+ *
  * Revision 1.26  2004/05/31 16:39:06  reinelt
  *
  * added NULL display driver (for debugging/profiling purposes)
@@ -407,54 +411,62 @@ static int drv_MO_start (char *section)
   
   if (drv_generic_serial_open(section, Name, 0)<0) return -1;
 
-  // read module type
-  drv_generic_serial_write ("\3767", 2);
-  usleep(1000);
-  if (drv_generic_serial_read (buffer, 1)==1) {
-    for (i=0; Models[i].type!=0xff; i++) {
-      if (Models[i].type == (int)*buffer) break;
+  if (Model == -1 || Models[Model].protocol > 1) {
+    // read module type
+    drv_generic_serial_write ("\3767", 2);
+    usleep(1000);
+    if (drv_generic_serial_read (buffer, 1)==1) {
+      for (i=0; Models[i].type!=0xff; i++) {
+	if (Models[i].type == (int)*buffer) break;
+      }
+      info ("%s: display reports model '%s' (type 0x%02x)", 
+	    Name, Models[i].name, Models[i].type);
+
+      // auto-dedection
+      if (Model==-1) Model=i;
+
+      // auto-dedection matches specified model?
+      if (Models[i].type!=0xff && Model!=i) {
+	error ("%s: %s.Model '%s' from %s does not match dedected Model '%s'", 
+	       Name, section, model, cfg_source(), Models[i].name);
+	return -1;
+      }
+
+    } else {
+      info ("%s: display detection failed.", Name);
     }
-    info ("%s: display reports model '%s' (type 0x%02x)", 
-	  Name, Models[i].name, Models[i].type);
-
-    // auto-dedection
-    if (Model==-1) Model=i;
-
-    // auto-dedection matches specified model?
-    if (Models[i].type!=0xff && Model!=i) {
-      error ("%s: %s.Model '%s' from %s does not match dedected Model '%s'", 
-	     Name, section, model, cfg_source(), Models[i].name);
-      return -1;
-    }
-
-  } else {
-    info ("%s: display detection failed.", Name);
-  }
-  
-  // read serial number
-  drv_generic_serial_write ("\3765", 2);
-  usleep(100000);
-  if (drv_generic_serial_read (buffer, 2)==2) {
-    info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
   }
 
-  // read version number
-  drv_generic_serial_write ("\3766", 2);
-  usleep(100000);
-  if (drv_generic_serial_read (buffer, 1)==1) {
-    info ("%s: display reports firmware version 0x%x", Name, *buffer);
-  }
-  
   // initialize global variables
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
   Protocol = Models[Model].protocol;
 
-  if (Protocol==2) 
-    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
-  else 
+  if (Protocol > 1) {
+    // read serial number
+    drv_generic_serial_write ("\3765", 2);
+    usleep(100000);
+    if (drv_generic_serial_read (buffer, 2)==2) {
+      info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
+    }
+  
+    // read version number
+    drv_generic_serial_write ("\3766", 2);
+    usleep(100000);
+    if (drv_generic_serial_read (buffer, 1)==1) {
+      info ("%s: display reports firmware version 0x%x", Name, *buffer);
+    }
+  }
+  
+  switch (Protocol) {
+  case 1:
     drv_generic_serial_write ("\014", 1);  // Clear Screen
+    break;
+  case 2:
+    drv_generic_serial_write ("\376\130", 2);  // Clear Screen
+    break;
+  }
   
   drv_generic_serial_write ("\376B", 3);  // backlight on
   drv_generic_serial_write ("\376K", 2);  // cursor off
