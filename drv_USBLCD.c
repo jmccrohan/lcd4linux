@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.8 2004/06/05 06:41:40 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.9 2004/06/05 14:56:48 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,12 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.9  2004/06/05 14:56:48  reinelt
+ *
+ * Cwlinux splash screen fixed
+ * USBLCD splash screen fixed
+ * plugin_i2c qprintf("%f") replaced with snprintf()
+ *
  * Revision 1.8  2004/06/05 06:41:40  reinelt
  *
  * chancged splash screen again
@@ -143,6 +149,8 @@ static void drv_UL_command (unsigned char cmd)
 static void drv_UL_clear (void)
 {
   drv_UL_command (0x01); // clear display
+  drv_UL_command (0x03); // return home
+  drv_UL_send();         // flush buffer
 }
 
 
@@ -267,11 +275,8 @@ static int drv_UL_start (char *section, int quiet)
   drv_UL_command (0x08); // Display off, cursor off, blink off
   drv_UL_command (0x0c); // Display on, cursor off, blink off
   drv_UL_command (0x06); // curser moves to right, no shift
-  drv_UL_clear();        // clear display
-  drv_UL_command (0x03); // return home
 
-  // flush buffer
-  drv_UL_send();
+  drv_UL_clear();        // clear display
   
   if (!quiet) {
     char buffer[40];
@@ -279,7 +284,6 @@ static int drv_UL_start (char *section, int quiet)
     if (drv_generic_text_greet (buffer, "http://www.usblcd.de")) {
       sleep (3);
       drv_UL_clear();
-      drv_UL_send();
     }
   }
     
@@ -400,9 +404,6 @@ int drv_UL_quit (void)
   
   // say goodbye...
   drv_generic_text_greet ("goodbye!", NULL);
-
-  // flush buffer
-  drv_UL_send();
   
   debug ("closing port %s", Port);
   close(usblcd_file);

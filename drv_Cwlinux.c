@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.14 2004/06/05 06:41:39 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.15 2004/06/05 14:56:48 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.15  2004/06/05 14:56:48  reinelt
+ *
+ * Cwlinux splash screen fixed
+ * USBLCD splash screen fixed
+ * plugin_i2c qprintf("%f") replaced with snprintf()
+ *
  * Revision 1.14  2004/06/05 06:41:39  reinelt
  *
  * chancged splash screen again
@@ -140,7 +146,7 @@ typedef struct {
 
 static MODEL Models[] = {
   { 0x01, "CW1602",   2, 16,  5,  0,  1 },
-  { 0x02, "CW12232",  4, 40,  6,  0,  2 },
+  { 0x02, "CW12232",  4, 20,  6,  0,  2 },
   { 0xff, "Unknown", -1, -1, -1, -1, -1 }
 };
 
@@ -246,7 +252,7 @@ static int drv_CW_brightness (int brightness)
 }
 
 
-static int drv_CW_start (char *section, int quiet)
+static int drv_CW_start (char *section)
 {
   int i;  
   char *model;
@@ -302,15 +308,6 @@ static int drv_CW_start (char *section, int quiet)
   // set brightness
   if (cfg_number(section, "Brightness", 0, 0, 8, &i) > 0) {
     drv_CW_brightness(i);
-  }
-
-  if (!quiet) {
-    char buffer[40];
-    qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
-    if (drv_generic_text_greet (buffer, "www.cwlinux.com")) {
-      sleep (3);
-      drv_CW_clear();
-    }
   }
 
   return 0;
@@ -382,7 +379,7 @@ int drv_CW_init (char *section, int quiet)
   GOTO_COST = 3;  // number of bytes a goto command requires
 
   // start display
-  if ((ret=drv_CW_start (section, quiet))!=0)
+  if ((ret=drv_CW_start (section))!=0)
     return ret;
   
   // real worker functions
@@ -397,6 +394,15 @@ int drv_CW_init (char *section, int quiet)
       break;
   }
   
+  if (!quiet) {
+    char buffer[40];
+    qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
+    if (drv_generic_text_greet (buffer, "www.cwlinux.com")) {
+      sleep (3);
+      drv_CW_clear();
+    }
+  }
+
   // initialize generic text driver
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;

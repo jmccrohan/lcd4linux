@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.16 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.17 2004/06/05 14:56:48 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.17  2004/06/05 14:56:48  reinelt
+ *
+ * Cwlinux splash screen fixed
+ * USBLCD splash screen fixed
+ * plugin_i2c qprintf("%f") replaced with snprintf()
+ *
  * Revision 1.16  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -194,7 +200,7 @@ static int parse_i2c_sensors_sysfs(char *key)
       !strncmp(key, "curr", 4)  ||
       !strncmp(key, "in", 2)    ||
       !strncmp(key, "vid", 3)) {
-    qprintf(val, sizeof(val), "%f", strtod(buffer, NULL) / 1000.0);   
+    snprintf(val, sizeof(val), "%f", strtod(buffer, NULL) / 1000.0);   
   } else {
     qprintf(val, sizeof(val), "%s", buffer); 
     // we supress this nasty \n at the end
