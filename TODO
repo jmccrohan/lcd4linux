@@ -87,3 +87,8 @@ follow any scheme on most displays)
 change network clients to support different devices
 at the moment the sum of all eth* devices is calculated
 %n* should be extended tokens
+
+2001-03-24 Brian Cleven <lcleven@home.com>
+support 40x4 displays with two HD44780 chips on it
+we need another 'Enable' line for this
+this way one could connect two displays to on e parallel port, too
