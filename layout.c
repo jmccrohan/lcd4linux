@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.2 2004/01/11 09:26:15 reinelt Exp $
+/* $Id: layout.c,v 1.3 2004/01/11 18:26:02 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.3  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.2  2004/01/11 09:26:15  reinelt
  * layout starts to exist...
  *
@@ -54,10 +57,11 @@
 #include "layout.h"
 
 
-void layout_addItem (char *name, int row, int col)
+int layout_addItem (char *name, int row, int col)
 {
-
-  debug ("layout_addItem(%s, %d, %d)", name, row, col);
+  // allocate widget
+  widget_add (name);
+  
 }
 
 
@@ -68,8 +72,6 @@ int layout_init (char *layout)
   char *key;
   char *widget;
   int row, col;
-  
-  char buffer[32];
   
   info ("initializing layout '%s'", layout);
   

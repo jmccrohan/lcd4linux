@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.1 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: widget_text.c,v 1.2 2004/01/11 18:26:02 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.2  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.1  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -48,12 +51,62 @@
 #include "widget.h"
 
 
+typedef struct WIDGET_TEXT {
+  char *value;
+  char *align;
+  int   width;
+  int   update;
+} WIDGET_TEXT;
+
+
+int widget_text_init (WIDGET *Self) {
+  
+  char *section;
+  WIDGET_TEXT *data;
+  
+  debug ("Michi: widget_text_init(%s)", Self->name);
+  
+  // prepare config section
+  // strlen("Widget:")=7
+  section=malloc(strlen(Self->name)+8);
+  strcpy(section, "Widget:");
+  strcat(section, Self->name);
+  
+  data=malloc(sizeof(WIDGET_TEXT));
+  
+  data->value = cfg_get (section, "value",  "''");
+  data->align = cfg_get (section, "align",  "L");
+  
+  cfg_number (section, "width",   5,  0, 99999, &(data->width));
+  cfg_number (section, "update", -1, -1, 99999, &(data->update));
+  
+  free (section);
+  Self->data=data;
+  
+  
+  return 0;
+}
+
+
+int widget_text_quit (WIDGET *Self) {
+
+  if (Self->data) {
+    free (Self->data);
+    Self->data=NULL;
+  }
+  
+  return 0;
+  
+}
+
+
+
 WIDGET_CLASS Widget_Text = {
   name:   "text",
-  init:   NULL,
+  init:   widget_text_init,
   update: NULL,
-  render: NULL,
-  quit:   NULL,
+  draw:   NULL,
+  quit:   widget_text_quit,
 };
 
 

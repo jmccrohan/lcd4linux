@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.5 2004/01/11 09:26:15 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.6 2004/01/11 18:26:02 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.6  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.5  2004/01/11 09:26:15  reinelt
  * layout starts to exist...
  *
@@ -678,7 +681,7 @@ int drv_MO_init (char *section)
   
   // register text widget
   wc=Widget_Text;
-  wc.render=NULL;
+  wc.draw=NULL; //Fixme
   widget_register(&wc);
   
   // register plugins

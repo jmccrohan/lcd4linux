@@ -1,8 +1,9 @@
-/* $Id: plugin_string.c,v 1.1 2003/12/19 05:50:34 reinelt Exp $
+/* $Id: plugin_string.c,v 1.2 2004/01/11 18:26:02 reinelt Exp $
  *
  * string plugin
  *
- * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.2  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.1  2003/12/19 05:50:34  reinelt
  * added plugin_math.c and plugin_string.c
  *

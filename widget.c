@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.5 2004/01/11 09:26:15 reinelt Exp $
+/* $Id: widget.c,v 1.6 2004/01/11 18:26:02 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.6  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.5  2004/01/11 09:26:15  reinelt
  * layout starts to exist...
  *
@@ -86,12 +89,50 @@ int widget_register (WIDGET_CLASS *widget)
 }
 
 
-int widget_add (char *section, char *name)
+int widget_add (char *name)
 {
+  int i;
+  char *section;
+  char *class;
+  
+  WIDGET_CLASS *Class;
+  WIDGET       *Widget;
+  
+  // prepare config section
+  // strlen("Widget:")=7
+  section=malloc(strlen(name)+8);
+  strcpy(section, "Widget:");
+  strcat(section, name);
+  
+  // get widget class
+  class=cfg_get(section, "class", NULL);
+  if (class==NULL || *class=='\0') {
+    error ("error: widget '%s' has no class!", name);
+    return -1;
+  }
+  
+  // lookup widget class
+  for (i=0; i<nClasses; i++) {
+    if (strcasecmp(class, Classes[i].name)==0) {
+      Class=&(Classes[i]);
+      break;
+    }
+  }
+  if (i==nClasses) {
+    error ("widget '%s': class '%s' not supported");
+    return -1;
+  }
+  
   nWidgets++;
   Widgets=realloc(Widgets, nWidgets*sizeof(WIDGET));
-
-  Widgets[nWidgets-1].name = name;
+  Widget=&(Widgets[nWidgets-1]);
   
+  Widget->name  = name;
+  Widget->class = Class;
+  
+  if (Class->init!=0) {
+    Class->init(Widget);
+  }
+
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.4 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: widget.h,v 1.5 2004/01/11 18:26:02 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.5  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.4  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -48,18 +51,22 @@
 
 struct WIDGET; // forward declaration
 
+
 typedef struct WIDGET_CLASS {
   char *name;
   int (*init)   (struct WIDGET *Self);
-  int (*update) (struct WIDGET *Self);
-  int (*render) (struct WIDGET *Self);
+  int (*update) (struct WIDGET *Self); // Fixme: do we really need this?
+  int (*draw)   (struct WIDGET *Self);
   int (*quit)   (struct WIDGET *Self);
 } WIDGET_CLASS;
 
+
 typedef struct WIDGET{
-  char *name;
+  char         *name;
   WIDGET_CLASS *class;
+  void         *data;
 } WIDGET;
+
 
 
 int widget_register (WIDGET_CLASS *widget);

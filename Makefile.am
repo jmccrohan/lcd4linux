@@ -22,6 +22,7 @@ evaluator.c evaluator.h \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
+plugin_cfg.c \
 plugin_xmms.c \
 plugin_i2c_sensors.c \
 widget.c widget.h \

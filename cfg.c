@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.25 2004/01/11 09:26:15 reinelt Exp $^
+/* $Id: cfg.c,v 1.26 2004/01/11 18:26:02 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.26  2004/01/11 18:26:02  reinelt
+ * further widget and layout processing
+ *
  * Revision 1.25  2004/01/11 09:26:15  reinelt
  * layout starts to exist...
  *
@@ -181,7 +184,6 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "plugin.h"
 
 typedef struct {
   char *key;
@@ -396,12 +398,15 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
 
 int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int *value) 
 {
-  
   char *s, *e;
   
+  // start with default value
+  // in case of an (uncatched) error, you have the
+  // default value set, which may be handy...
+  *value=defval;
+
   s=cfg_get(section, key, NULL);
   if (s==NULL) {
-    *value=defval;
     return 0;
   }
   
@@ -529,12 +534,6 @@ static int cfg_read (char *file)
       val++;
     }
 
-    // provess 'value' in single-quotes
-    else if (*val=='\'' && *end=='\'') {
-      *end='\0';
-      val++;
-    }
-    
     // if key is '}', a section has been closed
     if (strcmp(key, "}")==0) {
       section_close=1;
@@ -613,39 +612,6 @@ static int cfg_read (char *file)
 }
 
 
-static void cfg_plugin (RESULT *result, int argc, RESULT *argv[])
-{
-  int i, len;
-  char *value;
-  char *buffer;
-  
-  // calculate key length
-  len=0;
-  for (i=0; i<argc; i++) {
-    len+=strlen(R2S(argv[i]))+1;
-  }
-  
-  // allocate key buffer
-  buffer=malloc(len+1);
-  
-  // prepare key buffer
-  *buffer='\0';
-  for (i=0; i<argc; i++) {
-    strcat (buffer, ".");
-    strcat (buffer, R2S(argv[i]));
-  }
-  
-  // buffer starts with '.', so cut off first char
-  value=cfg_get("", buffer+1, "");
-  
-  // free buffer again
-  free (buffer);
-  
-  // store result
-  SetResult(&result, R_STRING, value); 
-}
-
-
 int l4l_cfg_init (char *file)
 {
   if (cfg_check_source(file) == -1) {
@@ -657,9 +623,6 @@ int l4l_cfg_init (char *file)
   
   if (Config_File) free (Config_File);
   Config_File=strdup(file);
-  
-  // register as a plugin
-  AddFunction ("cfg", -1, cfg_plugin);
   
   return 0;
 }
