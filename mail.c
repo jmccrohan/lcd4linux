@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.9 2001/08/05 17:13:29 reinelt Exp $
+/* $Id: mail.c,v 1.10 2001/09/12 05:37:22 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.10  2001/09/12 05:37:22  reinelt
+ *
+ * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
+ *
+ * improved socket debugging
+ *
  * Revision 1.9  2001/08/05 17:13:29  reinelt
  *
  * cleaned up inlude of sys/time.h and time.h
@@ -163,7 +169,6 @@ int Mail (int index, int *num, int *unseen)
           if ( strncmp (txt1, "From ", 5 ) == 0 ) {
             if ( last_line_blank1 == TRUE ) {
               v1++;
-              debug ("mailbox%d found mail %d",index, v1);
               last_line_blank1 = FALSE;
             }
           }

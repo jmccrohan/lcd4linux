@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.3 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: debug.h,v 1.4 2001/09/12 05:37:22 reinelt Exp $
  *
  * debug messages
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.4  2001/09/12 05:37:22  reinelt
+ *
+ * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
+ *
+ * improved socket debugging
+ *
  * Revision 1.3  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -42,7 +48,6 @@
 
 void message (int level, const char *format, ...);
 
-#define sockdebug(args...) message (3, args)
 #define debug(args...) message (2, __FILE__ ": " args)
 #define info(args...) message (1, args)
 #define error(args...) message (0, args)

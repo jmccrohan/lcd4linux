@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.5 2001/08/05 17:13:29 reinelt Exp $
+/* $Id: seti.c,v 1.6 2001/09/12 05:37:22 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.6  2001/09/12 05:37:22  reinelt
+ *
+ * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
+ *
+ * improved socket debugging
+ *
  * Revision 1.5  2001/08/05 17:13:29  reinelt
  *
  * cleaned up inlude of sys/time.h and time.h
@@ -112,9 +118,12 @@ int Seti (double *perc, double *cput)
 
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
     error ("read(%s) failed: %s", fn, strerror(errno));
+    close (fd);
     fd=-1;
     return -1;
   }
+
+  close (fd);
   
   p=strstr(buffer, "prog=");
   if (p==NULL) {

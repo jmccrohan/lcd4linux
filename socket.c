@@ -1,4 +1,4 @@
-/* $Id: socket.c,v 1.2 2001/03/15 14:25:05 ltoetsch Exp $
+/* $Id: socket.c,v 1.3 2001/09/12 05:37:22 reinelt Exp $
  *
  * simple socket functions
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: socket.c,v $
+ * Revision 1.3  2001/09/12 05:37:22  reinelt
+ *
+ * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
+ *
+ * improved socket debugging
+ *
  * Revision 1.2  2001/03/15 14:25:05  ltoetsch
  * added unread/total news
  *
@@ -63,6 +69,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -73,6 +80,67 @@
 #include "debug.h"
 
 #define TIMEOUT 5 /* 5 seconds timeout */
+
+
+static char *quotemeta (char *string)
+{
+  char buffer[256];
+  char *s, *p;
+
+  p=buffer;
+  for (s=string; *s; s++) {
+    if (isprint(*s)) {
+      *p++=*s;
+    } else {
+      switch (*s) {
+      case '\r':
+	*p++='\\';
+	*p++='r';
+	break;
+      case '\n':
+	*p++='\\';
+	*p++='n';
+	break;
+      default:
+	p+=sprintf(p, "<\\%03o>", (int)*s);
+      }
+    }
+    if ((p-buffer)>240) {
+      *p++='.';
+      *p++='.';
+      *p++='.';
+      break;
+    }
+  }
+
+  *p='\0';
+  return buffer;
+}
+
+static char *del_pass(char *s) 
+{
+  char *p;
+  /* del pop3 pass from log */
+  if (memcmp(s, "PASS ", 5) == 0)
+    for (p = s+5; *p && *p != '\r'; p++)
+      *p = '*';
+  /* del imap4 pass from log */
+  else if (memcmp(s, ". LOGIN", 7) == 0)
+    for (p = s + strlen(s)-3 ; p > s && *p != ' '; p--)
+      *p = '*';
+  return s;
+}
+
+
+static void sockdebug (char dir, int len, char *string) {
+
+  // delete passwords from log
+  if (dir=='>') {
+    del_pass (string);
+  }
+  message (3, "%c[%2d] %s", dir, len, quotemeta(string)); 
+}
+
 
 int open_socket(char *machine, int port)
 {
@@ -102,7 +170,7 @@ int read_socket(int fd, char *buf, size_t size)
 {
   fd_set readfds;
   struct timeval tv;
-  int n	= 0;
+  int n;
 
   FD_ZERO(&readfds);
   FD_SET(fd, &readfds);
@@ -111,11 +179,14 @@ int read_socket(int fd, char *buf, size_t size)
 
   if (select(fd+1, &readfds, NULL, NULL, &tv) > 0)
     n = read(fd, buf, size);
+  else
+    n = 0;
+
   if (n >= 0)
     buf[n] = '\0';
   else
     buf[0] = '\0';
-  sockdebug("<(%d),%s", n, buf);
+  sockdebug('<', n, buf);
   return n;
 }
 
@@ -131,24 +202,10 @@ int read_socket_match(int fd, char *buf, size_t size, char *match)
   return 0;
 }
 
-static char *del_pass(char *s) 
-{
-  char *p;
-  /* del pop3 pass from log */
-  if (memcmp(s, "PASS ", 5) == 0)
-    for (p = s+5; *p && *p != '\r'; p++)
-      *p = '*';
-  /* del imap4 pass from log */
-  else if (memcmp(s, ". LOGIN", 7) == 0)
-    for (p = s + strlen(s)-3 ; p > s && *p != ' '; p--)
-      *p = '*';
-  return s;
-}
-  
 int write_socket(int fd, char *buf) 
 {
   int n = write(fd, buf, strlen(buf));
-  sockdebug(">(%d),%s", n, del_pass(buf));
+  sockdebug('>', n, del_pass(buf));
   return n;
 }
 
