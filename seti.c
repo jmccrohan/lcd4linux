@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.7 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: seti.c,v 1.8 2003/06/13 05:11:11 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.8  2003/06/13 05:11:11  reinelt
+ * error message cosmetics
+ *
  * Revision 1.7  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -99,12 +102,12 @@ int Seti (double *perc, double *cput)
   if (fd==-2) {
     char *dir=cfg_get("SetiDir",NULL);
     if (dir==NULL || *dir=='\0') {
-      error ("%s: missing 'SetiDir' entry!\n", cfg_file());
+      error ("no 'SetiDir' entry in %s!\n", cfg_file());
       fd=-1;
       return -1;
     }
     if (strlen(dir)>sizeof(fn)-sizeof(STATEFILE)-2) {
-      error ("%s: 'SetiDir' too long!\n", cfg_file());
+      error ("entry 'SetiDir' too long in %s!\n", cfg_file());
       fd=-1;
       return -1;
     }

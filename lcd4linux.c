@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.37 2003/04/07 06:03:01 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.38 2003/06/13 05:11:11 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.38  2003/06/13 05:11:11  reinelt
+ * error message cosmetics
+ *
  * Revision 1.37  2003/04/07 06:03:01  reinelt
  * further parallel port abstraction
  *
@@ -409,7 +412,7 @@ int main (int argc, char *argv[])
   
   driver=cfg_get("display",NULL);
   if (driver==NULL || *driver=='\0') {
-    error ("%s: missing 'display' entry!", cfg_file());
+    error ("missing 'display' entry in %s!", cfg_file());
     exit (1);
   }
   

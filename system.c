@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.26 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: system.c,v 1.27 2003/06/13 05:11:10 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.27  2003/06/13 05:11:10  reinelt
+ * error message cosmetics
+ *
  * Revision 1.26  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -768,7 +771,7 @@ int Sensor (int index, double *val, double *min, double *max)
     snprintf(buffer, 32, "Sensor%d", index);
     sensor[index]=cfg_get(buffer, NULL);
     if (sensor[index]==NULL || *sensor[index]=='\0') {
-      error ("%s: no entry for '%s'", cfg_file(), buffer);
+      error ("no entry for '%s' in %s", buffer, cfg_file());
       fd[index]=-1;
       return -1;
     }
