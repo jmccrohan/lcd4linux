@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.19 2004/05/22 04:21:02 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.20 2004/05/22 04:23:49 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.20  2004/05/22 04:23:49  reinelt
+ *
+ * removed 16*x fix again (next time think before commit :-)
+ *
  * Revision 1.19  2004/05/22 04:21:02  reinelt
  *
  * fix for display RAM layout on 16x4 displays (thanks to toxicated101)
@@ -488,8 +492,8 @@ static void drv_HD_goto (int row, int col)
     // the HD66712 doesn't have a braindamadged RAM layout
     pos = row*32 + col;
   } else {
-    // 16*x Displays use a slightly different layout
-    if (DCOLS==16) {
+    // 16x4 Displays use a slightly different layout
+    if (DCOLS==16 && DROWS==4) {
       pos = (row%2)*64+(row/2)*16+col;
     } else {  
       pos = (row%2)*64+(row/2)*20+col;
