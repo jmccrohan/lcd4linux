@@ -1,4 +1,57 @@
+2005-02-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drivers.m4, drv.c, drv_Crystalfontz.c, drv_LCDLinux.c, drv_SimpleLCD.c, drv_generic_text.c, lcd4linux.conf.sample, config.h.in, configure, Makefile.am, Makefile.in:
+	SimpleLCD driver added
+
+	* drv_LCDLinux.c: LCD-Linux driver GOTO_COST corrected
+
+2005-01-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv.c, drv_LCDLinux.c, drv_USBLCD.c, lcd4linux.conf.sample:
+	driver for LCD-Linux finished
+
+2005-01-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c: minor HD44780 cleanups
+
+2005-01-22  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, drivers.m4, drv.c, drv_LCDLinux.c, drv_LCDTerm.c, lcd4linux.conf.sample:
+	LCD-Linux driver added
+
+	* drv_MatrixOrbital.c: MatrixOrbital backlight micro-fix
+
+2005-01-18  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* thread.h, timer.c, timer.h, udelay.c, udelay.h, widget.c, widget.h, widget_bar.c, widget_bar.h, widget_icon.c, widget_icon.h, widget_text.c, widget_text.h, drv_HD44780.c, drv_Image.c, drv_LCDTerm.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_RouterBoard.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, drv_generic_text.h, evaluator.c, evaluator.h, font_6x8.h, hash.c, hash.h, layout.c, layout.h, lcd4linux.c, lcd4linux.xpm, pid.c, pid.h, plugin.c, plugin.h, plugin_apm.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_diskstats.c, plugin_dvb.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_loadavg.c, plugin_math.c, plugin_meminfo.c, plugin_mysql.c, plugin_netdev.c, plugin_pop3.c, plugin_ppp.c, plugin_proc_stat.c, plugin_sample.c, plugin_seti.c, plugin_string.c, plugin_test.c, plugin_time.c, plugin_uname.c, plugin_uptime.c, plugin_wireless.c, plugin_xmms.c, plugins.m4, qprintf.c, qprintf.h, thread.c, configure.in, debug.c, debug.h, drivers.m4, drv.c, drv.h, drv_BWCT.c, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, cfg.c, cfg.h, configure:
+	added (C) to all copyright statements
+
+2005-01-17  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c: info about backlight and brightness
+
+	* lcd4linux.conf.sample, cfg.c, drv_HD44780.c:
+	added software-controlled backlight support to HD44780
+
+2005-01-15  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_LCDTerm.c: LCDTerm driver added, take 2
+
+	* lcd4linux.conf.sample: LCDTerm section added to lcd4linux.conf.sample
+
+	* configure.in, drivers.m4, drv.c, lcd4linux.conf.sample, Makefile.am, Makefile.in, config.h.in, configure:
+	LCDTerm driver added
+
+2005-01-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample: further changes to lcd4linux.conf.sample
+
+	* lcd4linux.conf.sample, plugin_proc_stat.c:
+	changes to lcd4linux.conf.sample
+
 2005-01-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog: ChangeLog updated
 
 	* configure.in, drv_generic_graphic.c, drv_generic_text.c, plugin_uname.c, CREDITS, README, configure:
 	small type in plugin_uname fixed
