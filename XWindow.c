@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.13 2000/04/01 22:40:42 herp Exp $
+/* $Id: XWindow.c,v 1.14 2000/04/02 22:07:10 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.14  2000/04/02 22:07:10  herp
+ * fixded a bug that occasionally caused Xlib errors
+ *
  * Revision 1.13  2000/04/01 22:40:42  herp
  * geometric correction (too many pixelgaps)
  * lcd4linux main should return int, not void
@@ -114,10 +117,11 @@ static int rows=-1,cols=-1;		/*rows+cols without background*/
 static int xres=-1,yres=-1;		/*xres+yres (same as self->...)*/
 static int dimx,dimy;			/*total window dimension in pixel*/
 static int boxw,boxh;			/*box width, box height*/
-static void async_update();		/*PROTO*/
+static int async_update();		/*PROTO*/
 static pid_t async_updater_pid=1;
 static int semid=-1;
 static int shmid=-1;
+static int ppid;			/*parent pid*/
 
 static void acquire_lock() {
 struct sembuf sembuf;
@@ -147,6 +151,8 @@ static void shmcleanup() {
 static void quit(int nsig) {
 	semcleanup();
 	shmcleanup();
+	if (ppid!=getpid())
+		kill(ppid,nsig);
 	exit(0);
 }
 
@@ -195,14 +201,16 @@ union semun semun;
 	semun.val=1;
 	semctl(semid,0,SETVAL,semun);
 
+	ppid=getpid();
 	switch(async_updater_pid=fork()) {
 	case -1:
 		perror("X11: fork() failed");
 		return -1;
 	case 0:
 		async_update();
-		/*notreached*/
-		break;
+		fprintf(stderr,"X11: async_update failed\n");
+		kill(ppid,SIGTERM);
+		exit(-1);
 	default:
 		break;
 	}
@@ -246,7 +254,7 @@ XEvent ev;
 	boxh=yres*pixel+(yres-1)*pgap+rgap;
 	dimx=cols*xres*pixel+cols*(xres-1)*pgap+(cols-1)*cgap;
 	dimy=rows*yres*pixel+rows*(yres-1)*pgap+(rows-1)*rgap;
-	wa.event_mask=ExposureMask|ButtonPressMask|ButtonReleaseMask;
+	wa.event_mask=ExposureMask;
 	w=XCreateWindow(dp,rw,0,0,dimx+2*border,dimy+2*border,0,0,
 		InputOutput,vi,CWEventMask,&wa);
 	pmback=XCreatePixmap(dp,w,dimx,dimy,dd);
@@ -273,7 +281,6 @@ XEvent ev;
 		if (ev.type==Expose && ev.xexpose.count==0)
 			break;
 	}
-	XChangeWindowAttributes(dp,w,0,NULL);
 	return 0;
 }
 
@@ -445,13 +452,16 @@ int dx,wx,wy;
 	}
 }
 
-static void async_update() {
+static int async_update() {
+XSetWindowAttributes wa;
 XEvent ev;
 
+	if ((dp=XOpenDisplay(NULL))==NULL)
+		return -1;
+	wa.event_mask=ExposureMask;
+	XChangeWindowAttributes(dp,w,CWEventMask,&wa);
 	for(;;) {
-		XWindowEvent(dp,w,
-			ExposureMask|ButtonPressMask|ButtonReleaseMask,
-			&ev);
+		XWindowEvent(dp,w,ExposureMask,&ev);
 		if (ev.type==Expose) {
 			acquire_lock();
 			update(ev.xexpose.x,ev.xexpose.y,
