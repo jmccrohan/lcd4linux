@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.12 2004/06/29 04:49:30 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.13 2004/07/14 04:44:44 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,11 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.13  2004/07/14 04:44:44  reinelt
+ *
+ * Beckmann+Egle fix
+ * added smaple widget for the PPP plugin
+ *
  * Revision 1.12  2004/06/29 04:49:30  reinelt
  *
  * B+E enhanced port detection
@@ -201,13 +206,13 @@ static void drv_BuE_MT_defchar (const int ascii, const unsigned char *matrix)
 
 static void drv_BuE_CT_write (const int row, const int col, const char *data, const int len)
 {
-  char cmd[] = ESC "LCzs1";
-  
+  char cmd[] = ESC "LCzs\001";
   cmd[3] = (char)row + 1;
   cmd[4] = (char)col + 1;
-  
+
   drv_generic_serial_write (cmd, 6);
   drv_generic_serial_write (data, len);
+
 }
 
 

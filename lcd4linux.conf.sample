@@ -285,6 +285,16 @@ Widget Eth0Bar {
     update tack
 }
 
+Widget PPP {
+    class 'Text'
+    expression (ppp('Rx:0', 500)+ppp('Tx:0', 500))
+    prefix 'PPP'
+    width 9
+    precision 0
+    align 'R'
+    update tick
+}
+
 Widget Temp {
     class 'Text'
     expression i2c_sensors('temp_input3')*1.0324-67
