@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.8 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.9 2004/05/31 16:39:06 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.9  2004/05/31 16:39:06  reinelt
+ *
+ * added NULL display driver (for debugging/profiling purposes)
+ * added backlight/contrast initialisation for matrixOrbital
+ * added Backlight initialisation for Cwlinux
+ *
  * Revision 1.8  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -167,6 +173,38 @@ static void drv_CW12232_defchar (int ascii, unsigned char *buffer)
 }
 
 
+static int drv_CW_brightness (int brightness)
+{
+  static unsigned char Brightness = 0;
+  char cmd[5] = "\376A_\375";
+
+  // -1 is used to query the current brightness
+  if (brightness == -1) return Brightness;
+  
+  if (brightness < 0  ) brightness = 0;
+  if (brightness > 255) brightness = 255;
+  Brightness = brightness;
+  
+  switch (Brightness) {
+  case 0:
+    // backlight off
+    drv_generic_serial_write ("\376F\375", 3);
+    break;
+  case 8:
+    // backlight on
+    drv_generic_serial_write ("\376B\375", 3);
+    break;
+  default:
+    // backlight level
+    cmd[2] = (char)Brightness;
+    drv_generic_serial_write (cmd, 4);
+    break;
+  }
+
+  return Brightness;
+}
+
+
 static int drv_CW_start (char *section)
 {
   int i;  
@@ -230,6 +268,11 @@ static int drv_CW_start (char *section)
   drv_generic_serial_write ("\376K\375", 3); // underline cursor off
   drv_generic_serial_write ("\376B\375", 3); // backlight on
 
+  // set brightness
+  if (cfg_number(section, "Brightness", 0, 0, 8, &i) > 0) {
+    drv_CW_brightness(i);
+  }
+
   return 0;
 }
 
@@ -239,29 +282,23 @@ static int drv_CW_start (char *section)
 // ****************************************
 
 
-static void plugin_backlight (RESULT *result, RESULT *arg1)
+static void plugin_brightness (RESULT *result, int argc, RESULT *argv[])
 {
-  char cmd[5]="\376A_\375";
-  double backlight;
+  double brightness;
   
-  backlight=R2N(arg1);
-  if (backlight<0) backlight=0;
-  if (backlight>8) backlight=8;
-
-  switch ((int)backlight) {
+  switch (argc) {
   case 0:
-    drv_generic_serial_write ("\376F\375", 3); // backlight off
+    brightness = drv_CW_brightness(-1);
+    SetResult(&result, R_NUMBER, &brightness); 
     break;
-  case 8:
-    drv_generic_serial_write ("\376B\375", 3); // backlight on
+  case 1:
+    brightness = drv_CW_brightness(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &brightness); 
     break;
   default:
-    cmd[2]=(char)backlight;
-    drv_generic_serial_write (cmd, 4); // backlight level
-    break;
+    error ("%s.brightness(): wrong number of parameters", Name);
+    SetResult(&result, R_STRING, ""); 
   }
-
-  SetResult(&result, R_NUMBER, &backlight); 
 }
 
 
@@ -351,7 +388,7 @@ int drv_CW_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("LCD::backlight", 1, plugin_backlight);
+  AddFunction ("LCD::brightness", -1, plugin_brightness);
   
   return 0;
 }

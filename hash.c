@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.17 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: hash.c,v 1.18 2004/05/31 16:39:06 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.18  2004/05/31 16:39:06  reinelt
+ *
+ * added NULL display driver (for debugging/profiling purposes)
+ * added backlight/contrast initialisation for matrixOrbital
+ * added Backlight initialisation for Cwlinux
+ *
  * Revision 1.17  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -161,6 +167,9 @@ static HASH_ITEM* hash_lookup (HASH *Hash, char *key, int sortit)
     qsort(Hash->Items, Hash->nItems, sizeof(HASH_ITEM), hash_sort_f);
     Hash->sorted=1;
   }
+  
+  // no key was passed
+  if (key==NULL) return NULL;
   
   // lookup using bsearch
   if (Hash->sorted) {
@@ -378,7 +387,7 @@ double hash_get_regex (HASH *Hash, char *key, int delay)
   }
 
   // force the table to be sorted by requesting anything
-  hash_lookup(Hash, "", 1);
+  hash_lookup(Hash, NULL, 1);
   
   for (i=0;i<Hash->nItems; i++) {
     if (regexec(&preg, Hash->Items[i].key, 0, NULL, 0)==0) {

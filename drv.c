@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.14 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv.c,v 1.15 2004/05/31 16:39:06 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.15  2004/05/31 16:39:06  reinelt
+ *
+ * added NULL display driver (for debugging/profiling purposes)
+ * added backlight/contrast initialisation for matrixOrbital
+ * added Backlight initialisation for Cwlinux
+ *
  * Revision 1.14  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -138,10 +144,11 @@ extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
 extern DRIVER drv_M50530;
-extern DRIVER drv_T6963;
-extern DRIVER drv_USBLCD;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
+extern DRIVER drv_NULL;
+extern DRIVER drv_T6963;
+extern DRIVER drv_USBLCD;
 extern DRIVER drv_X11;
 
 // output file for Image driver
@@ -176,6 +183,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_MILINST
   &drv_MilfordInstruments,
+#endif
+#ifdef WITH_NULL
+  &drv_NULL,
 #endif
 #ifdef WITH_T6963
   &drv_T6963,

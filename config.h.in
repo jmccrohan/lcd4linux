@@ -350,6 +350,9 @@
 /* Milford Instruments driver */
 #undef WITH_MILINST
 
+/* NULL driver */
+#undef WITH_NULL
+
 /* driver */
 #undef WITH_PNG
 

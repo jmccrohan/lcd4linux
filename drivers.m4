@@ -11,7 +11,7 @@ AC_ARG_WITH(
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, M50530, T6963, USBLCD, MatrixOrbital,]
-  [                        MilfordInstruments, PNG, PPM, X11],
+  [                        MilfordInstruments, NULL, PNG, PPM, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -42,6 +42,7 @@ for driver in $drivers; do
          USBLCD="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
+         NULL="yes" 
          PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
@@ -64,6 +65,9 @@ for driver in $drivers; do
 	 ;;
       M50530)
          M50530=$val
+         ;;
+      NULL)
+         NULL=$val;
          ;;
       T6963)
          T6963=$val
@@ -101,7 +105,6 @@ GRAPHIC="no"
 IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
-#  DRIVERS="$DRIVERS drv_BeckmannEgle.lo"
    DRIVERS="$DRIVERS drv_BeckmannEgle.o"
    AC_DEFINE(WITH_BECKMANNEGLE,1,[Beckmann&Egle driver])
 fi
@@ -109,14 +112,12 @@ fi
 if test "$CRYSTALFONTZ" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
-#  DRIVERS="$DRIVERS drv_Crystalfontz.lo"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[Crystalfontz driver])
 fi
 
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
-#     DRIVERS="$DRIVERS drv_Curses.lo"
       DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
@@ -129,7 +130,6 @@ fi
 if test "$CWLINUX" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
-#  DRIVERS="$DRIVERS drv_Cwlinux.lo"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
 fi
@@ -137,7 +137,6 @@ fi
 if test "$HD44780" = "yes"; then
    TEXT="yes"
    PARPORT="yes"
-#  DRIVERS="$DRIVERS drv_HD44780.lo"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
 fi
@@ -145,22 +144,24 @@ fi
 if test "$M50530" = "yes"; then
    TEXT="yes"
    PARPORT="yes"
-#  DRIVERS="$DRIVERS drv_M50530.lo"
    DRIVERS="$DRIVERS drv_M50530.o"
    AC_DEFINE(WITH_M50530,1,[M50530 driver])
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
    SERIAL="yes"
-#  DRIVERS="$DRIVERS drv_MatrixOrbital.lo"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[MatrixOrbital driver])
 fi
 
 if test "$MILINST" = "yes"; then
-#  DRIVERS="$DRIVERS drv_MilfordInstruments.lo"
    DRIVERS="$DRIVERS drv_MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
+fi
+
+if test "$NULL" = "yes"; then
+   DRIVERS="$DRIVERS drv_NULL.o"
+   AC_DEFINE(WITH_NULL,1,[NULL driver])
 fi
 
 if test "$PNG" = "yes"; then
@@ -181,14 +182,12 @@ if test "$PPM" = "yes"; then
 fi
 
 if test "$IMAGE" = "yes"; then
-#  DRIVERS="$DRIVERS drv_Image.lo"
    DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 if test "$T6963" = "yes"; then
    GRAPHIC="yes"
    PARPORT="yes"
-#  DRIVERS="$DRIVERS drv_T6963.lo"
    DRIVERS="$DRIVERS drv_T6963.o"
    AC_DEFINE(WITH_T6963,1,[T6963 driver])
 fi
@@ -196,7 +195,6 @@ fi
 if test "$USBLCD" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
-#  DRIVERS="$DRIVERS drv_USBLCD.lo"
    DRIVERS="$DRIVERS drv_USBLCD.o"
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
 fi
@@ -206,7 +204,6 @@ if test "$X11" = "yes"; then
       AC_MSG_WARN(X11 headers or libraries not available: X11 driver disabled)
    else
       GRAPHIC="yes"
-#     DRIVERS="$DRIVERS drv_X11.lo"
       DRIVERS="$DRIVERS drv_X11.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
       AC_DEFINE(WITH_X11,1,[X11 driver])
@@ -219,26 +216,22 @@ fi
    
 # generic text driver
 if test "$TEXT" = "yes"; then
-#  DRIVERS="$DRIVERS drv_generic_text.lo"
    DRIVERS="$DRIVERS drv_generic_text.o"
 fi
 
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
 :
-#  DRIVERS="$DRIVERS drv_generic_graphic.lo"
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 
 # generic parport driver
 if test "$PARPORT" = "yes"; then
-#  DRIVERS="$DRIVERS drv_generic_parport.lo"
    DRIVERS="$DRIVERS drv_generic_parport.o"
 fi
 
 # generic serial driver
 if test "$SERIAL" = "yes"; then
-#  DRIVERS="$DRIVERS drv_generic_serial.lo"
    DRIVERS="$DRIVERS drv_generic_serial.o"
 fi
 

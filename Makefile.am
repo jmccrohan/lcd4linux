@@ -65,6 +65,7 @@ drv_Image.c                 \
 drv_M50530.c                \
 drv_MatrixOrbital.c         \
 drv_MilfordInstruments.c    \
+drv_NULL.c                  \
 drv_T6963.c                 \
 drv_USBLCD.c                \
 drv_X11.c                   \

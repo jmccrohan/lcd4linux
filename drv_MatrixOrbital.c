@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.25 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.26 2004/05/31 16:39:06 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.26  2004/05/31 16:39:06  reinelt
+ *
+ * added NULL display driver (for debugging/profiling purposes)
+ * added backlight/contrast initialisation for matrixOrbital
+ * added Backlight initialisation for Cwlinux
+ *
  * Revision 1.25  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -235,6 +241,147 @@ static void drv_MO_defchar (int ascii, unsigned char *matrix)
 }
 
 
+static int drv_MO_contrast (int contrast)
+{
+  static unsigned char Contrast=0;
+  char buffer[4];
+
+  // -1 is used to query the current contrast
+  if (contrast == -1) return Contrast;
+
+  if (contrast < 0  ) contrast = 0;
+  if (contrast > 255) contrast = 255;
+  Contrast = contrast;
+
+  snprintf (buffer, 4, "\376P%c", Contrast);
+  drv_generic_serial_write (buffer, 3);
+  
+  return Contrast;
+}
+
+
+static int drv_MO_backlight (int backlight)
+{
+  static unsigned char Backlight=0;
+  char buffer[4];
+
+  // -1 is used to query the current backlight
+  if (backlight == -1) return Backlight;
+
+  if (backlight < 0  ) backlight = 0;
+  if (backlight > 255) backlight = 255;
+  Backlight = backlight;
+
+  if (backlight<0) {
+    // backlight off
+    snprintf (buffer, 3, "\376F");
+    drv_generic_serial_write (buffer, 2);
+  } else {
+    // backlight on for n minutes
+    snprintf (buffer, 4, "\376B%c", (int)backlight);
+    drv_generic_serial_write (buffer, 3);
+  }
+
+  return Backlight;
+}
+
+
+static int drv_MO_gpo (int num, int val)
+{
+  static int GPO[6] = { -1, -1, -1, -1, -1, -1 };
+  char cmd[3]="\376";
+  
+  if (num < 1) num = 1;
+  if (num > 6) num = 6;
+
+  // -1 is used to query the current PWM
+  if (val == -1) return GPO[num-1];
+
+  if (val < 0) val = 0;
+  if (val > 1) val = 1;
+  GPO[num-1] = val;
+
+  switch (Protocol) {
+  case 1:
+    if (num == 1) {
+      if (val > 0) {
+	drv_generic_serial_write ("\376W", 2);  // GPO on
+      } else {
+	drv_generic_serial_write ("\376V", 2);  // GPO off
+      }
+    } else {
+      GPO[num-1] = -1;
+    }
+    break;
+    
+  case 2:
+    if (val > 0) {
+      cmd[1] = 'W';  // GPO on
+    } else {
+      cmd[1] = 'V';  // GPO off
+    }
+    cmd[2] = (char)num;
+    drv_generic_serial_write (cmd, 3);
+    break;
+  }
+  
+  return GPO[num-1];
+}
+
+
+static int drv_MO_pwm (int num, int val)
+{
+  static int PWM[6] = { -1, -1, -1, -1, -1, -1 };
+  char   cmd[4]="\376\300";
+  
+  if (num < 1) num = 1;
+  if (num > 6) num = 6;
+  
+  // -1 is used to query the current PWM
+  if (val == -1) return PWM[num-1];
+
+  if (val <   0) val =   0;
+  if (val > 255) val = 255;
+  PWM[num-1] = val;
+
+  cmd[2] = (char)num;
+  cmd[3] = (char)val;
+  drv_generic_serial_write (cmd, 4);
+
+  return val;
+}
+
+
+static int drv_MO_rpm (int num)
+{
+  static int RPM[6] = { -1, -1, -1, -1, -1, -1 };
+  char   cmd[3] = "\376\301";
+  char   buffer[7];
+  
+  if (num < 1) num = 1;
+  if (num > 6) num = 6;
+  
+  cmd[2] = (char)num;
+  drv_generic_serial_write (cmd, 3);
+
+  usleep(100000);
+  drv_generic_serial_read (buffer, 7);
+  
+  debug ("rpm: buffer[0]=0x%01x", buffer[0]);
+  debug ("rpm: buffer[1]=0x%01x", buffer[1]);
+  debug ("rpm: buffer[2]=0x%01x", buffer[2]);
+  debug ("rpm: buffer[3]=0x%01x", buffer[3]);
+  debug ("rpm: buffer[4]=0x%01x", buffer[4]);
+  debug ("rpm: buffer[5]=0x%01x", buffer[5]);
+  debug ("rpm: buffer[6]=0x%01x", buffer[6]);
+
+  // Fixme:
+  RPM[num-1] = 42;
+
+  return RPM[num-1];
+}
+
+
 static int drv_MO_start (char *section)
 {
   int i;  
@@ -315,6 +462,16 @@ static int drv_MO_start (char *section)
   drv_generic_serial_write ("\376D", 2);  // line wrapping off
   drv_generic_serial_write ("\376R", 2);  // auto scroll off
 
+  // set contrast
+  if (cfg_number(section, "Contrast", 0, 0, 255, &i)>0) {
+    drv_MO_contrast(i);
+  }
+
+  // set backlight
+  if (cfg_number(section, "Backlight", 0, 0, 255, &i)>0) {
+    drv_MO_backlight(i);
+  }
+
   return 0;
 }
 
@@ -324,136 +481,92 @@ static int drv_MO_start (char *section)
 // ****************************************
 
 
-static void plugin_contrast (RESULT *result, RESULT *arg1)
+static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
 {
-  char buffer[4];
   double contrast;
   
-  contrast=R2N(arg1);
-  if (contrast<0  ) contrast=0;
-  if (contrast>255) contrast=255;
-  snprintf (buffer, 4, "\376P%c", (int)contrast);
-  drv_generic_serial_write (buffer, 3);
-  
-  SetResult(&result, R_NUMBER, &contrast); 
-}
-
-
-static void plugin_backlight (RESULT *result, RESULT *arg1)
-{
-  char buffer[4];
-  double backlight;
-
-  backlight=R2N(arg1);
-  if (backlight<-1  ) backlight=-1;
-  if (backlight>255) backlight=255;
-  if (backlight<0) {
-    // backlight off
-    snprintf (buffer, 3, "\376F");
-    drv_generic_serial_write (buffer, 2);
-  } else {
-    // backlight on for n minutes
-    snprintf (buffer, 4, "\376B%c", (int)backlight);
-    drv_generic_serial_write (buffer, 3);
-  }
-  SetResult(&result, R_NUMBER, &backlight); 
-}
-
-
-static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
-{
-  int num;
-  double val;
-  char cmd[3]="\376";
-  
-  num=R2N(arg1);
-  val=R2N(arg2);
-  
-  if (num<1) num=1;
-  if (num>6) num=6;
-  
-  if (val>=1.0) {
-    val=1.0;
-  } else {
-    val=0.0;
-  }
-  
-  switch (Protocol) {
+  switch (argc) {
+  case 0:
+    contrast = drv_MO_contrast(-1);
+    SetResult(&result, R_NUMBER, &contrast); 
+    break;
   case 1:
-    if (num==0) {
-      if (val>=1.0) {
-	drv_generic_serial_write ("\376W", 2);  // GPO on
-      } else {
-	drv_generic_serial_write ("\376V", 2);  // GPO off
-      }
-    } else {
-      error("Fixme");
-      val=-1.0;
-    }
+    contrast = drv_MO_contrast(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &contrast); 
     break;
-    
-  case 2:
-    if (val>=1.0) {
-      cmd[1]='W';  // GPO on
-    } else {
-      cmd[1]='V';  // GPO off
-    }
-    cmd[2]=(char)num;
-    drv_generic_serial_write (cmd, 3);
-    break;
+  default:
+    error ("%s::contrast(): wrong number of parameters", Name);
+    SetResult(&result, R_STRING, ""); 
   }
-  
-  SetResult(&result, R_NUMBER, &val); 
 }
 
 
-static void plugin_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
 {
-  int    num;
-  double val;
-  char   cmd[4]="\376\300";
+  double backlight;
   
-  num=R2N(arg1);
-  if (num<1) num=1;
-  if (num>6) num=6;
-  cmd[2]=(char)num;
+  switch (argc) {
+  case 0:
+    backlight = drv_MO_backlight(-1);
+    SetResult(&result, R_NUMBER, &backlight); 
+    break;
+  case 1:
+    backlight = drv_MO_backlight(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &backlight); 
+    break;
+  default:
+    error ("%s::backlight(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
+}
+
+
+static void plugin_gpo (RESULT *result, int argc, RESULT *argv[])
+{
+  double gpo;
   
-  val=R2N(arg2);
-  if (val<  0.0) val=  0.0;
-  if (val>255.0) val=255.0;
-  cmd[3]=(char)val;
+  switch (argc) {
+  case 1:
+    gpo = drv_MO_gpo(R2N(argv[0]), -1);
+    SetResult(&result, R_NUMBER, &gpo); 
+    break;
+  case 2:
+    gpo = drv_MO_gpo(R2N(argv[0]), R2N(argv[1]));
+    SetResult(&result, R_NUMBER, &gpo); 
+    break;
+  default:
+    error ("%s:gpo(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
+}
 
-  drv_generic_serial_write (cmd, 4);
 
-  SetResult(&result, R_NUMBER, &val); 
+static void plugin_pwm (RESULT *result, int argc, RESULT *argv[])
+{
+  double pwm;
+  
+  switch (argc) {
+  case 1:
+    pwm = drv_MO_pwm(R2N(argv[0]), -1);
+    SetResult(&result, R_NUMBER, &pwm); 
+    break;
+  case 2:
+    pwm = drv_MO_pwm(R2N(argv[0]), R2N(argv[1]));
+    SetResult(&result, R_NUMBER, &pwm); 
+    break;
+  default:
+    error ("%s:pwm(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
 }
 
 
 static void plugin_rpm (RESULT *result, RESULT *arg1)
 {
-  int    num;
-  double val;
-  char   cmd[3]="\376\301";
-  char   buffer[7];
-  
-  num=R2N(arg1);
-  if (num<1) num=1;
-  if (num>6) num=6;
-  cmd[2]=(char)num;
-  
-  drv_generic_serial_write (cmd, 3);
-  usleep(100000);
-  drv_generic_serial_read (buffer, 7);
-  
-  debug ("rpm: buffer[0]=0x%01x", buffer[0]);
-  debug ("rpm: buffer[1]=0x%01x", buffer[1]);
-  debug ("rpm: buffer[2]=0x%01x", buffer[2]);
-  debug ("rpm: buffer[3]=0x%01x", buffer[3]);
-  debug ("rpm: buffer[4]=0x%01x", buffer[4]);
-  debug ("rpm: buffer[5]=0x%01x", buffer[5]);
-  debug ("rpm: buffer[6]=0x%01x", buffer[6]);
+  double rpm;
 
-  SetResult(&result, R_NUMBER, &val); 
+  rpm = drv_MO_rpm(R2N(arg1));
+  SetResult(&result, R_NUMBER, &rpm); 
 }
 
 
@@ -537,11 +650,11 @@ int drv_MO_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("LCD::contrast",  1, plugin_contrast);
-  AddFunction ("LCD::backlight", 1, plugin_backlight);
-  AddFunction ("LCD::gpo",       2, plugin_gpo);
-  AddFunction ("LCD::pwm",       2, plugin_pwm);
-  AddFunction ("LCD::rpm",       1, plugin_rpm);
+  AddFunction ("LCD::contrast",  -1, plugin_contrast);
+  AddFunction ("LCD::backlight", -1, plugin_backlight);
+  AddFunction ("LCD::gpo",       -1, plugin_gpo);
+  AddFunction ("LCD::pwm",       -1, plugin_pwm);
+  AddFunction ("LCD::rpm",        1, plugin_rpm);
   
   return 0;
 }
