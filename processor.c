@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.33 2003/07/21 06:10:11 reinelt Exp $
+/* $Id: processor.c,v 1.34 2003/07/21 06:34:14 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.34  2003/07/21 06:34:14  reinelt
+ * bars on virtual rows fixed
+ *
  * Revision 1.33  2003/07/21 06:10:11  reinelt
  * removed maxlen parameter from process_row()
  *
@@ -619,12 +622,13 @@ static void collect_data (void)
 
 }
 
-static char *process_row (int r)
+static char *process_row (char *data, int row, int len)
 {
   static char buffer[256];
-  char *s=row[r];
   char *p=buffer;
+  char *s=data;
   int token;
+  int n;
   
   do {
     if (*s=='%') {
@@ -649,11 +653,11 @@ static char *process_row (int r)
       else if (type & BAR_T)
 	val2 = *(unsigned char*)++s; /* width */
       if (type & BAR_H)
-	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
+	lcd_bar (type, row, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
       else if (type & BAR_T)
-	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*xres);
+	lcd_bar (type, row, p-buffer+1, len*yres, val1*len*yres, val2*xres);
       else
-	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*len*yres);
+	lcd_bar (type, row, p-buffer+1, len*yres, val1*len*yres, val2*len*yres);
       
       if (type & BAR_H) {
 	for (i=0; i<len && p-buffer<cols; i++)
@@ -668,15 +672,21 @@ static char *process_row (int r)
     
   } while (*s++); 
     
+  // pad with blanks
+  for (n=strlen(buffer); n<cols; n++) {
+    buffer[n]=' ';
+  }
+  buffer[n]='\0';
+  
   return buffer;
 }
 
-static int process_gpo (int r)
+static int process_gpo (int n)
 {
   int token;
   double val;
 
-  token=gpo[r];
+  token=gpo[n];
   val=query(token);
 
   return (val > 0.0);
@@ -798,7 +808,7 @@ void process (int smooth)
     while (j>lines) {
       j-=lines;
     }
-    txt=process_row (j);
+    txt=process_row (row[j], i, cols);
     if (smooth==0)
       lcd_put (i, 1, txt);
   }
