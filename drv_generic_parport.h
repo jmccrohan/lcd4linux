@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.7 2004/09/18 15:58:57 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.8 2004/10/17 09:24:31 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.8  2004/10/17 09:24:31  reinelt
+ * I2C support for HD44780 displays by Luis (does not work by now)
+ *
  * Revision 1.7  2004/09/18 15:58:57  reinelt
  * even more HD44780 cleanups, hardwiring for LCM-162
  *
@@ -107,16 +110,17 @@
 #ifndef _DRV_GENERIC_PARPORT_H_
 #define _DRV_GENERIC_PARPORT_H_
 
-int           drv_generic_parport_open       (const char *section, const char *driver);
-int           drv_generic_parport_close      (void);
-unsigned char drv_generic_parport_wire_ctrl  (const char *name, const char *deflt);
-unsigned char drv_generic_parport_wire_data  (const char *name, const char *deflt);
-void          drv_generic_parport_direction  (const int direction);
-unsigned char drv_generic_parport_status     (void);
-void          drv_generic_parport_control    (const unsigned char mask, const unsigned char value);
-void          drv_generic_parport_toggle     (const unsigned char bit, const int level, const int delay);
-void          drv_generic_parport_data       (const unsigned char data);
-unsigned char drv_generic_parport_read       (void);
-void          drv_generic_parport_debug      (void);
+int           drv_generic_parport_open          (const char *section, const char *driver);
+int           drv_generic_parport_close         (void);
+unsigned char drv_generic_parport_wire_ctrl     (const char *name, const char *deflt);
+unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *deflt);
+unsigned char drv_generic_parport_wire_data     (const char *name, const char *deflt);
+void          drv_generic_parport_direction     (const int direction);
+unsigned char drv_generic_parport_status        (void);
+void          drv_generic_parport_control       (const unsigned char mask, const unsigned char value);
+void          drv_generic_parport_toggle        (const unsigned char bit, const int level, const int delay);
+void          drv_generic_parport_data          (const unsigned char data);
+unsigned char drv_generic_parport_read          (void);
+void          drv_generic_parport_debug         (void);
 
 #endif

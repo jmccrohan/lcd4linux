@@ -105,6 +105,25 @@ Display LCM-162 {
 }
 
 
+Display HD44780-I2C {
+    Driver 'HD44780'
+    Model 'WRAP1C-PCF8574'
+    Bus 'i2c'
+    Port '/dev/i2c-0'
+    Device '70'
+    Bits '4'
+    Size '20x4'
+    asc255bug 0
+    Icons 1
+    Wire {
+        RW     'DB5'
+        RS     'DB4'
+        ENABLE 'DB6'
+        GPO    'GND'
+    }
+}
+
+
 Display M50530-24x8 {
     Driver 'M50530'
     Port '/dev/parports/0'	
