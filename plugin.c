@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.4 2004/01/06 15:19:16 reinelt Exp $
+/* $Id: plugin.c,v 1.5 2004/01/06 17:33:45 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.5  2004/01/06 17:33:45  reinelt
+ *
+ * Evaluator: functions with variable argument lists
+ * Evaluator: plugin_sample.c and README.Plugins added
+ *
  * Revision 1.4  2004/01/06 15:19:16  reinelt
  * Evaluator rearrangements...
  *
@@ -70,6 +75,7 @@
 #include "plugin.h"
 
 
+// Prototypes
 int plugin_init_math (void);
 int plugin_init_string (void);
 int plugin_init_xmms (void);
@@ -80,7 +86,7 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_xmms();
- 
+
   return 0;
 }
 

@@ -1,0 +1,213 @@
+/* $Id: plugin_sample.c,v 1.1 2004/01/06 17:33:45 reinelt Exp $
+ *
+ * plugin template
+ *
+ * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
+ *
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * LCD4Linux is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: plugin_sample.c,v $
+ * Revision 1.1  2004/01/06 17:33:45  reinelt
+ *
+ * Evaluator: functions with variable argument lists
+ * Evaluator: plugin_sample.c and README.Plugins added
+ *
+ */
+
+/* 
+ * exported functions:
+ *
+ * int plugin_init_sample (void)
+ *  adds various functions
+ *
+ */
+
+
+// define the include files you need
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// these should always be included
+#include "debug.h"
+#include "plugin.h"
+
+
+
+// sample function 'mul2'
+// takes one argument, a number
+// multiplies the number by 2.0
+// Note: all local functions should be declared 'static'
+
+static void my_mul2 (RESULT *result, RESULT *arg1)
+{
+  double param;
+  double value;
+
+  // Get Parameter
+  // R2N stands for 'Result to Number'
+  param=R2N(arg1);
+  
+  // calculate value
+  value=param*2.0;
+  
+  // store result
+  // when called with R_NUMBER, it assumes the
+  // next parameter to be a pointer to double
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
+// sample function 'mul3'
+// takes one argument, a number
+// multiplies the number by 3.0
+// same as 'mul2', but shorter
+
+static void my_mul3 (RESULT *result, RESULT *arg1)
+{
+  // do it all in one line
+  double value=R2N(arg1)*3.0;
+
+  // store result
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
+// sample function 'diff'
+// takes two arguments, both numbers
+// returns |a-b|
+
+static void my_diff (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  // do it all in one line
+  double value=R2N(arg1)-R2N(arg2);
+  
+  // some more calculations...
+  if (value<0) value=-value;
+  
+  // store result
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
+// sample function 'answer'
+// takes no argument!
+// returns the answer to all questions
+
+static void my_answer (RESULT *result)
+{
+  // we have to declare a variable because
+  // SetResult needs a pointer 
+  double value=42;
+  
+  // store result
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
+// sample function 'length'
+// takes one argument, a string
+// returns the string length
+
+static void my_length (RESULT *result, RESULT *arg1)
+{
+  // Note #1: value *must* be double! 
+  // Note #2: R2S stands for 'Result to String'
+  double value=strlen(R2S(arg1));
+  
+  // store result
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
+
+// sample function 'upcase'
+// takes one argument, a string
+// returns the string in upper case letters
+
+static void my_upcase (RESULT *result, RESULT *arg1)
+{
+  char *value, *p;
+  
+  // create a local copy of the argument
+  // Do *NOT* try to modify the original string!
+  value=strdup(R2S(arg1));
+  
+  // process the string
+  for (p=value; *p!='\0'; p++)
+    *p=toupper(*p);
+
+  // store result
+  // when called with R_STRING, it assumes the
+  // next parameter to be a pointer to a string
+  // 'value' is already a char*, so use 'value', not '&value'
+  SetResult(&result, R_STRING, value); 
+
+  // free local copy again
+  // Note that SetResult() makes its own string copy 
+  free (value);
+}
+
+
+// sample function 'cat'
+// takes variable number of arguments, all strings
+// returns all prameters concatenated
+
+static void my_concat (RESULT *result, int argc, RESULT *argv[])
+{
+  int i, len;
+  char *value, *part;
+  
+  // start with a empty string
+  value=strdup("");
+  
+  // process all arguments
+  for (i=0; i<argc; i++) {
+    part=R2S(argv[i]);
+    len=strlen(value)+strlen(part);
+    value=realloc(value, len+1);
+    strcat(value, part);
+  }
+
+  // store result
+  SetResult(&result, R_STRING, value); 
+
+  // free local string
+  free (value);
+}
+
+
+// plugin initialization
+// MUST NOT be declared 'static'!
+int plugin_init_sample (void)
+{
+
+  // register all our cool functions
+  // the second parameter is the number of arguments
+  // -1 stands for variable argument list
+  AddFunction ("mul2",    1, my_mul2);
+  AddFunction ("mul3",    1, my_mul3);
+  AddFunction ("answer",  0, my_answer);
+  AddFunction ("diff",    2, my_diff);
+  AddFunction ("length",  1, my_length);
+  AddFunction ("upcase",  1, my_upcase);
+  AddFunction ("concat", -1, my_concat);
+
+  return 0;
+}
+

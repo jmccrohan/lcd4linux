@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.4 2004/01/06 15:19:12 reinelt Exp $
+/* $Id: evaluator.c,v 1.5 2004/01/06 17:33:45 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,11 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.5  2004/01/06 17:33:45  reinelt
+ *
+ * Evaluator: functions with variable argument lists
+ * Evaluator: plugin_sample.c and README.Plugins added
+ *
  * Revision 1.4  2004/01/06 15:19:12  reinelt
  * Evaluator rearrangements...
  *
@@ -728,7 +733,7 @@ static void Level10 (RESULT *result)
 // literal numbers, variables, functions
 static void Level11 (RESULT *result)
 {
-  RESULT param[10];
+  RESULT *param[10];
   
   if (*Token == '(') {
     
@@ -755,23 +760,37 @@ static void Level11 (RESULT *result)
 	FUNCTION *F=GetFunction(Token);
 	if (F!=NULL) {
 	  int n=0;
-	  Parse();
+	  Parse(); // read opening brace
 	  do { 
-	    Parse();
-	    if (*Token == ')' || *Token == ',') ERROR (E_NOARG);
-	    param[n].type=0;
-	    param[n].string=NULL;
-	    Level01(&(param[n]));
-	    n++;
+	    Parse(); // read argument
+	    if (*Token == ',') ERROR (E_NOARG);
+	    if (*Token == ')') {
+	      // immediately closed when no args
+	      if (F->args>0 || n>0) ERROR (E_NOARG);
+	    } else {
+	      param[n]=NewResult();
+	      Level01(param[n]);
+	      n++;
+	    }
 	  } while (n < 10 && *Token == ',');
-	  Parse();
-	  if (n != F->args)
-	    ERROR (E_NUMARGS);
-	  F->func(result, 
-		  &param[0], &param[1], &param[2], &param[3], &param[4], 
-		  &param[5], &param[6], &param[7], &param[8], &param[9]);
+	  Parse(); // read closing brace
+	  if (F->args<0) {
+	    // Function with variable argument list: 
+	    // pass number of arguments as first parameter
+	    F->func(result, n, &param); 
+	  } else {
+	    if (n != F->args) ERROR (E_NUMARGS);
+	    F->func(result, 
+		    param[0], param[1], param[2], param[3], param[4], 
+		    param[5], param[6], param[7], param[8], param[9]);
+	  }
+	  // free parameter list
+	  while(n-->0) {
+	    FreeResult(param[n]);
+	  }
+	  
 	  return;
-
+	  
 	} else {
 	  ERROR(E_BADFUNC);
 	}

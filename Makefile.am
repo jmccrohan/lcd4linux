@@ -38,7 +38,7 @@ socket.c socket.h \
 imon.c imon.h
 
 liblcd4linux_la_DEPENDENCIES = @DRIVERS@
-liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+liblcd4linux_la_LDFLAGS = -version-info 9:12:9
 liblcd4linux_la_LIBADD = @DRIVERS@
 
 liblcd4linux_la_SOURCES = \
@@ -66,7 +66,6 @@ MilfordInstruments.c \
 PalmPilot.c \
 Raster.c \
 SIN.c \
-Skeleton.c \
 XWindow.c \
 Text.c
 
@@ -83,5 +82,10 @@ FAQ \
 NEWS \
 TODO \
 README \
+README.Rows \
+README.Tokens \
 README.Drivers \
-README.KDE
+README.Plugins \
+README.KDE \
+Skeleton.c \
+plugin_sample.c

@@ -105,16 +105,16 @@ lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h parser.c parser.h processor.c proce
 
 
 liblcd4linux_la_DEPENDENCIES = @DRIVERS@
-liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+liblcd4linux_la_LDFLAGS = -version-info 9:12:9
 liblcd4linux_la_LIBADD = @DRIVERS@
 
 liblcd4linux_la_SOURCES =  display.c display.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
 
 
-EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
+EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c MilfordInstruments.c PalmPilot.c Raster.c SIN.c XWindow.c Text.c
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Drivers README.KDE
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Rows README.Tokens README.Drivers README.Plugins README.KDE Skeleton.c plugin_sample.c
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -162,10 +162,10 @@ GZIP_ENV = --best
 DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/HD44780.P .deps/M50530.P .deps/MatrixOrbital.P \
 .deps/MilfordInstruments.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
-.deps/Skeleton.P .deps/T6963.P .deps/Text.P .deps/USBLCD.P \
-.deps/XWindow.P .deps/bar.P .deps/battery.P .deps/cfg.P .deps/debug.P \
-.deps/display.P .deps/dvb.P .deps/evaluator.P .deps/exec.P .deps/expr.P \
-.deps/filter.P .deps/fontmap.P .deps/icon.P .deps/imon.P .deps/isdn.P \
+.deps/T6963.P .deps/Text.P .deps/USBLCD.P .deps/XWindow.P .deps/bar.P \
+.deps/battery.P .deps/cfg.P .deps/debug.P .deps/display.P .deps/dvb.P \
+.deps/evaluator.P .deps/exec.P .deps/expr.P .deps/filter.P \
+.deps/fontmap.P .deps/icon.P .deps/imon.P .deps/isdn.P \
 .deps/lcd4linux.P .deps/lock.P .deps/mail.P .deps/mail2.P \
 .deps/parport.P .deps/parser.P .deps/pid.P .deps/pixmap.P \
 .deps/plugin.P .deps/plugin_math.P .deps/plugin_string.P \
