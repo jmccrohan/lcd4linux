@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.5 2004/01/06 17:33:45 reinelt Exp $
+/* $Id: evaluator.c,v 1.6 2004/01/06 23:01:37 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,8 +10,10 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
- * Revision 1.5  2004/01/06 17:33:45  reinelt
+ * Revision 1.6  2004/01/06 23:01:37  reinelt
+ * more copyright issues
  *
+ * Revision 1.5  2004/01/06 17:33:45  reinelt
  * Evaluator: functions with variable argument lists
  * Evaluator: plugin_sample.c and README.Plugins added
  *
@@ -19,7 +21,6 @@
  * Evaluator rearrangements...
  *
  * Revision 1.3  2003/10/11 06:01:52  reinelt
- *
  * renamed expression.{c,h} to client.{c,h}
  * added config file client
  * new functions 'AddNumericVariable()' and 'AddStringVariable()'
