@@ -36,13 +36,13 @@ Lcd4Linux NextGeneration porting status
         plugin_uname -> Finished (uname) {o v}
          plugin_xmms -> Finished (xmms) NEW
 	 plugin_seti -> Finished (seti) {hc ht}
+	 plugin_apm  -> Finished (apm) {battery: bd bp bs} 
          
          plugin_wifi -> To be done (Xavier or Martin)
          
 (special plugins : plugin_cfg, plugin_math, plugin_string)
 
 tokens not ported :
-battery {bd bp bs} 
 mail {e* u*}
 ISDN {ic ii im io it}
 exec {x*}
