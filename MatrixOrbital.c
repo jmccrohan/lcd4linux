@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.16 2000/04/13 06:09:52 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.17 2000/04/15 11:13:54 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.17  2000/04/15 11:13:54  reinelt
+ *
+ * added '-d' (debugging) switch
+ * added several debugging messages
+ * removed config entry 'Delay' for HD44780 driver
+ * delay loop for HD44780 will be calibrated automatically
+ *
  * Revision 1.16  2000/04/13 06:09:52  reinelt
  *
  * added BogoMips() to system.c (not used by now, maybe sometimes we can
@@ -103,6 +110,7 @@
 #include <termios.h>
 #include <fcntl.h>
 
+#include "debug.h"
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
@@ -419,6 +427,8 @@ int MO_init (LCD *Self)
     return -1;
   }    
 
+  debug ("using port %s at %d baud\n", Port, atoi(speed));
+
   Device=MO_open();
   if (Device==-1) return -1;
 
@@ -561,6 +571,7 @@ int lcd_hello (void); // prototype from lcd4linux.c
 
 static void MO_quit (int signal)
 {
+  debug ("got signal %d\n", signal);
   MO_clear();
   lcd_hello();
   close (Device);

@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.2 2000/04/13 06:09:52 reinelt Exp $
+/* $Id: HD44780.c,v 1.3 2000/04/15 11:13:54 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.3  2000/04/15 11:13:54  reinelt
+ *
+ * added '-d' (debugging) switch
+ * added several debugging messages
+ * removed config entry 'Delay' for HD44780 driver
+ * delay loop for HD44780 will be calibrated automatically
+ *
  * Revision 1.2  2000/04/13 06:09:52  reinelt
  *
  * added BogoMips() to system.c (not used by now, maybe sometimes we can
@@ -45,10 +52,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 #include <signal.h>
 #include <errno.h>
 #include <asm/io.h>
 
+#include "debug.h"
 #include "cfg.h"
 #include "display.h"
 
@@ -74,7 +83,7 @@ typedef struct {
 
 static LCD Lcd;
 static unsigned short Port=0;
-static unsigned long  Delay;
+static unsigned long  loops_per_usec;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -85,8 +94,38 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 
 static void HD_delay (unsigned long usec)
 {
-  unsigned long i=usec*Delay/2;
+  unsigned long i=usec*loops_per_usec;
   while (i--);
+}
+
+static void HD_calibrate_delay (void)
+{
+  clock_t tick;
+  unsigned long bit;
+
+  loops_per_usec=1;
+  while (loops_per_usec<<=1) {
+    tick=clock();
+    while (clock()==tick);
+    tick=clock();
+    HD_delay(1000000/CLOCKS_PER_SEC);
+    if (clock()>tick)
+      break;
+  }
+  
+  loops_per_usec>>=1;
+  bit=loops_per_usec;
+  while (bit>>=1) {
+    loops_per_usec|=bit;
+    tick=clock();
+    while (clock()==tick);
+    tick=clock();
+    HD_delay(1000000/CLOCKS_PER_SEC);
+    if (clock()>tick)
+      loops_per_usec&=~bit;
+  }
+ 
+  debug ("calibrating delay: %ld loops/usec\n", loops_per_usec);
 }
 
 static void HD_command (unsigned char cmd, int delay)
@@ -111,8 +150,9 @@ static void HD_write (char *string, int len, int delay)
 
 static int HD_open (void)
 {
+  debug ("using port 0x%x\n", Port);
   if (ioperm(Port, 3, 1)!=0) {
-    fprintf (stderr, "HD44780: ioperm() failed: %s\n", strerror(errno));
+    fprintf (stderr, "HD44780: ioperm(0x%x) failed: %s\n", Port, strerror(errno));
     return -1;
   }
 
@@ -338,19 +378,11 @@ int HD_init (LCD *Self)
     return -1;
   }
 
-  s=cfg_get ("Delay");
-  if (s==NULL || *s=='\0') {
-    fprintf (stderr, "HD44780: no 'Delay' entry in %s\n", cfg_file());
-    return -1;
-  }
-  if ((Delay=strtol(s, &e, 0))==0 || *e!='\0' || Delay<1) {
-    fprintf (stderr, "HD44780: bad delay '%s' in %s\n", s, cfg_file());
-    return -1;
-  }    
-
   Self->rows=rows;
   Self->cols=cols;
   Lcd=*Self;
+
+  HD_calibrate_delay();
 
   if (HD_open()!=0)
     return -1;
@@ -493,9 +525,9 @@ int lcd_hello (void); // prototype from lcd4linux.c
 
 static void HD_quit (int signal)
 {
+  debug ("got signal %d\n", signal);
   HD_clear();
   lcd_hello();
-  // Fixme: ioperm rückgängig machen?
   exit (0);
 }
 

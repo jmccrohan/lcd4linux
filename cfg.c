@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.6 2000/04/03 04:46:38 reinelt Exp $
+/* $Id: cfg.c,v 1.7 2000/04/15 11:13:54 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.7  2000/04/15 11:13:54  reinelt
+ *
+ * added '-d' (debugging) switch
+ * added several debugging messages
+ * removed config entry 'Delay' for HD44780 driver
+ * delay loop for HD44780 will be calibrated automatically
+ *
  * Revision 1.6  2000/04/03 04:46:38  reinelt
  *
  * added '-c key=val' option
@@ -140,7 +147,7 @@ static char *dequote (char *string)
 static void cfg_add (char *key, char *val, int lock)
 {
   int i;
-  
+
   for (i=0; i<nConfig; i++) {
     if (strcasecmp(Config[i].key, key)==0) {
       if (Config[i].lock>lock) return;

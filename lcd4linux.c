@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.19 2000/04/10 04:40:53 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.20 2000/04/15 11:13:54 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.20  2000/04/15 11:13:54  reinelt
+ *
+ * added '-d' (debugging) switch
+ * added several debugging messages
+ * removed config entry 'Delay' for HD44780 driver
+ * delay loop for HD44780 will be calibrated automatically
+ *
  * Revision 1.19  2000/04/10 04:40:53  reinelt
  *
  * minor changes and cleanups
@@ -114,18 +121,22 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "debug.h"
 #include "cfg.h"
 #include "display.h"
 #include "processor.h"
 
 char *release="LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
 char *output=NULL;
+int debugging=0;
 int tick, tack;
 
 static void usage(void)
 {
   printf ("%s\n", release);
-  printf ("usage: lcd4linux [-h] [-l] [-c key=value] [-f config-file] [-o output-file] [-q]\n");
+  printf ("usage: lcd4linux [-h]\n");
+  printf ("       lcd4linux [-l]\n");
+  printf ("       lcd4linux [-c key=value] [-d] [-f config-file] [-o output-file] [-q]\n");
 }
 
 int lcd_hello (void)
@@ -171,13 +182,16 @@ int main (int argc, char *argv[])
   int c, smooth;
   int quiet=0;
 
-  while ((c=getopt (argc, argv, "c:f:hlo:q"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:df:hlo:q"))!=EOF) {
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
 	fprintf (stderr, "%s: illegal argument -c %s\n", argv[0], optarg);
 	exit(2);
       }
+      break;
+    case 'd':
+      debugging++;
       break;
     case 'h':
       usage();
@@ -205,6 +219,8 @@ int main (int argc, char *argv[])
     exit(2);
   }
 
+  debug ("LCD4Linux " VERSION "\n");
+
   // set default values
  
   cfg_set ("row1", "*** %o %v ***");
@@ -220,6 +236,8 @@ int main (int argc, char *argv[])
     fprintf (stderr, "%s: missing 'display' entry!\n", cfg_file());
     exit (1);
   }
+  
+  debug ("initializing driver %s\n", driver);
   if (lcd_init(driver)==-1) {
     exit (1);
   }
