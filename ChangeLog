@@ -1,4 +1,115 @@
+2005-01-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drv_generic_graphic.c, drv_generic_text.c, plugin_uname.c, CREDITS, README, configure:
+	small type in plugin_uname fixed
+	new homepage lcd4linux.bulix.org
+
+2005-01-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_generic_parport.c, lcd4linux.conf.sample, drv_M50530.c:
+	M50530 fixes
+
+2004-12-22  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drv_T6963.c, drv_USBLCD.c, configure:
+	T6963 fix for displays > 8 rows
+
+2004-11-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c: removed compiler warnings for deactivated i2c bus
+
+2004-11-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Image.c, drv_X11.c, widget_bar.c, widget_text.c, cfg.c:
+	removed the 99999 msec limit on widget update time (thanks to Petri Damsten)
+
+2004-11-28  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Cwlinux.c, drv_generic_text.c, drv_generic_text.h, lcd4linux.conf.sample, widget_icon.c:
+	Cwlinux fixes (invalidation of user-defined chars)
+
+2004-10-17  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c, drv_generic_parport.h, lcd4linux.conf.sample:
+	I2C support for HD44780 displays by Luis (does not work by now)
+
+2004-10-02  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drivers.m4, drv_USBLCD.c, lcd4linux.conf.sample, configure:
+	USBLCD driver modified to use libusb
+
+2004-09-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drivers.m4, drv.c, drv_BWCT.c, drv_USBLCD.c, lcd4linux.c, lcd4linux.conf.sample, plugin_exec.c, config.h.in, configure, Makefile.am, Makefile.in:
+	new driver for the BWCT USB LCD interface board.
+
+2004-09-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c, lcd4linux.conf.sample, timer.c:
+	HD44780 busy flag checking improved: fall back to busy-waiting if too many errors occur
+
+2004-09-18  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c, drv_generic_parport.c, drv_generic_parport.h, lcd4linux.conf.sample:
+	even more HD44780 cleanups, hardwiring for LCM-162
+
+	* drv_HD44780.c: more parport/i2c cleanups
+
+	* drv_HD44780.c, drv_generic_parport.c, lcd4linux.conf.sample, udelay.c:
+	HD44780 cleanup and prepararation for I2C backend
+	LCM-162 submodel framework
+
+	* drv_HD44780.c, drv_generic_parport.c, drv_generic_parport.h, lcd4linux.conf.sample:
+	drv_generic_parport_status() to read status lines
+
+2004-08-30  rjoco77  <rjoco77@merlin.ethnet>
+
+	* drv_RouterBoard.c:  * Added backlight update immediatelly
+
+2004-08-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_RouterBoard.c:
+	Patch from Joco: Make RouterBoard Backlight configurable
+
+	* drivers.m4, drv.c, drv_HD44780.c, drv_RouterBoard.c, lcd4linux.conf.sample, Makefile.am, Makefile.in, config.h.in, configure:
+	added RouterBoard driver
+
+2004-07-14  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample, drv_BeckmannEgle.c:
+	Beckmann+Egle fix
+	added smaple widget for the PPP plugin
+
+2004-06-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_BeckmannEgle.c:
+	B+E enhanced port detection
+
+2004-06-26  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* plugin_cpuinfo.c, plugin_diskstats.c, plugin_dvb.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_loadavg.c, plugin_math.c, plugin_meminfo.c, plugin_netdev.c, plugin_pop3.c, plugin_ppp.c, plugin_proc_stat.c, plugin_sample.c, plugin_seti.c, plugin_string.c, plugin_test.c, plugin_time.c, plugin_uptime.c, plugin_wireless.c, plugin_xmms.c, qprintf.c, qprintf.h, timer.c, udelay.h, widget.c, widget.h, widget_bar.c, widget_bar.h, widget_icon.c, widget_icon.h, widget_text.c, widget_text.h, cfg.c, debug.c, drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, drv_generic_text.h, evaluator.c, evaluator.h, hash.c, hash.h, layout.c, lcd4linux.c, pid.c, plugin.c, plugin_apm.c, plugin_cfg.c:
+	uh-oh... the last CVS log message messed up things a lot...
+
+	* drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, drv_generic_text.h, evaluator.c, evaluator.h, hash.c, hash.h, layout.c, lcd4linux.c, pid.c, plugin.c, plugin_apm.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_diskstats.c, plugin_dvb.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_loadavg.c, plugin_math.c, plugin_meminfo.c, plugin_netdev.c, plugin_pop3.c, plugin_ppp.c, plugin_proc_stat.c, plugin_sample.c, plugin_seti.c, plugin_string.c, plugin_test.c, plugin_time.c, plugin_uptime.c, plugin_wireless.c, plugin_xmms.c, qprintf.c, qprintf.h, timer.c, udelay.h, widget.c, widget.h, widget_bar.c, widget_bar.h, widget_icon.c, widget_icon.h, widget_text.c, widget_text.h, Makefile.am, Makefile.in, cfg.c, debug.c, drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c:
+	added '-W' to CFLAGS
+	changed all C++ comments to C ones ('//' => '/* */')
+	cleaned up a lot of signed/unsigned mistakes
+
+	* drv_BeckmannEgle.c, drv_MatrixOrbital.c, drv_USBLCD.c, drv_generic_serial.c, drv_generic_text.c, lcd4linux.conf.sample, Makefile.in:
+	support for Beckmann+Egle Compact Terminals
+	some mostly cosmetic changes in the MatrixOrbital and USBLCD driver
+	added debugging to the generic serial driver
+	fixed a bug in the generic text driver where icons could be drawn outside
+	the display bounds
+
+2004-06-24  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* plugin_imon.c: minor bugfix
+
 2004-06-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog:
+	ChangeLog updated
 
 	* drv_generic_text.h, evaluator.c, evaluator.h, hash.c, hash.h, layout.c, layout.h, plugin_cfg.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_proc_stat.c, plugin_uptime.c, plugin_wireless.c, qprintf.c, thread.c, thread.h, timer.c, timer.h, udelay.c, udelay.h, widget.c, widget.h, widget_icon.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, debug.c, debug.h, drv.c, drv.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_T6963.c, drv_USBLCD.c, drv_X11.c, cfg.h, cfg.c:
 	'const'ified the whole source
