@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.8 2003/08/01 05:15:42 reinelt Exp $
+/* $Id: T6963.c,v 1.9 2003/08/15 07:54:07 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.9  2003/08/15 07:54:07  reinelt
+ * HD44780 4 bit mode implemented
+ *
  * Revision 1.8  2003/08/01 05:15:42  reinelt
  * last cleanups for 0.9.9
  *
@@ -342,10 +345,10 @@ int T6_init (LCD *Self)
     return -1;
   }
 
-  if ((SIGNAL_CE=parport_wire ("CE", "STROBE"))==0xff) return -1;
-  if ((SIGNAL_CD=parport_wire ("CD", "SELECT"))==0xff) return -1;
-  if ((SIGNAL_RD=parport_wire ("RD", "AUTOFD"))==0xff) return -1;
-  if ((SIGNAL_WR=parport_wire ("WR", "INIT"))==0xff) return -1;
+  if ((SIGNAL_CE=parport_wire_ctrl ("CE", "STROBE"))==0xff) return -1;
+  if ((SIGNAL_CD=parport_wire_ctrl ("CD", "SELECT"))==0xff) return -1;
+  if ((SIGNAL_RD=parport_wire_ctrl ("RD", "AUTOFD"))==0xff) return -1;
+  if ((SIGNAL_WR=parport_wire_ctrl ("WR", "INIT")  )==0xff) return -1;
 
   if (parport_open() != 0) {
     error ("HD44780: could not initialize parallel port!");

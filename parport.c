@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.2 2003/04/07 06:03:05 reinelt Exp $
+/* $Id: parport.c,v 1.3 2003/08/15 07:54:07 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.3  2003/08/15 07:54:07  reinelt
+ * HD44780 4 bit mode implemented
+ *
  * Revision 1.2  2003/04/07 06:03:05  reinelt
  * further parallel port abstraction
  *
@@ -40,9 +43,13 @@
  *   closes parallel port
  *   returns 0 if ok, -1 on failure
  *
- * unsigned char parport_wire (char *name, char *deflt)
+ * unsigned char parport_wire_ctrl (char *name, char *deflt)
  *   reads wiring for one control signal from config
  *   returns PARPORT_CONTROL_* or 255 on error
+ *
+ * unsigned char parport_wire_data (char *name, char *deflt)
+ *   reads wiring for one data signal from config
+ *   returns 1<<bitpos or 255 on error
  *
  * void parport_direction (int direction)
  *   0 - write to parport
@@ -233,7 +240,7 @@ int parport_close (void)
 }
 
 
-unsigned char parport_wire (char *name, unsigned char *deflt)
+unsigned char parport_wire_ctrl (char *name, unsigned char *deflt)
 {
   unsigned char w;
   char wire[256];
@@ -256,23 +263,54 @@ unsigned char parport_wire (char *name, unsigned char *deflt)
     error ("         should be STROBE, AUTOFD, INIT, SELECT or GND");
     return 0xff;
   }
-  
+
   if (w&PARPORT_CONTROL_STROBE) {
-    info ("wiring: [PARPORT:STROBE]==>[DISPLAY:%s]", name);
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", name);
   }
   if (w&PARPORT_CONTROL_AUTOFD) {
-    info ("wiring: [PARPORT:AUTOFD]==>[DISPLAY:%s]", name);
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", name);
   }
   if (w&PARPORT_CONTROL_INIT) {
-    info ("wiring: [PARPORT:INIT]==>[DISPLAY:%s]", name);
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", name);
   }
   if (w&PARPORT_CONTROL_SELECT) {
-    info ("wiring: [PARPORT:SELECT]==>[DISPLAY:%s]", name);
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", name);
   }
   if (w==0) {
-    info ("wiring: [PARPORT:GND]==>[DISPLAY:%s]", name);
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:GND]", name);
   }
   
+  return w;
+}
+
+
+unsigned char parport_wire_data (char *name, unsigned char *deflt)
+{
+  unsigned char w;
+  char wire[256];
+  int is_data=0;
+  char *s;
+  
+  snprintf (wire, sizeof(wire), "Wire.%s", name);
+  s=cfg_get (wire,deflt);
+  if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
+    w=s[2]-'0';
+  } else if(strcasecmp(s,"GND")==0) {
+    w=0;
+  } else {
+    error ("parport: unknown signal <%s> for wire <%s>", s, name);
+    error ("         should be DB..7 or GND");
+    return 0xff;
+  }
+  
+  if (w==0) {
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:GND]", name);
+  } else {
+    info ("wiring: [DISPLAY:%s]<==>[PARPORT:DB%d]", name, w);
+  }
+  
+  w=1<<w;
+
   return w;
 }
 

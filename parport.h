@@ -1,4 +1,4 @@
-/* $Id: parport.h,v 1.2 2003/04/07 06:03:10 reinelt Exp $
+/* $Id: parport.h,v 1.3 2003/08/15 07:54:07 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.h,v $
+ * Revision 1.3  2003/08/15 07:54:07  reinelt
+ * HD44780 4 bit mode implemented
+ *
  * Revision 1.2  2003/04/07 06:03:10  reinelt
  * further parallel port abstraction
  *
@@ -33,7 +36,8 @@
 
 int parport_open (void);
 int parport_close (void);
-unsigned char parport_wire (char *name, char *deflt);
+unsigned char parport_wire_ctrl (char *name, unsigned char *deflt);
+unsigned char parport_wire_data (char *name, unsigned char *deflt);
 void parport_direction (int direction);
 void parport_control (unsigned char mask, unsigned char value);
 void parport_toggle (unsigned char bit, int level, int delay);

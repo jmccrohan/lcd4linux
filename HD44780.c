@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.30 2003/08/12 05:10:31 reinelt Exp $
+/* $Id: HD44780.c,v 1.31 2003/08/15 07:54:07 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.31  2003/08/15 07:54:07  reinelt
+ * HD44780 4 bit mode implemented
+ *
  * Revision 1.30  2003/08/12 05:10:31  reinelt
  * first version of HD44780 4Bit-Mode patch
  *
@@ -188,12 +191,12 @@
 #define T_PW    400 // Enable pulse width
 #define T_AS     20 // Address setup time
 #define T_H      40 // Data hold time
-// Fixme: hejl: genau verdreht??
 
 
 static LCD Lcd;
 
 static char Txt[4][40];
+static int  Bits=0;
 static int  GPO=0;
 
 static unsigned char SIGNAL_RW;
@@ -240,18 +243,26 @@ static void HD_byte (unsigned char data, unsigned char RS)
 static void HD_command (unsigned char cmd, int delay)
 {
     
-  // put data on DB1..DB8
-  parport_data (cmd);
+  if (Bits==8) {
+    
+    // put data on DB1..DB8
+    parport_data (cmd);
   
-  // clear RW and RS
-  parport_control (SIGNAL_RW | SIGNAL_RS, 0);
+    // clear RW and RS
+    parport_control (SIGNAL_RW | SIGNAL_RS, 0);
     
-  // Address set-up time
-  ndelay(T_AS);
+    // Address set-up time
+    ndelay(T_AS);
 
-  // send command
-  parport_toggle (SIGNAL_ENABLE, 1, T_PW);
-    
+    // send command
+    parport_toggle (SIGNAL_ENABLE, 1, T_PW);
+
+  } else {
+
+    HD_byte (cmd, 0);
+
+  }
+  
   // wait for command completion
   udelay(delay);
 
@@ -260,24 +271,40 @@ static void HD_command (unsigned char cmd, int delay)
 
 static void HD_write (char *string, int len, int delay)
 {
-  // clear RW, set RS
-  parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
 
-  // Address set-up time
-  ndelay(40);
-  
-  while (len--) {
+  if (Bits==8) {
+
+    // clear RW, set RS
+    parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
+
+    // Address set-up time
+    ndelay(T_AS);
     
-    // put data on DB1..DB8
-    parport_data (*(string++));
-    
-    // send command
-    // Enable cycle time = 230ns
-    parport_toggle (SIGNAL_ENABLE, 1, 230);
-    
-    // wait for command completion
-    udelay(delay);
+    while (len--) {
+      
+      // put data on DB1..DB8
+      parport_data (*(string++));
+      
+      // send command
+      parport_toggle (SIGNAL_ENABLE, 1, T_PW);
+      
+      // wait for command completion
+      udelay(delay);
+    }
+
+  } else { // 4 bit mode
+
+    while (len--) {
+
+      // send data with RS enabled
+      HD_byte (*(string++), SIGNAL_RS);
+
+      // wait for command completion
+      udelay(delay);
+    }
+
   }
+
 }
 
 static void HD_setGPO (int bits)
@@ -356,27 +383,54 @@ int HD_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-  if ((SIGNAL_RW=parport_wire ("RW", "GND"))==0xff) return -1;
-  if ((SIGNAL_RS=parport_wire ("RS", "AUTOFD"))==0xff) return -1;
-  if ((SIGNAL_ENABLE=parport_wire ("ENABLE", "STROBE"))==0xff) return -1;
-  if ((SIGNAL_GPO=parport_wire ("GPO", "INIT"))==0xff) return -1;
+  s=cfg_get("Bits", "8");
+  if ((Bits=strtol(s, &e, 0))==0 || *e!='\0' || (Bits!=4 && Bits!=8)) {
+    error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_file());
+    return -1;
+  }    
+  info ("wiring: using %d bit mode", Bits);
 
+  if (Bits==8) {
+    if ((SIGNAL_RS     = parport_wire_ctrl ("RS",     "AUTOFD"))==0xff) return -1;
+    if ((SIGNAL_RW     = parport_wire_ctrl ("RW",     "GND")   )==0xff) return -1;
+    if ((SIGNAL_ENABLE = parport_wire_ctrl ("ENABLE", "STROBE"))==0xff) return -1;
+    if ((SIGNAL_GPO    = parport_wire_ctrl ("GPO",    "INIT")  )==0xff) return -1;
+  } else {
+    if ((SIGNAL_RS     = parport_wire_data ("RS",     "DB4"))==0xff) return -1;
+    if ((SIGNAL_RW     = parport_wire_data ("RW",     "DB5"))==0xff) return -1;
+    if ((SIGNAL_ENABLE = parport_wire_data ("ENABLE", "DB6"))==0xff) return -1;
+    if ((SIGNAL_GPO    = parport_wire_data ("GPO",    "DB7"))==0xff) return -1;
+  }
+  
   if (parport_open() != 0) {
     error ("HD44780: could not initialize parallel port!");
     return -1;
   }
 
   // clear RW
-  parport_control (SIGNAL_RW, 0);
+  if (Bits==8) {
+    parport_control (SIGNAL_RW, 0);
+  } else {
+    parport_data (0);
+  }
 
   // set direction: write
   parport_direction (0);
 
   // initialize display
-  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-  HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
-  HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
-  HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  if (Bits==8) {
+    HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+    HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
+    HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
+    HD_command (0x38, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  } else {
+    HD_nibble(0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x03); udelay(100);  // 4 Bit mode, wait 100 us
+    HD_nibble(0x03); udelay(4100); // 4 Bit mode, wait 4.1 ms
+    HD_nibble(0x02); udelay(100);  // 4 Bit mode, wait 100 us
+    HD_command (0x28, 40);	   // 4 Bit mode, 1/16 duty cycle, 5x8 font
+  }
+  
   HD_command (0x08, 40);   // Display off, cursor off, blink off
   HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x06, 40);   // curser moves to right, no shift

@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: M50530.c,v 1.10 2003/08/15 07:54:07 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.10  2003/08/15 07:54:07  reinelt
+ * HD44780 4 bit mode implemented
+ *
  * Revision 1.9  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -202,10 +205,10 @@ int M5_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-  if ((SIGNAL_EX=parport_wire ("EX",   "STROBE"))==0xff) return -1;
-  if ((SIGNAL_IOC1=parport_wire ("IOC1", "SELECT"))==0xff) return -1;
-  if ((SIGNAL_IOC2=parport_wire ("IOC2", "AUTOFD"))==0xff) return -1;
-  if ((SIGNAL_GPO=parport_wire ("GPO", "INIT"))==0xff) return -1;
+  if ((SIGNAL_EX   = parport_wire_ctrl ("EX",   "STROBE"))==0xff) return -1;
+  if ((SIGNAL_IOC1 = parport_wire_ctrl ("IOC1", "SELECT"))==0xff) return -1;
+  if ((SIGNAL_IOC2 = parport_wire_ctrl ("IOC2", "AUTOFD"))==0xff) return -1;
+  if ((SIGNAL_GPO  = parport_wire_ctrl ("GPO",  "INIT")  )==0xff) return -1;
   
   if (parport_open() != 0) {
     error ("M50530: could not initialize parallel port!");
