@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.3 2002/08/19 07:52:19 reinelt Exp $
+/* $Id: bar.c,v 1.4 2003/01/12 06:51:27 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.4  2003/01/12 06:51:27  reinelt
+ * fixed bug in bar compaction
+ *
  * Revision 1.3  2002/08/19 07:52:19  reinelt
  * corrected type declaration of (*defchar)()
  *
@@ -250,7 +253,7 @@ static int segment_deviation (int i, int j)
   j1=Segment[j].len1; if (j1>RES) i1=RES;
   j2=Segment[j].len2; if (j2>RES) i2=RES;
   
-  return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
+  return (i1-j1)*(i1-j1)+(i2-j2)*(i2-j2);
 }
 
 
@@ -265,11 +268,9 @@ static void pack_segments (void)
     return;
   }
 
-  for (i=0; i<nSegment-1; i++) {
-    for (j=i+1; j<nSegment; j++) {
-      int d=segment_deviation(i,j);
-      deviation[i][j]=d;
-      deviation[j][i]=d;
+  for (i=0; i<nSegment; i++) {
+    for (j=0; j<nSegment; j++) {
+      deviation[i][j]=segment_deviation(i,j);
     }
   }
     
@@ -297,7 +298,14 @@ static void pack_segments (void)
 	break;
       }
     } 
-      
+
+#if 0
+    debug ("pack_segment: n=%d i=%d j=%d min=%d", nSegment, pack_i, pack_j, min);
+    debug ("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", 
+	   Segment[pack_i].len1, Segment[pack_i].len2, 
+	   Segment[pack_j].len1, Segment[pack_j].len2);
+#endif
+    
     nSegment--;
     Segment[pack_i]=Segment[nSegment];
       
