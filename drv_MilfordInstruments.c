@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.3 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.4 2004/05/31 01:31:01 andy-b Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,14 +27,12 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
- * Revision 1.3  2004/05/28 13:51:42  reinelt
+ * Revision 1.4  2004/05/31 01:31:01  andy-b
  *
- * ported driver for Beckmann+Egle Mini-Terminals
- * added 'flags' parameter to serial_init()
  *
- * Revision 1.2  2004/05/26 11:37:36  reinelt
- *
- * Curses driver ported.
+ * fixed bug in Milford Instruments driver which drew extra graphics chars in
+ * odd places when drawing double bars. (the display doesn't like it if you put
+ * the escape character 0xfe inside a define char sequence).
  *
  * Revision 1.1  2004/05/26 05:03:27  reinelt
  *
@@ -112,9 +110,13 @@ static void drv_MI_write (int row, int col, unsigned char *data, int len)
 
 static void drv_MI_defchar (int ascii, unsigned char *buffer)
 {
+  int i;
   char cmd[2]="\376x";
   if (ascii<8) {
     cmd[1]=(char)(64+ascii*8);
+    for ( i=0; i<8; i++) {
+	buffer[i]&=0x1f;
+	};
     drv_generic_serial_write (cmd, 2);
     drv_generic_serial_write (buffer, 8);
   }
@@ -142,7 +144,7 @@ static int drv_MI_start (char *section)
   Model=i;
   info ("%s: using model '%s'", Name, Models[Model].name);
   
-  if (drv_generic_serial_open(section, Name, 0)<0) return -1;
+  if (drv_generic_serial_open(section, Name)<0) return -1;
   
   // initialize global variables
   DROWS    = Models[Model].rows;
@@ -199,7 +201,7 @@ int drv_MI_init (char *section)
   YRES  = 8;     // pixel height of one char 
   CHARS = 8;     // number of user-defineable characters
   CHAR0 = 0;     // ASCII of first user-defineable char
-  GOTO_COST = 2; // number of bytes a goto command requires
+  GOTO_COST = 4; // number of bytes a goto command requires
   
   // real worker functions
   drv_generic_text_real_write   = drv_MI_write;
@@ -219,7 +221,7 @@ int drv_MI_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init(0))!=0)
+  if ((ret=drv_generic_text_bar_init())!=0)
     return ret;
   
   // add fixed chars to the bar driver
