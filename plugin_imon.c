@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.4 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.5 2004/03/13 14:55:14 nicowallmeier Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.5  2004/03/13 14:55:14  nicowallmeier
+ * Added clean termination of imond-connection
+ *
  * Revision 1.4  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -448,8 +451,8 @@ int plugin_init_imon (void){
  return 0;
 }
 
-void plugin_exit_imon(void) 
-{
+void plugin_exit_imon(void){
+  if (fd>0) close(fd);
   hash_destroy(&TELMON);
   hash_destroy(&IMON);
 }
