@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: system.c,v 1.3 2000/03/07 11:01:34 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.3  2000/03/07 11:01:34  reinelt
+ *
+ * system.c cleanup
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -42,22 +46,27 @@
  * int   Memory (void);
  *   returns main memory (Megabytes)
  *
- * double Load (void);
- *   returns load average
+ * int Load (double *load1, double *load2, double *load3)
+ *   sets load average during thwe last 1, 5 and 15 minutes
+ *   retuns 0 if ok, -1 on error
  *
- * double Busy (void);
- *   returns CPU utilization
+ * int Busy (double *user, double *nice, double *system, double *idle)
+ *   sets percentage of CPU time spent in user processes, nice'd processes
+ *   system calls and idle state
+ *   returns 0 if ok, -1 on error
  *
  * int Disk (int *r, int *w);
- *   returns disk utilization
+ *   sets number of read and write accesses to all disks 
+ *   returns 0 if ok, -1 on error
  *
- * int Net (int *r, int *w);
- *   returns network utilization
+ * int Net (int *rx, int *tx);
+ *   sets number of packets received and transmitted
+ *   returns 0 if ok, -1 on error
  *
- * double Temperature (void);
- *   returns temperature 
- *   a sensor must be specified with a 'temperature'-line  
- *   in the config file
+ * int Sensor (int index, double *val, double *min, double *max)
+ *   sets the current value of the index'th sensor and
+ *   the minimum and maximum values from the config file
+ *   returns 0 if ok, -1 on error
  *
  */
 
@@ -74,8 +83,8 @@
 #include <asm/param.h>
 
 #include "system.h"
+#include "config.h"
 #include "filter.h"
-#include "lcd4linux.h"
 
 char *System(void)
 {
@@ -144,83 +153,105 @@ int Memory(void)
 }
 
 
-double Load (void)
+int Load (double *load1, double *load2, double *load3)
 {
   static int fd=-2;
   char buffer[16];
-  static double value=0;
+  static double val1=0;
+  static double val2=0;
+  static double val3=0;
   static time_t now=0;
 
-  if (fd==-1) return 0;
+  *load1=val1;
+  *load2=val2;
+  *load3=val3;
+
+  if (fd==-1) return -1;
   
-  if (time(NULL)==now) return value;
+  if (time(NULL)==now) return 0;
   time(&now);
 
   if (fd==-2) {
     fd=open("/proc/loadavg", O_RDONLY);
     if (fd==-1) {
       perror ("open(/proc/loadavg) failed");
-      return 0;
+      return -1;
     }
   }
   if (lseek(fd, 0L, SEEK_SET)!=0) {
     perror("lseek(/proc/loadavg) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
     perror("read(/proc/loadavg) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
-  if (sscanf(buffer, "%lf", &value)<1) {
+  if (sscanf(buffer, "%lf %lf %lf", &val1, &val2, &val3)<3) {
     fprintf(stderr, "scanf(/proc/loadavg) failed\n");
     fd=-1;
-    return 0;
+    return -1;
   }
-  return (value);
+
+  *load1=val1;
+  *load2=val2;
+  *load3=val3;
+
+  return 0;
 }
 
 
-double Busy (void)
+int Busy (double *user, double *nice, double *system, double *idle)
 {
   static int fd=-2;
   char buffer[64];
   unsigned long v1, v2, v3, v4;
-  double busy, idle;
+  double d1, d2, d3, d4, d5;
 
-  if (fd==-1) return 0;
+  *user=0.0;
+  *nice=0.0;
+  *system=0.0;
+  *idle=0.0;
+
+  if (fd==-1) return -1;
 
   if (fd==-2) {
     fd=open("/proc/stat", O_RDONLY);
     if (fd==-1) {
       perror ("open(proc/stat) failed");
-      return 0;
+      return -1;
     }
   }
   if (lseek(fd, 0L, SEEK_SET)!=0) {
     perror ("lseek(/proc/stat) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
     perror ("read(/proc/stat) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (sscanf(buffer, "%*s %lu %lu %lu %lu\n", &v1, &v2, &v3, &v4)<4) {
     fprintf (stderr, "scanf(/proc/stat) failed\n");
     fd=-1;
-    return 0;
+    return -1;
   }
 
-  busy=smooth("cpu_busy", 500, v1+v2+v3);
-  idle=smooth("cpu_idle", 500, v4);
-  
-  if (busy+idle==0.0)
-    return 0.0;
-  else
-    return busy/(busy+idle);
+  d1=smooth("cpu_user", 500, v1);
+  d2=smooth("cpu_nice", 500, v2);
+  d3=smooth("cpu_sys",  500, v3);
+  d4=smooth("cpu_idle", 500, v4);
+  d5=d1+d2+d3+d4;
+ 
+  if (d5!=0.0) {
+    *user=(d1+d2)/d5;
+    *nice=d2/d5;
+    *system=d3/d5;
+    *idle=d4/d5;
+  }
+  return 0;
 }
 
 
@@ -234,53 +265,53 @@ int Disk (int *r, int *w)
   *r=0;
   *w=0;
 
-  if (fd==-1) return 0;
+  if (fd==-1) return -1;
   
   if (fd==-2) {
     fd = open("/proc/stat", O_RDONLY | O_NDELAY);
     if (fd==-1) {
       perror ("open(/proc/stat) failed");
-      return 0;
+      return -1;
     }
   }
   
   if (lseek(fd, 0L, SEEK_SET)!=0) {
     perror ("lseek(/proc/stat) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
     perror ("read(/proc/stat) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   p=strstr(buffer, "disk_rblk");
   if (p==NULL) {
     fprintf (stderr, "parse(/proc/stat) failed: no disk_rblk line\n");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (sscanf(p+9, "%lu %lu %lu %lu\n", &r1, &r2, &r3, &r4)<4) {
     fprintf (stderr, "scanf(/proc/stat) failed\n");
     fd=-1;
-    return 0;
+    return -1;
   }
   p=strstr(buffer, "disk_wblk");
   if (p==NULL) {
     fprintf (stderr, "parse(/proc/stat) failed: no disk_wblk line\n");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (sscanf(p+9, "%lu %lu %lu %lu\n", &w1, &w2, &w3, &w4)<4) {
     fprintf (stderr, "scanf(/proc/stat) failed\n");
     fd=-1;
-    return 0;
+    return -1;
   }
   
   *r=smooth ("disk_r", 500, r1+r2+r3+r4);
   *w=smooth ("disk_w", 500, w1+w2+w3+w4);
 
-  return *r+*w;
+  return 0;
 }
 
 
@@ -293,25 +324,25 @@ int Net (int *rx, int *tx)
   *rx=0;
   *tx=0;
 
-  if (fd==-1) return 0;
+  if (fd==-1) return -1;
   
   if (fd==-2) {
     fd = open("/proc/net/dev", O_RDONLY | O_NDELAY);
     if (fd==-1) {
       perror ("open(/proc/net/dev) failed");
-      return 0;
+      return -1;
     }
   }
   
   if (lseek(fd, 0L, SEEK_SET)!=0) {
     perror ("lseek(/proc/net/dev) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
     perror ("read(/proc/net/dev) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   pkg_rx=0;
   pkg_tx=0;
@@ -327,43 +358,122 @@ int Net (int *rx, int *tx)
   *rx=smooth("net_rx", 500, pkg_rx);
   *tx=smooth("net_tx", 500, pkg_tx);
 
-  return *rx+*tx;
+  return 0;
 }
 
 
-double Temperature (void)
+int Sensor (int index, double *val, double *min, double *max)
 {
-  static int fd=-2;
   char buffer[32];
-  static double value=0.0;
-  static time_t now=0;
+  double value;
+  static int fd[SENSORS]={[0 ... SENSORS]=-2,};
+  static char *sensor[SENSORS]={NULL,};
+  static double val_buf[SENSORS]={0.0,};
+  static double min_buf[SENSORS]={0.0,};
+  static double max_buf[SENSORS]={0.0,};
+  static time_t now[SENSORS]={0,};
 
-  if (fd==-1) return 0;
-  
-  if (time(NULL)==now) return value;
-  time(&now);
+  if (index<0 || index>=SENSORS) return -1;
 
-  if (fd==-2) {
-    fd=open(sensor, O_RDONLY);
-    if (fd==-1) {
-      fprintf (stderr, "open (%s) failed: %s\n", sensor, strerror(errno));
-      return 0;
+  *val=val_buf[index];
+  *min=min_buf[index];
+  *max=max_buf[index];
+
+  if (fd[index]==-1) return -1;
+
+  if (time(NULL)==now[index]) return 0;
+  time(&now[index]);
+
+  if (fd[index]==-2) {
+    snprintf(buffer, 32, "Sensor%d", index);
+    sensor[index]=cfg_get(buffer);
+    if (sensor[index]==NULL || *sensor[index]=='\0') {
+      fprintf (stderr, "%s: no entry for '%s'\n", cfg_file(), buffer);
+      fd[index]=-1;
+      return -1;
+    }
+
+    snprintf(buffer, 32, "Sensor%d_min", index);
+    min_buf[index]=atof(cfg_get(buffer));
+    snprintf(buffer, 32, "Sensor%d_max", index);
+    max_buf[index]=atof(cfg_get(buffer));
+    if (max_buf[index]==0.0) max_buf[index]=100.0;
+    
+    fd[index]=open(sensor[index], O_RDONLY);
+    if (fd[index]==-1) {
+      fprintf (stderr, "open (%s) failed: %s\n", sensor[index], strerror(errno));
+      return -1;
     }
   }
-  if (lseek(fd, 0L, SEEK_SET)!=0) {
-    fprintf (stderr, "lseek(%s) failed: %s\n", sensor, strerror(errno));
-    fd=-1;
-    return 0;
+  if (lseek(fd[index], 0L, SEEK_SET)!=0) {
+    fprintf (stderr, "lseek(%s) failed: %s\n", sensor[index], strerror(errno));
+    fd[index]=-1;
+    return -1;
   }
-  if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    fprintf (stderr, "read(%s) failed: %s\n", sensor, strerror(errno));
-    fd=-1;
-    return 0;
+  if (read (fd[index], &buffer, sizeof(buffer)-1)==-1) {
+    fprintf (stderr, "read(%s) failed: %s\n", sensor[index], strerror(errno));
+    fd[index]=-1;
+    return -1;
   }
   if (sscanf(buffer, "%*f %*f %lf", &value)<1) {
-    fprintf (stderr, "scanf(%s) failed\n", sensor);
-    fd=-1;
-    return 0;
+    fprintf (stderr, "scanf(%s) failed\n", sensor[index]);
+    fd[index]=-1;
+    return -1;
   }
-  return (value);
+  val_buf[index]=value;
+  *val=value;
+  return 0;
 }
+
+
+#ifdef STANDALONE
+
+int tick, tack, tau;
+
+void main (void)
+{
+  char *cfg_file="./lcd4linux.conf.sample";
+  double load1, load2, load3;
+  double user, nice, system, idle;
+  int r, w;
+  int rx, tx;
+  double val, min, max;
+
+  if (cfg_read (cfg_file)==-1)
+    exit (1);
+
+  tick=atoi(cfg_get("tick"));
+  tack=atoi(cfg_get("tack"));
+  tau=atoi(cfg_get("tau"));
+
+  printf ("System    : %s\n", System());
+  printf ("Release   : %s\n", Release ());
+  printf ("Processor : %s\n", Processor ());
+  printf ("Memory    : %d MB\n", Memory ());
+
+  while (1) {
+    
+    Load (&load1, &load2, &load3);
+    printf ("Load      : %f %f %f\n", load1, load2, load3);
+    
+    Busy (&user, &nice, &system, &idle);
+    printf ("Busy      : %f %f %f %f\n", user, nice, system, idle);
+
+    Disk (&r, &w);
+    printf ("Disk      : %d %d\n", r, w);
+
+    Net (&rx, &tx);
+    printf ("Net       : %d %d\n", rx, tx);
+    
+    Sensor (1, &val, &min, &max);
+    printf ("Sensor 1  : %f %f %f\n", val, min, max);
+    
+    Sensor (2, &val, &min, &max);
+    printf ("Sensor 2  : %f %f %f\n", val, min, max);
+    
+    usleep(tack*1000);
+  }
+
+}
+
+#endif

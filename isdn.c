@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: isdn.c,v 1.3 2000/03/07 11:01:34 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.3  2000/03/07 11:01:34  reinelt
+ *
+ * system.c cleanup
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -30,8 +34,9 @@
 /* 
  * exported functions:
  *
- * Isdn (int *rx, int *tx)
- *   returns all channel's USAGE or'ed together
+ * Isdn (int *usage, int *rx, int *tx)
+ *   returns 0 if ok, -1 if error
+ *   sets *usage to all channels USAGE or'ed together
  *   sets received/transmitted bytes in *rx, *tx
  *
  */
@@ -93,33 +98,33 @@ static int Usage (void)
   for (i=0; i<ISDN_MAX_CHANNELS; i++) {
     usage|=strtol(p, &p, 10);
   }
-
   return usage;
 }
 
-int Isdn (int *rx, int *tx)
+int Isdn (int *usage, int *rx, int *tx)
 {
   static int fd=-2;
   CPS cps[ISDN_MAX_CHANNELS];
   double cps_i, cps_o;
   int i;
 
+  *usage=0;
   *rx=0;
   *tx=0;
 
-  if (fd==-1) return 0;
+  if (fd==-1) return -1;
   
   if (fd==-2) {
     fd = open("/dev/isdninfo", O_RDONLY | O_NDELAY);
     if (fd==-1) {
       perror ("open(/dev/isdninfo) failed");
-      return 0;
+      return -1;
     }
   }
   if (ioctl(fd, IIOCGETCPS, &cps)) {
     perror("ioctl(IIOCGETCPS) failed");
     fd=-1;
-    return 0;
+    return -1;
   }
   cps_i=0;
   cps_o=0;
@@ -130,7 +135,8 @@ int Isdn (int *rx, int *tx)
 
   *rx=(int)smooth("isdn_rx", 1000, cps_i);
   *tx=(int)smooth("isdn_tx", 1000, cps_o);
+  *usage=Usage();
 
-  return Usage();
+  return 0;
 }
 

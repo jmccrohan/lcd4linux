@@ -1,4 +1,4 @@
-/* $Id: isdn.h,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: isdn.h,v 1.3 2000/03/07 11:01:34 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: isdn.h,v $
+ * Revision 1.3  2000/03/07 11:01:34  reinelt
+ *
+ * system.c cleanup
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -30,6 +34,6 @@
 #ifndef _ISDN_H_
 #define _ISDN_H_
 
-int Isdn (int *rx, int *tx);
+int Isdn (int *usage, int *rx, int *tx);
 
 #endif

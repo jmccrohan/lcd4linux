@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: system.h,v 1.3 2000/03/07 11:01:34 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.3  2000/03/07 11:01:34  reinelt
+ *
+ * system.c cleanup
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -30,14 +34,16 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
+#define SENSORS 16
+
 char *System (void);
 char *Release (void);
 char *Processor (void);
 int   Memory (void);
-double Load (void);
-double Busy (void);
-int Disk (int *r, int *w);
-int Net (int *r, int *w);
-double Temperature (void);
+int   Load (double *load1, double *load2, double *load3);
+int   Busy (double *user, double *nice, double *system, double *idle);
+int   Disk (int *r, int *w);
+int   Net (int *rx, int *tx);
+int   Sensor (int index, double *val, double *min, double *max);
 
 #endif

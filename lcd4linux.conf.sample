@@ -1,0 +1,17 @@
+#Row1 "%p%t\337$h10rt"
+Row1 "Busy %b%% $h5rb$h5rl"
+Row2 "Disk%D%dm $H5rdr$H5rdw"
+Row3 "Netz%N%nm $H5rnr$H5rnw"
+Row4 "ISDN%I%im $h5rio$h5rii"
+
+Port /dev/ttyS2
+Fifo /var/run/lcd4linux
+Tick 100
+Tack 400
+Tau 500
+Contrast 160
+Overload 2.0
+
+Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp2
+Sensor1_min 30
+Sensor1_max 50
