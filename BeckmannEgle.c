@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.10 2002/08/19 10:51:06 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.11 2002/08/22 05:51:36 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.11  2002/08/22 05:51:36  reinelt
+ * cosmetic changes
+ *
  * Revision 1.10  2002/08/19 10:51:06  reinelt
  * M50530 driver using new generic bar functions
  *
@@ -34,33 +37,27 @@
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
  * Revision 1.6  2001/04/27 05:04:57  reinelt
- *
  * replaced OPEN_MAX with sysconf()
  * replaced mktemp() with mkstemp()
  * unlock serial port if open() fails
  *
  * Revision 1.5  2001/02/13 09:00:13  reinelt
- *
  * prepared framework for GPO's (general purpose outputs)
  *
  * Revision 1.4  2000/08/10 09:44:09  reinelt
- *
  * new debugging scheme: error(), info(), debug()
  * uses syslog if in daemon mode
  *
  * Revision 1.3  2000/08/09 09:50:29  reinelt
- *
  * opened 0.98 development
  * removed driver-specific signal-handlers
  * added 'quit'-function to driver structure
  * added global signal-handler
  *
  * Revision 1.2  2000/04/30 06:40:42  reinelt
- *
  * bars for Beckmann+Egle driver
  *
  * Revision 1.1  2000/04/28 05:19:55  reinelt
- *
  * first release of the Beckmann+Egle driver
  *
  */
