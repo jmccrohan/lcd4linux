@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.4 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.5 2004/05/29 15:53:28 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.5  2004/05/29 15:53:28  reinelt
+ *
+ * M50530: reset parport signals on exit
+ * plugin_ppp: ppp() has two parameters, not three
+ * lcd4linux.conf.sample: diskstats() corrected
+ *
  * Revision 1.4  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -342,6 +348,10 @@ int drv_M5_init (char *section)
 int drv_M5_quit (void) {
 
   info("%s: shutting down.", Name);
+
+  // clear all signals
+  drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);
+  
   drv_generic_parport_close();
   drv_generic_text_quit();
   

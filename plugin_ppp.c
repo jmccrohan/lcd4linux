@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.4 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.5 2004/05/29 15:53:28 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.5  2004/05/29 15:53:28  reinelt
+ *
+ * M50530: reset parport signals on exit
+ * plugin_ppp: ppp() has two parameters, not three
+ * lcd4linux.conf.sample: diskstats() corrected
+ *
  * Revision 1.4  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -136,7 +142,7 @@ static void my_ppp (RESULT *result, RESULT *arg1, RESULT *arg2)
 int plugin_init_ppp (void)
 {
 #ifdef HAVE_NET_IF_PPP_H
-  AddFunction ("ppp", 3, my_ppp);
+  AddFunction ("ppp", 2, my_ppp);
 #endif
   return 0;
 }
