@@ -1,4 +1,85 @@
+2004-01-21  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* plugin_proc_stat.c, plugin_xmms.c: two bugs with hash_age() ixed
+
+	* config.guess, config.sub, hash.c, hash.h, libtool, ltmain.sh, plugin_cpuinfo.c, plugin_meminfo.c, plugin_proc_stat.c, plugin_xmms.c:
+	hash_age function added
+
+	* drv_HD44780.c, lcd4linux.conf.sample:
+	HD44780 missed the "clear display' sequence
+	asc255bug handling added
+	HD44780 tested, works here!
+
+2004-01-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drv.c, drv.h, drv_HD44780.c, drv_MatrixOrbital.c, drv_generic_parport.c, drv_generic_parport.h, lcd4linux.conf.sample, config.h.in, configure:
+	first version of Next Generation HD44780 (untested! but it compiles...)
+	some cleanup in the other drivers
+
+	* Makefile.am, Makefile.in, drv_generic_parport.c, drv_generic_parport.h:
+	drv_generic_parport added, code from parport.c
+
+	* drv_generic_serial.c, drv_generic_serial.h:
+	moved drv_generic to drv_generic_serial
+
+	* Makefile.am, Makefile.in, drv_MatrixOrbital.c, drv_generic.c, drv_generic.h, drv_generic_text.c, widget_bar.c:
+	some reorganization
+	moved drv_generic to drv_generic_serial
+	moved port locking stuff to drv_generic_serial
+
+	* drv_MatrixOrbital.c, drv_generic_text.c, lcd4linux.conf.sample, plugin_proc_stat.c, widget_bar.c:
+	"Default screen" working with MatrixOrbital
+
+	* Makefile.am, Makefile.in, drv_MatrixOrbital.c, drv_generic.c, drv_generic.h, drv_generic_bar.c, drv_generic_bar.h, drv_generic_text.c, drv_generic_text.h, hash.c, lcd4linux.conf.sample:
+	moved text-display-specific stuff to drv_generic_text
+	moved all the bar stuff from drv_generic_bar to generic_text
+
+	* Makefile.am, Makefile.in, drv_MatrixOrbital.c, drv_generic.c, drv_generic.h, drv_generic_bar.c, drv_generic_bar.h, lcd4linux.conf.sample, widget_bar.c, widget_bar.h, widget_text.c:
+	moved generic stuff from drv_MatrixOrbital to drv_generic
+	implemented new-stylish bars which are nearly finished
+
+2004-01-18  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, drv_MatrixOrbital.c, widget_bar.c, widget_bar.h:
+	Framework for bar widget opened
+
+	* hash.c, hash.h, lcd4linux.conf.sample, plugin_proc_stat.c, timer.c:
+	/proc/stat parsing finished
+
+	* cfg.c, expr.c, hash.c, plugin_proc_stat.c:
+	bug in expr.c fixed (thanks to Xavier)
+	some progress with /proc/stat parsing
+
+2004-01-16  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* hash.h, plugin_cpuinfo.c, plugin_proc_stat.c, plugin_xmms.c:
+	some bugs in plugin_xmms fixed, parsing moved to own function
+	plugin_proc_stat nearly finished
+
+2004-01-16  mkeil  <mkeil@merlin.ethnet>
+
+	* plugin_xmms.c:   -include caching for values
+
+2004-01-16  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* hash.c, hash.h, plugin_cpuinfo.c, plugin_meminfo.c, plugin_proc_stat.c:
+	moved various /proc parsing to own functions
+	made some progress with /proc/stat parsing
+
+	* Makefile.am, Makefile.in, cfg.c, filter.c, hash.c, hash.h, lcd4linux.conf.sample, plugin.c, plugin_proc_stat.c, system.c:
+	started plugin proc_stat which should parse /proc/stat
+	which again is a paint in the a**
+	thinking over implementation methods of delta functions
+	(CPU load, ...)
+
 2004-01-15  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* debian/postinst, debian/watch, widget_text.h, drv_MatrixOrbital.c, evaluator.c, lcd4linux.conf.sample, widget_text.c:
+	debian/ postinst and watch added (did CVS forget about them?)
+	evaluator: conditional expressions (a?b:c) added
+	text widget nearly finished
+
+	* ChangeLog: *** empty log message ***
 
 	* Makefile.am, Makefile.in, lcd4linux.conf.sample, lcd4linux.conf.sample.old, plugin.c, plugin_cpuinfo.c, plugin_loadavg.c, plugin_meminfo.c, widget_text.c, widget_text.h:
 	moved lcd4linux.conf.sample to *.old
