@@ -92,3 +92,7 @@ at the moment the sum of all eth* devices is calculated
 support 40x4 displays with two HD44780 chips on it
 we need another 'Enable' line for this
 this way one could connect two displays to on e parallel port, too
+
+2001-05-25 Jens Garthe <outline@xslan.de>
+detect wether curses.h and libncurses is installed, and
+don't include the 'Text'-driver if not.
