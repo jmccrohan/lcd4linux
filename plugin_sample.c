@@ -1,4 +1,4 @@
-/* $Id: plugin_sample.c,v 1.5 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.6 2004/06/01 06:04:25 reinelt Exp $
  *
  * plugin template
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.6  2004/06/01 06:04:25  reinelt
+ *
+ * made README.Plugins and plugin_sample up to date.
+ *
  * Revision 1.5  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -86,10 +90,10 @@ static void my_mul2 (RESULT *result, RESULT *arg1)
 
   // Get Parameter
   // R2N stands for 'Result to Number'
-  param=R2N(arg1);
+  param = R2N(arg1);
   
   // calculate value
-  value=param*2.0;
+  value = param*2.0;
   
   // store result
   // when called with R_NUMBER, it assumes the
@@ -106,7 +110,7 @@ static void my_mul2 (RESULT *result, RESULT *arg1)
 static void my_mul3 (RESULT *result, RESULT *arg1)
 {
   // do it all in one line
-  double value=R2N(arg1)*3.0;
+  double value = R2N(arg1) * 3.0;
 
   // store result
   SetResult(&result, R_NUMBER, &value); 
@@ -120,10 +124,10 @@ static void my_mul3 (RESULT *result, RESULT *arg1)
 static void my_diff (RESULT *result, RESULT *arg1, RESULT *arg2)
 {
   // do it all in one line
-  double value=R2N(arg1)-R2N(arg2);
+  double value = R2N(arg1) - R2N(arg2);
   
   // some more calculations...
-  if (value<0) value=-value;
+  if (value < 0) value = -value;
   
   // store result
   SetResult(&result, R_NUMBER, &value); 
@@ -138,7 +142,7 @@ static void my_answer (RESULT *result)
 {
   // we have to declare a variable because
   // SetResult needs a pointer 
-  double value=42;
+  double value = 42;
   
   // store result
   SetResult(&result, R_NUMBER, &value); 
@@ -153,7 +157,7 @@ static void my_length (RESULT *result, RESULT *arg1)
 {
   // Note #1: value *must* be double! 
   // Note #2: R2S stands for 'Result to String'
-  double value=strlen(R2S(arg1));
+  double value = strlen(R2S(arg1));
   
   // store result
   SetResult(&result, R_NUMBER, &value); 
@@ -171,11 +175,11 @@ static void my_upcase (RESULT *result, RESULT *arg1)
   
   // create a local copy of the argument
   // Do *NOT* try to modify the original string!
-  value=strdup(R2S(arg1));
+  value = strdup(R2S(arg1));
   
   // process the string
-  for (p=value; *p!='\0'; p++)
-    *p=toupper(*p);
+  for (p = value; *p != '\0'; p++)
+    *p = toupper(*p);
 
   // store result
   // when called with R_STRING, it assumes the
@@ -199,13 +203,13 @@ static void my_concat (RESULT *result, int argc, RESULT *argv[])
   char *value, *part;
   
   // start with a empty string
-  value=strdup("");
+  value = strdup("");
   
   // process all arguments
-  for (i=0; i<argc; i++) {
-    part=R2S(argv[i]);
-    len=strlen(value)+strlen(part);
-    value=realloc(value, len+1);
+  for (i = 0; i < argc; i++) {
+    part = R2S(argv[i]);
+    len = strlen(value)+strlen(part);
+    value = realloc(value, len+1);
     strcat(value, part);
   }
 
@@ -238,5 +242,6 @@ int plugin_init_sample (void)
 
 void plugin_exit_sample(void) 
 {
-
+  // free any allocated memory
+  // close filedescriptors
 }
