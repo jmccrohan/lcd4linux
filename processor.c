@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.8 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: processor.c,v 1.9 2001/02/11 23:34:07 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.9  2001/02/11 23:34:07  reinelt
+ *
+ *
+ * fixed a small bug where the throughput of an offline ISDN connection is displayed as '----', but the
+ * online value is 5 chars long. corrected to ' ----'.
+ * thanks to Carsten Nau <info@cnau.de>
+ *
  * Revision 1.8  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -331,7 +338,7 @@ static void print_token (int token, char **p)
     if (isdn.usage)
       *p+=sprintf (*p, "%5.0f", query(token));
     else
-      *p+=sprintf (*p, "----");
+      *p+=sprintf (*p, " ----");
     break;
   default:
       *p+=sprintf (*p, "%5.0f", query(token));
