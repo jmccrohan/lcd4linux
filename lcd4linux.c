@@ -1,8 +1,9 @@
-/* $Id: lcd4linux.c,v 1.69 2004/03/14 07:11:42 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.70 2004/06/02 05:14:16 reinelt Exp $
  *
  * LCD4Linux
  *
- * Copyright 1999-2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.70  2004/06/02 05:14:16  reinelt
+ *
+ * fixed models listing for Beckmann+Egle driver
+ * some cosmetic changes
+ *
  * Revision 1.69  2004/03/14 07:11:42  reinelt
  * parameter count fixed for plugin_dvb()
  * plugin_APM (battery status) ported
@@ -358,7 +364,8 @@
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
-static char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
+static char *release   = "LCD4Linux " VERSION;
+static char *copyright = "Copyright 1999-2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
 static int got_signal=0;
 
@@ -369,6 +376,7 @@ extern char* output;
 static void usage(void)
 {
   printf ("%s\n", release);
+  printf ("%s\n", copyright);
   printf ("usage: lcd4linux [-h]\n");
   printf ("       lcd4linux [-l]\n");
   printf ("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
@@ -451,23 +459,23 @@ void handler (int signal)
 
 int main (int argc, char *argv[])
 {
-  char *cfg="/etc/lcd4linux.conf";
+  char *cfg = "/etc/lcd4linux.conf";
   char *display, *driver, *layout;
   char  section[32];
   int c;
-  int quiet=0;
-  int interactive=0;
-  
+  int quiet = 0;
+  int interactive = 0;
+  int pid;
 
   // save arguments for restart
-  my_argv=malloc(sizeof(char*)*(argc+1));
-  for (c=0; c<argc; c++) {
-    my_argv[c]=strdup(argv[c]);
+  my_argv = malloc(sizeof(char*)*(argc+1));
+  for (c = 0; c < argc; c++) {
+    my_argv[c] = strdup(argv[c]);
   }
-  my_argv[c]=NULL;
+  my_argv[c] = NULL;
 
-  running_foreground=0;
-  running_background=0;
+  running_foreground = 0;
+  running_background = 0;
   
   while ((c=getopt (argc, argv, "c:Ff:hilo:qv"))!=EOF) {
 
@@ -492,6 +500,7 @@ int main (int argc, char *argv[])
       break;
     case 'l':
       printf ("%s\n", release);
+      printf ("%s\n", copyright);
       drv_list();
       exit(0);
     case 'o':
@@ -586,8 +595,8 @@ int main (int argc, char *argv[])
     close(fd);
 
     // create PID file
-    if (pid_init(PIDFILE)!=0) {
-      error ("PID file creation failed!");
+    if ((pid = pid_init(PIDFILE)) != 0) {
+      error ("lcd4linux already running as process %d", pid)
       exit (1);
     }
 

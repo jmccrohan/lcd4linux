@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.2 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.3 2004/06/02 05:14:16 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,11 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.3  2004/06/02 05:14:16  reinelt
+ *
+ * fixed models listing for Beckmann+Egle driver
+ * some cosmetic changes
+ *
  * Revision 1.2  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -193,7 +198,7 @@ int drv_BE_list (void)
 {
   int i;
   
-  for (i = 0; Models[i].type > 0; i++) {
+  for (i = 0; Models[i].type > -1; i++) {
     printf ("%s ", Models[i].name);
   }
   return 0;
