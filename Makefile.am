@@ -26,7 +26,8 @@ filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
-fontmap.c fontmap.h
+fontmap.c fontmap.h \
+exec.c exec.h
 
 EXTRA_lcd4linux_SOURCES= \
 BeckmannEgle.c \

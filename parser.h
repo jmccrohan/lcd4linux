@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.9 2001/03/02 10:18:03 ltoetsch Exp $
+/* $Id: parser.h,v 1.10 2001/03/07 18:10:21 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.10  2001/03/07 18:10:21  ltoetsch
+ * added e(x)ec commands
+ *
  * Revision 1.9  2001/03/02 10:18:03  ltoetsch
  * added /proc/apm battery stat
  *
@@ -82,13 +85,14 @@ typedef enum {
   T_BATT_PERC, T_BATT_STAT, T_BATT_DUR,
   T_EXTENDED,
   T_MAIL,
-  T_SENSOR
+  T_SENSOR,
+  T_EXEC  
 } TOKEN;
 
 typedef enum {
   C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, 
   C_BATT,  
-  C_MAIL, C_SENSOR
+  C_MAIL, C_SENSOR, C_EXEC
 } CLASS;
 
 char *parse_row (char *string, int supported_bars, int usage[]);

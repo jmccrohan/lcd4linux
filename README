@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.12 2001/03/02 10:18:45 ltoetsch Exp $
+# $Id: README,v 1.13 2001/03/07 18:10:21 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -72,8 +72,9 @@ SUPPORTED DISPLAYS
 
 * Raster formats:
   a generic raster driver (which is used by the X11-driver, too) is availiable,
-  PPM (portable pixmap) is the only output format at the moment. I'm working
-  on PNG!
+  it supports:
+     PPM (portable pixmap)
+     PNG (with libgd)
 
 
 * other displays: lcd4linux and especially the display driver code is very modular, 
@@ -89,6 +90,19 @@ Values can contain whitespace, and can be enclosed in single or double quotes.
 A key must not contain whitespace. Keys are NOT case-sensitive. Order doesn't matter.
 Empty lines and all text on a line after a '#' will be ignored. If you want to
 use '#' in a value (think of X11-colors), you have to quote it with a backslash.
+
+NOTE:
+
+Because of security reasons the config file is assured to be:
+   * - file is a normal file (or /dev/null)
+   * - file owner is owner of program
+   * - file is not writeable by group
+   * - file is not writeable by other
+   
+So if you run lcd4linux as root, /etc/lcd4linux has to be:
+  chmod 600
+  chown root.root
+
 
 The configuration file contains information for different modules of lcd4linux: 
 
@@ -181,3 +195,9 @@ Tokens:
   'bp', battery percentage (APM by now)
   'bs', battery status ('=' = online, '+' = charging, '-' discharging)
   'bd', battery duration in s{econds}, m{ins}, h{ours} or d{ays}
+  'e*', mails in mailbox 1-9,
+  'x*', output of command 1-9
+  
+Please have a look at lcd4linux.conf.sample, where you can find examples
+of all options.
+

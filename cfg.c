@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.9 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: cfg.c,v 1.10 2001/03/07 18:10:21 ltoetsch Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.10  2001/03/07 18:10:21  ltoetsch
+ * added e(x)ec commands
+ *
  * Revision 1.9  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -107,6 +110,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+
+#include <unistd.h>
+#include <sys/stat.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -209,11 +215,56 @@ char *cfg_get (char *key)
   return NULL;
 }
 
+static int check_cfg_file(char *file)
+{
+  /* as passwords and commands are stored in the config file,
+   * we will check that:
+   * - file is a normal file (or /dev/null)
+   * - file owner is owner of program
+   * - file is not writeable by group
+   * - file is not writeable by other
+   */
+
+  uid_t uid, gid;
+  int res;
+  struct stat stbuf;
+  
+  uid = geteuid();
+  gid = getegid();
+  
+  res = stat(file, &stbuf);
+  if (res == -1) {
+    error ("stat(%s) failed: %s", file, strerror(errno));
+    return -1;
+  }
+  if (S_ISCHR(stbuf.st_mode) && strcmp(file, "/dev/null") == 0)
+    return 0;
+  
+  if (!S_ISREG(stbuf.st_mode)) {
+    error ("stat(%s) is not a regular file", file);
+    return -1;
+  }
+  if (stbuf.st_uid != uid || stbuf.st_gid != gid) {
+    error ("stat(%s) owner and/or group don't match", file);
+    return -1;
+  }
+  if (stbuf.st_mode & S_IRWXG || stbuf.st_mode & S_IRWXO) {
+    error ("stat(%s) group or other have access", file);
+    return -1;
+  }
+  return 0;
+}
+
 int cfg_read (char *file)
 {
   FILE *stream;
   char buffer[256];
   char *line, *p, *s;
+
+  if (check_cfg_file(file) == -1) {
+    error("open(%s) is insecure, we give up", file);
+    exit(2);
+  }
   
   stream=fopen (file, "r");
   if (stream==NULL) {

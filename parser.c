@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.11 2001/03/02 10:18:03 ltoetsch Exp $
+/* $Id: parser.c,v 1.12 2001/03/07 18:10:21 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.12  2001/03/07 18:10:21  ltoetsch
+ * added e(x)ec commands
+ *
  * Revision 1.11  2001/03/02 10:18:03  ltoetsch
  * added /proc/apm battery stat
  *
@@ -153,6 +156,7 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "bd", T_BATT_DUR,   C_BATT,    0 },
 			  { "e*", T_MAIL,       C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },
+			  { "x*", T_EXEC,       C_EXEC,    0 },
 			  { "",  -1,            0 }};
 
 static int bar_type (char tag)

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.15 2001/03/02 10:18:03 ltoetsch Exp $
+/* $Id: processor.c,v 1.16 2001/03/07 18:10:21 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.16  2001/03/07 18:10:21  ltoetsch
+ * added e(x)ec commands
+ *
  * Revision 1.15  2001/03/02 10:18:03  ltoetsch
  * added /proc/apm battery stat
  *
@@ -118,6 +121,7 @@
 #include "mail.h"
 #include "battery.h"
 #include "seti.h"
+#include "exec.h"
 
 #define ROWS 16
 #define GPOS 16
@@ -138,7 +142,7 @@ struct { int perc, stat; double dur; } batt;
 struct { double perc, cput; } seti;
 struct { int num; } mail[MAILBOXES];
 struct { double val, min, max; } sensor[SENSORS];
-
+struct { char s[EXEC_TXT_LEN]; } exec[EXECS];
 
 static double query (int token)
 {
@@ -307,6 +311,7 @@ static double query_bar (int token)
 static void print_token (int token, char **p)
 {
   double val;
+  int i;
   
   switch (token) {
   case T_PERCENT:
@@ -429,13 +434,22 @@ static void print_token (int token, char **p)
       *p+=sprintf(*p, "%2.0f%c", val, eh);
     }
     break;
-    
+
+#if 0
+    never comes here -lt ?
   case T_MAIL:
     val=query(token);
     *p+=sprintf (*p, "%3.0f", val);
     break;
+#endif    
+    
   default:
-    *p+=sprintf (*p, "%5.0f", query(token));
+    if ((token & 255) == T_EXEC) {
+      i = (token>>8)-'0';
+      *p+=sprintf (*p, "%s", exec[i].s);
+    }
+    else
+      *p+=sprintf (*p, "%5.0f", query(token));
   }
 }
 
@@ -502,6 +516,12 @@ static void collect_data (void)
   for (i=1; i<SENSORS; i++) {
     if (token_usage[T_SENSOR]&(1<<i)) {
       Sensor (i, &sensor[i].val, &sensor[i].min, &sensor[i].max);
+    }
+  }
+
+  for (i=1; i<EXECS; i++) {
+    if (token_usage[T_EXEC]&(1<<i)) {
+      Exec (i, &exec[i].s);
     }
   }
 }
