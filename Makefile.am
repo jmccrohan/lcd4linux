@@ -4,6 +4,8 @@ AUTOMAKE_OPTIONS = foreign
 
 CLEANFILES = *~
 AM_CFLAGS = -Wall
+LDFLAGS = -L/usr/X11R6/lib
+LDADD = -lX11
 
 bin_PROGRAMS = lcd4linux
 lcd4linux_SOURCES = \
@@ -21,5 +23,3 @@ lcd4linux_SOURCES = \
 	MatrixOrbital.c \
 	Raster.c \
 	XWindow.c
-
-

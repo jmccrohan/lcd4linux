@@ -3,17 +3,25 @@
 #Speed 19200
 #Contrast 160
 
-#Display xlcd
-Display PPM
-size 20x4
+#Display PPM
+#size 20x4
+#font 5x8
+#pixel 3+0
+#gap 3x3
+#border 10
+#foreground \#102000
+#halfground \#70c000
+#background \#80d000
+
+Display X11
+size 20x5
 font 5x8
-pixel 3+0
-gap 3x3
-border 5
+pixel 2+0
+gap 2x2
+border 3
 foreground \#102000
 halfground \#70c000
 background \#80d000
-
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
@@ -24,7 +32,7 @@ Row1 "Load %l1%L$r10cs+cb"
 Row2 "Disk %dm $R10dr+dw"
 Row3 "Net  %nm $R10nr+nw"
 Row4 "ISDN %im $r10ii+io"
-Row5 "Temp %s2\337$r10s1+s2"
+Row5 "Temp %s2°$r10s1+s2"
 
 #Row1 "$u3l1$u3cb$u3cs $u3mu$u3ma$u3ms $u3dr$u3dw $u3nr$u3nw $u3ii$u3io"
 #Row2 " "

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.4 2000/03/26 20:00:44 reinelt Exp $
+/* $Id: cfg.c,v 1.5 2000/03/28 07:22:15 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.5  2000/03/28 07:22:15  reinelt
+ *
+ * version 0.95 released
+ * X11 driver up and running
+ * minor bugs fixed
+ *
  * Revision 1.4  2000/03/26 20:00:44  reinelt
  *
  * README.Raster added
@@ -72,6 +78,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "cfg.h"
 
@@ -108,7 +115,11 @@ static char *dequote (char *string)
   char *p=string;
   
   do {
-    if (*s!='\\') *p++=*s;
+    if (*s=='\\' && *(s+1)=='#') {
+      *p++=*++s;
+    } else {
+      *p++=*s;
+    }
   } while (*s++);
   
   return string;

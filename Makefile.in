@@ -66,6 +66,8 @@ AUTOMAKE_OPTIONS = foreign
 
 CLEANFILES = *~
 AM_CFLAGS = -Wall
+LDFLAGS = -L/usr/X11R6/lib
+LDADD = -lX11
 
 bin_PROGRAMS = lcd4linux
 lcd4linux_SOURCES =  	lcd4linux.c 	cfg.c cfg.h 	parser.c parser.h 	processor.c processor.h 	system.c system.h 	isdn.c isdn.h 	filter.c filter.h 	display.c display.h 	pixmap.c pixmap.h 	fontmap.c fontmap.h 	Skeleton.c 	MatrixOrbital.c 	Raster.c 	XWindow.c
@@ -78,7 +80,6 @@ PROGRAMS =  $(bin_PROGRAMS)
 
 DEFS = @DEFS@ -I. -I$(srcdir) 
 CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 lcd4linux_OBJECTS =  lcd4linux.o cfg.o parser.o processor.o system.o \
 isdn.o filter.o display.o pixmap.o fontmap.o Skeleton.o MatrixOrbital.o \

@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.8 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: system.c,v 1.9 2000/03/28 07:22:15 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.9  2000/03/28 07:22:15  reinelt
+ *
+ * version 0.95 released
+ * X11 driver up and running
+ * minor bugs fixed
+ *
  * Revision 1.8  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -102,20 +108,16 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
-#include <asm/param.h>
+#include <sys/param.h>
 
 #include "system.h"
 #include "cfg.h"
 #include "filter.h"
-
-#ifdef USE_SYSINFO
-#include <linux/kernel.h>
-#include <linux/sys.h>
-#endif
 
 static int parse_meminfo (char *tag, char *buffer)
 {
@@ -479,7 +481,7 @@ int Sensor (int index, double *val, double *min, double *max)
 {
   char buffer[32];
   double value;
-  static int fd[SENSORS]={[0 ... SENSORS]=-2,};
+  static int fd[SENSORS]={[0 ... SENSORS-1]=-2,};
   static char *sensor[SENSORS]={NULL,};
   static double val_buf[SENSORS]={0.0,};
   static double min_buf[SENSORS]={0.0,};

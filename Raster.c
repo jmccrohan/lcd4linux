@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.7 2000/03/26 20:00:44 reinelt Exp $
+/* $Id: Raster.c,v 1.8 2000/03/28 07:22:15 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.8  2000/03/28 07:22:15  reinelt
+ *
+ * version 0.95 released
+ * X11 driver up and running
+ * minor bugs fixed
+ *
  * Revision 1.7  2000/03/26 20:00:44  reinelt
  *
  * README.Raster added
@@ -67,6 +73,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -219,7 +226,7 @@ int Raster_init (LCD *Self)
     return -1;
   }
 
-  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &rgap, &cgap)!=2 || rgap<0 || cgap<0) {
+  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &cgap, &rgap)!=2 || cgap<0 || rgap<0) {
     fprintf (stderr, "Raster: bad gap '%s'\n", s);
     return -1;
   }
