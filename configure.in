@@ -2,9 +2,9 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([LCD4Linux],[0.9.11-pre1],[reinelt@eunet.at])
+AC_INIT([LCD4Linux],[0.9.12],[reinelt@eunet.at])
 AC_CONFIG_SRCDIR([lcd4linux.c])
-AM_INIT_AUTOMAKE(lcd4linux,0.9.11-pre1)
+AM_INIT_AUTOMAKE(lcd4linux,0.9.12)
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.

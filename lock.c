@@ -1,4 +1,4 @@
-/* $Id: lock.c,v 1.3 2001/04/27 05:04:57 reinelt Exp $
+/* $Id: lock.c,v 1.4 2003/09/19 08:40:32 reinelt Exp $
  *
  * UUCP style locking
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lock.c,v $
+ * Revision 1.4  2003/09/19 08:40:32  reinelt
+ *
+ *
+ * increased version number to 0.9.12
+ * port locking is done as /var/lock/LCK..usb_tts_0 for /dev/usb/tts/0
+ *
  * Revision 1.3  2001/04/27 05:04:57  reinelt
  *
  * replaced OPEN_MAX with sysconf()
@@ -66,22 +72,29 @@
 #include "lock.h"
 
 
-pid_t lock_port (char *port)
+pid_t lock_port (char *Port)
 {
   char lockfile[256];
   char tempfile[256];
   char buffer[16];
-  char *p;
+  char *port, *p;
   int fd, len, pid;
 
-  if ((p=strrchr (port, '/'))==NULL) 
-    p=port;
-  else
-    p++;
+  if (strncmp(Port, "/dev/", 5)==0) {
+    port=strdup(Port+5);
+  } else {
+    port=strdup(Port);
+  }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, p);
+  while ((p=strchr(port, '/'))!=NULL) {
+    *p='_';
+  }
+  
+  snprintf(lockfile, sizeof(lockfile), LOCK, port);
   snprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
 
+  free (port);
+  
   if ((fd=mkstemp(tempfile))==-1) {
     error ("mkstemp(%s) failed: %s", tempfile, strerror(errno));
     return -1;
@@ -157,17 +170,24 @@ pid_t lock_port (char *port)
 }
 
 
-pid_t unlock_port (char *port)
+pid_t unlock_port (char *Port)
 {
   char lockfile[256];
-  char *p;
+  char *port, *p;
   
-  if ((p=strrchr (port, '/'))==NULL) 
-    p=port;
-  else
-    p++;
+  if (strncmp(Port, "/dev/", 5)==0) {
+    port=strdup(Port+5);
+  } else {
+    port=strdup(Port);
+  }
   
-  snprintf(lockfile, sizeof(lockfile), LOCK, p);
+  while ((p=strchr(port, '/'))!=NULL) {
+    *p='_';
+  }
+  
+  snprintf(lockfile, sizeof(lockfile), LOCK, port);
   unlink (lockfile);
+  free (port);
+
   return 0;
 }

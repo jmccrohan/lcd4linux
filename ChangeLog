@@ -1,4 +1,11 @@
+2003-09-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, TODO, icon.c, widget.c, widget.h:
+	minor fixes, widget.c added
+
 2003-09-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog, configure, configure.in: Changelog
 
 	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, MatrixOrbital.c, PalmPilot.c, SIN.c, Skeleton.c, T6963.c, Text.c:
 	icons for all remaining drivers
