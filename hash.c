@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.5 2004/01/18 09:01:45 reinelt Exp $
+/* $Id: hash.c,v 1.6 2004/01/20 05:36:59 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.6  2004/01/20 05:36:59  reinelt
+ * moved text-display-specific stuff to drv_generic_text
+ * moved all the bar stuff from drv_generic_bar to generic_text
+ *
  * Revision 1.5  2004/01/18 09:01:45  reinelt
  * /proc/stat parsing finished
  *
@@ -221,6 +225,7 @@ double hash_get_filter (HASH *Hash, char *key, int delay)
   for (i=1; i<FILTER_SLOTS; i++) {
     if (Item->Slot[i].time.tv_sec==0) break;
     if (timercmp(&Item->Slot[i].time, &end, <)) break;
+    dt = (now.tv_sec - Item->Slot[i].time.tv_sec) + (now.tv_usec - Item->Slot[i].time.tv_usec)/1000000.0; 
   }
 
   // empty slot => use the one before

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.10 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.11 2004/01/20 05:36:59 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.11  2004/01/20 05:36:59  reinelt
+ * moved text-display-specific stuff to drv_generic_text
+ * moved all the bar stuff from drv_generic_bar to generic_text
+ *
  * Revision 1.10  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -93,7 +97,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic.h"
-#include "drv_generic_bar.h"
+#include "drv_generic_text.h"
 
 
 static char Name[]="MatrixOrbital";
@@ -515,7 +519,7 @@ int drv_MO_quit (void) {
 
   info("%s: shutting down.", Name);
   drv_generic_serial_close();
-  drv_generic_quit();
+  drv_generic_text_quit();
   
   return (0);
 }

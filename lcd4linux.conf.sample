@@ -76,7 +76,7 @@ Layout Default {
     }
     Row3 {
 	Col1  'Busy'
-	Col10 'BusyBar'
+	Col11 'BusyBar'
     }
     Row4 {
 	Col1 'Load'

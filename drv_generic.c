@@ -1,4 +1,4 @@
-/* $Id: drv_generic.c,v 1.1 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: drv_generic.c,v 1.2 2004/01/20 05:36:59 reinelt Exp $
  *
  * generic driver helper for text- and graphic-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic.c,v $
+ * Revision 1.2  2004/01/20 05:36:59  reinelt
+ * moved text-display-specific stuff to drv_generic_text
+ * moved all the bar stuff from drv_generic_bar to generic_text
+ *
  * Revision 1.1  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -62,15 +66,9 @@ static speed_t Speed;
 static int     Device=-1;
 
 
-int DROWS, DCOLS; // display size
-int LROWS, LCOLS; // layout size
-int XRES,  YRES;  // pixels of one char cell
-int CHARS;        // number of user-defineable characters
-
-
-char *LayoutFB  = NULL;
-char *DisplayFB = NULL;
-
+// ****************************************
+// *** generic serial/USB communication ***
+// ****************************************
 
 int drv_generic_serial_open (char *driver, char *port, speed_t speed)
 {
@@ -168,125 +166,3 @@ int drv_generic_serial_close (void)
   return 0;
 }
 
-
-void drv_generic_text_resizeFB (int rows, int cols)
-{
-  char *newFB;
-  int row, col;
-  
-  // Fixme: resize Bar FB too!!!!
-
-
-  // Layout FB is large enough
-  if (rows<=LROWS && cols<=LCOLS)
-    return;
-  
-  // allocate new Layout FB
-  newFB=malloc(cols*rows*sizeof(char));
-  memset (newFB, ' ', rows*cols*sizeof(char));
-
-  // transfer contents
-  if (LayoutFB!=NULL) {
-    for (row=0; row<LROWS; row++) {
-      for (col=0; col<LCOLS; col++) {
-	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
-      }
-    }
-    free (LayoutFB);
-  }
-  
-  LayoutFB = newFB;
-  LCOLS    = cols;
-  LROWS    = rows;
-}
-
-
-
-// ****************************************
-// ***        widget callbacks          ***
-// ****************************************
-
-
-int drv_generic_text_draw_text (WIDGET *W, int goto_len, 
-			       void (*drv_goto)(int row, int col), 
-			       void (*drv_write)(char *buffer, int len))
-{
-  WIDGET_TEXT *T=W->data;
-  char *txt, *fb1, *fb2;
-  int row, col, len, end;
-  
-  row=W->row;
-  col=W->col;
-  txt=T->buffer;
-  len=strlen(txt);
-  end=col+len;
-  
-  // maybe grow layout framebuffer
-  drv_generic_text_resizeFB (row, col+len-1);
-
-  fb1 = LayoutFB  + row*LCOLS;
-  fb2 = DisplayFB + row*DCOLS;
-  
-  // transfer new text into layout buffer
-  memcpy (fb1+col, txt, len);
-  
-  for (; col<=end; col++) {
-    int pos1, pos2, equal;
-    if (fb1[col]==fb2[col]) continue;
-    drv_goto (row, col);
-    for (pos1=col, pos2=pos1, col++, equal=0; col<=end; col++) {
-      if (fb1[col]==fb2[col]) {
-	// If we find just one equal byte, we don't break, because this 
-	// would require a goto, which takes several bytes, too.
-	if (++equal>goto_len) break;
-      } else {
-	pos2=col;
-	equal=0;
-      }
-    }
-    memcpy    (fb2+pos1, fb1+pos1, pos2-pos1+1);
-    drv_write (fb2+pos1,           pos2-pos1+1);
-  }
-  
-  return 0;
-}
-
-
-// initialize text driver
-int drv_generic_text_init (char *Driver)
-{
-  // init display framebuffer
-  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
-  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
-  
-  // init layout framebuffer
-  LROWS = 0;
-  LCOLS = 0;
-  LayoutFB=NULL;
-  drv_generic_text_resizeFB (DROWS, DCOLS);
-  
-  // sanity check
-  if (LayoutFB==NULL || DisplayFB==NULL) {
-    error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
-    return -1;
-  }
-  
-  return 0;
-}
-
-
-// close driver
-int drv_generic_quit (void) {
-  
-  if (LayoutFB) {
-    free(LayoutFB);
-    LayoutFB=NULL;
-  }
-  
-  if (DisplayFB) {
-    free(DisplayFB);
-    DisplayFB=NULL;
-  }
-  
-  return (0);
-}

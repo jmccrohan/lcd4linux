@@ -106,7 +106,7 @@ lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h processor.c processor.h layout.c layout.h timer.c timer.h evaluator.c evaluator.h widget.c widget.h widget_text.c widget_text.h widget_bar.c widget_bar.h plugin.c plugin.h plugin_math.c plugin_string.c plugin_cfg.c plugin_uname.c plugin_loadavg.c plugin_proc_stat.c plugin_cpuinfo.c plugin_meminfo.c plugin_i2c_sensors.c plugin_xmms.c system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h exec.c exec.h expr.c expr.h mail2.c socket.c socket.h imon.c imon.h display.c display.h drv.c drv.h drv_generic.c drv_generic.h drv_generic_bar.c debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
+lcd4linux_SOURCES =  lcd4linux.c pid.c pid.h hash.c hash.h parser.c parser.h processor.c processor.h layout.c layout.h timer.c timer.h evaluator.c evaluator.h widget.c widget.h widget_text.c widget_text.h widget_bar.c widget_bar.h plugin.c plugin.h plugin_math.c plugin_string.c plugin_cfg.c plugin_uname.c plugin_loadavg.c plugin_proc_stat.c plugin_cpuinfo.c plugin_meminfo.c plugin_i2c_sensors.c plugin_xmms.c system.c system.h isdn.c isdn.h wifi.c wifi.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h exec.c exec.h expr.c expr.h mail2.c socket.c socket.h imon.c imon.h display.c display.h drv.c drv.h drv_generic.c drv_generic.h drv_generic_text.c drv_generic_text.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h udelay.c udelay.h
 
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -158,7 +158,7 @@ isdn.$(OBJEXT) wifi.$(OBJEXT) mail.$(OBJEXT) seti.$(OBJEXT) \
 battery.$(OBJEXT) dvb.$(OBJEXT) filter.$(OBJEXT) exec.$(OBJEXT) \
 expr.$(OBJEXT) mail2.$(OBJEXT) socket.$(OBJEXT) imon.$(OBJEXT) \
 display.$(OBJEXT) drv.$(OBJEXT) drv_generic.$(OBJEXT) \
-drv_generic_bar.$(OBJEXT) debug.$(OBJEXT) cfg.$(OBJEXT) lock.$(OBJEXT) \
+drv_generic_text.$(OBJEXT) debug.$(OBJEXT) cfg.$(OBJEXT) lock.$(OBJEXT) \
 pixmap.$(OBJEXT) bar.$(OBJEXT) icon.$(OBJEXT) fontmap.$(OBJEXT) \
 udelay.$(OBJEXT)
 CFLAGS = @CFLAGS@
@@ -181,7 +181,7 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/MilfordInstruments.P .deps/PalmPilot.P .deps/Raster.P .deps/SIN.P \
 .deps/T6963.P .deps/Text.P .deps/USBLCD.P .deps/XWindow.P .deps/bar.P \
 .deps/battery.P .deps/cfg.P .deps/debug.P .deps/display.P .deps/drv.P \
-.deps/drv_MatrixOrbital.P .deps/drv_generic.P .deps/drv_generic_bar.P \
+.deps/drv_MatrixOrbital.P .deps/drv_generic.P .deps/drv_generic_text.P \
 .deps/dvb.P .deps/evaluator.P .deps/exec.P .deps/expr.P .deps/filter.P \
 .deps/fontmap.P .deps/hash.P .deps/icon.P .deps/imon.P .deps/isdn.P \
 .deps/layout.P .deps/lcd4linux.P .deps/lock.P .deps/mail.P \

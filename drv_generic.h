@@ -1,4 +1,4 @@
-/* $Id: drv_generic.h,v 1.1 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: drv_generic.h,v 1.2 2004/01/20 05:36:59 reinelt Exp $
  *
  * generic driver helper for text- and graphic-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic.h,v $
+ * Revision 1.2  2004/01/20 05:36:59  reinelt
+ * moved text-display-specific stuff to drv_generic_text
+ * moved all the bar stuff from drv_generic_bar to generic_text
+ *
  * Revision 1.1  2004/01/20 04:51:39  reinelt
  * moved generic stuff from drv_MatrixOrbital to drv_generic
  * implemented new-stylish bars which are nearly finished
@@ -40,35 +44,9 @@
 #ifndef _DRV_GENERIC_H_
 #define _DRV_GENERIC_H_
 
-
-#include <termios.h>
-#include "widget.h"
-
-
-extern int DROWS, DCOLS; // display size
-extern int LROWS, LCOLS; // layout size
-extern int XRES,  YRES;  // pixels of one char cell
-extern int CHARS;        // number of user-defineable characters
-
-
-extern char *LayoutFB;
-extern char *DisplayFB;
-
-
 int  drv_generic_serial_open    (char *driver, char *port, speed_t speed);
 int  drv_generic_serial_read    (char *string, int len);
 void drv_generic_serial_write   (char *string, int len);
 int  drv_generic_serial_close   (void);
-
-
-int  drv_generic_text_init      (char *Name);
-void drv_generic_text_resizeFB  (int rows, int cols);
-int  drv_generic_text_draw_text (WIDGET *W, int goto_len, 
-				 void (*drv_goto)(int row, int col), 
-				 void (*drv_write)(char *buffer, int len));
-
-
-int  drv_generic_quit           (void);
-
 
 #endif

@@ -1,6 +1,6 @@
-/* $Id: drv_generic_bar.c,v 1.1 2004/01/20 04:51:39 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.1 2004/01/20 05:36:59 reinelt Exp $
  *
- * generic driver helper for bar creation
+ * generic driver helper for text-based displays
  *
  * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -22,10 +22,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: drv_generic_bar.c,v $
- * Revision 1.1  2004/01/20 04:51:39  reinelt
- * moved generic stuff from drv_MatrixOrbital to drv_generic
- * implemented new-stylish bars which are nearly finished
+ * $Log: drv_generic_text.c,v $
+ * Revision 1.1  2004/01/20 05:36:59  reinelt
+ * moved text-display-specific stuff to drv_generic_text
+ * moved all the bar stuff from drv_generic_bar to generic_text
  *
  */
 
@@ -40,13 +40,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <termios.h>
+#include <fcntl.h>
 
 #include "debug.h"
-#include "drv.h"
+#include "cfg.h"
+#include "plugin.h"
+#include "lock.h"
 #include "widget.h"
+#include "widget_text.h"
 #include "widget_bar.h"
+#include "drv.h"
 #include "drv_generic.h"
-#include "drv_generic_bar.h"
+#include "drv_generic_text.h"
 
 
 typedef struct {
@@ -65,34 +73,112 @@ typedef struct {
 } SEGMENT;
 
 
-static int RES;
+static char   *Driver;
+
+int DROWS, DCOLS; // display size
+int LROWS, LCOLS; // layout size
+int XRES,  YRES;  // pixels of one char cell
+int CHARS;        // number of user-defineable characters
+
+char *LayoutFB  = NULL;
+char *DisplayFB = NULL;
+static BAR  *Bar       = NULL;
 
 static int nSegment=0;
 static int fSegment=0;
 static SEGMENT Segment[128];
 
-static BAR *Bar=NULL;
+// Fixme: get rid of me!
+static int RES;
 
 
-int drv_generic_text_bar_init (void)
+// ****************************************
+// *** generic Framebuffer stuff        ***
+// ****************************************
+
+void drv_generic_text_resizeFB (int rows, int cols)
 {
-  if (Bar) free (Bar);
+  char *newFB;
+  int row, col;
   
-  if ((Bar=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
-    error ("bar buffer allocation failed: out of memory");
-    return -1;
+  // Fixme: resize Bar FB too!!!!
+
+
+  // Layout FB is large enough
+  if (rows<=LROWS && cols<=LCOLS)
+    return;
+  
+  // allocate new Layout FB
+  newFB=malloc(cols*rows*sizeof(char));
+  memset (newFB, ' ', rows*cols*sizeof(char));
+
+  // transfer contents
+  if (LayoutFB!=NULL) {
+    for (row=0; row<LROWS; row++) {
+      for (col=0; col<LCOLS; col++) {
+	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
+      }
+    }
+    free (LayoutFB);
   }
   
-  nSegment=0;
-  fSegment=0;
+  LayoutFB = newFB;
+  LCOLS    = cols;
+  LROWS    = rows;
+}
+
+
+
+int drv_generic_text_draw_text (WIDGET *W, int goto_len, 
+			       void (*drv_goto)(int row, int col), 
+			       void (*drv_write)(char *buffer, int len))
+{
+  WIDGET_TEXT *T=W->data;
+  char *txt, *fb1, *fb2;
+  int row, col, len, end;
   
-  drv_generic_text_bar_clear();
+  row=W->row;
+  col=W->col;
+  txt=T->buffer;
+  len=strlen(txt);
+  end=col+len;
+  
+  // maybe grow layout framebuffer
+  drv_generic_text_resizeFB (row, col+len-1);
+
+  fb1 = LayoutFB  + row*LCOLS;
+  fb2 = DisplayFB + row*DCOLS;
+  
+  // transfer new text into layout buffer
+  memcpy (fb1+col, txt, len);
+  
+  for (; col<=end; col++) {
+    int pos1, pos2, equal;
+    if (fb1[col]==fb2[col]) continue;
+    drv_goto (row, col);
+    for (pos1=col, pos2=pos1, col++, equal=0; col<=end; col++) {
+      if (fb1[col]==fb2[col]) {
+	// If we find just one equal byte, we don't break, because this 
+	// would require a goto, which takes several bytes, too.
+	if (++equal>goto_len) break;
+      } else {
+	pos2=col;
+	equal=0;
+      }
+    }
+    memcpy    (fb2+pos1, fb1+pos1, pos2-pos1+1);
+    drv_write (fb2+pos1,           pos2-pos1+1);
+  }
   
   return 0;
 }
 
 
-void drv_generic_text_bar_clear(void)
+// ****************************************
+// *** generic bar handling             ***
+// ****************************************
+
+static void drv_generic_text_bar_clear(void)
 {
   int i;
   
@@ -106,19 +192,6 @@ void drv_generic_text_bar_clear(void)
   for (i=0; i<nSegment;i++) {
     Segment[i].used = 0;
   }
-}
-
-
-void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int ascii)
-{
-  Segment[fSegment].val1=val1;
-  Segment[fSegment].val2=val2;
-  Segment[fSegment].dir=dir;
-  Segment[fSegment].used=0;
-  Segment[fSegment].ascii=ascii;
-  
-  fSegment++;
-  nSegment=fSegment;
 }
 
 
@@ -296,7 +369,7 @@ static void drv_generic_text_bar_pack_segments (void)
       }
     } 
 
-#if 1
+#if 0
     debug ("pack_segment: n=%d i=%d j=%d min=%d", nSegment, pack_i, pack_j, min);
     debug ("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", 
 	   Segment[pack_i].val1, Segment[pack_i].val2, 
@@ -335,13 +408,13 @@ static void drv_generic_text_bar_define_chars (void(*defchar)(int ascii, char *m
     }
     Segment[i].ascii=c;
     switch (Segment[i].dir) {
-    case DIR_EAST:
+    case DIR_WEST:
       for (j=0; j<4; j++) {
 	buffer[j  ]=(1<<Segment[i].val1)-1;
 	buffer[j+4]=(1<<Segment[i].val2)-1;
       }
       break;
-    case DIR_WEST:
+    case DIR_EAST:
       for (j=0; j<4; j++) {
 	buffer[j  ]=255<<(XRES-Segment[i].val1);
 	buffer[j+4]=255<<(XRES-Segment[i].val2);
@@ -457,15 +530,83 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 
 }
 
-int drv_generic_text_bar_peek (int row, int col)
-{
-  int s;
 
-  s=Bar[row*LCOLS+col].segment;
-  if (s==-1) {
+// ****************************************
+// *** generic init/quit                ***
+// ****************************************
+
+int drv_generic_text_init (char *driver)
+{
+
+  Driver=driver;
+
+  // init display framebuffer
+  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
+  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
+  
+  // init layout framebuffer
+  LROWS = 0;
+  LCOLS = 0;
+  LayoutFB=NULL;
+  drv_generic_text_resizeFB (DROWS, DCOLS);
+  
+  // sanity check
+  if (LayoutFB==NULL || DisplayFB==NULL) {
+    error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
     return -1;
-  } else {
-    return Segment[s].ascii;
   }
+  
+  return 0;
 }
 
+
+int drv_generic_text_bar_init (void)
+{
+  if (Bar) free (Bar);
+  
+  if ((Bar=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
+    error ("bar buffer allocation failed: out of memory");
+    return -1;
+  }
+  
+  nSegment=0;
+  fSegment=0;
+  
+  drv_generic_text_bar_clear();
+  
+  return 0;
+}
+
+
+void drv_generic_text_bar_add_segment(int val1, int val2, DIRECTION dir, int ascii)
+{
+  Segment[fSegment].val1=val1;
+  Segment[fSegment].val2=val2;
+  Segment[fSegment].dir=dir;
+  Segment[fSegment].used=0;
+  Segment[fSegment].ascii=ascii;
+  
+  fSegment++;
+  nSegment=fSegment;
+}
+
+
+int drv_generic_text_quit (void) {
+  
+  if (LayoutFB) {
+    free(LayoutFB);
+    LayoutFB=NULL;
+  }
+  
+  if (DisplayFB) {
+    free(DisplayFB);
+    DisplayFB=NULL;
+  }
+  
+  if (Bar) {
+    free (Bar);
+    Bar=NULL;
+  }
+  
+  return (0);
+}
