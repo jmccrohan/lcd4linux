@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.2 2004/05/29 23:30:20 reinelt Exp $
+/* $Id: drv_Image.c,v 1.3 2004/05/31 06:24:42 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.3  2004/05/31 06:24:42  reinelt
+ *
+ * fixed symlink security issue with the image driver
+ *
  * Revision 1.2  2004/05/29 23:30:20  reinelt
  *
  * fixed a compiler issue with drv_Image.c (thanks to Frank Stratmann)
@@ -149,7 +153,13 @@ static int drv_IMG_flush_PPM (void)
   snprintf (path, sizeof(path), output, seq++);
   qprintf(tmp, sizeof(tmp), "%s.tmp", path);
   
-  if ((fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644))<0) {
+  // remove the file
+  unlink (tmp);
+
+  // avoid symlink security hole: 
+  // open it with O_EXCL will fail if the file exists. 
+  // This should not happen because we just unlinked it.
+  if ((fd = open(tmp, O_WRONLY | O_CREAT | O_EXCL, 0644))<0) {
     error ("%s: open(%s) failed: %s", Name, tmp, strerror(errno));
     return -1;
   }
@@ -205,7 +215,7 @@ static int drv_IMG_flush_PNG (void)
   static int seq = 0;
   int xsize, ysize, row, col;
   char path[256], tmp[256];
-  FILE *fp;
+  FILE *fp; int fd;
   gdImagePtr im;
   int bg, hg, fg;
   
@@ -244,8 +254,20 @@ static int drv_IMG_flush_PNG (void)
   snprintf (path, sizeof(path), output, seq++);
   qprintf (tmp, sizeof(tmp), "%s.tmp", path);
   
-  if ((fp = fopen(tmp, "w")) == NULL) {
-    error("%s: fopen(%s) failed: %s\n", Name, tmp, strerror(errno));
+  // remove the file
+  unlink (tmp);
+
+  // avoid symlink security hole: 
+  // open it with O_EXCL will fail if the file exists. 
+  // This should not happen because we just unlinked it.
+  if ((fd = open(tmp, O_WRONLY | O_CREAT | O_EXCL, 0644))<0) {
+    error ("%s: open(%s) failed: %s", Name, tmp, strerror(errno));
+    return -1;
+  }
+  
+  if ((fp = fdopen(fd, "w")) == NULL) {
+    error("%s: fdopen(%s) failed: %s\n", Name, tmp, strerror(errno));
+    close (fd);
     return -1;
   }
 
