@@ -1,4 +1,4 @@
-/* $Id: mail.h,v 1.1 2001/02/18 22:11:34 reinelt Exp $
+/* $Id: mail.h,v 1.2 2001/03/08 09:02:04 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: mail.h,v $
+ * Revision 1.2  2001/03/08 09:02:04  reinelt
+ *
+ * seti client cleanup
+ *
  * Revision 1.1  2001/02/18 22:11:34  reinelt
  * *** empty log message ***
  *
@@ -29,7 +33,6 @@
 #define _MAIL_H_
 
 #define MAILBOXES 9
-#define DEFMAILPOLLEXT 5
 
 int Mail (int index, int *num);
 

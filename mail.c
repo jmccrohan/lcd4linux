@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.3 2001/02/21 04:48:13 reinelt Exp $
+/* $Id: mail.c,v 1.4 2001/03/08 09:02:04 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.4  2001/03/08 09:02:04  reinelt
+ *
+ * seti client cleanup
+ *
  * Revision 1.3  2001/02/21 04:48:13  reinelt
  *
  * big mailbox patch from Axel Ehnert
@@ -86,7 +90,7 @@ int Mail (int index, int *num)
   /*
     Build the filename from the config
   */
-  snprintf(buffer, 32, "Mailbox%d", index);
+  snprintf(buffer, sizeof(buffer), "Mailbox%d", index);
   fnp1=cfg_get(buffer);
   if (fnp1==NULL || *fnp1=='\0') {
     cfgmbx[index]=FALSE;                  // There is now entry for Mailbox #index

@@ -1,4 +1,4 @@
-/* $Id: seti.h,v 1.2 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: seti.h,v 1.3 2001/03/08 09:02:04 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: seti.h,v $
+ * Revision 1.3  2001/03/08 09:02:04  reinelt
+ *
+ * seti client cleanup
+ *
  * Revision 1.2  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -33,8 +37,6 @@
 
 #ifndef _SETI_H_
 #define _SETI_H_
-
-#define DEFSETIPOLLEXT 10
 
 int Seti (double *perc, double *cput);
 

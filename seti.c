@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.3 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: seti.c,v 1.4 2001/03/08 09:02:04 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.4  2001/03/08 09:02:04  reinelt
+ *
+ * seti client cleanup
+ *
  * Revision 1.3  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -44,8 +48,6 @@
  *
  */
 
-#define FALSE 0
-#define TRUE 1
 
 #define STATEFILE "state.sah"
 
@@ -62,129 +64,6 @@
 #include "cfg.h"
 #include "debug.h"
 #include "seti.h"
-
-int oldSeti (int *perc, int *cput)
-{
-  FILE *fstr;
-  static int err_marker=0; // Was there an erro before -> -2
-  static time_t cnt;       // Time of last calculation
-  static int retry_cnt=0;  // Retry 10 times to find prog=
-  char *dirname;           // Directory of Seti@HOME
-  char *fn;
-  char fn1[200];
-  char *txt;
-  char txt1[100];
-  int  v1=0;
-  int  i;
-  int  l;
-  int  found_perc;         // Flag to show, if we allready found
-  int  found_cpu;          // Flag to show, if we allready found
-  int  interv=-1;
-  char *cinterv;
-
-  /*
-   * Was there an error before? Return any way
-   */
-  if (err_marker == -2) {
-    return (-1);
-  }
-  /*
-    Interval set?
-  */
-  if (interv < 0) {
-    cinterv = cfg_get("pollintseti");
-    if ( cinterv == NULL ) {
-      interv=DEFSETIPOLLEXT;
-    }
-    else {
-      interv = atoi(cinterv);
-    }
-  }
-  /*
-    Is it time to look into the file?
-  */
-  if (time(NULL)>cnt+interv-1) {
-    cnt=time(NULL);
-  }
-  else {
-    return 0;
-  }
-  /*
-    Reread pollext, because it could be changed due to reading a new conf file
-  */
-  cinterv = cfg_get("pollintseti");
-  if ( cinterv == NULL ) {
-    interv=DEFSETIPOLLEXT;
-  }
-  else {
-    interv = atoi(cinterv);
-  }
-  /*
-    Build the filename from the config
-  */
-  dirname=cfg_get("SetiDir");
-  if (dirname==NULL || *dirname=='\0') {
-    error ("%s: missing 'SetiDir' entry!\n", cfg_file());
-    err_marker = -2;
-    return (-1);
-  }
-  
-  fn=&fn1[0];
-  strcpy(fn, dirname);
-  strcat(fn, "/state.sah");
-  /*
-    Open the file
-  */
-  fstr=fopen(fn,"r");
-
-  if (fstr == NULL) {
-    error ("File %s could not be opened!\n", fn);
-    err_marker = -2;
-    return (-1);
-  }
-  /* 
-     Read the file. Break the loop after we found all strings.
-  */
-  found_perc=FALSE;
-  found_cpu=FALSE;
-  txt=&txt1[0];
-
-  while ( ( fgets ( txt1, 100, fstr ) ) != NULL ) {
-    if ( strncmp (txt1, "prog=", 5 ) == 0 ) {
-      txt=strncpy(txt,txt+7,4);
-      txt[4]='\0';
-      debug ("Seti in text: %s", txt);
-      i=sscanf(txt, "%d", &v1);
-      debug ("Seti in numb: %d", v1);
-      *perc=v1;
-      found_perc=TRUE;
-    }
-    if ( strncmp (txt1, "cpu=", 4 ) == 0 ) {
-      l=strstr(txt+4,".")-txt-4;
-      txt=strncpy(txt,txt+4,l);
-      txt[l]='\0';
-      i=sscanf(txt, "%d", &v1);
-      *cput=v1;
-      found_cpu=TRUE;
-    }
-    if (found_perc && found_cpu) {
-      retry_cnt = 0;               // Reset retry counter. WE FOUND!
-      fclose(fstr);
-      return (0);
-    }
-  }
-
-  retry_cnt++;
-  if ( retry_cnt < 10 ) {
-    error ("%s: prog= or cpu= not found in file! Retrying ...\n", fn);
-    return 0;
-  } 
-  else {
-    error ("%s: prog= or cpu= not found in file!\n", fn);
-    err_marker = -2;
-    return (-1);
-  }
-}
 
 
 int Seti (double *perc, double *cput)
