@@ -35,6 +35,7 @@ Lcd4Linux NextGeneration porting status
     plugin_proc_stat -> Finished (proc_stat, cpu, disk) {cb ci cn cs cu dm dr dt dw}
         plugin_uname -> Finished (uname) {o v}
          plugin_xmms -> Finished (xmms) NEW
+	 plugin_seti -> Finished (seti) {hc ht}
          
          plugin_wifi -> To be done (Xavier or Martin)
          
@@ -43,7 +44,6 @@ Lcd4Linux NextGeneration porting status
 tokens not ported :
 battery {bd bp bs} 
 mail {e* u*}
-seti {hc ht}
 ISDN {ic ii im io it}
 exec {x*}
 wifi {ws wl wn}
