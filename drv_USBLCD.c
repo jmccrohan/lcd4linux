@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.9 2004/06/05 14:56:48 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.10 2004/06/06 06:51:59 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.10  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.9  2004/06/05 14:56:48  reinelt
  *
  * Cwlinux splash screen fixed
@@ -389,7 +393,7 @@ int drv_UL_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_UL_quit (void) 
+int drv_UL_quit (int quiet) 
 {
 
   info("%s: shutting down.", Name);
@@ -403,8 +407,10 @@ int drv_UL_quit (void)
   drv_UL_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!", NULL);
-  
+  if (!quiet) {
+    drv_generic_text_greet ("goodbye!", NULL);
+  }
+
   debug ("closing port %s", Port);
   close(usblcd_file);
   

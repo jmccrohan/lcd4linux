@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.4 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_Image.c,v 1.5 2004/06/06 06:51:59 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.5  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.4  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -516,7 +520,7 @@ int drv_IMG_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_IMG_quit (void) {
+int drv_IMG_quit (int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_graphic_quit();

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.17 2004/06/02 10:09:22 reinelt Exp $
+/* $Id: drv.c,v 1.18 2004/06/06 06:51:59 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.18  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.17  2004/06/02 10:09:22  reinelt
  *
  * splash screen for HD44780
@@ -241,8 +245,8 @@ int drv_init (char *section, char *driver, int quiet)
 }
 
 
-int drv_quit (void)
+int drv_quit (int quiet)
 {
   if (Drv->quit == NULL) return 0;
-  return Drv->quit();
+  return Drv->quit(quiet);
 }

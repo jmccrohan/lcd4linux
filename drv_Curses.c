@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.4 2004/06/05 06:41:39 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.5 2004/06/06 06:51:59 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.5  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.4  2004/06/05 06:41:39  reinelt
  *
  * chancged splash screen again
@@ -292,7 +296,7 @@ int drv_Curs_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_Curs_quit (void) {
+int drv_Curs_quit (int quiet) {
 
   info("%s: shutting down.", Name);
 
@@ -302,8 +306,10 @@ int drv_Curs_quit (void) {
   drv_Curs_clear();
 
   // say goodbye...
-  drv_generic_text_greet ("goodbye!", NULL);
-
+  if (!quiet) {
+    drv_generic_text_greet ("goodbye!", NULL);
+  }
+  
   endwin();
   
   return (0);

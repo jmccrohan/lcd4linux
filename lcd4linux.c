@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.71 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.72 2004/06/06 06:51:59 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.72  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.71  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -591,7 +595,7 @@ int main (int argc, char *argv[])
   // go into interactive mode (display has been initialized)
   if (interactive >= 1) {
     interactive_mode();
-    drv_quit();
+    drv_quit(quiet);
     pid_exit(PIDFILE);
     cfg_exit();
     exit (0);
@@ -623,11 +627,12 @@ int main (int argc, char *argv[])
   
   debug ("leaving main loop");
   
-  drv_quit();
+  drv_quit(quiet);
   pid_exit(PIDFILE);
   cfg_exit();
   plugin_exit();    
   timer_exit();
+
   if (got_signal==SIGHUP) {
     long fd;
     debug ("restarting...");
@@ -646,6 +651,7 @@ int main (int argc, char *argv[])
     free(my_argv[c]);
   }
   free(my_argv);
+
   exit (0);
 }
   

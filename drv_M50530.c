@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.10 2004/06/05 06:41:39 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.11 2004/06/06 06:51:59 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.11  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.10  2004/06/05 06:41:39  reinelt
  *
  * chancged splash screen again
@@ -384,7 +388,7 @@ int drv_M5_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_M5_quit (void) {
+int drv_M5_quit (int quiet) {
 
   info("%s: shutting down.", Name);
 
@@ -394,8 +398,10 @@ int drv_M5_quit (void) {
   drv_M5_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!", NULL);
-
+  if (!quiet) {
+    drv_generic_text_greet ("goodbye!", NULL);
+  }
+  
   // clear all signals
   drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);
   

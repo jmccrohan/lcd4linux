@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.6 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.7 2004/06/06 06:51:59 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.7  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.6  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -556,7 +560,7 @@ int drv_T6_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_T6_quit (void) {
+int drv_T6_quit (int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_parport_close();

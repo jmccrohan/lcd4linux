@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.4 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv.h,v 1.5 2004/06/06 06:51:59 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.5  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.4  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -53,8 +57,7 @@ typedef struct DRIVER {
   char *name;
   int (*list)  (void);
   int (*init)  (char *section, int quiet);
-  int (*greet) (int start_stop);
-  int (*quit)  (void);
+  int (*quit)  (int quiet);
 } DRIVER;
 
 
@@ -65,6 +68,6 @@ extern char *output;
 
 int drv_list (void);
 int drv_init (char *section, char *driver, int quiet);
-int drv_quit (void);
+int drv_quit (int quiet);
 
 #endif

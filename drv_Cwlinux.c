@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.15 2004/06/05 14:56:48 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.16 2004/06/06 06:51:59 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.16  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.15  2004/06/05 14:56:48  reinelt
  *
  * Cwlinux splash screen fixed
@@ -441,7 +445,7 @@ int drv_CW_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_CW_quit (void) {
+int drv_CW_quit (int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_text_quit();
@@ -450,7 +454,9 @@ int drv_CW_quit (void) {
   drv_CW_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!", NULL);
+  if (!quiet) {
+    drv_generic_text_greet ("goodbye!", NULL);
+  }
 
   drv_generic_serial_close();
   

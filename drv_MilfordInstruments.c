@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.8 2004/06/05 06:41:40 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.9 2004/06/06 06:51:59 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,10 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.9  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.8  2004/06/05 06:41:40  reinelt
  *
  * chancged splash screen again
@@ -281,7 +285,7 @@ int drv_MI_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_MI_quit (void) {
+int drv_MI_quit (int quiet) {
 
   info("%s: shutting down.", Name);
 
@@ -291,8 +295,10 @@ int drv_MI_quit (void) {
   drv_MI_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!", NULL);
-
+  if (!quiet) {
+    drv_generic_text_greet ("goodbye!", NULL);
+  }
+  
   drv_generic_serial_close();
   
   return (0);

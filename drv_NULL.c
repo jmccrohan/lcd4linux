@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.2 2004/06/02 09:41:19 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.3 2004/06/06 06:51:59 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.3  2004/06/06 06:51:59  reinelt
+ *
+ * do not display end splash screen if quiet=1
+ *
  * Revision 1.2  2004/06/02 09:41:19  reinelt
  *
  * prepared support for startup splash screen
@@ -178,7 +182,7 @@ int drv_NULL_init (char *section, int quiet)
 
 
 // close driver & display
-int drv_NULL_quit (void) {
+int drv_NULL_quit (int quiet) {
 
   info("%s: shutting down.", Name);
   drv_generic_text_quit();
