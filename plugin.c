@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.24 2004/03/19 06:37:47 reinelt Exp $
+/* $Id: plugin.c,v 1.25 2004/04/07 08:29:05 hejl Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.25  2004/04/07 08:29:05  hejl
+ * New plugin for wireless info
+ *
  * Revision 1.24  2004/03/19 06:37:47  reinelt
  * asynchronous thread handling started
  *
@@ -173,6 +176,7 @@ int plugin_init_xmms (void);
 int plugin_init_imon(void);
 int plugin_init_mysql(void);
 int plugin_init_seti(void);
+int plugin_init_wireless(void);
 
 
 void plugin_exit_math (void);
@@ -193,6 +197,7 @@ void plugin_exit_xmms (void);
 void plugin_exit_imon(void);
 void plugin_exit_mysql(void);
 void plugin_exit_seti(void);
+void plugin_exit_wireless(void);
 
 int plugin_init (void)
 {
@@ -214,6 +219,7 @@ int plugin_init (void)
   plugin_init_imon();
   plugin_init_mysql();
   plugin_init_seti();
+  plugin_init_wireless();
   
   return 0;
 }
@@ -237,6 +243,7 @@ void plugin_exit(void) {
   plugin_exit_imon();	
   plugin_exit_mysql();	
   plugin_exit_seti();	
+  plugin_exit_wireless();
   
   DeleteFunctions();
   DeleteVariables();

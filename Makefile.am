@@ -53,6 +53,7 @@ plugin_imon.c               \
 plugin_exec.c               \
 plugin_xmms.c               \
 plugin_mysql.c              \
+plugin_wireless.c           \
 plugin_seti.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
