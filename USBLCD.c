@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.2 2002/08/17 14:14:21 reinelt Exp $
+/* $Id: USBLCD.c,v 1.3 2002/08/18 08:11:11 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.3  2002/08/18 08:11:11  reinelt
+ * USBLCD buffered I/O
+ *
  * Revision 1.2  2002/08/17 14:14:21  reinelt
  *
  * USBLCD fixes
@@ -99,42 +102,36 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
-static void USBLCD_command (unsigned char cmd)
+static unsigned char  Buffer[1024];
+static unsigned char *BufPtr;
+
+static void USBLCD_send ()
 {
-  char a=0; 
-  
   struct timeval now, end;
   gettimeofday (&now, NULL);
-
-  write(usblcd_file,&a,1);
-  write(usblcd_file,&cmd,1);
+  
+  write(usblcd_file,Buffer,BufPtr-Buffer);
 
   gettimeofday (&end, NULL);
+  debug ("send %d: %d usec (%d usec/byte)", BufPtr-Buffer, 1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec, (1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec)/(BufPtr-Buffer));
 
-  debug ("command %x: %d usec", cmd, 1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec);
+  BufPtr=Buffer;
+
+}
+
+
+static void USBLCD_command (unsigned char cmd)
+{
+  *BufPtr++='\0';
+  *BufPtr++=cmd;
 }
 
 static void USBLCD_write (char *string, int len)
 {
-  int len0=len;
-  int dur;
-  struct timeval now, end;
-  gettimeofday (&now, NULL);
-  
-#if 0
   while (len--) {
-    char a=*string++;
-    if(a==0) write(usblcd_file,&a,1);
-    write(usblcd_file,&a,1);
+    if(*string==0) *BufPtr++=*string;
+    *BufPtr++=*string++;
   }
-#else
-  write(usblcd_file,string,len);
-
-#endif
-  gettimeofday (&end, NULL);
-  dur=1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec;
-  debug ("write (%d): %d usec (%d usec/byte)", len0, dur, dur/len0);
-
 }
 
 
@@ -186,6 +183,8 @@ static int USBLCD_open (void)
     error("USBLCD: Hardware Version not supported!");
     return -4;
   }
+
+  BufPtr=Buffer;
 
   USBLCD_command (0x29); // 8 Bit mode, 1/16 duty cycle, 5x8 font
   USBLCD_command (0x08); // Display off, cursor off, blink off
@@ -419,7 +418,8 @@ int USBLCD_init (LCD *Self)
     return -1;
   
   USBLCD_clear();
-  
+  USBLCD_send();
+
   return 0;
 }
 
@@ -544,12 +544,14 @@ int USBLCD_flush (void)
     }
   }
 
+  USBLCD_send();
 
   return 0;
 }
 
 int USBLCD_quit (void)
 {
+  USBLCD_send();
   debug ("closing port %s", Port);
   close(usblcd_file);
   return 0;
