@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.1 2004/03/19 06:37:47 reinelt Exp $
+/* $Id: thread.c,v 1.2 2004/03/20 07:31:33 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.2  2004/03/20 07:31:33  reinelt
+ * support for HD66712 (which has a different RAM layout)
+ * further threading development
+ *
  * Revision 1.1  2004/03/19 06:37:47  reinelt
  * asynchronous thread handling started
  *
@@ -142,28 +146,24 @@ void shm_destroy (int shmid)
 }
 
 
-int thread_create (void (*thread)(void))
+int thread_create (char *name, void (*thread)(char *name))
 {
-  /*
+  pid_t pid, ppid;
+
   ppid=getpid();
 
-  switch(async_updater_pid=fork()) {
+  switch (pid = fork()) {
   case -1:
-    error ("X11: fork() failed: %s", strerror(errno));
+    error ("fatal error: fork(%s) failed: %s", name, strerror(errno));
     return -1;
-
   case 0:
-    async_update();
-    error ("X11: async_update failed");
-    kill(ppid,SIGTERM);
-    exit(-1);
-    
+    info ("thread %s starting...", name);
+    thread(name);
+    info ("thread %s ended.", name);
+    exit (0);
   default:
-    break;
+    info ("forked process %d for thread %s", pid, name);
   }
-
-  signal(SIGCHLD,quit_updater);
-  atexit(quit_updater);
-  */
-  return 0;
+  
+  return pid;
 }

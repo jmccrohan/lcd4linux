@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.17 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.18 2004/03/20 07:31:32 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.18  2004/03/20 07:31:32  reinelt
+ * support for HD66712 (which has a different RAM layout)
+ * further threading development
+ *
  * Revision 1.17  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -199,11 +203,13 @@ typedef struct {
 
 #define CAP_BRIGHTNESS (1<<0)
 #define CAP_BUSY4BIT   (1<<1)
+#define CAP_HD66712    (1<<2)
 
 static MODEL Models[] = {
   { 0x01, "generic",  0 },
   { 0x02, "Noritake", CAP_BRIGHTNESS },
   { 0x03, "Soekris",  CAP_BUSY4BIT },
+  { 0x04, "HD66712",  CAP_HD66712 },
   { 0xff, "Unknown",  0 }
 };
 
@@ -474,13 +480,17 @@ static void drv_HD_goto (int row, int col)
     col-=8;
   }
   
-  // 16x4 Displays use a slightly different layout
-  if (DCOLS==16 && DROWS==4) {
-    pos=(row%2)*64+(row/2)*16+col;
-  } else {  
-    pos=(row%2)*64+(row/2)*20+col;
+  if (Capabilities & CAP_HD66712) {
+    // the HD66712 doesn't have a braindamadged RAM layout
+    pos = row*32 + col;
+  } else {
+    // 16x4 Displays use a slightly different layout
+    if (DCOLS==16 && DROWS==4) {
+      pos = (row%2)*64+(row/2)*16+col;
+    } else {  
+      pos = (row%2)*64+(row/2)*20+col;
+    }
   }
-  
   drv_HD_command (currController, (0x80|pos), T_EXEC);
 }
 
@@ -663,6 +673,12 @@ static int drv_HD_start (char *section)
   drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
   drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
   drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
+
+  if ((Capabilities & CAP_HD66712) && DROWS > 2) {
+    drv_HD_command (allControllers, Bits==8?0x3c:0x2c, T_EXEC); // set extended register enable bit
+    drv_HD_command (allControllers, 0x09,              T_EXEC); // set 4-line mode
+    drv_HD_command (allControllers, Bits==8?0x38:0x28, T_EXEC); // clear extended register enable bit
+  }
 
   drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
   drv_HD_command (allControllers, 0x03, T_CLEAR); // return home

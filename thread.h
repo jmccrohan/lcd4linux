@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.1 2004/03/19 06:37:47 reinelt Exp $
+/* $Id: thread.h,v 1.2 2004/03/20 07:31:33 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.2  2004/03/20 07:31:33  reinelt
+ * support for HD66712 (which has a different RAM layout)
+ * further threading development
+ *
  * Revision 1.1  2004/03/19 06:37:47  reinelt
  * asynchronous thread handling started
  *
@@ -42,6 +46,6 @@ void mutex_destroy (int semid);
 int  shm_create    (void **buffer, int size);
 void shm_destroy   (int shmid);
 
-int thread_create (void (*thread)(void));
+int thread_create (char *name, void (*thread)(char *name));
 
 #endif
