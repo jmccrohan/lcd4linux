@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.4 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.5 2004/01/23 04:53:54 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.5  2004/01/23 04:53:54  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.4  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -62,6 +65,7 @@
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
+#include "widget_icon.h"
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
@@ -82,17 +86,19 @@ typedef struct {
   int ascii;
 } SEGMENT;
 
+static char *Section=NULL;
+static char *Driver=NULL;
 
-static char   *Driver;
 
 int DROWS, DCOLS; // display size
 int LROWS, LCOLS; // layout size
 int XRES,  YRES;  // pixels of one char cell
 int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
+int ICONS;        // number of user-defineable characters reserved for icons
 
-char *LayoutFB  = NULL;
-char *DisplayFB = NULL;
-static BAR *Bar = NULL;
+char *LayoutFB    = NULL;
+char *DisplayFB   = NULL;
+static BAR *BarFB = NULL;
 
 static int nSegment=0;
 static int fSegment=0;
@@ -135,7 +141,7 @@ void drv_generic_text_resizeFB (int rows, int cols)
 
   
   // resize Bar buffer
-  if (Bar) {
+  if (BarFB) {
 
     newBar=malloc (rows*cols*sizeof(BAR));
 
@@ -149,12 +155,12 @@ void drv_generic_text_resizeFB (int rows, int cols)
     // transfer contents
     for (row=0; row<LROWS; row++) {
       for (col=0; col<LCOLS; col++) {
-	newBar[row*cols+col]=Bar[row*LCOLS+col];
+	newBar[row*cols+col]=BarFB[row*LCOLS+col];
       }
     }
 
-    free (Bar);
-    Bar=newBar;
+    free (BarFB);
+    BarFB=newBar;
   }
   
   LCOLS    = cols;
@@ -167,13 +173,13 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
 			       void (*drv_goto)(int row, int col), 
 			       void (*drv_write)(char *buffer, int len))
 {
-  WIDGET_TEXT *T=W->data;
+  WIDGET_TEXT *Text=W->data;
   char *txt, *fb1, *fb2;
   int row, col, len, end;
   
   row=W->row;
   col=W->col;
-  txt=T->buffer;
+  txt=Text->buffer;
   len=strlen(txt);
   end=col+len;
   
@@ -211,6 +217,34 @@ int drv_generic_text_draw_text (WIDGET *W, int goto_len,
 
 
 // ****************************************
+// *** generic icon handling            ***
+// ****************************************
+
+int drv_generic_text_draw_icon (WIDGET *W,
+				void (*drv_defchar)(int ascii, char *buffer),
+				void (*drv_goto)(int row, int col), 
+				void (*drv_write)(char *buffer, int len))
+{
+  WIDGET_ICON *Icon = W->data;
+  int row, col;
+  
+  row = W->row;
+  col = W->col;
+  
+  // maybe grow layout framebuffer
+  drv_generic_text_resizeFB (row+1, col+1);
+  
+  // maybe redefine icon
+  if (Icon->curmap!=Icon->prvmap) {
+    debug ("Michi: I'm redefining me...");
+  }
+  
+  return 0;
+  
+}
+
+
+// ****************************************
 // *** generic bar handling             ***
 // ****************************************
 
@@ -219,10 +253,10 @@ static void drv_generic_text_bar_clear(void)
   int i;
   
   for (i=0; i<LROWS*LCOLS; i++) {
-    Bar[i].val1    = -1;
-    Bar[i].val2    = -1;
-    Bar[i].dir     =  0;
-    Bar[i].segment = -1;
+    BarFB[i].val1    = -1;
+    BarFB[i].val2    = -1;
+    BarFB[i].dir     =  0;
+    BarFB[i].segment = -1;
   }
 
   for (i=0; i<nSegment;i++) {
@@ -243,20 +277,20 @@ static void drv_generic_text_bar_create_bar (int row, int col, DIRECTION dir, in
     
   case DIR_EAST:
     while (len > 0 && col < LCOLS) {
-      Bar[row*LCOLS+col].dir=dir;
-      Bar[row*LCOLS+col].segment=-1;
+      BarFB[row*LCOLS+col].dir=dir;
+      BarFB[row*LCOLS+col].segment=-1;
       if (val1 >= XRES) {
-	Bar[row*LCOLS+col].val1 = rev?0:XRES;
+	BarFB[row*LCOLS+col].val1 = rev?0:XRES;
 	val1 -= XRES;
       } else {
-	Bar[row*LCOLS+col].val1 = rev?XRES-val1:val1;
+	BarFB[row*LCOLS+col].val1 = rev?XRES-val1:val1;
 	val1 = 0;
       }
       if (val2 >= XRES) {
-	Bar[row*LCOLS+col].val2 = rev?0:XRES;
+	BarFB[row*LCOLS+col].val2 = rev?0:XRES;
 	val2 -= XRES;
       } else {
-	Bar[row*LCOLS+col].val2 = rev?XRES-val2:val2;
+	BarFB[row*LCOLS+col].val2 = rev?XRES-val2:val2;
 	val2 = 0;
       }
       len--;
@@ -271,20 +305,20 @@ static void drv_generic_text_bar_create_bar (int row, int col, DIRECTION dir, in
     
   case DIR_NORTH:
     while (len > 0 && row < LROWS) {
-      Bar[row*LCOLS+col].dir=dir;
-      Bar[row*LCOLS+col].segment=-1;
+      BarFB[row*LCOLS+col].dir=dir;
+      BarFB[row*LCOLS+col].segment=-1;
       if (val1 >= YRES) {
-	Bar[row*LCOLS+col].val1 = rev?0:YRES;
+	BarFB[row*LCOLS+col].val1 = rev?0:YRES;
 	val1 -= YRES;
       } else {
-	Bar[row*LCOLS+col].val1 = rev?YRES-val1:val1;
+	BarFB[row*LCOLS+col].val1 = rev?YRES-val1:val1;
 	val1 = 0;
       }
       if (val2 >= YRES) {
-	Bar[row*LCOLS+col].val2 = rev?0:YRES;
+	BarFB[row*LCOLS+col].val2 = rev?0:YRES;
 	val2 -= YRES;
       } else {
-	Bar[row*LCOLS+col].val2 = rev?YRES-val2:val2;
+	BarFB[row*LCOLS+col].val2 = rev?YRES-val2:val2;
 	val2 = 0;
       }
       len--;
@@ -313,24 +347,24 @@ static void drv_generic_text_bar_create_segments (void)
   
   /* create needed segments */
   for (n=0; n<LROWS*LCOLS; n++) {
-    if (Bar[n].dir==0) continue;
-    res=Bar[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
+    if (BarFB[n].dir==0) continue;
+    res=BarFB[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
     for (i=0; i<nSegment; i++) {
-      if (Segment[i].dir & Bar[n].dir) {
+      if (Segment[i].dir & BarFB[n].dir) {
 	l1 = Segment[i].val1; if (l1>res) l1=res;
 	l2 = Segment[i].val2; if (l2>res) l2=res;
-	if (l1 == Bar[n].val1 && l2 == Bar[n].val2) break;
+	if (l1 == BarFB[n].val1 && l2 == BarFB[n].val2) break;
       }
     }
     if (i==nSegment) {
       nSegment++;
-      Segment[i].val1=Bar[n].val1;
-      Segment[i].val2=Bar[n].val2;
-      Segment[i].dir=Bar[n].dir;
+      Segment[i].val1=BarFB[n].val1;
+      Segment[i].val2=BarFB[n].val2;
+      Segment[i].dir=BarFB[n].dir;
       Segment[i].used=0;
       Segment[i].ascii=-1;
     }
-    Bar[n].segment=i;
+    BarFB[n].segment=i;
   }
 }
 
@@ -369,7 +403,7 @@ static void drv_generic_text_bar_pack_segments (void)
   int pass1=1;
   int error[nSegment][nSegment];
   
-  if (nSegment<=fSegment+CHARS) {
+  if (nSegment<=fSegment+CHARS-ICONS) {
     return;
   }
   
@@ -379,7 +413,7 @@ static void drv_generic_text_bar_pack_segments (void)
     }
   }
   
-  while (nSegment>fSegment+CHARS) {
+  while (nSegment>fSegment+CHARS-ICONS) {
     
     min=65535;
     pack_i=-1;
@@ -400,7 +434,7 @@ static void drv_generic_text_bar_pack_segments (void)
 	continue;
       } else {
 	error ("unable to compact bar characters");
-	nSegment=CHARS;
+	nSegment=CHARS-ICONS;
 	break;
       }
     } 
@@ -421,8 +455,8 @@ static void drv_generic_text_bar_pack_segments (void)
     }
     
     for (n=0; n<LROWS*LCOLS; n++) {
-      if (Bar[n].segment==pack_i)   Bar[n].segment=pack_j;
-      if (Bar[n].segment==nSegment) Bar[n].segment=pack_i;
+      if (BarFB[n].segment==pack_i)   BarFB[n].segment=pack_j;
+      if (BarFB[n].segment==nSegment) BarFB[n].segment=pack_i;
     }
   }
 }
@@ -436,7 +470,7 @@ static void drv_generic_text_bar_define_chars (void(*defchar)(int ascii, char *m
   for (i=fSegment; i<nSegment; i++) {
     if (Segment[i].used) continue;
     if (Segment[i].ascii!=-1) continue;
-    for (c=0; c<CHARS; c++) {
+    for (c=0; c<CHARS-ICONS; c++) {
       for (j=fSegment; j<nSegment; j++) {
 	if (Segment[j].ascii==c) break;
       }
@@ -483,15 +517,15 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 			       void (*drv_goto)(int row, int col), 
 			       void (*drv_write)(char *buffer, int len))
 {
-  WIDGET_BAR *B = W->data;
+  WIDGET_BAR *Bar = W->data;
   int row, col, len, res, max, val1, val2;
   int c, n, s;
   DIRECTION dir;
   
   row = W->row;
   col = W->col;
-  dir = B->direction;
-  len = B->length;
+  dir = Bar->direction;
+  len = Bar->length;
 
   // maybe grow layout framebuffer
   // bars *always* grow heading North or East!
@@ -503,8 +537,8 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 
   res  = dir & (DIR_EAST|DIR_WEST)?XRES:YRES;
   max  = len * res;
-  val1 = B->val1 * (double)(max);
-  val2 = B->val2 * (double)(max);
+  val1 = Bar->val1 * (double)(max);
+  val2 = Bar->val2 * (double)(max);
   
   if      (val1<1)   val1=1;
   else if (val1>max) val1=max;
@@ -527,12 +561,12 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
   
   // set usage flags
   for (n=0; n<LROWS*LCOLS; n++) {
-    if ((s=Bar[n].segment)!=-1) Segment[s].used=1;
+    if ((s=BarFB[n].segment)!=-1) Segment[s].used=1;
   }
 
   // transfer bars into layout buffer
   for (n=0; n<LCOLS*LROWS; n++) {
-    s=Bar[n].segment;
+    s=BarFB[n].segment;
     if (s==-1) continue;
     c=Segment[s].ascii;
     if (c==-1) continue;
@@ -571,9 +605,10 @@ int drv_generic_text_draw_bar (WIDGET *W, int goto_len,
 // *** generic init/quit                ***
 // ****************************************
 
-int drv_generic_text_init (char *driver)
+int drv_generic_text_init (char *section, char *driver)
 {
 
+  Section=section;
   Driver=driver;
 
   // init display framebuffer
@@ -596,11 +631,21 @@ int drv_generic_text_init (char *driver)
 }
 
 
+int drv_generic_text_icon_init (void)
+{
+  if (cfg_number(Section, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
+  if (ICONS>0) {
+    info ("%s: reserving %d of %d user-defined characters for icons", Driver, ICONS, CHARS);
+  }
+  return 0;
+}
+
+
 int drv_generic_text_bar_init (void)
 {
-  if (Bar) free (Bar);
+  if (BarFB) free (BarFB);
   
-  if ((Bar=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
+  if ((BarFB=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
     error ("bar buffer allocation failed: out of memory");
     return -1;
   }
@@ -639,9 +684,9 @@ int drv_generic_text_quit (void) {
     DisplayFB=NULL;
   }
   
-  if (Bar) {
-    free (Bar);
-    Bar=NULL;
+  if (BarFB) {
+    free (BarFB);
+    BarFB=NULL;
   }
   
   return (0);

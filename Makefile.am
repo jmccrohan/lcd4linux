@@ -24,9 +24,10 @@ processor.c processor.h \
 layout.c layout.h \
 timer.c timer.h \
 evaluator.c evaluator.h \
-widget.c widget.h \
+widget.c      widget.h \
 widget_text.c widget_text.h \
-widget_bar.c widget_bar.h \
+widget_bar.c  widget_bar.h \
+widget_icon.c widget_icon.h \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.3 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.4 2004/01/23 04:53:48 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.4  2004/01/23 04:53:48  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.3  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -97,7 +100,6 @@ static char Name[]="HD44780";
 #define T_CLEAR 1640 // Clear Display
 
 
-static int Icons;
 static int Bits=0;
 static int GPO=0;
 static int Controllers = 0;
@@ -448,7 +450,7 @@ int drv_HD_init (char *section)
     return ret;
   
   // initialize generic text driver
-  if ((ret=drv_generic_text_init(Name))!=0)
+  if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
   // initialize generic bar driver

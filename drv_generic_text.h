@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.2 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.3 2004/01/23 04:53:55 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.3  2004/01/23 04:53:55  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.2  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -53,17 +56,21 @@ extern int DROWS, DCOLS; // display size
 extern int LROWS, LCOLS; // layout size
 extern int XRES,  YRES;  // pixels of one char cell
 extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
-
+extern int ICONS;        // number of user-defineable characters reserved for icons
 
 extern char *LayoutFB;
 extern char *DisplayFB;
 
 
-int  drv_generic_text_init      (char *Name);
+int  drv_generic_text_init      (char *section, char *driver);
+
 void drv_generic_text_resizeFB  (int rows, int cols);
+
 int  drv_generic_text_draw_text (WIDGET *W, int goto_len, 
 				 void (*drv_goto)(int row, int col), 
 				 void (*drv_write)(char *buffer, int len));
+
+int  drv_generic_text_icon_init  (void);
 
 int  drv_generic_text_bar_init  (void);
 void drv_generic_text_bar_add_segment (int val1, int val2, DIRECTION dir, int ascii);

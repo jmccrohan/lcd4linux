@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.16 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.17 2004/01/23 04:53:50 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.17  2004/01/23 04:53:50  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.16  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -118,11 +121,11 @@
 static char Name[]="MatrixOrbital";
 
 static int Model;
-
-static int GPOS, ICONS, PROTOCOL;
+static int Protocol;
 
 // Fixme:
 // static int GPO[8];
+static int GPOS;
 
 
 typedef struct {
@@ -257,9 +260,9 @@ static int drv_MO_start (char *section)
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
-  PROTOCOL = Models[Model].protocol;
+  Protocol = Models[Model].protocol;
 
-  if (PROTOCOL==2) 
+  if (Protocol==2) 
     drv_generic_serial_write ("\376\130", 2);  // Clear Screen
   else 
     drv_generic_serial_write ("\014", 1);  // Clear Screen
@@ -333,7 +336,7 @@ static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
     val=0.0;
   }
   
-  switch (PROTOCOL) {
+  switch (Protocol) {
   case 1:
     if (num==0) {
       if (val>=1.0) {
@@ -462,7 +465,7 @@ int drv_MO_init (char *section)
     return ret;
   
   // initialize generic text driver
-  if ((ret=drv_generic_text_init(Name))!=0)
+  if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
   // initialize generic bar driver

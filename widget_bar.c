@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.4 2004/01/20 14:25:12 reinelt Exp $
+/* $Id: widget_bar.c,v 1.5 2004/01/23 04:54:00 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.5  2004/01/23 04:54:00  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.4  2004/01/20 14:25:12  reinelt
  * some reorganization
  * moved drv_generic to drv_generic_serial
@@ -63,7 +66,7 @@
 void widget_bar_update (void *Self)
 {
   WIDGET      *W = (WIDGET*)Self;
-  WIDGET_BAR *T = W->data;
+  WIDGET_BAR *Bar = W->data;
   RESULT result = {0, 0.0, NULL};
 
   double val1, val2;
@@ -71,50 +74,50 @@ void widget_bar_update (void *Self)
   
   // evaluate expressions
   val1 = 0.0;
-  if (T->expression1!=NULL && *T->expression1!='\0') {
-    Eval(T->expression1, &result); 
+  if (Bar->expression1!=NULL && *Bar->expression1!='\0') {
+    Eval(Bar->expression1, &result); 
     val1 = R2N(&result); 
     DelResult(&result);
   }
   
   val2 = val1;
-  if (T->expression2!=NULL && *T->expression2!='\0') {
-    Eval(T->expression2, &result); 
+  if (Bar->expression2!=NULL && *Bar->expression2!='\0') {
+    Eval(Bar->expression2, &result); 
     val2 = R2N(&result); 
     DelResult(&result);
   }
   
   // minimum: if expression is empty, do auto-scaling
-  if (T->expr_min!=NULL && *T->expr_min!='\0') {
-    Eval(T->expr_min, &result); 
+  if (Bar->expr_min!=NULL && *Bar->expr_min!='\0') {
+    Eval(Bar->expr_min, &result); 
     min = R2N(&result); 
     DelResult(&result);
   } else {
-    min = T->min;
+    min = Bar->min;
     if (val1 < min) min = val1;
     if (val2 < min) min = val2;
   }
   
   // maximum: if expression is empty, do auto-scaling
-  if (T->expr_max!=NULL && *T->expr_max!='\0') {
-    Eval(T->expr_max, &result); 
+  if (Bar->expr_max!=NULL && *Bar->expr_max!='\0') {
+    Eval(Bar->expr_max, &result); 
     max = R2N(&result); 
     DelResult(&result);
   } else {
-    max = T->max;
+    max = Bar->max;
     if (val1 > max) max = val1;
     if (val2 > max) max = val2;
   }
   
   // calculate bar values
-  T->min=min;
-  T->max=max;
+  Bar->min=min;
+  Bar->max=max;
   if (max>min) {
-    T->val1=(val1-min)/(max-min);
-    T->val2=(val2-min)/(max-min);
+    Bar->val1=(val1-min)/(max-min);
+    Bar->val2=(val2-min)/(max-min);
   } else {
-    T->val1=0.0;
-    T->val2=0.0;
+    Bar->val1=0.0;
+    Bar->val2=0.0;
   }
   
   // finally, draw it!
@@ -128,7 +131,7 @@ void widget_bar_update (void *Self)
 int widget_bar_init (WIDGET *Self) 
 {
   char *section; char *c;
-  WIDGET_BAR *B;
+  WIDGET_BAR *Bar;
   
   // prepare config section
   // strlen("Widget:")=7
@@ -136,57 +139,57 @@ int widget_bar_init (WIDGET *Self)
   strcpy(section, "Widget:");
   strcat(section, Self->name);
   
-  B=malloc(sizeof(WIDGET_BAR));
-  memset (B, 0, sizeof(WIDGET_BAR));
+  Bar=malloc(sizeof(WIDGET_BAR));
+  memset (Bar, 0, sizeof(WIDGET_BAR));
 
   // get raw expressions (we evaluate them ourselves)
-  B->expression1 = cfg_get_raw (section, "expression",  NULL);
-  B->expression2 = cfg_get_raw (section, "expression2", NULL);
+  Bar->expression1 = cfg_get_raw (section, "expression",  NULL);
+  Bar->expression2 = cfg_get_raw (section, "expression2", NULL);
   
   // sanity check
-  if (B->expression1==NULL || *B->expression1=='\0') {
+  if (Bar->expression1==NULL || *Bar->expression1=='\0') {
     error ("widget %s has no expression, using '0.0'", Self->name);
-    B->expression1="0";
+    Bar->expression1="0";
   }
   
   // minimum and maximum value
-  B->expr_min = cfg_get_raw (section, "min", NULL);
-  B->expr_max = cfg_get_raw (section, "max", NULL);
+  Bar->expr_min = cfg_get_raw (section, "min", NULL);
+  Bar->expr_max = cfg_get_raw (section, "max", NULL);
 
   // bar length, default 1
-  cfg_number (section, "length", 1,  0, 99999, &(B->length));
+  cfg_number (section, "length", 1,  0, 99999, &(Bar->length));
   
   // direction: East (default), West, North, South
   c = cfg_get (section, "direction",  "E");
   switch (toupper(*c)) {
   case 'E':
-    B->direction=DIR_EAST;
+    Bar->direction=DIR_EAST;
     break;
   case 'W':
-    B->direction=DIR_WEST;
+    Bar->direction=DIR_WEST;
     break;
   case 'N':
-    B->direction=DIR_NORTH;
+    Bar->direction=DIR_NORTH;
     break;
   case 'S':
-    B->direction=DIR_SOUTH;
+    Bar->direction=DIR_SOUTH;
     break;
   default:
     error ("widget %s has unknown direction '%s', using 'East'", Self->name, c);
-    B->direction=DIR_EAST;
+    Bar->direction=DIR_EAST;
   }
   free (c);
   
   // update interval (msec), default 1 sec
-  cfg_number (section, "update", 1000, 10, 99999, &(B->update));
+  cfg_number (section, "update", 1000, 10, 99999, &(Bar->update));
   
   // buffer
-  // B->buffer=malloc(B->width+1);
+  // Bar->buffer=malloc(Bar->width+1);
   
   free (section);
-  Self->data=B;
+  Self->data=Bar;
   
-  timer_add (widget_bar_update, Self, B->update, 0);
+  timer_add (widget_bar_update, Self, Bar->update, 0);
   
   return 0;
 }

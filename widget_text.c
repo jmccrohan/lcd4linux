@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.8 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: widget_text.c,v 1.9 2004/01/23 04:54:04 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.9  2004/01/23 04:54:04  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.8  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -283,7 +286,7 @@ void widget_text_update (void *Self)
 int widget_text_init (WIDGET *Self) 
 {
   char *section; char *c;
-  WIDGET_TEXT *T;
+  WIDGET_TEXT *Text;
   
   // prepare config section
   // strlen("Widget:")=7
@@ -291,18 +294,18 @@ int widget_text_init (WIDGET *Self)
   strcpy(section, "Widget:");
   strcat(section, Self->name);
   
-  T=malloc(sizeof(WIDGET_TEXT));
-  memset (T, 0, sizeof(WIDGET_TEXT));
+  Text=malloc(sizeof(WIDGET_TEXT));
+  memset (Text, 0, sizeof(WIDGET_TEXT));
 
   // get raw pre- and postfix (we evaluate it ourselves)
-  T->prefix  = cfg_get_raw (section, "prefix",  NULL);
-  T->postfix = cfg_get_raw (section, "postfix", NULL);
+  Text->prefix  = cfg_get_raw (section, "prefix",  NULL);
+  Text->postfix = cfg_get_raw (section, "postfix", NULL);
 
   // get raw expression (we evaluate it ourselves)
-  T->expression = cfg_get_raw (section, "expression",  "''");
+  Text->expression = cfg_get_raw (section, "expression",  "''");
   
   // field width, default 10
-  cfg_number (section, "width", 10,  0, 99999, &(T->width));
+  cfg_number (section, "width", 10,  0, 99999, &(Text->width));
   
   // precision: number of digits after the decimal point (default: none)
   // Note: this is the *maximum* precision on small values,
@@ -310,48 +313,48 @@ int widget_text_init (WIDGET *Self)
   // The default value 0xC0DE is used to distinguish between numbers and strings:
   // if no precision is given, the result is always treated as a string. If a
   // precision is specified, the result is treated as a number.
-  cfg_number (section, "precision", 0xC0DE, 0, 80, &(T->precision));
+  cfg_number (section, "precision", 0xC0DE, 0, 80, &(Text->precision));
   
   // field alignment: Left (default), Center, Right or Marquee
   c = cfg_get (section, "align",  "L");
   switch (toupper(*c)) {
   case 'L':
-    T->align=ALIGN_LEFT;
+    Text->align=ALIGN_LEFT;
     break;
   case 'C':
-    T->align=ALIGN_CENTER;
+    Text->align=ALIGN_CENTER;
     break;
   case 'R':
-    T->align=ALIGN_RIGHT;
+    Text->align=ALIGN_RIGHT;
     break;
   case 'M':
-    T->align=ALIGN_MARQUEE;
+    Text->align=ALIGN_MARQUEE;
     break;
   default:
     error ("widget %s has unknown alignment '%s', using 'Left'", section, c);
-    T->align=ALIGN_LEFT;
+    Text->align=ALIGN_LEFT;
   }
   free (c);
   
   // update interval (msec), default 1 sec
-  cfg_number (section, "update", 1000, 10, 99999, &(T->update));
+  cfg_number (section, "update", 1000, 10, 99999, &(Text->update));
   
   // marquee scroller speed: interval (msec), default 500msec
-  if (T->align==ALIGN_MARQUEE) {
-    cfg_number (section, "speed", 500, 10, 99999, &(T->speed));
+  if (Text->align==ALIGN_MARQUEE) {
+    cfg_number (section, "speed", 500, 10, 99999, &(Text->speed));
   }
   
   // buffer
-  T->buffer=malloc(T->width+1);
+  Text->buffer=malloc(Text->width+1);
   
   free (section);
-  Self->data=T;
+  Self->data=Text;
   
-  timer_add (widget_text_update, Self, T->update, 0);
+  timer_add (widget_text_update, Self, Text->update, 0);
 
   // a marquee scroller has its own timer and callback
-  if (T->align==ALIGN_MARQUEE) {
-    timer_add (widget_text_scroll, Self, T->speed, 0);
+  if (Text->align==ALIGN_MARQUEE) {
+    timer_add (widget_text_scroll, Self, Text->speed, 0);
   }
 
   return 0;

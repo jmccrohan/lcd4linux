@@ -9,6 +9,7 @@ Display LK204 {
 
 
 Display CF632 {
+    Icons 2
     Driver 'Crystalfontz'
     Model '632'
     Port '/dev/tts/0'
@@ -101,6 +102,22 @@ Widget LoadBar {
 }
 
 
+Widget Heartbeat {
+    class 'Icon'
+    speed 100
+    Bitmap {
+	Row1 '.....|.....'
+	Row2 '.*.*.|.*.*.'
+	Row3 '*****|*.*.*'
+	Row4 '*****|*...*'
+	Row5 '.***.|.*.*.'
+	Row6 '.***.|.*.*.'
+	Row7 '..*..|..*..'
+	Row8 '.....|.....'
+    }
+}
+
+
 Layout Default {
     Row1 {
 	Col1  'OS'
@@ -122,6 +139,7 @@ Layout Default {
 Layout L16x2 {
     Row1 {
 	Col1  'Busy'
+	Col10 'Heartbeat'
 	Col11 'BusyBar'
     }
     Row2 {

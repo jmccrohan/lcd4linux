@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.2 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.3 2004/01/23 04:53:34 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.3  2004/01/23 04:53:34  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.2  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -51,6 +54,7 @@
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_bar.h"
+#include "widget_icon.h"
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_serial.h"
@@ -59,12 +63,11 @@
 static char Name[]="Crystalfontz";
 
 static int Model;
-
-// Fixme: do we need PROTOCOL?
-static int GPOS, ICONS, PROTOCOL;
+static int Protocol;
 
 // Fixme:
 // static int GPO[8];
+static int GPOS;
 
 
 typedef struct {
@@ -143,7 +146,7 @@ static int drv_CF_start (char *section)
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
-  PROTOCOL = Models[Model].protocol;
+  Protocol = Models[Model].protocol;
 
   // open serial port
   if (drv_generic_serial_open(section, Name)<0) return -1;
@@ -210,6 +213,12 @@ int drv_CF_draw_text (WIDGET *W)
 }
 
 
+int drv_CF_draw_icon (WIDGET *W)
+{
+  return drv_generic_text_draw_icon(W, drv_CF_define_char, drv_CF_goto, drv_generic_serial_write);
+}
+
+
 int drv_CF_draw_bar (WIDGET *W)
 {
   return drv_generic_text_draw_bar(W, 4, drv_CF_define_char, drv_CF_goto, drv_generic_serial_write);
@@ -249,9 +258,13 @@ int drv_CF_init (char *section)
     return ret;
   
   // initialize generic text driver
-  if ((ret=drv_generic_text_init(Name))!=0)
+  if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
 
+  // initialize generic icon driver
+  if ((ret=drv_generic_text_icon_init())!=0)
+    return ret;
+  
   // initialize generic bar driver
   if ((ret=drv_generic_text_bar_init())!=0)
     return ret;
@@ -267,6 +280,11 @@ int drv_CF_init (char *section)
   // register bar widget
   wc=Widget_Bar;
   wc.draw=drv_CF_draw_bar;
+  widget_register(&wc);
+  
+  // register icon widget
+  wc=Widget_Icon;
+  wc.draw=drv_CF_draw_icon;
   widget_register(&wc);
   
   // register plugins

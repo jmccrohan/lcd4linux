@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.8 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: widget.c,v 1.9 2004/01/23 04:53:57 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.9  2004/01/23 04:53:57  reinelt
+ * icon widget added (not finished yet!)
+ *
  * Revision 1.8  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -149,7 +152,7 @@ int widget_add (char *name, int row, int col)
   }
   
   // do NOT use realloc here because there may be pointers to the old
-  // memory area, which would point to nirvana if realloc moves the area
+  // memory area, which would point to nowhere if realloc moves the area
   if (Widgets==NULL) {
     Widgets=malloc(MAX_WIDGETS*sizeof(WIDGET));
     if (Widgets==NULL) {
