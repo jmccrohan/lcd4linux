@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.24 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.25 2000/08/09 14:14:11 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.25  2000/08/09 14:14:11  reinelt
+ *
+ * new switch -F (do not fork)
+ * added automatic forking if -F not specified
+ *
  * Revision 1.24  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -163,7 +168,7 @@ static void usage(void)
   printf ("usage: lcd4linux [-h]\n");
   printf ("       lcd4linux [-l]\n");
   printf ("       lcd4linux [-d]\n");
-  printf ("       lcd4linux [-c key=value] [-f config-file] [-o output-file] [-q] [-v]\n");
+  printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
 int hello (void)
@@ -229,9 +234,10 @@ int main (int argc, char *argv[])
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
   int c, smooth;
+  int foreground=0;
   int quiet=0;
-
-  while ((c=getopt (argc, argv, "c:df:hlo:qv"))!=EOF) {
+  
+  while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
@@ -242,6 +248,12 @@ int main (int argc, char *argv[])
     case 'd':
       calibrate();
       exit(0);
+    case 'F':
+      foreground++;
+      break;
+    case 'f':
+      cfg=optarg;
+      break;
     case 'h':
       usage();
       exit(0);
@@ -249,9 +261,6 @@ int main (int argc, char *argv[])
       printf ("%s\n", release);
       lcd_list();
       exit(0);
-    case 'f':
-      cfg=optarg;
-      break;
     case 'o':
       output=optarg;
       break;
@@ -260,6 +269,7 @@ int main (int argc, char *argv[])
       break;
     case 'v':
       debugging++;
+      foreground++;
       break;
     default:
       exit(2);
@@ -269,6 +279,25 @@ int main (int argc, char *argv[])
   if (optind < argc) {
     fprintf (stderr, "%s: illegal option %s\n", argv[0], argv[optind]);
     exit(2);
+  }
+
+  if (!foreground) {
+    pid_t i;
+    // debugging does not make sense here
+    // because -v implies -F which sets foreground=1
+    // debug ("going background...\n");
+    i=fork();
+    if (i<0) {
+      perror ("fork() failed");
+      exit (1);
+    }
+    printf ("fork() returned %d\n", i);
+    if (i!=0)
+      exit (0);
+    close (0);
+    close (1);
+    printf ("Hallo stdout\n");
+    fprintf (stderr, "Hallo stderr\n");
   }
 
   debug ("LCD4Linux " VERSION "\n");
