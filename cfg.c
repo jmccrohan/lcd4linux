@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.21 2004/01/08 05:28:12 reinelt Exp $^
+/* $Id: cfg.c,v 1.22 2004/01/08 06:00:28 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.22  2004/01/08 06:00:28  reinelt
+ * allowed '.' in key names
+ * allowed empty group keys (not only "group anything {", but "anything {")
+ *
  * Revision 1.21  2004/01/08 05:28:12  reinelt
  * Luk Claes added to AUTHORS
  * cfg: group handling ('{}') added
@@ -233,8 +237,10 @@ static int validchars (char *string)
   char *c;
 
   for (c=string; *c; c++) {
-    if ((*c>='A' && *c<='Z') || (*c>='a' && *c<='z') || *c=='_') continue;
-    if ((*c>='0' && *c<='9') && (c>string)) continue;
+    // first and following chars
+    if ((*c>='A' && *c<='Z') || (*c>='a' && *c<='z') || (*c=='_')) continue;
+    // only following chars
+    if ((c>string) && ((*c>='0' && *c<='9') || (*c=='.'))) continue;
     return 0;
   }
   return 1;
@@ -488,9 +494,10 @@ static int cfg_read (char *file)
       }
       if (*group!='\0') strcat (group, ".");
       strcat (group, key);
-      strcat (group, ":");
-      strcat (group, val);
-      debug ("Michi: group-open=<%s>", group);
+      if (*val!='\0') {
+	strcat (group, ":");
+	strcat (group, val);
+      }
       continue;
     }
 
@@ -508,12 +515,11 @@ static int cfg_read (char *file)
 	*group='\0';
       else
 	*end='\0';
-      debug ("Michi: group-close1=<%s>", group);
       continue;
     }
 
     // finally: add key
-    debug ("Michi: add key=<%s> val=<%s>", key, val);
+    debug ("Michi: add group=<%s> key=<%s> val=<%s>", group, key, val);
     cfg_add (group, key, val, 0);
     
   }
