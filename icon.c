@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.5 2003/09/10 03:48:23 reinelt Exp $
+/* $Id: icon.c,v 1.6 2003/09/10 14:01:53 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.6  2003/09/10 14:01:53  reinelt
+ * icons nearly finished\!
+ *
  * Revision 1.5  2003/09/10 03:48:23  reinelt
  * Icons for M50530, new processing scheme (Ticks.Text...)
  *
@@ -166,7 +169,7 @@ int icon_init (int rows, int cols, int xres, int yres, int chars, int icons,
     memset (Bitmap[n].Data, 0, YRES*sizeof(char));
     icon_read_bitmap(n);
     // icons use last ascii codes from userdef chars
-    Defchar (CHARS-n-1, Bitmap[n].Data);
+    if (Defchar) Defchar (CHARS-n-1, Bitmap[n].Data);
   }
   
   return 0;
@@ -186,17 +189,17 @@ void icon_clear(void)
 
 int icon_draw (int num, int seq, int row, int col)
 {
+  if (row>=0 && col>=0) {
+    // icons use last ascii codes from userdef chars
+    Screen[row*COLS+col]=CHARS-num-1;
+  }
+  
   if (seq>=0) {
     seq%=Bitmap[num].nData;
     if (seq!=Bitmap[num].lData) {
       Bitmap[num].lData=seq;
-      Defchar (CHARS-num-1, Bitmap[num].Data+seq*YRES);
+      if (Defchar) Defchar (CHARS-num-1, Bitmap[num].Data+seq*YRES);
     }
-  }
-  
-  if (row>=0 && col>=0) {
-    // icons use last ascii codes from userdef chars
-    Screen[row*COLS+col]=CHARS-num-1;
   }
   
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.42 2003/09/10 08:37:09 reinelt Exp $
+/* $Id: processor.c,v 1.43 2003/09/10 14:01:53 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.43  2003/09/10 14:01:53  reinelt
+ * icons nearly finished\!
+ *
  * Revision 1.42  2003/09/10 08:37:09  reinelt
  * icons: reorganized tick_* again...
  *
@@ -693,14 +696,14 @@ static char *process_row (char *data, int row, int len)
       
       if (type & BAR_H) {
 	for (i=0; i<len && p-buffer<cols; i++)
-	  *p++=' ';
+	  *p++='\t';
       } else {
-	*p++=' ';
+	*p++='\t';
       }
       
     } else if (*s=='&') {
       lcd_icon(*(++s)-'0', 0, row, p-buffer+1);
-      *p++=' ';
+      *p++='\t';
       
     } else {
       *p++=*s;

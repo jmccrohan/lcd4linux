@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.26 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: Raster.c,v 1.27 2003/09/10 14:01:52 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.27  2003/09/10 14:01:52  reinelt
+ * icons nearly finished\!
+ *
  * Revision 1.26  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -158,6 +161,7 @@
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "pixmap.h"
 
 static LCD Lcd;
@@ -167,6 +171,7 @@ static int pgap=0;
 static int rgap=0;
 static int cgap=0;
 static int border=0;
+static int icons;
 
 static unsigned int foreground=0;
 static unsigned int halfground=0;
@@ -392,10 +397,17 @@ int Raster_init (LCD *Self)
     return -1;
   }
 
+  if (cfg_number("Icons", 0, 0, 8, &icons) < 0) return -1;
+  if (icons>0) {
+    info ("allocating %d icons", icons);
+    icon_init(rows, cols, xres, yres, 8, icons, pix_icon);
+  }
+
   Self->rows=rows;
   Self->cols=cols;
   Self->xres=xres;
   Self->yres=yres;
+  Self->icons=icons;
   Lcd=*Self;
 
   pix_clear();
@@ -412,6 +424,11 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
   return pix_bar (type, row, col, max, len1, len2);
 }
 
+int Raster_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
 
 LCD Raster[] = {
 #ifdef WITH_PPM  
@@ -421,11 +438,13 @@ LCD Raster[] = {
     xres:  0,
     yres:  0,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  Raster_init,
     clear: Raster_clear,
     put:   Raster_put,
     bar:   Raster_bar,
+    icon:  Raster_icon,
     gpo:   NULL,
     flush: PPM_flush },
 #endif
@@ -436,11 +455,13 @@ LCD Raster[] = {
     xres:  0,
     yres:  0,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  Raster_init,
     clear: Raster_clear,
     put:   Raster_put,
     bar:   Raster_bar,
+    icon:  Raster_icon,
     gpo:   NULL,
     flush: PNG_flush },
 #endif

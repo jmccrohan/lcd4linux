@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.10 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: pixmap.c,v 1.11 2003/09/10 14:01:53 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.11  2003/09/10 14:01:53  reinelt
+ * icons nearly finished\!
+ *
  * Revision 1.10  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -84,7 +87,11 @@
  * int pix_bar (int type, int row, int col, int max, int len1, int len2);
  *   draws a bar into the pixmap
  *
+ * void pix_icon (int ascii, char *buffer)
+ *   used as the "define char" function for icons
+ *
  */
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -92,6 +99,7 @@
 
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "pixmap.h"
 #include "fontmap.h"
 #include "debug.h"
@@ -103,6 +111,7 @@ static int YRES=0;
 
 unsigned char *LCDpixmap=NULL;
 
+
 int pix_clear(void)
 {
   int i;
@@ -113,6 +122,7 @@ int pix_clear(void)
 
   return 0;
 }
+
 
 int pix_init (int rows, int cols, int xres, int yres)
 {
@@ -132,6 +142,7 @@ int pix_init (int rows, int cols, int xres, int yres)
     
   return pix_clear();
 }
+
 
 int pix_put (int row, int col, char *text)
 {
@@ -156,6 +167,7 @@ int pix_put (int row, int col, char *text)
   }
   return 0;
 }
+
 
 #define N_BAR_T 10
 
@@ -273,3 +285,28 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
+
+void pix_icon (int ascii, char *buffer)
+{
+  // we have to peek the whole screen for this particular icon,
+  // and render it again
+
+  int row, col;
+  int x, y, mask;
+  int c;
+  
+  for (row=0; row<ROWS/YRES; row++) {
+    for (col=0; col<COLS/XRES; col++) {
+      c=icon_peek(row, col);
+      if (c!=ascii) continue;
+      for (y=0; y<YRES; y++) {
+	mask=1<<XRES;
+	for (x=0; x<XRES; x++) {
+	  mask>>=1;
+	  LCDpixmap[(row*YRES+y)*COLS+col*XRES+x]=buffer[y]&mask?1:0;
+	}
+      }
+    }
+  }
+  
+}

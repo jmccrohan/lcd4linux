@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.33 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: XWindow.c,v 1.34 2003/09/10 14:01:53 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.34  2003/09/10 14:01:53  reinelt
+ * icons nearly finished\!
+ *
  * Revision 1.33  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -165,6 +168,7 @@
 #include	"cfg.h"
 #include	"display.h"
 #include        "bar.h"
+#include        "icon.h"
 #include	"pixmap.h"
 
 
@@ -199,6 +203,7 @@ static int cgap=0;			/*column gap between characters*/
 static int border=0;			/*window border*/
 static int rows=-1,cols=-1;		/*rows+cols without background*/
 static int xres=-1,yres=-1;		/*xres+yres (same as self->...)*/
+static int icons;                       /* number of user-defined icons */
 static int dimx,dimy;			/*total window dimension in pixel*/
 static int boxw,boxh;			/*box width, box height*/
 static int async_update();		/*PROTO*/
@@ -428,6 +433,13 @@ int xlcdinit(LCD *Self)
   if (*rgbhg=='\\') rgbhg++;
 
   if (pix_init(rows,cols,xres,yres)==-1) return -1;
+
+  if (cfg_number("Icons", 0, 0, 8, &icons) < 0) return -1;
+  if (icons>0) {
+    info ("allocating %d icons", icons);
+    icon_init(rows, cols, xres, yres, 8, icons, pix_icon);
+  }
+  
   if (init_x(rows,cols,xres,yres)==-1) return -1;
   init_signals();
   if (init_shm(rows*cols*xres*yres,&LCDpixmap2)==-1) return -1;
@@ -437,6 +449,7 @@ int xlcdinit(LCD *Self)
   Self->cols=cols;
   Self->xres=xres;
   Self->yres=yres;
+  Self->icons=icons;
   Lcd=*Self;
 
   pix_clear();
@@ -450,7 +463,7 @@ int xlcdclear(int full)
 }
 
 
-int xlcdput(int row,int col,char *text) 
+int xlcdput(int row,int col, char *text) 
 {
   return pix_put(row,col,text);
 }
@@ -459,6 +472,12 @@ int xlcdput(int row,int col,char *text)
 int xlcdbar(int type, int row, int col, int max, int len1, int len2) 
 {
   return pix_bar(type,row,col,max,len1,len2);
+}
+
+
+int xlcdicon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
 }
 
 
@@ -565,11 +584,13 @@ LCD XWindow[] = {
     xres:  0,
     yres:  0,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  xlcdinit,
     clear: xlcdclear,
     put:   xlcdput,
     bar:   xlcdbar,
+    icon:  xlcdicon,
     gpo:   NULL,
     flush: xlcdflush,
     quit:  xlcdquit 
