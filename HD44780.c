@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.17 2001/03/14 16:47:41 reinelt Exp $
+/* $Id: HD44780.c,v 1.18 2001/03/15 09:47:13 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.18  2001/03/15 09:47:13  reinelt
+ *
+ * some fixes to ppdef
+ * off-by-one bug in processor.c fixed
+ *
  * Revision 1.17  2001/03/14 16:47:41  reinelt
  * minor cleanups
  *
@@ -315,16 +320,17 @@ static int HD_open (void)
       error ("open(%s) failed: %s", PPdev, strerror(errno));
       return -1;
     }
-    
+
 #if 0
-    // FIXME: This doesn't work for some reason...
     if (ioctl(PPfd, PPEXCL)) {
-      error ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
-      return -1;
+      debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
+    } else {
+      debug ("ioctl(%s, PPEXCL) succeded.");
     }
 #endif
+
     if (ioctl(PPfd, PPCLAIM)) {
-      error ("ioctl(%s, PPCLAIM) failed: %s", PPdev, strerror(errno));
+      error ("ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
       return -1;
     }
   } else
@@ -346,6 +352,7 @@ static int HD_open (void)
   HD_command (0x08, 40);   // Display off, cursor off, blink off
   HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x06, 40);   // curser moves to right, no shift
+
   return 0;
 }
 
@@ -736,7 +743,7 @@ int HD_flush (void)
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
-      HD_write (buffer, p-buffer, 40);
+      HD_write (buffer, p-buffer, 40); // 40 usec delay for write
     }
   }
 
@@ -749,6 +756,9 @@ int HD_quit (void)
 {
   if (PPdev) {
     debug ("closing ppdev %s", PPdev);
+    if (ioctl(PPfd, PPRELEASE)) {
+      error ("ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
+    }
     if (close(PPfd)==-1) {
       error ("close(%s) failed: %s", PPdev, strerror(errno));
       return -1;

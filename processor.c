@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.20 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: processor.c,v 1.21 2001/03/15 09:47:13 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.21  2001/03/15 09:47:13  reinelt
+ *
+ * some fixes to ppdef
+ * off-by-one bug in processor.c fixed
+ *
  * Revision 1.20  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -141,8 +146,8 @@
 #define ROWS 16
 #define GPOS 16
 
-char *row[ROWS];
-char  gpo[GPOS];
+char *row[ROWS+1];
+char  gpo[GPOS+1];
 int   rows, cols, xres, yres, supported_bars, gpos;
 int   token_usage[256]={0,};
 

@@ -59,13 +59,13 @@ Size 24x2
 #Display SIN
 #Port /dev/tty9
 
-#Row1 "abcdefghijklmnopqrstuvwxyz"
-#Row2 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+Row1 "Busy %cb%% $r14cs+cb"
+Row2 "Load%l1%L$r14l1"
 
-Row1 "*** %o %v ***"
-Row2 "%p CPU  %r MB RAM"
-Row3 "Busy %cb%% $r10cs+cb"
-Row4 "Load%l1%L$r10l1"
+#Row1 "*** %o %v ***"
+#Row2 "%p CPU  %r MB RAM"
+#Row3 "Busy %cb%% $r10cs+cb"
+#Row4 "Load%l1%L$r10l1"
 
 # e(x)ecute command in %x*
 # Row5 %x1
