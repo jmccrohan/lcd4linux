@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.1 2004/01/27 08:13:39 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.2 2004/01/28 06:43:31 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.2  2004/01/28 06:43:31  reinelt
+ * plugin_ppp finished.
+ *
  * Revision 1.1  2004/01/27 08:13:39  reinelt
  * ported PPP token to plugin_ppp
  *
@@ -66,7 +69,7 @@ static int get_ppp_stats (void)
   unsigned ibytes, obytes;
   static int fd=-2;
   struct ifpppstatsreq req;
-  char key[8];
+  char key[16], val[16];
 
   // reread every 10 msec only
   age=hash_age(&PPP, NULL, NULL);
@@ -82,7 +85,6 @@ static int get_ppp_stats (void)
   }
   
   for (unit=0; unit<8; unit++) {
-    debug ("query unit %d", unit);
     memset (&req, 0, sizeof (req));
     req.stats_ptr = (caddr_t) &req.stats;
     snprintf (req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
@@ -91,14 +93,14 @@ static int get_ppp_stats (void)
       ibytes=req.stats.p.ppp_ibytes;
       obytes=req.stats.p.ppp_obytes;
     } else {
-      debug ("ioctl() retuned 0");
       ibytes=obytes=0;
     }
-    // Fixme: hash_set_delta wants a string, we already have an integer
     snprintf (key, sizeof(key), "Rx:%d", unit);
-    hash_set_delta (&PPP, key, ibytes);
+    snprintf (val, sizeof(val), "%d", ibytes);
+    hash_set_delta (&PPP, key, val);
     snprintf (key, sizeof(key), "Tx:%d", unit);
-    hash_set_delta (&PPP, key, obytes);
+    snprintf (val, sizeof(val), "%d", obytes);
+    hash_set_delta (&PPP, key, val);
 
   }
   return 0;
@@ -109,13 +111,10 @@ static void my_ppp (RESULT *result, RESULT *arg1, RESULT *arg2)
 {
   double value;
   
-  debug ("get stats...");
   if (get_ppp_stats()<0) {
     SetResult(&result, R_STRING, ""); 
     return;
   }
-  debug ("get stats done.");
-  
   value=hash_get_delta(&PPP, R2S(arg1), R2N(arg2));
   SetResult(&result, R_NUMBER, &value); 
 }
