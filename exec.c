@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.5 2001/03/13 08:34:15 reinelt Exp $
+/* $Id: exec.c,v 1.6 2001/03/15 09:13:22 ltoetsch Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.6  2001/03/15 09:13:22  ltoetsch
+ * delay first exec for faster start
+ *
  * Revision 1.5  2001/03/13 08:34:15  reinelt
  *
  * corrected a off-by-one bug with sensors
@@ -77,7 +80,11 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     return -1;
   
   /* first time ? */
-  if (now[index] != 0) {
+  if (now[index] == 0) { /* not first time, to give faster a chance */
+    now[index] = -1;
+    return 0;
+  }
+  if (now[index] > 0) {
     /* delay in Ticks ? */
     sprintf(xn, "Tick_x%d", index);
     p = cfg_get(xn);
