@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.12 2001/02/16 08:23:09 reinelt Exp $
+/* $Id: processor.c,v 1.13 2001/02/16 14:15:11 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.13  2001/02/16 14:15:11  reinelt
+ *
+ * fixed type in processor.c
+ * GPO documentation update from Carsten
+ *
  * Revision 1.12  2001/02/16 08:23:09  reinelt
  *
  * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
@@ -357,7 +362,7 @@ static void print_token (int token, char **p)
     break;
   case T_ISDN_CONNECT:
     if (isdn.usage)
-      *p+=sprintf (*p, "*",);
+      *p+=sprintf (*p, "*");
     else
       *p+=sprintf (*p, " ");
     break;

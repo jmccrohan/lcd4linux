@@ -1,5 +1,5 @@
 #
-# $Id: README.HD44780.GPO,v 1.1 2001/02/14 05:22:42 reinelt Exp $
+# $Id: README.HD44780.GPO,v 1.2 2001/02/16 14:15:11 reinelt Exp $
 #
 
 Erweiterung der LCD Anzeige um 8 Ausgaenge (GPOs)
@@ -15,7 +15,9 @@ Die Schaltung wird parallel zum Display angeschlossen.
 INIT ist Pin 16 vom LPT am Rechner.
 ---|330r|--- das soll ein Widerstand 330 Ohm sein, 
              man kann aber auch 470 Ohm nehmen.
----|<--- das soll ein LED sein
+  ---|<---   das soll ein LED sein.
+    Vcc      Versorgungsspannung 5V DC
+    GND      Masse
 
 
            74HC573
@@ -36,8 +38,8 @@ INIT o--|10        11|-----------|9         10|----+ Vcc
 Statt der LED's kann man auch was anderes ansteuern. Der ULN2803 hat eine 
 Open Kollektor Ausgang, der mit 30V belastet werden kann. Aber Vorsicht!!!
 
-Die gesammte Schaltung nimmt max. ca. 130mA auf, ich nehme die Spannung vom
-Gameport. Bei mir klappts, ich uebernehme aber keine Garantie.
+Die gesammte Schaltung nimmt max. ca. 130mA an 5V DC auf, ich nehme die 
+Spannung vom Gameport. Bei mir klappts, ich uebernehme aber keine Garantie.
 
 Wuppertal, den 13.02.2001
 
