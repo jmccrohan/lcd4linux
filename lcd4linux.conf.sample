@@ -222,21 +222,21 @@ Widget Eth0Bar {
 }
 
 Widget MySQLtest1 {
-	class 'Text'
-	expression MySQLquery('SELECT id FROM table1')
-	width 8
-	align 'R'
-	prefix 'MySQL'
-	update minute
+    class 'Text'
+    expression MySQL::query('SELECT id FROM table1')
+    width 20
+    align 'R'
+    prefix 'MySQL test:'
+    update minute
 }
 
 Widget MySQLtest2 {
-	class 'Text'
-	expression MySQLstatus()
-	width 20
-	align 'M'
-	prefix 'Status: '
-	update minute
+    class 'Text'
+    expression MySQL::status()
+    width 20
+    align 'M'
+    prefix 'Status: '
+    update minute
 }
 
 Widget Heartbeat {
@@ -440,8 +440,7 @@ Layout Test {
 
 Layout testMySQL {
 	Row1 {
-		Col1 'Heartbeat'
-		Col2 'MySQLtest1'
+		Col1 'MySQLtest1'
 	}
 	Row2 {
 		Col1 'MySQLtest2'
@@ -467,4 +466,5 @@ Layout  'L16x2'
 Variables {
    tick 500
    tack 100
+   minute 60000
 }

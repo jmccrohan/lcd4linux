@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.2 2004/03/20 23:09:01 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.3 2004/03/21 22:05:53 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.3  2004/03/21 22:05:53  reinelt
+ * MySQL plugin fixes from Javi
+ *
  * Revision 1.2  2004/03/20 23:09:01  reinelt
  * MySQL plugin fixes from Javi
  *
@@ -138,7 +141,7 @@ int plugin_init_mysql (void)
   free(s);
   
   if (cfg_number(Section, "port", 0, 1, 65536, &port)<1) {
-    /* using * as default port because mysql_real_connect() will convert it to real default one */
+    /* using 0 as default port because mysql_real_connect() will convert it to real default one */
     info ("[MySQL] no '%s.port' entry from %s using MySQL's default", Section, cfg_source());
   }
 
