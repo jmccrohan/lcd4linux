@@ -15,6 +15,7 @@ lcd4linux.c \
 debug.c debug.h \
 cfg.c cfg.h \
 lock.c lock.h \
+pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
 system.c system.h \

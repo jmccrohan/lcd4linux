@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.40 2003/08/08 06:58:06 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.41 2003/08/08 08:05:23 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.41  2003/08/08 08:05:23  reinelt
+ * added PID file handling
+ *
  * Revision 1.40  2003/08/08 06:58:06  reinelt
  * improved forking
  *
@@ -217,9 +220,12 @@
 
 #include "cfg.h"
 #include "debug.h"
+#include "pid.h"
 #include "udelay.h"
 #include "display.h"
 #include "processor.h"
+
+#define PIDFILE "/var/run/lcd4linux.pid"
 
 char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
@@ -428,6 +434,14 @@ int main (int argc, char *argv[])
     dup2(fd, STDOUT_FILENO);
     dup2(fd, STDERR_FILENO);
     close(fd);
+
+    // create PID file
+    if (pid_init(PIDFILE)!=0) {
+      error ("PID file creation failed!");
+      exit (1);
+    }
+
+    // now we are a daemon
     background=1;
   }
   
@@ -468,6 +482,8 @@ int main (int argc, char *argv[])
   lcd_clear(1);
   if (!quiet) hello();
   lcd_quit();
+  
+  pid_exit(PIDFILE);
   
   if (got_signal==SIGHUP) {
     long fd;
