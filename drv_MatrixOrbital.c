@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.8 2004/01/15 07:47:02 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.9 2004/01/18 21:25:16 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.9  2004/01/18 21:25:16  reinelt
+ * Framework for bar widget opened
+ *
  * Revision 1.8  2004/01/15 07:47:02  reinelt
  * debian/ postinst and watch added (did CVS forget about them?)
  * evaluator: conditional expressions (a?b:c) added
@@ -86,6 +89,7 @@
 #include "icon.h"
 #include "widget.h"
 #include "widget_text.h"
+#include "widget_bar.h"
 
 
 // these values are hardcoded
@@ -718,8 +722,8 @@ int drv_MO_draw_text (WIDGET *W)
   // maybe grow layout framebuffer
   drv_MO_resize (W->row, W->col+len-1);
 
-  fb1=LayoutFB+row*LCOLS;
-  fb2=DisplayFB+row*DCOLS;
+  fb1 = LayoutFB  + row*LCOLS;
+  fb2 = DisplayFB + row*DCOLS;
   
   // transfer new text into layout buffer
   memcpy (fb1+col, txt, len);
@@ -738,10 +742,21 @@ int drv_MO_draw_text (WIDGET *W)
 	equal=0;
       }
     }
-    memcpy (fb2+pos1, fb1+pos1, pos2-pos1+1);
-    drv_MO_write (fb2+pos1, pos2-pos1+1);
+    memcpy       (fb2+pos1, fb1+pos1, pos2-pos1+1);
+    drv_MO_write (fb2+pos1,           pos2-pos1+1);
   }
     
+  return 0;
+}
+
+
+int drv_MO_draw_bar (WIDGET *W)
+{
+  WIDGET_BAR *B=W->data;
+  
+  debug ("drv_MO_draw_bar(%s) x=%2d y=%2d ", W->name, W->col, W->row);
+
+
   return 0;
 }
 
@@ -788,6 +803,11 @@ int drv_MO_init (char *section)
     error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
     return -1;
   }
+  
+  // register bar widget
+  wc=Widget_Bar;
+  wc.draw=drv_MO_draw_bar;
+  widget_register(&wc);
   
   // register text widget
   wc=Widget_Text;

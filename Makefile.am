@@ -25,7 +25,8 @@ layout.c layout.h \
 timer.c timer.h \
 evaluator.c evaluator.h \
 widget.c widget.h \
-widget_text.c \
+widget_text.c widget_text.h \
+widget_bar.c widget_bar.h \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
