@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.21 2001/03/09 12:14:24 reinelt Exp $
+/* $Id: system.c,v 1.22 2001/03/12 12:39:36 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.22  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.21  2001/03/09 12:14:24  reinelt
  *
  * minor cleanups
@@ -170,6 +174,8 @@
  *   returns 0 if ok, -1 on error
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

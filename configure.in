@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(lcd4linux.c)
 AM_INIT_AUTOMAKE(lcd4linux, 0.98)
+AM_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -15,72 +16,79 @@ dnl Checks for X11
 AC_PATH_XTRA
 
 dnl drivers
+AC_MSG_CHECKING([which drivers to compile])
 AC_ARG_WITH(
   drivers, 
   [  --with-drivers=<list>   compile driver for displays in <list>,]
   [                        drivers may be separated with commas,]	
-  [                        'all' (default) compiles all available drivers.]	
+  [                        'all' (default) compiles all available drivers,]	
+  [                        drivers may be excluded with 'all,!<driver>',]	
+  [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, HD44780,]
   [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
 )
-if test "$drivers" = "all"; then
-drivers=[BeckmannEgle,CrystalFontz,HD44780,MatrixOrbital,PalmPilot,PNG,PPM,X11,Text]
-fi
 
-RASTER=0
 drivers=`echo $drivers|sed 's/,/ /g'`
 
 for driver in $drivers; do
+
+   case $driver in 
+      !*) 
+         val="no"
+         driver=`echo $driver|cut -c 2-`
+         ;;
+       *) 
+         val="yes"
+         ;;
+   esac
+	
    case "$driver" in
+      all)
+         BECKMANNEGLE="yes"
+         CRYSTALFONTZ="yes"
+         HD44780="yes"
+         MATRIXORBITAL="yes"
+         PALMPILOT="yes"
+         PNG="yes"
+         PPM="yes"
+         TEXT="yes"
+         X11="yes"
+         ;;
       BeckmannEgle)
-         DRIVERS="$DRIVERS BeckmannEgle.o"
-         AC_DEFINE(WITH_BECKMANNEGLE)
+         BECKMANNEGLE=$val
          ;;
       CrystalFontz)
-         DRIVERS="$DRIVERS Crystalfontz.o"
-         AC_DEFINE(WITH_CRYSTALFONTZ)
+         CRYSTALFONTZ=$val
          ;;
       HD44780)
-         DRIVERS="$DRIVERS HD44780.o"
-         AC_DEFINE(WITH_HD44780)
+         HD44780=$val
          ;;
       MatrixOrbital)
-         DRIVERS="$DRIVERS MatrixOrbital.o"
-         AC_DEFINE(WITH_MATRIXORBITAL)
+         MATRIXORBITAL=$val
          ;;
       PalmPilot)
-         DRIVERS="$DRIVERS PalmPilot.o"
-         AC_DEFINE(WITH_PALMPILOT)
+         PALMPILOT=$val
          ;;
       PNG)
-         RASTER=$(($RASTER + 1))
-         AC_DEFINE(WITH_PNG)
-	 DRVLIBS="$DRVLIBS -lgd -lpng -lz"
+         PNG=$val
          ;;
       PPM)
-         RASTER=$(($RASTER + 1))
-         AC_DEFINE(WITH_PPM)
+         PPM=$val
          ;;
       SIN)
-         DRIVERS="$DRIVERS SIN.o"
-         AC_DEFINE(WITH_SIN)
+         SIN=$val
          ;;
       Skeleton)
-         DRIVERS="$DRIVERS Skeleton.o"
-         AC_DEFINE(WITH_Skeleton)
-         ;;
-      X11)
-         DRIVERS="$DRIVERS XWindow.o"
-	 DRVLIBS="$DRVLIBS -lX11"
-         AC_DEFINE(WITH_X11)
+         SKELETON=$val
          ;;
       Text)
-         DRIVERS="$DRIVERS Text.o"
-	 DRVLIBS="$DRVLIBS -lncurses"
-         AC_DEFINE(WITH_Text)
+         TEXT=$val
+         ;;
+      X11)
+         X11=$val
          ;;
       *) 	
          AC_MSG_ERROR([Unknown driver '$driver'])
@@ -88,87 +96,81 @@ for driver in $drivers; do
    esac
 done
 
-dnl delete drivers, mainly if all wa chosen above
+AC_MSG_RESULT([done])
 
-AC_ARG_WITH(
-  notdrivers, 
-  [  --with-notdrivers=<list> do not compile driver for displays in <list>,]
-  [                        drivers may be separated with commas,]	
-  [                        mainly useful if above all drivers were selected.]	
-  [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, HD44780,]
-  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
-  notdrivers=$withval, 
-  notdrivers="no"
-)
+RASTER="no"
 
-AC_DEFUN(AC_UNDEFINE,
-mv confdefs.h confdefs.h~
-grep -v $1 < confdefs.h~ > confdefs.h
-)
+if test "$BECKMANNEGLE" = "yes"; then
+   DRIVERS="$DRIVERS BeckmannEgle.o"
+   AC_DEFINE(WITH_BECKMANNEGLE)
+fi
 
-notdrivers=`echo $notdrivers|sed 's/,/ /g'`
-for driver in $notdrivers; do
-   case "$driver" in
-      BeckmannEgle)
-         DRIVERS=${DRIVERS/ BeckmannEgle.o/}
-         AC_UNDEFINE(WITH_BECKMANNEGLE)
-         ;;
-      CrystalFontz)
-         DRIVERS=${DRIVERS/ Crystalfontz.o/}
-         AC_UNDEFINE(WITH_CRYSTALFONTZ)
-         ;;
-      HD44780)
-         DRIVERS=${DRIVERS/ HD44780.o/}
-         AC_UNDEFINE(WITH_HD44780)
-         ;;
-      MatrixOrbital)
-         DRIVERS=${DRIVERS/ MatrixOrbital/}
-         AC_UNDEFINE(WITH_MATRIXORBITAL)
-         ;;
-      PalmPilot)
-         DRIVERS=${DRIVERS/ PalmPilot/}
-         AC_UNDEFINE(WITH_PALMPILOT)
-         ;;
-      PNG)
-         RASTER=$(($RASTER - 1))
-         AC_UNDEFINE(WITH_PNG)
-	 DRVLIBS=${DRVLIBS/ -lgd -lpng -lz/}
-         ;;
-      PPM)
-         RASTER=$(($RASTER - 1))
-         AC_UNDEFINE(WITH_PPM)
-         ;;
-      SIN)
-         DRIVERS=${DRIVERS/ SIN.o/}
-         AC_UNDEFINE(WITH_SIN)
-         ;;
-      Skeleton)
-         DRIVERS=${DRIVERS/ Skeleton.o/}
-         AC_UNDEFINE(WITH_Skeleton)
-         ;;
-      X11)
-         DRIVERS=${DRIVERS/ XWindow.o/}
-	 DRVLIBS=${DRVLIBS/ -lX11/}
-         AC_UNDEFINE(WITH_X11)
-         ;;
-      Text)
-         DRIVERS=${DRIVERS/ Text.o/}
-	 DRVLIBS=${DRVLIBS/ -lncurses/}
-         AC_UNDEFINE(WITH_Text)
-         ;;
-      no)
-         ;;
-      *) 	
-         AC_MSG_ERROR([Unknown driver '$driver'])
-         ;;
-   esac
-done
+if test "$CRYSTALFONTZ" = "yes"; then
+   DRIVERS="$DRIVERS Crystalfontz.o"
+   AC_DEFINE(WITH_CRYSTALFONTZ)
+fi
 
-test $RASTER -gt 0 && RASTERDRIVER="Raster.o"
+if test "$HD44780" = "yes"; then
+   DRIVERS="$DRIVERS HD44780.o"
+   AC_DEFINE(WITH_HD44780)
+fi
 
-DRIVERS="$DRIVERS $RASTERDRIVER"
+if test "$MATRIXORBITAL" = "yes"; then
+   DRIVERS="$DRIVERS MatrixOrbital.o"
+   AC_DEFINE(WITH_MATRIXORBITAL)
+fi
 
+if test "$PALMPILOT" = "yes"; then
+   DRIVERS="$DRIVERS PalmPilot.o"
+   AC_DEFINE(WITH_PALMPILOT)
+fi
+
+if test "$PNG" = "yes"; then
+   RASTER="yes"
+   AC_DEFINE(WITH_PNG)
+   DRVLIBS="$DRVLIBS -lgd -lpng -lz"
+fi
+
+if test "$PPM" = "yes"; then
+   RASTER="yes"
+   AC_DEFINE(WITH_PPM)
+fi
+
+if test "$SIN" = "yes"; then
+   DRIVERS="$DRIVERS SIN.o"
+   AC_DEFINE(WITH_SIN)
+fi
+
+if test "$SKELETON" = "yes"; then
+   DRIVERS="$DRIVERS Skeleton.o"
+   AC_DEFINE(WITH_SKELETON)
+fi
+
+if test "$TEXT" = "yes"; then
+   DRIVERS="$DRIVERS Text.o"
+   DRVLIBS="$DRVLIBS -lncurses"
+   AC_DEFINE(WITH_TEXT)
+fi
+
+if test "$X11" = "yes"; then
+   if test "$no_x" = "yes"; then
+      AC_MSG_ERROR([cannot build X11 driver: headers or libraries not available])
+   fi
+   DRIVERS="$DRIVERS XWindow.o"
+   DRVLIBS="$DRVLIBS -lX11"
+   AC_DEFINE(WITH_X11)
+fi
+
+dnl Raster.o depends on PPM or PNG
+if test "$RASTER" = "yes"; then
+   DRIVERS="$DRIVERS Raster.o"
+fi
+
+
+if test "$DRVLIBS" = ""; then
+   AC_MSG_ERROR([You should include at least one driver...])
+fi
+   
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)
 
@@ -194,6 +196,6 @@ dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(gettimeofday select socket strdup strerror strstr strtol uname)
+AC_CHECK_FUNCS(gettimeofday putenv select socket strdup strerror strstr strtol uname)
 
 AC_OUTPUT(Makefile)

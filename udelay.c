@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.3 2001/03/01 22:33:50 reinelt Exp $
+/* $Id: udelay.c,v 1.4 2001/03/12 12:39:36 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.4  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.3  2001/03/01 22:33:50  reinelt
  *
  * renamed Raster_flush() to PPM_flush()
@@ -57,9 +61,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifdef USE_OLD_UDELAY
 #include <time.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 
 #include "udelay.h"
+
+#ifdef USE_OLD_UDELAY
 
 unsigned long loops_per_usec;
 
@@ -104,3 +116,23 @@ void udelay_calibrate (void)
       loops_per_usec&=~bit;
   }
 }
+
+#else
+
+void udelay (unsigned long usec)
+{
+  struct timeval now, end;
+  
+  gettimeofday (&end, NULL);
+  end.tv_usec+=usec;
+  while (end.tv_usec>1000000) {
+    end.tv_usec-=1000000;
+    end.tv_sec++;
+  }
+  
+  do {
+    gettimeofday(&now, NULL);
+  } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
+}
+
+#endif

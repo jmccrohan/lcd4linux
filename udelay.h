@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.1 2000/04/15 16:56:52 reinelt Exp $
+/* $Id: udelay.h,v 1.2 2001/03/12 12:39:36 reinelt Exp $
  *
  * short delays 
  *
@@ -20,22 +20,33 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.2  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.1  2000/04/15 16:56:52  reinelt
  *
  * moved delay loops to udelay.c
  * renamed -d (debugging) switch to -v (verbose)
  * new switch -d to calibrate delay loop
  * 'Delay' entry for HD44780 back again
- * delay loops will not calibrate automatically, because this will fail with hich CPU load
+ * delay loops will not calibrate automatically, because this will fail with high CPU load
  *
  */
 
 #ifndef _UDELAY_H_
 #define _UDELAY_H_
 
+#ifdef USE_OLD_UDELAY
+
 extern unsigned long loops_per_usec;
 
 void udelay (unsigned long usec);
 void udelay_calibrate (void);
 
+#else
+
+void udelay (unsigned long usec);
+
+#endif
 #endif

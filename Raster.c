@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.16 2001/03/02 17:18:52 reinelt Exp $
+/* $Id: Raster.c,v 1.17 2001/03/12 12:39:36 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.17  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.16  2001/03/02 17:18:52  reinelt
  *
  * let configure find gd.h
@@ -99,6 +103,8 @@
  * struct LCD Raster[]
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

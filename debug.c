@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.2 2001/03/09 13:08:11 ltoetsch Exp $
+/* $Id: debug.c,v 1.3 2001/03/12 12:39:36 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.3  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.2  2001/03/09 13:08:11  ltoetsch
  * Added Text driver
  *
@@ -42,6 +46,7 @@
  *
  */
 
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -65,7 +70,7 @@ void message (int level, const char *format, ...)
   va_end(ap);
   
   if (foreground) {
-#ifdef WITH_Text
+#ifdef WITH_TEXT
     extern int curs_err(char *);
     if (!curs_err(buffer))
 #endif      

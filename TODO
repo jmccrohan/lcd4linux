@@ -58,3 +58,6 @@ at least try to....
 read configuration file earlier (before forking) so that specific drivers
 (especially 'Text') would not fork.
 There's a reason for forking that early, but I forgot...
+
+2001-03-12 Michael Reinelt <reinelt@eunet.at>
+remove USE_OLD_UDELAY after wide testing of new udelay code

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.25 2001/03/09 13:08:11 ltoetsch Exp $
+/* $Id: display.c,v 1.26 2001/03/12 12:39:36 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.26  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.25  2001/03/09 13:08:11  ltoetsch
  * Added Text driver
  *
@@ -161,10 +165,11 @@
  *    de-initializes the driver
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
 
 #include "debug.h"
 #include "cfg.h"

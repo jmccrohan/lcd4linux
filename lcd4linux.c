@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.30 2001/03/08 15:25:38 ltoetsch Exp $
+/* $Id: lcd4linux.c,v 1.31 2001/03/12 12:39:36 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.31  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.30  2001/03/08 15:25:38  ltoetsch
  * improved exec
  *
@@ -166,6 +170,8 @@
  *
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -234,6 +240,7 @@ int hello (void)
   return flag;
 }
 
+#ifdef USE_OLD_UDELAY
 void calibrate (void)
 {
   int i;
@@ -249,6 +256,7 @@ void calibrate (void)
   }
   printf (" Delay=%ld\n", max);
 }
+#endif
 
 void handler (int signal)
 {
@@ -270,7 +278,11 @@ int main (int argc, char *argv[])
   }
   my_argv[c]=NULL;
 
+#ifdef USE_OLD_UDELAY
   while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
+#else
+  while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
+#endif
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
@@ -279,8 +291,13 @@ int main (int argc, char *argv[])
       }
       break;
     case 'd':
+#ifdef USE_OLD_UDELAY
       calibrate();
       exit(0);
+#else
+      fprintf (stderr, "delay calibration no longer supported!\n");
+      exit(1);
+#endif
     case 'F':
       foreground++;
       break;

@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.12 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: HD44780.c,v 1.13 2001/03/12 12:39:36 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.13  2001/03/12 12:39:36  reinelt
+ *
+ * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
+ *
  * Revision 1.12  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -94,6 +98,8 @@
  * struct LCD HD44780[]
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -397,6 +403,7 @@ int HD_init (LCD *Self)
     return -1;
   }    
 
+#ifdef USE_OLD_UDELAY
   s=cfg_get ("Delay");
   if (s==NULL || *s=='\0') {
     error ("HD44780: no 'Delay' entry in %s", cfg_file());
@@ -406,6 +413,7 @@ int HD_init (LCD *Self)
     error ("HD44780: bad delay '%s' in %s", s, cfg_file());
     return -1;
   }    
+#endif
   
   s=cfg_get("Size");
   if (s==NULL || *s=='\0') {
