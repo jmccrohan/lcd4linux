@@ -146,8 +146,8 @@ if test "$BECKMANNEGLE" = "yes"; then
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
-#  DRIVERS="$DRIVERS Crystalfontz.lo"
-   DRIVERS="$DRIVERS Crystalfontz.o"
+#  DRIVERS="$DRIVERS Crystalfontz.lo drv_Crystalfontz.lo"
+   DRIVERS="$DRIVERS Crystalfontz.o  drv_Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[junk])
 fi
 

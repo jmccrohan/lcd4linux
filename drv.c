@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.3 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv.c,v 1.4 2004/01/21 12:36:19 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.4  2004/01/21 12:36:19  reinelt
+ * Crystalfontz NextGeneration driver added
+ *
  * Revision 1.3  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -110,9 +113,11 @@ DRIVER *Driver[] = {
      #ifdef WITH_BECKMANNEGLE
      &BeckmannEgle,
      #endif
-     #ifdef WITH_CRYSTALFONTZ
-     &Crystalfontz,
-     #endif
+  */
+#ifdef WITH_CRYSTALFONTZ
+  &drv_Crystalfontz,
+#endif
+  /* Fixme
      #ifdef WITH_CWLINUX
      &Cwlinux,
      #endif

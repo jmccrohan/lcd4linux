@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.14 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.15 2004/01/21 12:36:19 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.15  2004/01/21 12:36:19  reinelt
+ * Crystalfontz NextGeneration driver added
+ *
  * Revision 1.14  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -164,6 +167,15 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
+static void drv_MO_goto (int row, int col)
+{
+  char cmd[5]="\376Gyx";
+  cmd[2]=(char)col+1;
+  cmd[3]=(char)row+1;
+  drv_generic_serial_write(cmd,4);
+}
+
+
 static void drv_MO_define_char (int ascii, char *buffer)
 {
   char cmd[3]="\376N";
@@ -171,15 +183,6 @@ static void drv_MO_define_char (int ascii, char *buffer)
   cmd[2]=(char)ascii;
   drv_generic_serial_write (cmd, 3);
   drv_generic_serial_write (buffer, 8);
-}
-
-
-static void drv_MO_goto (int row, int col)
-{
-  char cmd[5]="\376Gyx";
-  cmd[2]=(char)col+1;
-  cmd[3]=(char)row+1;
-  drv_generic_serial_write(cmd,4);
 }
 
 
