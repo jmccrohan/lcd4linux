@@ -1,18 +1,18 @@
-/* $Id: MilfordInstruments.c,v 1.2 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: MilfordInstruments.c,v 1.3 2003/10/08 13:39:53 andy-b Exp $
  *
- * driver for Milford Instruments serial display modules
+ * driver for Milford Instruments 'BPK' piggy-back serial interface board
+ * for standard Hitachi 44780 compatible lcd modules.
+ *
+ * Written 2003 by Andy Baxter <andy@earthsong.free-online.co.uk>
+ *
  * based on the MatrixOrbital driver by M. Reinelt 
  *
- * Copyright 2003 Andy Baxter <andy@earthsong.free-online.co.uk>
- *
- * This file is part of LCD4Linux.
- *
- * LCD4Linux is free software; you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * LCD4Linux is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -23,8 +23,8 @@
  *
  *
  * $Log: MilfordInstruments.c,v $
- * Revision 1.2  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
+ * Revision 1.3  2003/10/08 13:39:53  andy-b
+ * Cleaned up code in MilfordInstruments.c, and added descriptions for other display sizes (untested)
  *
  * Revision 1.1  2003/09/29 06:58:36  reinelt
  * new driver for Milford Instruments MI420 by Andy Baxter
@@ -118,10 +118,10 @@ static void MI_write (char *string, int len)
 
 static void MI_define_char (int ascii, char *buffer)
 {
-  char cmd[3]="\376x";
+  char cmd[2]="\376x";
   if (ascii<8) {
-    cmd[2]=(char)(64+ascii*8);
-    MI_write (cmd, 3);
+    cmd[1]=(char)(64+ascii*8);
+    MI_write (cmd, 2);
     MI_write (buffer, 8);
   }
 }
@@ -210,21 +210,13 @@ static int MI_init (LCD *Self)
 void MI_goto (int row, int col)
 {
   char cmd[2]="\376x";
-  char ddbase=0;
-  switch (row) {
-  case 0:
-    ddbase=128;
-    break;
-  case 1:
-    ddbase=192;
-    break;
-  case 2:
-    ddbase=148;
-    break;
-  case 3:
-    ddbase=212;
-    break;
-  }
+  char ddbase=128;
+  if (row & 1) { // i.e. if row is 1 or 3
+    ddbase += 64;
+    };
+  if (row & 2) { // i.e. if row is 0 or 2.
+    ddbase += 20;
+    };
   cmd[1]=(char)(ddbase+col);
   MI_write(cmd,2);
 }
@@ -315,6 +307,57 @@ int MI_quit (void)
 
 
 LCD MilfordInstruments[] = {
+  { name: "MI216",
+    rows:  2, 
+    cols:  16,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
+    gpos:  0,
+    init:  MI_init,
+    clear: MI_clear,
+    put:   MI_put,
+    bar:   MI_bar,
+    icon:  MI_icon,
+    gpo:   NULL,
+    flush: MI_flush,
+    quit:  MI_quit 
+  },
+  { name: "MI220",
+    rows:  2, 
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
+    gpos:  0,
+    init:  MI_init,
+    clear: MI_clear,
+    put:   MI_put,
+    bar:   MI_bar,
+    icon:  MI_icon,
+    gpo:   NULL,
+    flush: MI_flush,
+    quit:  MI_quit 
+  },
+  { name: "MI240",
+    rows:  2, 
+    cols:  40,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
+    gpos:  0,
+    init:  MI_init,
+    clear: MI_clear,
+    put:   MI_put,
+    bar:   MI_bar,
+    icon:  MI_icon,
+    gpo:   NULL,
+    flush: MI_flush,
+    quit:  MI_quit 
+  },
   { name: "MI420",
     rows:  4, 
     cols:  20,
@@ -332,5 +375,6 @@ LCD MilfordInstruments[] = {
     flush: MI_flush,
     quit:  MI_quit 
   },
+
   { NULL }
 };
