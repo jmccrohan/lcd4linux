@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.5 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: Text.c,v 1.6 2002/08/30 03:54:01 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.6  2002/08/30 03:54:01  reinelt
+ * bug in curses driver fixed
+ *
  * Revision 1.5  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -107,6 +110,7 @@ int Text_init (LCD *Self)
   char *s;
   if (!foreground) {
     error("Text: you want me to display on /dev/null: sorry, I can't");
+    error("Text: Maybe you want me to run in foreground? Try '-F'");
     return -1;
   }
   
@@ -120,13 +124,14 @@ int Text_init (LCD *Self)
   Self->yres=1;
   Lcd=*Self;
   
-  w = initscr();
+  initscr();
   scr_cols=COLS;
   scr_rows=LINES;
-  delwin(w);
+  debug ("curses thinks that COLS=%d LINES=%d", COLS, LINES);
   w = newwin(rows+2,cols+2,0,0);
   err_rows = scr_rows-rows-3;
   err_rows = min(99, err_rows);
+  debug ("err_rows=%d", err_rows);
   if (err_rows >= 4) {
     err_win = newwin(err_rows, scr_cols, rows+3, 0);
     err_rows -= 3;
