@@ -59,24 +59,33 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AS = @AS@
 CC = @CC@
 CURSES_INCLUDEDIR = @CURSES_INCLUDEDIR@
 CURSES_LIBS = @CURSES_LIBS@
+DLLTOOL = @DLLTOOL@
 DRIVERS = @DRIVERS@
 DRVLIBS = @DRVLIBS@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
 HAVE_LIB = @HAVE_LIB@
 LIB = @LIB@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
 LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
 VERSION = @VERSION@
 
 AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
-noinst_LIBRARIES = liblcd4linux.a
+lib_LTLIBRARIES = liblcd4linux.la
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
@@ -84,16 +93,15 @@ lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
-liblcd4linux_a_LIBADD = @DRIVERS@
-liblcd4linux_a_DEPENDENCIES = @DRIVERS@
-
 lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h pid.c pid.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h exec.c exec.h mail2.c socket.c socket.h
 
 
 EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
 
 
-liblcd4linux_a_SOURCES =  display.c display.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h parport.c parport.h udelay.c udelay.h
+liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+
+liblcd4linux_la_SOURCES =  display.c display.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h parport.c parport.h udelay.c udelay.h @DRIVERS@
 
 
 EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Drivers README.KDE
@@ -102,7 +110,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
-LIBRARIES =  $(noinst_LIBRARIES)
+LTLIBRARIES =  $(lib_LTLIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I.
@@ -113,22 +121,27 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-liblcd4linux_a_OBJECTS =  display.o debug.o cfg.o lock.o pixmap.o bar.o \
-icon.o fontmap.o parport.o udelay.o
-AR = ar
+liblcd4linux_la_LIBADD = 
+liblcd4linux_la_OBJECTS =  display.lo debug.lo cfg.lo lock.lo pixmap.lo \
+bar.lo icon.lo fontmap.lo parport.lo udelay.lo
+bin_PROGRAMS =  lcd4linux$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
-lcd4linux_OBJECTS =  lcd4linux.o debug.o cfg.o lock.o pid.o parser.o \
-processor.o system.o isdn.o mail.o seti.o battery.o dvb.o filter.o \
-udelay.o display.o pixmap.o bar.o icon.o fontmap.o exec.o mail2.o \
-socket.o
+lcd4linux_OBJECTS =  lcd4linux.$(OBJEXT) debug.$(OBJEXT) cfg.$(OBJEXT) \
+lock.$(OBJEXT) pid.$(OBJEXT) parser.$(OBJEXT) processor.$(OBJEXT) \
+system.$(OBJEXT) isdn.$(OBJEXT) mail.$(OBJEXT) seti.$(OBJEXT) \
+battery.$(OBJEXT) dvb.$(OBJEXT) filter.$(OBJEXT) udelay.$(OBJEXT) \
+display.$(OBJEXT) pixmap.$(OBJEXT) bar.$(OBJEXT) icon.$(OBJEXT) \
+fontmap.$(OBJEXT) exec.$(OBJEXT) mail2.$(OBJEXT) socket.$(OBJEXT)
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS TODO aclocal.m4 config.guess config.h.in \
-config.sub configure configure.in install-sh missing mkinstalldirs
+config.sub configure configure.in install-sh ltmain.sh missing \
+mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -144,12 +157,12 @@ DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/Cwlinux.P \
 .deps/lock.P .deps/mail.P .deps/mail2.P .deps/parport.P .deps/parser.P \
 .deps/pid.P .deps/pixmap.P .deps/processor.P .deps/seti.P \
 .deps/socket.P .deps/system.P .deps/udelay.P
-SOURCES = $(liblcd4linux_a_SOURCES) $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
-OBJECTS = $(liblcd4linux_a_OBJECTS) $(lcd4linux_OBJECTS)
+SOURCES = $(liblcd4linux_la_SOURCES) $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
+OBJECTS = $(liblcd4linux_la_OBJECTS) $(lcd4linux_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .o .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile
 
@@ -193,14 +206,35 @@ distclean-hdr:
 
 maintainer-clean-hdr:
 
-mostlyclean-noinstLIBRARIES:
+mostlyclean-libLTLIBRARIES:
 
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 
-distclean-noinstLIBRARIES:
+distclean-libLTLIBRARIES:
 
-maintainer-clean-noinstLIBRARIES:
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
 
 .s.o:
 	$(COMPILE) -c $<
@@ -210,6 +244,7 @@ maintainer-clean-noinstLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -218,10 +253,24 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-liblcd4linux.a: $(liblcd4linux_a_OBJECTS) $(liblcd4linux_a_DEPENDENCIES)
-	-rm -f liblcd4linux.a
-	$(AR) cru liblcd4linux.a $(liblcd4linux_a_OBJECTS) $(liblcd4linux_a_LIBADD)
-	$(RANLIB) liblcd4linux.a
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+liblcd4linux.la: $(liblcd4linux_la_OBJECTS) $(liblcd4linux_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(liblcd4linux_la_LDFLAGS) $(liblcd4linux_la_OBJECTS) $(liblcd4linux_la_LIBADD) $(LIBS)
 
 mostlyclean-binPROGRAMS:
 
@@ -237,8 +286,8 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
-	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	  else :; fi; \
 	done
 
@@ -248,8 +297,8 @@ uninstall-binPROGRAMS:
 	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
 
-lcd4linux: $(lcd4linux_OBJECTS) $(lcd4linux_DEPENDENCIES)
-	@rm -f lcd4linux
+lcd4linux$(EXEEXT): $(lcd4linux_OBJECTS) $(lcd4linux_DEPENDENCIES)
+	@rm -f lcd4linux$(EXEEXT)
 	$(LINK) $(lcd4linux_LDFLAGS) $(lcd4linux_OBJECTS) $(lcd4linux_LDADD) $(LIBS)
 
 tags: TAGS
@@ -377,7 +426,7 @@ installcheck: installcheck-am
 all-recursive-am: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-libLTLIBRARIES install-binPROGRAMS
 install-exec: install-exec-am
 
 install-data-am:
@@ -386,14 +435,14 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-libLTLIBRARIES uninstall-binPROGRAMS
 uninstall: uninstall-am
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) config.h
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) config.h
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(bindir)
+	$(mkinstalldirs)  $(DESTDIR)$(libdir) $(DESTDIR)$(bindir)
 
 
 mostlyclean-generic:
@@ -406,30 +455,33 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLIBRARIES \
-		mostlyclean-compile mostlyclean-binPROGRAMS \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-hdr mostlyclean-libLTLIBRARIES \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-binPROGRAMS mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-hdr clean-noinstLIBRARIES clean-compile \
+clean-am:  clean-hdr clean-libLTLIBRARIES clean-compile clean-libtool \
 		clean-binPROGRAMS clean-tags clean-depend clean-generic \
 		mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-hdr distclean-noinstLIBRARIES distclean-compile \
-		distclean-binPROGRAMS distclean-tags distclean-depend \
-		distclean-generic clean-am
+distclean-am:  distclean-hdr distclean-libLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-binPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-am
 	-rm -f config.status
 
 maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-noinstLIBRARIES \
-		maintainer-clean-compile maintainer-clean-binPROGRAMS \
-		maintainer-clean-tags maintainer-clean-depend \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-binPROGRAMS maintainer-clean-tags \
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -437,10 +489,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f config.status
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
-clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
-mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool mostlyclean-binPROGRAMS distclean-binPROGRAMS \
 clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
 install-binPROGRAMS tags mostlyclean-tags distclean-tags clean-tags \
 maintainer-clean-tags distdir mostlyclean-depend distclean-depend \

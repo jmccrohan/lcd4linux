@@ -10,6 +10,8 @@ AM_CONFIG_HEADER(config.h)
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
+AC_PROG_LIBTOOL
+AM_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB(m, log)
@@ -273,7 +275,7 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
-AC_CHECK_FUNCS([atexit dup2 gethostbyname gettimeofday memset putenv select socket strcasecmp strchr strdup strerror strpbrk strrchr strstr strtol uname])
+AC_CHECK_FUNCS([atexit dup2 gethostbyname gettimeofday memset putenv select socket strcasecmp strncasecmp strchr strdup strerror strpbrk strrchr strstr strtol uname])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

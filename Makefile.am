@@ -4,16 +4,13 @@ AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
-noinst_LIBRARIES = liblcd4linux.a
+lib_LTLIBRARIES = liblcd4linux.la
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@
-
-liblcd4linux_a_LIBADD = @DRIVERS@
-liblcd4linux_a_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
@@ -57,7 +54,9 @@ Skeleton.c \
 XWindow.c \
 Text.c
 
-liblcd4linux_a_SOURCES = \
+liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+
+liblcd4linux_la_SOURCES = \
 display.c display.h \
 debug.c debug.h \
 cfg.c cfg.h \
@@ -67,7 +66,8 @@ bar.c bar.h \
 icon.c icon.h \
 fontmap.c fontmap.h \
 parport.c parport.h \
-udelay.c udelay.h
+udelay.c udelay.h \
+@DRIVERS@
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \
