@@ -3,6 +3,7 @@ Lcd4Linux NextGeneration porting status
  DRIVERS :  format : status (widgets) + extras [todo]
 -------------------------------------------------------
         Crystalfontz -> Ported (Text,Bar,Icon) + blacklight,contrast,pwm [gpo,rpm]
+              Curses -> Ported (Text,Bar)   
              Cwlinux -> Ported (Text,Bar,Icon) + blacklight [gpo,gpi,inverted text,relay]
              HD44780 -> Ported (Text,Bar,Icon) + soft brightness,'busy flag',gpo [soft contrast]
               M50530 -> Ported (Text,Bar,Icon) + gpo
@@ -14,7 +15,6 @@ Lcd4Linux NextGeneration porting status
              Raster* -> Ported (Text,Bar,Icon)
 
         BeckmannEgle ->     
-              Curses ->    
 
            PalmPilot -> Obsolete
                  SIN -> Obsolete

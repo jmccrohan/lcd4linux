@@ -59,6 +59,7 @@ drv_generic_parport.c       \
 drv_generic_parport.h       \
 BeckmannEgle.c              \
 drv_Crystalfontz.c          \
+drv_Curses.c                \
 drv_Cwlinux.c               \
 drv_HD44780.c               \
 drv_Image.c                 \
@@ -68,7 +69,7 @@ drv_MilfordInstruments.c    \
 drv_T6963.c                 \
 drv_USBLCD.c                \
 drv_X11.c                   \
-Text.c                      \
+                            \
 font_6x8.h                  \
                             \
 plugin_apm.c                \

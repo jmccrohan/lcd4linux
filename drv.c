@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.12 2004/05/26 05:03:27 reinelt Exp $
+/* $Id: drv.c,v 1.13 2004/05/26 11:37:36 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.13  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.12  2004/05/26 05:03:27  reinelt
  *
  * MilfordInstruments driver ported
@@ -124,6 +128,7 @@
 
 extern DRIVER drv_BeckmannEgle;
 extern DRIVER drv_Crystalfontz;
+extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
@@ -133,7 +138,6 @@ extern DRIVER drv_USBLCD;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_X11;
-extern DRIVER drv_Text;
 
 // output file for Image driver
 // has to be defined here because it's referenced
@@ -151,6 +155,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_CWLINUX
   &drv_Cwlinux,
+#endif
+#ifdef WITH_CURSES
+  &drv_Curses,
 #endif
 #ifdef WITH_HD44780
   &drv_HD44780,
@@ -176,11 +183,6 @@ DRIVER *Driver[] = {
 #ifdef WITH_X11
   &drv_X11,
 #endif
-  /* Fixme
-     #ifdef WITH_TEXT
-     &Text,
-     #endif
-  */
   NULL,
 };
 

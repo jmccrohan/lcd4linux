@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.13 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.14 2004/05/26 11:37:36 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.14  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.13  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -142,8 +146,10 @@ int ICONS;        // number of user-defineable characters reserved for icons
 static unsigned char *LayoutFB    = NULL;
 static unsigned char *DisplayFB   = NULL;
 
-static int nSegment=0;
-static int fSegment=0;
+static int Single_Segments = 0;
+
+static int nSegment = 0;
+static int fSegment = 0;
 static SEGMENT Segment[128];
 static BAR *BarFB = NULL;
 
@@ -486,7 +492,7 @@ static void drv_generic_text_bar_pack_segments (void)
     pack_j=-1;
     for (i=fSegment; i<nSegment; i++) {
       if (pass1 && Segment[i].used) continue;
-      for (j=0; j<nSegment; j++) {
+       for (j=0; j<nSegment; j++) {
 	if (error[i][j]<min) {
 	  min=error[i][j];
 	  pack_i=i;
@@ -500,6 +506,10 @@ static void drv_generic_text_bar_pack_segments (void)
 	continue;
       } else {
 	error ("unable to compact bar characters");
+	error ("nSegment=%d fSegment=%d CHARS=%d ICONS=%d", nSegment, fSegment, CHARS, ICONS);
+	error ("Segment[0].val1=%d val2=%d", Segment[0].val1, Segment[0].val2);
+	error ("Segment[1].val1=%d val2=%d", Segment[1].val1, Segment[1].val2);
+	error ("Segment[2].val1=%d val2=%d", Segment[2].val1, Segment[2].val2);
 	nSegment=CHARS-ICONS;
 	break;
       }
@@ -598,16 +608,18 @@ int drv_generic_text_bar_draw (WIDGET *W)
     drv_generic_text_resizeFB (row+1, col+1);
   }
 
-  res  = dir & (DIR_EAST|DIR_WEST)?XRES:YRES;
+  res  = dir & (DIR_EAST|DIR_WEST) ? XRES : YRES;
   max  = len * res;
   val1 = Bar->val1 * (double)(max);
   val2 = Bar->val2 * (double)(max);
   
-  if      (val1<1)   val1=1;
-  else if (val1>max) val1=max;
+  if      (val1 < 1)   val1 = 1;
+  else if (val1 > max) val1 = max;
   
-  if      (val2<1)   val2=1;
-  else if (val2>max) val2=max;
+  if      (val2 < 1)   val2 = 1;
+  else if (val2 > max) val2 = max;
+  
+  if (Single_Segments) val2 = val1;
   
   // create this bar
   drv_generic_text_bar_create_bar (row, col, dir, len, val1, val2);
@@ -704,7 +716,7 @@ int drv_generic_text_icon_init (void)
 }
 
 
-int drv_generic_text_bar_init (void)
+int drv_generic_text_bar_init (int single_segments)
 {
   if (BarFB) free (BarFB);
   
@@ -712,6 +724,8 @@ int drv_generic_text_bar_init (void)
     error ("bar buffer allocation failed: out of memory");
     return -1;
   }
+  
+  Single_Segments = single_segments;
   
   nSegment=0;
   fSegment=0;

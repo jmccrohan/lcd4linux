@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.7 2004/02/10 07:42:35 reinelt Exp $
+/* $Id: debug.c,v 1.8 2004/05/26 11:37:36 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.8  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.7  2004/02/10 07:42:35  reinelt
  * cut off all old-style files which are no longer used with NextGeneration
  *
@@ -87,12 +91,10 @@ void message (int level, const char *format, ...)
   va_end(ap);
   
   if (!running_background) {
-    // Fixme
-#if 0
-#ifdef WITH_TEXT
-    extern int curs_err(char *);
-    if (!curs_err(buffer))
-#endif
+    
+#ifdef WITH_CURSES
+    extern int curses_error(char *);
+    if (!curses_error(buffer))
 #endif      
       fprintf (level?stdout:stderr, "%s\n", buffer);
   }
@@ -102,7 +104,7 @@ void message (int level, const char *format, ...)
   
   if (!log_open) {
     openlog ("LCD4Linux", LOG_PID, LOG_USER);
-    log_open=1;
+    log_open = 1;
   }
   
   switch (level) {

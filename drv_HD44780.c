@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.20 2004/05/22 04:23:49 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.21 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.21  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.20  2004/05/22 04:23:49  reinelt
  *
  * removed 16*x fix again (next time think before commit :-)
@@ -583,12 +587,12 @@ static int drv_HD_start (char *section)
   strsize=cfg_get(section, "Size", NULL);
   if (strsize==NULL || *strsize=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
-	free(strsize);
+    free(strsize);
     return -1;
   }
   if (sscanf(strsize,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    error ("%s: bad size '%s'", Name, strsize);
-	free(strsize);
+    error ("%s: bad %s.Size '%s' from %s", Name, section, strsize, cfg_source());
+    free(strsize);
     return -1;
   }
     
@@ -776,7 +780,7 @@ int drv_HD_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

@@ -326,6 +326,9 @@
 /* Crystalfontz driver */
 #undef WITH_CRYSTALFONTZ
 
+/* Curses driver */
+#undef WITH_CURSES
+
 /* CwLinux driver */
 #undef WITH_CWLINUX
 
@@ -352,9 +355,6 @@
 
 /* T6963 driver */
 #undef WITH_T6963
-
-/* Curses driver */
-#undef WITH_TEXT
 
 /* USBLCD driver */
 #undef WITH_USBLCD

@@ -44,6 +44,12 @@ Display CF633 {
     Backlight 50
 }
 
+Display Curses {
+    Driver 'Curses'
+    Size '20x4'
+}
+
+
 Display HD44780-20x4 {
     Driver 'HD44780'
     Port '/dev/parports/0'	
@@ -405,8 +411,7 @@ Widget Test {
 
 Layout Default {
     Row1 {
-	Col1  'Heartbeat'
-	#Col1  'OS'
+	Col1  'OS'
     }
     Row2 {
 	Col1  'CPU'
@@ -490,12 +495,13 @@ Layout testMySQL {
 
 
 #Display 'LK204'
-Display 'MI240'
+#Display 'MI240'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
+Display 'Curses'
 #Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'

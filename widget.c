@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.13 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: widget.c,v 1.14 2004/05/26 11:37:36 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.14  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.13  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -180,11 +184,12 @@ int widget_add (char *name, int row, int col)
       break;
     }
   }
-  if (class) free (class);
   if (i==nClasses) {
-    error ("widget '%s': class '%s' not supported");
+    error ("widget '%s': class '%s' not supported", name, class);
+    if (class) free (class);
     return -1;
   }
+  if (class) free (class);
   
   // do NOT use realloc here because there may be pointers to the old
   // memory area, which would point to nowhere if realloc moves the area

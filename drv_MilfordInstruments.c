@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.1 2004/05/26 05:03:27 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.2 2004/05/26 11:37:36 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,10 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.2  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.1  2004/05/26 05:03:27  reinelt
  *
  * MilfordInstruments driver ported
@@ -210,7 +214,7 @@ int drv_MI_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

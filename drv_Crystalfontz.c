@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.15 2004/05/25 14:26:29 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.16 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.16  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.15  2004/05/25 14:26:29  reinelt
  *
  * added "Image" driver (was: Raster.c) for PPM and PNG creation
@@ -873,7 +877,7 @@ int drv_CF_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

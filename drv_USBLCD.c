@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.3 2004/05/23 08:58:30 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.4 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.4  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.3  2004/05/23 08:58:30  reinelt
  *
  * icon bug with USBLCD fixed
@@ -311,7 +315,7 @@ int drv_UL_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

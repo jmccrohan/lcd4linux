@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.4 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.5 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.5  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.4  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -311,7 +315,7 @@ int drv_CW_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

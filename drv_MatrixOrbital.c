@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.21 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.22 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.22  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.21  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -493,7 +497,7 @@ int drv_MO_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

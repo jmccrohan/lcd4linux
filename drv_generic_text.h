@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.8 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.9 2004/05/26 11:37:36 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.9  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.8  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -89,7 +93,7 @@ int  drv_generic_text_init            (char *section, char *driver);
 int  drv_generic_text_draw            (WIDGET *W);
 int  drv_generic_text_icon_init       (void);
 int  drv_generic_text_icon_draw       (WIDGET *W);
-int  drv_generic_text_bar_init        (void);
+int  drv_generic_text_bar_init        (int single_segments);
 void drv_generic_text_bar_add_segment (int val1, int val2, DIRECTION dir, int ascii);
 int  drv_generic_text_bar_draw        (WIDGET *W);
 int  drv_generic_text_quit            (void);

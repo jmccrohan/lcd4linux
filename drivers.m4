@@ -116,11 +116,11 @@ fi
 
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
-#     DRIVERS="$DRIVERS Text.lo"
-#     DRIVERS="$DRIVERS Text.o"
+#     DRIVERS="$DRIVERS drv_Curses.lo"
+      DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
-      AC_DEFINE(WITH_TEXT,1,[Curses driver])
+      AC_DEFINE(WITH_CURSES,1,[Curses driver])
    else
       AC_MSG_WARN(curses not found: Curses driver disabled)
    fi   

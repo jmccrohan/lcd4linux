@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.3 2004/03/19 09:17:46 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.4 2004/05/26 11:37:36 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.4  2004/05/26 11:37:36  reinelt
+ *
+ * Curses driver ported.
+ *
  * Revision 1.3  2004/03/19 09:17:46  reinelt
  *
  * removed the extra 'goto' function, row and col are additional parameters
@@ -306,7 +310,7 @@ int drv_M5_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

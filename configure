@@ -5505,13 +5505,13 @@ fi
 
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
-#     DRIVERS="$DRIVERS Text.lo"
-#     DRIVERS="$DRIVERS Text.o"
+#     DRIVERS="$DRIVERS drv_Curses.lo"
+      DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
 
 cat >>confdefs.h <<\_ACEOF
-#define WITH_TEXT 1
+#define WITH_CURSES 1
 _ACEOF
 
    else
