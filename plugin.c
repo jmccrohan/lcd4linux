@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.1 2003/12/19 05:35:14 reinelt Exp $
+/* $Id: plugin.c,v 1.2 2003/12/19 05:49:23 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.2  2003/12/19 05:49:23  reinelt
+ * extracted plugin_math and plugin_string into extra files
+ *
  * Revision 1.1  2003/12/19 05:35:14  reinelt
  * renamed 'client' to 'plugin'
  *
@@ -55,103 +58,22 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 
 #include "debug.h"
 #include "plugin.h"
 
 
-
-static void my_sqrt (RESULT *result, RESULT *arg1)
-{
-  double value=sqrt(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_exp (RESULT *result, RESULT *arg1)
-{
-  double value=exp(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_ln (RESULT *result, RESULT *arg1)
-{
-  double value=log(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_log (RESULT *result, RESULT *arg1)
-{
-  double value=log10(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_sin (RESULT *result, RESULT *arg1)
-{
-  double value=sin(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_cos (RESULT *result, RESULT *arg1)
-{
-  double value=cos(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_tan (RESULT *result, RESULT *arg1)
-{
-  double value=tan(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-
-static void my_min (RESULT *result, RESULT *arg1, RESULT *arg2)
-{
-  double a1=R2N(arg1);
-  double a2=R2N(arg2);
-  double value=a1<a2?a1:a2;
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_max (RESULT *result, RESULT *arg1, RESULT *arg2)
-{
-  double a1=R2N(arg1);
-  double a2=R2N(arg2);
-  double value=a1>a2?a1:a2;
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-
-static void my_strlen (RESULT *result, RESULT *arg1)
-{
-  double value=strlen(R2S(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
+int plugin_init_math (void);
+int plugin_init_string (void);
 
 
 int plugin_init (void)
 {
-  // set some handy constants
-  AddNumericVariable ("Pi", M_PI);
-  AddNumericVariable ("e",  M_E);
+  // math plugin
+  plugin_init_math();
+  plugin_init_string();
   
-  // register some basic math functions
-  AddFunction ("sqrt", 1, my_sqrt);
-  AddFunction ("exp",  1, my_exp);
-  AddFunction ("ln",   1, my_ln);
-  AddFunction ("log",  1, my_log);
-  AddFunction ("sin",  1, my_sin);
-  AddFunction ("cos",  1, my_cos);
-  AddFunction ("tan",  1, my_tan);
-  
-  // min, max
-  AddFunction ("min",  2, my_min);
-  AddFunction ("max",  2, my_max);
-
-  // register some basic string functions
-  AddFunction ("strlen", 1, my_strlen);
-
   
   return 0;
 }

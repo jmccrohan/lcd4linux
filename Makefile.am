@@ -19,6 +19,8 @@ parser.c parser.h \
 processor.c processor.h \
 evaluator.c evaluator.h \
 plugin.c plugin.h \
+plugin_math.c \
+plugin_string.c \
 system.c system.h \
 isdn.c isdn.h \
 wifi.c wifi.h \
