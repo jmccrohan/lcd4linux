@@ -115,4 +115,8 @@ make the output for emails shorter (at the moment up to 9999 emails)
 combine mail.c and mail2.c
 if there's an error getting mail info, display "?" instead of "0"
 
-
+2001-09-14 Michael Reinelt <reinelt@eunet.at>
+do not disable mail check in first error
+instead use a number of retries
+errors can occur in case of short disconnects, but normal operation 
+should resume 
