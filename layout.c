@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.1 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: layout.c,v 1.2 2004/01/11 09:26:15 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.2  2004/01/11 09:26:15  reinelt
+ * layout starts to exist...
+ *
  * Revision 1.1  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -44,31 +47,55 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "debug.h"
 #include "cfg.h"
 #include "layout.h"
 
 
-#define MAX_ROWS 32
-#define MAX_COLS 80
+void layout_addItem (char *name, int row, int col)
+{
+
+  debug ("layout_addItem(%s, %d, %d)", name, row, col);
+}
+
 
 int layout_init (char *layout)
 {
-  char *section, *widget;
-  char  buffer[15];
+  char *section;
+  char *list;
+  char *key;
+  char *widget;
   int row, col;
+  
+  char buffer[32];
   
   info ("initializing layout '%s'", layout);
   
   // prepare config section
-  // strlen("Layout:")=7, +1=8
+  // strlen("Layout:")=7
   section=malloc(strlen(layout)+8);
   strcpy(section, "Layout:");
   strcat(section, layout);
 
-  cfg_list(section);
-
+  list=cfg_list(section);
+  key=strtok(list, "|");
+  while (key!=NULL) {
+    int i, n;
+    char *k;
+    // map to lower char for scanf()
+    for (k=key; *k!='\0'; k++) *k=tolower(*k);
+    i=sscanf (key, "row%d.col%d%n", &row, &col, &n);
+    if (i==2 && key[n]=='\0') {
+      widget=cfg_get(section, key, NULL);
+      if (widget!=NULL && *widget!='\0') {
+	layout_addItem (widget, row, col);
+      }
+    }
+    key=strtok(NULL, "|");
+  }
+  free (list);
   
   return 0;
 }

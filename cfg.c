@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.24 2004/01/10 20:22:33 reinelt Exp $^
+/* $Id: cfg.c,v 1.25 2004/01/11 09:26:15 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.25  2004/01/11 09:26:15  reinelt
+ * layout starts to exist...
+ *
  * Revision 1.24  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -149,6 +152,11 @@
  *   arg is 'key=value'
  *   cfg_cmd can be called _before_ cfg_read()
  *   returns 0 if ok, -1 if arg cannot be parsed
+ *
+ * cfg_list (section)
+ *   returns a list of all keys in the specified section
+ *   This list was allocated be cfg_list() and must be 
+ *   freed by the caller!
  *
  * cfg_get (section, key, defval) 
  *   return the a value for a given key in a given section 
@@ -323,7 +331,7 @@ int l4l_cfg_cmd (char *arg)
 char *l4l_cfg_list (char *section)
 {
   int i, len;
-  char *key;
+  char *key, *list;
   
   // calculate key length
   len=strlen(section)+1;
@@ -333,14 +341,21 @@ char *l4l_cfg_list (char *section)
   strcpy (key, section);
   strcat (key, ".");
   
+  // start with empty string
+  list=malloc(1);
+  *list='\0';
+  
   // search matching entries
   for (i=0; i<nConfig; i++) {
     if (strncasecmp(Config[i].key, key, len)==0) {
-      debug ("found list: %s", Config[i].key);
+      list=realloc(list, strlen(list)+strlen(Config[i].key)-len+2);
+      strcat (list, "|");
+      strcat (list, Config[i].key+len);
     }
   }
   
-  return NULL;
+  free (key);
+  return list;
 }
 
 

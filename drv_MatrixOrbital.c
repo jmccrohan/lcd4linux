@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.4 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.5 2004/01/11 09:26:15 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.5  2004/01/11 09:26:15  reinelt
+ * layout starts to exist...
+ *
  * Revision 1.4  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -381,7 +384,7 @@ static int drv_MO_start (char *section)
   for (i=0; Models[i].type!=0xff; i++) {
     if (Models[i].type == (int)*buffer) break;
   }
-  info ("MatrixOrbital: Display identifies itself as a '%s' (type 0x%02x)", 
+  info ("MatrixOrbital: display identifies itself as a '%s' (type 0x%02x)", 
 	Models[i].name, Models[i].type);
   
   // auto-dedection
@@ -398,13 +401,13 @@ static int drv_MO_start (char *section)
   drv_MO_write ("\3765", 2);
   usleep(100000);
   drv_MO_read (buffer, 2);
-  info ("MatrixOrbital: Display reports Serial Number 0x%x", *(short*)buffer);
+  info ("MatrixOrbital: display reports serial number 0x%x", *(short*)buffer);
   
   // read version number
   drv_MO_write ("\3766", 2);
   usleep(100000);
   drv_MO_read (buffer, 1);
-  info ("MatrixOrbital: Display reports Firmware Version 0x%x", *buffer);
+  info ("MatrixOrbital: display reports firmware version 0x%x", *buffer);
 
   
   // initialize global variables

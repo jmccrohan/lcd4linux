@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.4 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: widget.c,v 1.5 2004/01/11 09:26:15 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.5  2004/01/11 09:26:15  reinelt
+ * layout starts to exist...
+ *
  * Revision 1.4  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -60,8 +63,8 @@
 static WIDGET_CLASS *Classes=NULL;
 static int          nClasses=0;
 
-static WIDGET *Widgets=NULL;
-static int    nWidgets=0;
+static WIDGET       *Widgets=NULL;
+static int          nWidgets=0;
 
 
 int widget_register (WIDGET_CLASS *widget)
