@@ -2,23 +2,19 @@
 
 AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
+DRIVERS=@DRIVERS@
 
 bin_PROGRAMS = lcd4linux
-# deactivateing shared lib target for the moment until
-# libtool works cleanly...
-#lib_LTLIBRARIES = liblcd4linux.la
+lib_LTLIBRARIES = liblcd4linux.la
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
 lcd4linux_LDFLAGS = $(X_LIBS)
-lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
+lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@ liblcd4linux.la
 lcd4linux_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
-debug.c debug.h \
-cfg.c cfg.h \
-lock.c lock.h \
 pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
@@ -29,19 +25,27 @@ seti.c seti.h \
 battery.c battery.h \
 dvb.c dvb.h \
 filter.c filter.h \
-udelay.c udelay.h \
-display.c display.h \
-pixmap.c pixmap.h \
 widget.c widget.h \
-bar.c bar.h \
-icon.c icon.h \
-fontmap.c fontmap.h \
 exec.c exec.h \
 mail2.c \
 socket.c socket.h
 
-EXTRA_lcd4linux_SOURCES= \
+liblcd4linux_la_LDFLAGS = -version-info 9:11:9
+liblcd4linux_la_LIBADD=$(DRIVERS)
+
+liblcd4linux_la_SOURCES = \
+display.c display.h \
+debug.c debug.h \
+cfg.c cfg.h \
+lock.c lock.h \
+pixmap.c pixmap.h \
+bar.c bar.h \
+icon.c icon.h \
+fontmap.c fontmap.h \
 parport.c parport.h \
+udelay.c udelay.h 
+
+EXTRA_lcd4linux_SOURCES= \
 BeckmannEgle.c \
 Crystalfontz.c \
 Cwlinux.c \
@@ -57,22 +61,6 @@ SIN.c \
 Skeleton.c \
 XWindow.c \
 Text.c
-
-# deactivated
-# liblcd4linux_la_LDFLAGS = -version-info 9:11:9
-
-# liblcd4linux_la_SOURCES = \
-display.c display.h \
-debug.c debug.h \
-cfg.c cfg.h \
-lock.c lock.h \
-pixmap.c pixmap.h \
-bar.c bar.h \
-icon.c icon.h \
-fontmap.c fontmap.h \
-parport.c parport.h \
-udelay.c udelay.h \
-@DRIVERS@
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \
