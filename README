@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.13 2001/03/07 18:10:21 ltoetsch Exp $
+# $Id: README,v 1.14 2001/03/08 15:25:38 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -17,22 +17,23 @@ vertical bars, logarithmic bars, split bars (two independent bars in one row).
 USAGE
 
 lcd4linux -h  
-print version number and a small help text, then exit
+  print version number and a small help text, then exit
 
 lcd4linux -l 
-list available drivers
+  list available drivers
 
 lcd4linux -d
-calibrate delay loop (necessary for some drivers)
+  calibrate delay loop (necessary for some drivers)
 
 lcd4linux [-c key=val] [-F] [-f config-file] [-o output] [-q] [-v]
-run lcd4linux 
-overwrite entries from the config-file with '-c'
-do not fork and detach with '-F'
-use configuration from 'config-file' instead of /etc/lcd4linux.conf
-write picture to 'output' (raster driver only)
-suppress startup splash screen with '-q'
-generate debugging messages with '-v'
+  run lcd4linux 
+  overwrite entries from the config-file with '-c'
+  do not fork and detach with '-F'
+  use configuration from 'config-file' instead of /etc/lcd4linux.conf
+  write picture to 'output' (raster driver only)
+  suppress startup splash screen with '-q'
+  generate info messages with '-v'
+  generate debugging messages with '-vv'
 
 
 SUPPORTED DISPLAYS
@@ -65,10 +66,11 @@ SUPPORTED DISPLAYS
 
 
 * X11
-  thanks to Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at> a driver for the 
-  X Window System is available. It supports any size at any resolution. A very
-  small XLCD4Linux-Window can even swallow on the KDE Panel!
-  
+  thanks to Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at> a driver
+  for the X Window System is available. It supports any size at any
+  resolution. A very small XLCD4Linux-Window can even swallow on the KDE
+  Panel!
+
 
 * Raster formats:
   a generic raster driver (which is used by the X11-driver, too) is availiable,
@@ -77,53 +79,68 @@ SUPPORTED DISPLAYS
      PNG (with libgd)
 
 
-* other displays: lcd4linux and especially the display driver code is very modular, 
-  so it should be quite easy to write a driver for any display. See README.driver
-  for details. Contributors are welcome!!!
+* other displays: lcd4linux and especially the display driver code is very
+  modular, so it should be quite easy to write a driver for any display. See
+  README.driver for details. Contributors are welcome!!!
 
 
 CONFIGURATION
 
-The configuration file (default: /etc/lcd4linux.conf) has a very simple format: 
-Every line consists of a key and a value, seperated by whitespace (blanks or tabs). 
-Values can contain whitespace, and can be enclosed in single or double quotes.
-A key must not contain whitespace. Keys are NOT case-sensitive. Order doesn't matter.
-Empty lines and all text on a line after a '#' will be ignored. If you want to
-use '#' in a value (think of X11-colors), you have to quote it with a backslash.
+The configuration file (default: /etc/lcd4linux.conf) has a very simple
+format: Every line consists of a key and a value, seperated by whitespace
+(blanks or tabs). Values can contain whitespace, and can be enclosed in
+single or double quotes. A key must not contain whitespace. Keys are NOT
+case-sensitive. Order doesn't matter. Empty lines and all text on a line
+after a '#' will be ignored. If you want to use '#' in a value (think of
+X11-colors), you have to quote it with a backslash.
 
 NOTE:
 
 Because of security reasons the config file is assured to be:
    * - file is a normal file (or /dev/null)
    * - file owner is owner of program
-   * - file is not writeable by group
-   * - file is not writeable by other
+   * - file is not accessible by group
+   * - file is not accessible by other
    
 So if you run lcd4linux as root, /etc/lcd4linux has to be:
   chmod 600
   chown root.root
 
 
-The configuration file contains information for different modules of lcd4linux: 
+The configuration file contains information for different modules of
+lcd4linux:
 
 Global options:
 
   tick: time in milliseconds between bar updates
-  tack: time in milliseconds between text updates (text can be updated less often than 
-        bars, so you get a smooth bar display and readable text)
+  tack: time in milliseconds between text updates (text can be updated less 
+        often than bars, so you get a smooth bar display and readable text)
   tau:  time constant (in milliseconds) for damping function (not used by now)
 
 Data-specific options:
 
-  overload: load average threshold and bar scaling. The '%L' token (see below) displays 
-            a '!' instead of a blank if the current load average exceeds this value. 
+  overload: load average threshold and bar scaling. The '%L' token (see below)
+            displays a '!' instead of a blank if the current load average 
+	    exceeds this value. 
             load bars are scaled by this value (load=overload gives 100%)
   fifo: path to fifo for communication with isdnlog (not yet implemented)
-  sensor1: path to the 1st temperature file (e.g. /proc/sys/dev/sensors/w83781d-isa-0290/temp1)
-           it is important that you use the isa sensors, because the i2c sensors are very slow!
+  sensor1: path to the 1st temperature file 
+           (e.g. /proc/sys/dev/sensors/w83781d-isa-0290/temp1)
+           it is important that you use the isa sensors, because the i2c 
+	   sensors are very slow!
   sensor1_min: temperature where the corresponding bar starts
   sensor1_max: temperature where bar ends
   sensor[2..9], -_min, -_max: entries for the 2nd to 9th temperature sensor
+  
+  exec:
+     x1 ... x9: command to execute, PATH=/usr/local/bin:/usr/bin:/bin
+                $X1 ... $X8 is result of command 1..8 in environment
+     Tick_x1 .. 9 delay in ticks (overrides delay_x)
+     Delay_x1 ..9 delay in seconds (default 1)
+     Scale_x1 ..9 scale for bars (default 100)
+     
+  battery: Battwarning 10 (default 10)
+   
  
 Driver-specific options:
   
@@ -131,26 +148,28 @@ Driver-specific options:
   every driver has its own configuration options (e.g. 'Port', 'Speed', ...)
   see README.<Drivername> for details!
   
+  
 Display options:
   
   row1: Text to display in row 1
   row[2-max]: Text to display in other rows
 
-  The text to be displayed can contain specific directives, which will be replaced 
-  by the appropriate values, or will create bars:
+  The text to be displayed can contain specific directives, which will be
+  replaced by the appropriate values, or will create bars:
 
   '\nnn` will write the ASCII-character nnn (octal)
   '%<token>' will be replaced by the value of <token>
   '%%' will write a '%'
   '%$' will write a '$'
-  '$<direction><length><token>[+<token>] will create a bar with the specified direction 
-   and length (in characters) with the value of <token>. If the driver supports dual bars,
-   you can specify the second value with '+<token>'. 
-   <direction> can be 'l' (left), 'r' (right), 'u' (up) or 'd' (down).
-   If you specify the direction in upper case, a logarithmic bar will be created.
-   note that the space occupied by a bar always grows from left to right or from top to
-   bottom, regardless of the direction!
-   
+
+  '$<direction><length><token>[+<token>] will create a bar with the
+  specified direction and length (in characters) with the value of <token>.
+  If the driver supports dual bars, you can specify the second value with
+  '+<token>'. <direction> can be 'l' (left), 'r' (right), 'u' (up) or 'd'
+  (down). If you specify the direction in upper case, a logarithmic bar will
+  be created. note that the space occupied by a bar always grows from left
+  to right or from top to bottom, regardless of the direction!
+
 Tokens:
 
   'o',  operating system name ('Linux')

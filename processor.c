@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.17 2001/03/08 08:39:55 reinelt Exp $
+/* $Id: processor.c,v 1.18 2001/03/08 15:25:38 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.18  2001/03/08 15:25:38  ltoetsch
+ * improved exec
+ *
  * Revision 1.17  2001/03/08 08:39:55  reinelt
  *
  * fixed two typos
@@ -114,6 +117,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -146,7 +150,6 @@ struct { int perc, stat; double dur; } batt;
 struct { double perc, cput; } seti;
 struct { int num; } mail[MAILBOXES];
 struct { double val, min, max; } sensor[SENSORS];
-struct { char s[EXEC_TXT_LEN]; } exec[EXECS];
 
 static double query (int token)
 {
@@ -240,6 +243,9 @@ static double query (int token)
 
   case T_SENSOR:
     return sensor[(token>>8)-'0'].val;
+
+  case T_EXEC:
+    return exec[(token>>8)-'0'].val;
   }
   return 0.0;
 }
@@ -250,7 +256,7 @@ static double query_bar (int token)
   int i;
   double value=query(token);
   
-  switch (token) {
+  switch (token & 255) {
 
   case T_MEM_TOTAL:
   case T_MEM_USED:
@@ -312,12 +318,12 @@ static double query_bar (int token)
   return value;
 }
 
-static void print_token (int token, char **p)
+static void print_token (int token, char **p, char *start, int maxlen)
 {
   double val;
   int i;
   
-  switch (token) {
+  switch (token & 255) {
   case T_PERCENT:
     *(*p)++='%';
     break;
@@ -439,20 +445,19 @@ static void print_token (int token, char **p)
     }
     break;
 
-#if 0
-    never comes here -lt ?
   case T_MAIL:
     val=query(token);
     *p+=sprintf (*p, "%3.0f", val);
     break;
-#endif    
+
+  case T_EXEC:
+    i = (token>>8)-'0';
+    *p+=sprintf (*p, "%.*s",cols-(*p-start), exec[i].s);
+    for (i=*p-start; i<cols && maxlen--; i++) /* clear right of text */
+      *(*p)++=' ';
+    break;
     
   default:
-    if ((token & 255) == T_EXEC) {
-      i = (token>>8)-'0';
-      *p+=sprintf (*p, "%s", exec[i].s);
-    }
-    else
       *p+=sprintf (*p, "%5.0f", query(token));
   }
 }
@@ -525,7 +530,7 @@ static void collect_data (void)
 
   for (i=1; i<EXECS; i++) {
     if (token_usage[T_EXEC]&(1<<i)) {
-      Exec (i, exec[i].s);
+      Exec (i, exec[i].s, &exec[i].val);
     }
   }
 }
@@ -536,12 +541,16 @@ static char *process_row (int r)
   char *s=row[r];
   char *p=buffer;
   int token;
+  int len;
+  char *q;
   
   do {
     if (*s=='%') {
       token = *(unsigned char*)++s;
       if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
-      print_token (token, &p);
+      for (q = p, len=0; *q && isspace(*q); q++)
+	len++;
+      print_token (token, &p, buffer, len);
 	
     } else if (*s=='$') {
       double val1, val2;

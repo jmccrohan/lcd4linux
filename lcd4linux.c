@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.29 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.30 2001/03/08 15:25:38 ltoetsch Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.30  2001/03/08 15:25:38  ltoetsch
+ * improved exec
+ *
  * Revision 1.29  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -182,7 +185,7 @@ char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>
 char **my_argv;
 char *output=NULL;
 int got_signal=0;
-int debugging=1;
+int debugging=0;
 int foreground=0;
 int tick, tack;
 
@@ -343,7 +346,7 @@ int main (int argc, char *argv[])
   }
   
   if (foreground) {
-    debug ("LCD4Linux " VERSION);
+    info ("Version " VERSION " starting");
   } else {
     info ("Version " VERSION " starting");
     if (my_argv[0]==NULL || my_argv[0][0]!='/') {

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.10 2001/03/07 18:10:21 ltoetsch Exp $
+/* $Id: cfg.c,v 1.11 2001/03/08 15:25:38 ltoetsch Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.11  2001/03/08 15:25:38  ltoetsch
+ * improved exec
+ *
  * Revision 1.10  2001/03/07 18:10:21  ltoetsch
  * added e(x)ec commands
  *
@@ -221,8 +224,8 @@ static int check_cfg_file(char *file)
    * we will check that:
    * - file is a normal file (or /dev/null)
    * - file owner is owner of program
-   * - file is not writeable by group
-   * - file is not writeable by other
+   * - file is not accessible by group
+   * - file is not accessible by other
    */
 
   uid_t uid, gid;

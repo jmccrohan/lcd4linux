@@ -62,6 +62,18 @@ Row2 "%p CPU  %r MB RAM"
 Row3 "Busy %cb%% $r10cs+cb"
 Row4 "Load%l1%L$r10l1"
 
+# e(x)ecute command in %x*
+# Row5 %x1
+# Row6 %x2
+# x1 tail -1 /var/log/messages
+# x2 echo $X1 | cut -b25-
+# Note: PATH=/usr/local/bin:/usr/bin:/bin
+# Note: $X1 .. $X8 is the text of lines x1 .. x8
+#
+# Tick_x1 10  # every 10 ticks
+# Delay_x1 2  # every 2 seconds
+# Scale_x1 50 # scale for bars (default 100), value SHOULD be numeric ;-)
+
 #Row1 "Load%l1%L$r10cs+cb"
 #Row2 "Disk%dm $R10dr+dw"
 #Row3 "Net %nm $R10nr+nw"

@@ -1,4 +1,4 @@
-/* $Id: exec.h,v 1.1 2001/03/07 18:10:21 ltoetsch Exp $
+/* $Id: exec.h,v 1.2 2001/03/08 15:25:38 ltoetsch Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: exec.h,v $
+ * Revision 1.2  2001/03/08 15:25:38  ltoetsch
+ * improved exec
+ *
  * Revision 1.1  2001/03/07 18:10:21  ltoetsch
  * added e(x)ec commands
  *
@@ -30,9 +33,17 @@
 #define _EXEC_H_
 
 #define EXECS 9
-#define EXEC_WAIT 2
 #define EXEC_TXT_LEN 256
 
-int Exec (int index, char txt[EXEC_TXT_LEN]);
+#ifdef IN_EXEC
+  #define EXTERN extern
+#else
+  #define EXTERN
+#endif
+
+EXTERN struct { char s[EXEC_TXT_LEN]; double val; } exec[EXECS+1];
+
+int Exec (int index, char txt[EXEC_TXT_LEN], double *val);
+
 
 #endif
