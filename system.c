@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.4 2000/03/10 10:49:53 reinelt Exp $
+/* $Id: system.c,v 1.5 2000/03/10 17:36:02 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.5  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.4  2000/03/10 10:49:53  reinelt
  *
  * MatrixOrbital driver finished
@@ -87,7 +91,7 @@
 #include <asm/param.h>
 
 #include "system.h"
-#include "config.h"
+#include "cfg.h"
 #include "filter.h"
 
 char *System(void)
@@ -174,7 +178,7 @@ int Load (double *load1, double *load2, double *load3)
   
   if (time(NULL)==now) return 0;
   time(&now);
-
+  
   if (fd==-2) {
     fd=open("/proc/loadavg", O_RDONLY);
     if (fd==-1) {
@@ -377,7 +381,7 @@ int Sensor (int index, double *val, double *min, double *max)
   static double max_buf[SENSORS]={0.0,};
   static time_t now[SENSORS]={0,};
 
-  if (index<0 || index>=SENSORS) return -1;
+  if (index<1 || index>=SENSORS) return -1;
 
   *val=val_buf[index];
   *min=min_buf[index];

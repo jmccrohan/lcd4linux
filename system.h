@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.3 2000/03/07 11:01:34 reinelt Exp $
+/* $Id: system.h,v 1.4 2000/03/10 17:36:02 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.4  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.3  2000/03/07 11:01:34  reinelt
  *
  * system.c cleanup
@@ -34,7 +38,7 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#define SENSORS 16
+#define SENSORS 9
 
 char *System (void);
 char *Release (void);

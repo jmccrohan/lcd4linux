@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.1 2000/03/10 11:40:47 reinelt Exp $
+/* $Id: cfg.c,v 1.2 2000/03/10 17:36:02 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.2  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.1  2000/03/10 11:40:47  reinelt
  * *** empty log message ***
  *
@@ -30,7 +34,6 @@
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
- *
  *
  */
 

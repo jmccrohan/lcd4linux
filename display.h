@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.4 2000/03/10 10:49:53 reinelt Exp $
+/* $Id: display.h,v 1.5 2000/03/10 17:36:02 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.5  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.4  2000/03/10 10:49:53  reinelt
  *
  * MatrixOrbital driver finished
@@ -31,7 +35,6 @@
  * Revision 1.2  2000/01/16 16:58:50  reinelt
  * *** empty log message ***
  *
- *
  */
 
 #ifndef _DISPLAY_H_
@@ -41,7 +44,7 @@
 #define BAR_R 2
 #define BAR_U 4
 #define BAR_D 8
-#define BAR_S 256
+#define BAR_S 16
 
 typedef struct DISPLAY {
   char name[16];
@@ -63,6 +66,7 @@ typedef struct {
 } FAMILY;
 
 int lcd_init (char *display);
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars);
 int lcd_clear (void);
 int lcd_put (int row, int col, char *text);
 int lcd_bar (int type, int row, int col, int max, int len1, int len2);

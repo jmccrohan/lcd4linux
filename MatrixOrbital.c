@@ -1,3 +1,40 @@
+/* $Id: MatrixOrbital.c,v 1.4 2000/03/10 17:36:02 reinelt Exp $
+ *
+ *  driver for Matrix Orbital serial display modules
+ *
+ * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: MatrixOrbital.c,v $
+ * Revision 1.4  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
+ *
+ */
+
+/* 
+ *
+ * exported fuctions:
+ *
+ * struct DISPLAY MatrixOrbital[]
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -6,7 +43,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "config.h"
+#include "cfg.h"
 #include "display.h"
 
 #define XRES 5
@@ -38,8 +75,6 @@ static BAR  Bar[4][40];
 static int nSegment=2;
 static SEGMENT Segment[256] = {{ len1:   0, len2:   0, type:255, used:0, ascii:32 },
 			       { len1:XRES, len2:XRES, type:255, used:0, ascii:255 }};
-
-#define CL 0x0b
 
 
 static int MO_open (void)
@@ -149,6 +184,7 @@ static void MO_compact_bars (void)
     while (nSegment>CHARS+2) {
       min=65535;
       pack_i=-1;
+      pack_j=-1;
       for (i=2; i<nSegment; i++) {
 	for (j=0; j<nSegment; j++) {
 	  if (error[i][j]<min) {
@@ -219,7 +255,7 @@ int MO_clear (void)
 
   for (row=0; row<Display.rows; row++) {
     for (col=0; col<Display.cols; col++) {
-      Txt[row][col]=CL;
+      Txt[row][col]='\t';
       Bar[row][col].len1=-1;
       Bar[row][col].len2=-1;
       Bar[row][col].type=0;
@@ -330,10 +366,10 @@ int MO_flush (void)
       }
     }
     for (col=0; col<Display.cols; col++) {
-      if (Txt[row][col]==CL) continue;
+      if (Txt[row][col]=='\t') continue;
       buffer[2]=col+1;
       for (p=buffer+4; col<Display.cols; col++, p++) {
-	if (Txt[row][col]==CL) break;
+	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
       MO_write (buffer, p-buffer);

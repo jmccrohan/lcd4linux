@@ -1,16 +1,18 @@
-#Row1 "%p%t\337$h10rt"
-Row1 "Busy %b%% $h5rb$h5rl"
-Row2 "Disk%D%dm $H5rdr$H5rdw"
-Row3 "Netz%N%nm $H5rnr$H5rnw"
-Row4 "ISDN%I%im $h5rio$h5rii"
-
+Display LCD2041
 Port /dev/ttyS2
-Fifo /var/run/lcd4linux
+Contrast 160
+
+Row1 "*** %o %r ***"
+Row2 "%p CPU  %m MB RAM"
+Row3 "Busy %cu%% $r10cu"
+Row4 "L$$D %l1%L$r10l1"
+
 Tick 100
 Tack 400
 Tau 500
-Contrast 160
 Overload 2.0
+
+Fifo /var/run/lcd4linux
 
 Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp2
 Sensor1_min 30

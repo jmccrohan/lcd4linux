@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.3 2000/03/10 10:49:53 reinelt Exp $
+/* $Id: display.c,v 1.4 2000/03/10 17:36:02 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.4  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.3  2000/03/10 10:49:53  reinelt
  *
  * MatrixOrbital driver finished
@@ -28,13 +32,35 @@
  *
  * minor cleanups
  *
+ */
+
+/* 
+ * exported functions:
+ *
+ * lcd_init (char *display)
+ *    initializes the named driver
+ *
+ * lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
+ *    queries the attributes of the selected driver
+ *
+ * lcd_clear ()
+ *    clears the display
+ *
+ * int lcd_put (int row, int col, char *text)
+ *    writes text at row, col
+ *
+ * int lcd_bar (int type, int row, int col, int max, int len1, int len2)
+ *    draws a specified bar at row, col with len
+ *
+ * int lcd_flush (void)
+ *    flushes the framebuffer to the display
  *
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "config.h"
+#include "cfg.h"
 #include "display.h"
 
 extern DISPLAY MatrixOrbital[];
@@ -60,6 +86,20 @@ int lcd_init (char *display)
   }
   fprintf (stderr, "lcd_init(%s) failed: no such display\n", display);
   return -1;
+}
+
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
+{
+  if (Display==NULL)
+    return -1;
+  
+  *rows=Display->rows;
+  *cols=Display->cols;
+  *xres=Display->xres;
+  *yres=Display->yres;
+  *bars=Display->bars;
+
+  return 0;
 }
 
 int lcd_clear (void)

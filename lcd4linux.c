@@ -1,3 +1,32 @@
+/* $Id: lcd4linux.c,v 1.2 2000/03/10 17:36:02 reinelt Exp $
+ *
+ * LCD4Linux
+ *
+ * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: lcd4linux.c,v $
+ * Revision 1.2  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,60 +34,129 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "config.h"
-#include "lcd2041.h"
+#include "cfg.h"
+#include "display.h"
 #include "system.h"
 #include "isdn.h"
 
-int tick, tack, tau;
+#define ROWS 16
+
 double overload;
-double temp_min, temp_max;
-char *sensor;
+int tick, tack, tau;
+int rows, cols, xres, yres, bars;
 char *row[ROWS];
 
 void usage(void)
 {
-  printf ("LCD4Linux " VERSION " (c) 1999 Michael Reinelt <reinelt@eunet.at>");
-  printf ("usage: LCD4Linux [configuration]\n");
+  printf ("LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>");
+  printf ("usage: lcd4linux [configuration]\n");
+}
+
+int bar_type (char tag)
+{
+  switch (tag) {
+  case 'l':
+    return BAR_L;
+  case 'r':
+    return BAR_R;
+  case 'u':
+    return BAR_U;
+  case 'd':
+    return BAR_D;
+  default:
+    return 0;
+  }
+}
+
+int strpos (char *s, int c)
+{
+  int i;
+  char *p;
+  for (p=s, i=0; *p; p++, i++) {
+    if (*p==c) return i;
+  }
+  return -1;
+}
+  
+int print4f (char *p, double val)
+{
+  if (val<10.0) {
+    return sprintf (p, "%4.2f", val);
+  } else if (val<100.0) {
+    return sprintf (p, "%4.1f", val);
+  } else {
+    return sprintf (p, "%4.0f", val);
+  }
 }
 
 char *parse (char *string)
 {
+  int pos;
   static char buffer[256];
   char *s=string;
   char *p=buffer;
 
   do {
     if (*s=='%') {
-      if (strchr("orpmlLbtdDnNiI%", *++s)==NULL) {
+      if (strchr("orpmlLcdDnNiIs%", *++s)==NULL) {
 	fprintf (stderr, "WARNING: unknown format <%%%c> in <%s>\n", *s, string);
 	continue;
       } 
       *p='%';
       *(p+1)=*s;
       switch (*s) {
-      case 'd':
-	if (strchr("rwmt", *++s)==NULL) {
-	  fprintf (stderr, "WARNING: unknown disk tag <%%i%c> in <%s>\n", *s, string);
+      case 'l':
+	pos=strpos("123", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown Load tag <%%l%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+2)=*s;
+	*(p+2)=pos+1;
+	p+=3;
+	break;
+      case 'c':
+	pos=strpos("unsi", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown CPU tag <%%c%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+2)=pos+1;
+	p+=3;
+	break;
+      case 'd':
+	pos=strpos("rwtm", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown disk tag <%%d%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+2)=pos+1;
 	p+=3;
 	break;
       case 'n':
-	if (strchr("rwmt", *++s)==NULL) {
-	  fprintf (stderr, "WARNING: unknown net tag <%%i%c> in <%s>\n", *s, string);
+	pos=strpos("iotm", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown net tag <%%n%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+2)=*s;
+	*(p+2)=pos+1;
 	p+=3;
 	break;
       case 'i':
-	if (strchr("iomt", *++s)==NULL) {
+	pos=strpos("iotm", *++s);
+	if (pos<0) {
 	  fprintf (stderr, "WARNING: unknown ISDN tag <%%i%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+2)=*s;
+	*(p+2)=pos+1;
+	p+=3;
+	break;
+      case 's':
+	pos=strpos("123456789", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown sensor <%%s%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+2)=pos+1;
 	p+=3;
 	break;
       default:
@@ -66,57 +164,91 @@ char *parse (char *string)
       }
       
     } else if (*s=='$') {
-      char hv, dir;
+      char dir;
+      int type;
       int len=0;
-      hv=*++s;
-      if (tolower(hv)!='h' && tolower(hv)!='v') {
-	fprintf (stderr, "invalid bar orientation '%c' in <%s>\n", hv, string);
+      dir=*++s;
+      if (dir=='$') {
+	*p++='$';
+	*p++='$';
 	continue;
       }
-      s++;
-      if (isdigit(*s)) len=strtol(s, &s, 10);
+      if (strchr("lrud", tolower(dir))==NULL) {
+	fprintf (stderr, "invalid bar direction '%c' in <%s>\n", dir, string);
+	continue;
+      }
+      type=bar_type(tolower(dir));
+      if (type==0) {
+	fprintf (stderr, "driver does not support bar type '%c'\n", dir);
+	continue;
+      }
+      if (isdigit(*++s)) len=strtol(s, &s, 10);
       if (len<1 || len>255) {
 	fprintf (stderr, "invalid bar length in <%s>\n", string);
 	continue;
       }
-      dir=*s++;
-      if ((tolower(hv)=='h' && dir!='l' && dir !='r') || (tolower(hv)=='v' && dir!='u' && dir !='d')) {
-	fprintf (stderr, "invalid bar direction '%c' in <%s>\n", dir, string);
-	continue;
-      }
       *p='$';
-      *(p+1)=hv;
+      *(p+1)=isupper(dir)?-type:type;
       *(p+2)=len;
-      if (dir=='r' || dir=='u') *(p+3)='0';
-      else *(p+3)='1';
-      *(p+4)=*s;
+      *(p+3)=*s;
       switch (*s) {
-      case 'd':
-	if (strchr("rwmt", *++s)==NULL) {
-	  fprintf (stderr, "WARNING: unknown disk tag <$i*%c> in <%s>\n", *s, string);
+      case 'l':
+	pos=strpos("123", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown Load tag <$l%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+5)=*s;
-	p+=6;
+	*(p+4)=pos+1;
+	p+=5;
+	break;
+      case 'c':
+	pos=strpos("unsi", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown CPU tag <$d%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+4)=pos+1;
+	p+=5;
+	break;
+      case 'd':
+	pos=strpos("rwm", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown disk tag <$d%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+4)=pos+1;
+	p+=5;
 	break;
       case 'n':
-	if (strchr("rwmt", *++s)==NULL) {
-	  fprintf (stderr, "WARNING: unknown net tag <$i*%c> in <%s>\n", *s, string);
+	pos=strpos("iom", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown net tag <$n%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+5)=*s;
-	p+=6;
+	*(p+4)=pos+1;
+	p+=5;
 	break;
       case 'i':
-	if (strchr("iomt", *++s)==NULL) {
-	  fprintf (stderr, "WARNING: unknown ISDN tag <$i*%c> in <%s>\n", *s, string);
+	pos=strpos("iom", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown ISDN tag <$i%c> in <%s>\n", *s, string);
 	  continue;
 	} 
-	*(p+5)=*s;
-	p+=6;
+	*(p+4)=pos+1;
+	p+=5;
+	break;
+      case 's':
+	pos=strpos("123456789", *++s);
+	if (pos<0) {
+	  fprintf (stderr, "WARNING: unknown sensor <$s%c> in <%s>\n", *s, string);
+	  continue;
+	} 
+	*(p+4)=pos+1;
+	p+=5;
 	break;
       default:
-	p+=5;
+	fprintf (stderr, "WARNING: unknown bar format <$%c> in <%s>\n", *s, string);
+	p+=4;
       }
       
     } else if (*s=='\\') {
@@ -144,31 +276,37 @@ char *parse (char *string)
 }
 
 
-void display (int smooth) {
-  static double disk_max=1.0;
-  static double net_max=1.0;
-  double busy, load, temp, disk, net, isdn;
-  int disk_r, disk_w;
-  int net_tx, net_rx;
-  int isdn_usage, isdn_in, isdn_out;
+void draw (int smooth)
+{
+  double load[3];
+  double busy[4];
+  int disk[4]; static int disk_peak=1;
+  int net[4]; static int net_peak=1;
+  int isdn[4]; int isdn_usage; static int isdn_peak=1;
   char buffer[256];
-  int i;
+  double val;
+  int i, r;
   
-  busy=Busy();
-  load=Load();
-  Disk (&disk_r, &disk_w);
-  Net (&net_rx, &net_tx);
-  temp=Temperature();
-  isdn_usage=Isdn(&isdn_in, &isdn_out);
+  Busy (&busy[0], &busy[1], &busy[2], &busy[3]);
+  Load (&load[0], &load[1], &load[2]);
 
-  if (disk_r>disk_max) disk_max=disk_r;
-  if (disk_w>disk_max) disk_max=disk_w;
+  Disk (&disk[0], &disk[1]);
+  disk[2]=disk[0]+disk[1];
+  disk[3]=disk[0]>disk[1]?disk[0]:disk[1];
+  if (disk[3]>disk_peak) disk_peak=disk[3];
 
-  if (net_rx>net_max) net_max=net_rx;
-  if (net_tx>net_max) net_max=net_tx;
+  Net (&net[0], &net[1]);
+  net[2]=net[0]+net[1];
+  net[3]=net[0]>net[1]?net[0]:net[1];
+  if (net[3]>net_peak) net_peak=net[3];
+
+  Isdn (&isdn[0], &isdn[1], &isdn_usage);
+  isdn[2]=isdn[0]+isdn[1];
+  isdn[3]=isdn[0]>isdn[1]?isdn[0]:isdn[1];
+  if (isdn[3]>isdn_peak) isdn_peak=isdn[3];
   
-  for (i=0; i<ROWS; i++) {
-    char *s=row[i];
+  for (r=1; r<=rows; r++) {
+    char *s=row[r];
     char *p=buffer;
     do {
       if (*s=='%') {
@@ -189,231 +327,104 @@ void display (int smooth) {
 	  p+=sprintf (p, "%d", Memory());
 	  break;
 	case 'l':
-	  if (load<10.0)
-	    p+=sprintf (p, "%4.2f", load);
-	  else
-	    p+=sprintf (p, "%4.1f", load);
+	  p+=print4f (p, load[*++s-1]);
 	  break;
 	case 'L':
-	  *p++=load>overload?'!':' ';
+	  *p++=load[0]>overload?'!':' ';
 	  break;
-	case 'b':
-	  p+=sprintf (p, "%3.0f", 100.0*busy);
+	case 'c':
+	  p+=sprintf (p, "%3.0f", 100.0*busy[*++s-1]);
 	  break;
 	case 'd':
-	  switch (*++s) {
-	  case 'r':
-	    disk=disk_r;
-	    break;
-	  case 'w':
-	    disk=disk_w;
-	    break;
-	  case 'm':
-	    disk=disk_r>disk_w?disk_r:disk_w;
-	    break;
-	  default:
-	    disk=disk_r+disk_w;
-	    break;
-	  }
-	  disk/=1024;
-	  if (disk<10.0) {
-	    p+=sprintf (p, "%4.2f", disk);
-	  } else if (disk<100.0) {
-	    p+=sprintf (p, "%4.1f", disk);
-	  } else {
-	    p+=sprintf (p, "%4.0f", disk);
-	  }
+	  p+=print4f (p, disk[*++s-1]);
 	  break;
 	case 'D':
-	  if (disk_r+disk_w==0)
+	  if (disk[0]+disk[1]==0)
 	    *p++=' ';
 	  else
-	    *p++=disk_r>disk_w?'\176':'\177';
+	    *p++=disk[0]>disk[1]?'\176':'\177';
 	  break;
 	case 'n':
-	  switch (*++s) {
-	  case 'r':
-	    net=net_rx;
-	    break;
-	  case 'w':
-	    net=net_tx;
-	    break;
-	  case 'm':
-	    net=net_rx>net_tx?net_rx:net_tx;
-	    break;
-	  default:
-	    net=net_rx+net_tx;
-	    break;
-	  }
-	  net/=1024.0;
-	  if (net<10.0) {
-	    p+=sprintf (p, "%4.2f", net);
-	  } else if (net<100.0) {
-	    p+=sprintf (p, "%4.1f", net);
-	  } else {
-	    p+=sprintf (p, "%4.0f", net);
-	  }
+	  p+=print4f (p, net[*++s-1]/1024.0);
 	  break;
 	case 'N':
-	  if (net_rx+net_tx==0)
+	  if (net[0]+net[1]==0)
 	    *p++=' ';
 	  else
-	    *p++=net_rx>net_tx?'\176':'\177';
-	  break;
-	case 't':
-	  p+=sprintf (p, "%5.1f", temp);
+	    *p++=net[0]>net[1]?'\176':'\177';
 	  break;
 	case 'i':
 	  if (isdn_usage) {
-	    switch (*++s) {
-	    case 'i':
-	      isdn=isdn_in;
-	      break;
-	    case 'o':
-	      isdn=isdn_out;
-	      break;
-	    case 'm':
-	      isdn=isdn_in>isdn_out?isdn_in:isdn_out;
-	      break;
-	    default:
-	      isdn=isdn_in+isdn_out;
-	      break;
-	    }
-	    isdn/=1024.0;
-	    if (isdn<10.0) {
-	      p+=sprintf (p, "%4.2f", isdn);
-	    } else if (isdn<100.0) {
-	      p+=sprintf (p, "%4.1f", isdn);
-	    } else {
-	      p+=sprintf (p, "%4.0f", isdn);
-	    }
+	    p+=print4f (p, isdn[*++s-1]/1024.0);
 	  } else {
 	    p+=sprintf (p, "----");
 	    s++;
 	  }
 	  break;
 	case 'I':
-	  if (isdn_in+isdn_out==0)
+	  if (isdn[0]+isdn[1]==0)
 	    *p++=' ';
 	  else
-	    *p++=isdn_in>isdn_out?'\176':'\177';
+	    *p++=isdn[0]>isdn[1]?'\176':'\177';
 	  break;
 	}
 	
       } else if (*s=='$') {
-      double val;
-      int hv, len, dir;
-      hv=*++s;
-      len=*++s;
-      dir=*++s;
-      switch (*++s) {
-      case 'l':
-	val=load/overload;
-	break;
-      case  'b':
-	val=busy;
-	break;
-      case 'd':
-	switch (*++s) {
-	case 'r':
-	  val=disk_r/disk_max;
-	  break;
-	case 'w':
-	  val=disk_w/disk_max;
-	  break;
-	case 'm':
-	  val=(disk_r>disk_w?disk_r:disk_w)/disk_max;
-	  break;
-	default:
-	  val=(disk_r+disk_w)/(2*disk_max);
-	  break;
+	int dir, len;
+	if ((dir=*++s)=='$') {
+	  *p++='$';
+	  continue;
 	}
-	break;
-      case 'n':
+	len=*++s;
 	switch (*++s) {
-	case 'r':
-	  val=net_rx/net_max;
+	case 'l':
+	  val=load[*++s-1]/overload;
 	  break;
-	case 'w':
-	  val=net_tx/net_max;
+	case  'c':
+	  val=busy[*++s-1];
 	  break;
-	case 'm':
-	  val=(net_rx>net_tx?net_rx:net_tx)/net_max;
+	case 'd':
+	  val=disk[*++s-1]/disk_peak;
 	  break;
-	default:
-	  val=(net_rx+net_tx)/(2*net_max);
+	case 'n':
+	  val=net[*++s-1]/net_peak;
 	  break;
-	}
-	break;
-      case 't':
-	val=(temp-temp_min)/(temp_max-temp_min);
-	break;
-      case 'i':
-	switch (*++s) {
 	case 'i':
-	  val=isdn_in;
-	  break;
-	case 'o':
-	  val=isdn_out;
-	  break;
-	case 'm':
-	  val=isdn_in>isdn_out?isdn_in:isdn_out;
+	  val=isdn[*++s-1]/8000.0;
 	  break;
 	default:
-	  val=isdn_in+isdn_out;
-	  break;
+	  val=0.0;
 	}
-	val/=8000.0;
-	break;
-      default:
-	val=0.0;
+
+	if (dir>0) {
+	  int bar=val*len*xres;
+	  lcd_bar (dir, r, p-buffer+1, len*xres, bar, bar);
+	} else {
+	  double bar=len*xres*log(val*len*xres+1)/log(len*xres); 
+	  lcd_bar (-dir, r, p-buffer+1, len*xres, bar, bar);
+	}
+	
+	for (i=0; i<len && p-buffer<cols; i++)
+	  *p++='\t';
+	
+      } else {
+	*p++=*s;
       }
-      switch (hv) {
-      case 'h':
-	lcd_hbar (p-buffer+1, i+1, dir-'0', len*XRES, val*len*XRES); 
-	break;
-      case 'H':
-	lcd_hbar (p-buffer+1, i+1, dir-'0', len*XRES, (double)len*XRES*log(val*len*XRES+1)/log(len*XRES)); 
-	break;
-      case 'v':
-	lcd_vbar (p-buffer+1, i+1, dir-'0', len*YRES, val*len*XRES); 
-	break;
-      }
-      while (len-->0) {
-	*p++='\t'; 
-      }
-      
-    } else {
-      *p++=*s;
-    }
-  } while (*s++);
+    } while (*s++);
     
     if (smooth==0) {
-      p=buffer;
-      while (*p) {
-	while (*p=='\t') p++;
-	for (s=p; *s; s++) {
-	  if (*s=='\t') {
-	    *s++='\0';
-	    break;
-	  }
-	}
-	if (*p) {
-	  lcd_put (p-buffer+1, i+1, p);
-	}
-	p=s;
-      }
+      lcd_put (r, 1, buffer);
     }
   }
+  lcd_flush();
 }
 
 
 void main (int argc, char *argv[])
 {
-  char *cfg_file="/etc/lcd4linux.conf";
-  char *port;
+  char *cfg="/etc/lcd4linux.conf";
+  char *display;
   int i;
-  int contrast;
   int smooth;
   
   if (argc>2) {
@@ -421,77 +432,57 @@ void main (int argc, char *argv[])
     exit (2);
   }
   if (argc==2) {
-    cfg_file=argv[1];
+    cfg=argv[1];
   }
 
-  set_cfg ("row1", "*** %o %r ***");
-  set_cfg ("row2", "%p CPU  %m MB RAM");
-  set_cfg ("row3", "Busy %b%% $r50b");
-  set_cfg ("row4", "Load %l$r50l");
+  cfg_set ("row1", "*** %o %r ***");
+  cfg_set ("row2", "%p CPU  %m MB RAM");
+  cfg_set ("row3", "Busy %cu%% $r10cu");
+  cfg_set ("row4", "Load %l1%L$r10l1");
 
-  set_cfg ("tick", "100");
-  set_cfg ("tack", "500");
-  set_cfg ("tau", "500");
-  set_cfg ("contrast", "140");
-  set_cfg ("overload", "2.0");
-  set_cfg ("temp_min", "20");
-  set_cfg ("temp_max", "70");
+  cfg_set ("tick", "100");
+  cfg_set ("tack", "500");
+  cfg_set ("tau", "500");
   
-  set_cfg ("fifo", "/var/run/LCD4Linux");
+  cfg_set ("fifo", "/var/run/LCD4Linux");
+  cfg_set ("overload", "2.0");
 
-  if (read_cfg (cfg_file)==-1)
+  if (cfg_read (cfg)==-1)
     exit (1);
-
-  port=get_cfg("port");
-  sensor=get_cfg("temperature");
-  tick=atoi(get_cfg("tick"));
-  tack=atoi(get_cfg("tack"));
-  tau=atoi(get_cfg("tau"));
-  contrast=atoi(get_cfg("contrast"));
-  overload=atof(get_cfg("overload"));
-  temp_min=atof(get_cfg("temp_min"));
-  temp_max=atof(get_cfg("temp_max"));
-
-  if (port==NULL || *port=='\0') {
-    fprintf (stderr, "%s: missing 'port' entry!\n", cfg_file);
+  
+  display=cfg_get("display");
+  if (display==NULL || *display=='\0') {
+    fprintf (stderr, "%s: missing 'display' entry!\n", cfg_file());
     exit (1);
   }
-  
-  for (i=0; i<ROWS; i++) {
+  if (lcd_init(display)==-1) {
+    exit (1);
+  }
+  lcd_query (&rows, &cols, &xres, &yres, &bars);
+
+  tick=atoi(cfg_get("tick"));
+  tack=atoi(cfg_get("tack"));
+  tau=atoi(cfg_get("tau"));
+  overload=atof(cfg_get("overload"));
+
+  for (i=1; i<=rows; i++) {
     char buffer[8];
-    snprintf (buffer, sizeof(buffer), "row%d", i+1);
-    row[i]=strdup(parse(get_cfg(buffer)));
+    snprintf (buffer, sizeof(buffer), "row%d", i);
+    row[i]=strdup(parse(cfg_get(buffer)));
   }
   
-  lcd_init(port);
   lcd_clear();
-  lcd_contrast (contrast);
-
-  lcd_put (1, 1, "** LCD4Linux " VERSION " **");
-  lcd_put (1, 3, "(c) 1999 M. Reinelt");
-
-
-  { 
-    int a, b, c, d;
-
-    lcd_dbar_init();
-    for (a=0; a<40; a++) {
-      b=40-a;
-      c=2*a;
-      d=c+a;
-      lcd_dbar (2, 1, 0, 80, a, b);
-      lcd_dbar (2, 2, 0, 80, c, d);
-      lcd_dbar_flush();
-      usleep( 300*1000);
-    }
-  }
-
+  
+  lcd_put (1,     1, "** LCD4Linux V" VERSION " **");
+  lcd_put (rows-1,1, "(c) 2000 M. Reinelt");
+  lcd_flush();
+  
   sleep (2);
   lcd_clear();
 
   smooth=0;
   while (1) {
-    display(smooth);
+    draw(smooth);
     smooth+=tick;
     if (smooth>tack) smooth=0;
     usleep(1000*tick);

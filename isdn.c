@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.3 2000/03/07 11:01:34 reinelt Exp $
+/* $Id: isdn.c,v 1.4 2000/03/10 17:36:02 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.4  2000/03/10 17:36:02  reinelt
+ *
+ * first unstable but running release
+ *
  * Revision 1.3  2000/03/07 11:01:34  reinelt
  *
  * system.c cleanup
@@ -34,7 +38,7 @@
 /* 
  * exported functions:
  *
- * Isdn (int *usage, int *rx, int *tx)
+ * Isdn (int *rx, int *tx, int *usage)
  *   returns 0 if ok, -1 if error
  *   sets *usage to all channels USAGE or'ed together
  *   sets received/transmitted bytes in *rx, *tx
@@ -101,7 +105,7 @@ static int Usage (void)
   return usage;
 }
 
-int Isdn (int *usage, int *rx, int *tx)
+int Isdn (int *rx, int *tx, int *usage)
 {
   static int fd=-2;
   CPS cps[ISDN_MAX_CHANNELS];
