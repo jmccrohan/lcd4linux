@@ -1,8 +1,9 @@
-/* $Id: widget.c,v 1.2 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: widget.c,v 1.3 2004/01/10 17:34:40 reinelt Exp $
  *
  * generic widget handling
  *
- * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,10 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.3  2004/01/10 17:34:40  reinelt
+ * further matrixOrbital changes
+ * widgets initialized
+ *
  * Revision 1.2  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -45,61 +50,6 @@
 #include "cfg.h"
 #include "widget.h"
 
-static int ROWS=0;
-static int COLS=0;
-static int XRES=0;
-static int YRES=0;
-
-static int *Screen=NULL;
-static WIDGET *Widget=NULL;
-static int nWidget=0;
-
-
-int widget_init (int rows, int cols, int xres, int yres)
+int widget_register (void)
 {
-  if (rows<1 || cols<1) 
-    return -1;
-  
-  ROWS=rows;
-  COLS=cols;
-  XRES=xres;
-  YRES=yres;
-  
-  if ((Screen=malloc(ROWS*COLS*sizeof(*Screen)))==NULL) {
-    error ("widget buffer allocation failed: out of memory?");
-    return -1;
-  }
- 
-  nWidget=0;
-  Widget=NULL;
-return 0;
-}
-
-
-void widget_clear (void)
-{
-  int n;
-  
-  for (n=0; n<ROWS*COLS; n++) {
-    Screen[n]=-1;
-  }
-  
-}
-
-
-int widget_add ()
-{
-  nWidget++;
-  Widget=realloc(Widget, nWidget*sizeof(*Widget));
-  
-  return 0;
-}
-
-
-int widget_peek (int row, int col)
-{
-  if (Screen) 
-    return Screen[row*COLS+col];
-  else
-    return -1;
 }

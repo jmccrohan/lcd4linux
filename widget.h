@@ -1,8 +1,9 @@
-/* $Id: widget.h,v 1.2 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: widget.h,v 1.3 2004/01/10 17:34:40 reinelt Exp $
  *
  * generic widget handling
  *
- * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,10 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.3  2004/01/10 17:34:40  reinelt
+ * further matrixOrbital changes
+ * widgets initialized
+ *
  * Revision 1.2  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -34,13 +39,6 @@
 #ifndef _WIDGET_H_
 #define _WIDGET_H_
 
-typedef struct widget {
-  int x, y;
-  int w, h;
-  
-} WIDGET;
-
-int widget_init (int rows, int cols, int xres, int yres);
-void widget_clear(void);
+int widget_register (void);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.2 2004/01/10 10:20:22 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.3 2004/01/10 17:34:40 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.3  2004/01/10 17:34:40  reinelt
+ * further matrixOrbital changes
+ * widgets initialized
+ *
  * Revision 1.2  2004/01/10 10:20:22  reinelt
  * new MatrixOrbital changes
  *
@@ -253,6 +257,116 @@ static int drv_MO_clear (int protocol)
   return 0;
 }
 
+static void drv_MO_goto (int row, int col)
+{
+  char cmd[5]="\376Gyx";
+  cmd[2]=(char)col+1;
+  cmd[3]=(char)row+1;
+  drv_MO_write(cmd,4);
+}
+
+
+static int drv_MO_put (int row, int col, char *text)
+{
+  char *p=FrameBuffer1+row*COLS+col;
+  char *t=text;
+  
+  while (*t && col++<=COLS) {
+    *p++=*t++;
+  }
+  return 0;
+}
+
+
+static int drv_MO_bar (int type, int row, int col, int max, int len1, int len2)
+{
+  return bar_draw (type, row, col, max, len1, len2);
+}
+
+
+static int drv_MO_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
+static int drv_MO_gpo (int num, int val)
+{
+  if (num>=GPOS) 
+    return -1;
+
+  GPO[num]=val;
+  
+  // Fixme
+  GPO[num]=255;
+
+  return 0;
+}
+
+
+static int drv_MO_flush (int protocol)
+{
+  int row, col, pos1, pos2;
+  int c, equal;
+  int gpo;
+  
+  bar_process(drv_MO_define_char);
+  
+  for (row=0; row<ROWS; row++) {
+    for (col=0; col<COLS; col++) {
+      c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
+      if (c!=-1) {
+	FrameBuffer1[row*COLS+col]=(char)c;
+      }
+    }
+    for (col=0; col<COLS; col++) {
+      if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) continue;
+      drv_MO_goto (row, col);
+      for (pos1=col++, pos2=pos1, equal=0; col<COLS; col++) {
+	if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>5) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
+      }
+      drv_MO_write (FrameBuffer1+row*COLS+pos1, pos2-pos1+1);
+    }
+  }
+  
+  memcpy (FrameBuffer2, FrameBuffer1, ROWS*COLS*sizeof(char));
+  
+  switch (protocol) {
+  case 1:
+    if (GPO[0]) {
+      drv_MO_write ("\376W", 2);  // GPO on
+    } else {
+      drv_MO_write ("\376V", 2);  // GPO off
+    }
+    break;
+  case 2:
+    for (gpo=1; gpo<=GPOS; gpo++) {
+      char cmd[3]="\376";
+      cmd[1]=GPO[gpo]? 'W':'V';
+      cmd[2]=(char)gpo;
+      drv_MO_write (cmd, 3);
+    }
+    break;
+  }
+  
+  return 0;
+}
+
+
+
+// ****************************************
+// ***            plugins               ***
+// ****************************************
+
+
 static void plugin_contrast (RESULT *result, RESULT *arg1)
 {
   char buffer[4];
@@ -388,115 +502,13 @@ static void plugin_rpm (RESULT *result, RESULT *arg1)
 }
 
 
-static void drv_MO_goto (int row, int col)
-{
-  char cmd[5]="\376Gyx";
-  cmd[2]=(char)col+1;
-  cmd[3]=(char)row+1;
-  drv_MO_write(cmd,4);
-}
+
+// ****************************************
+// ***        exported functions        ***
+// ****************************************
 
 
-static int drv_MO_put (int row, int col, char *text)
-{
-  char *p=FrameBuffer1+row*COLS+col;
-  char *t=text;
-  
-  while (*t && col++<=COLS) {
-    *p++=*t++;
-  }
-  return 0;
-}
-
-
-static int drv_MO_bar (int type, int row, int col, int max, int len1, int len2)
-{
-  return bar_draw (type, row, col, max, len1, len2);
-}
-
-
-static int drv_MO_icon (int num, int seq, int row, int col)
-{
-  return icon_draw (num, seq, row, col);
-}
-
-
-static int drv_MO_gpo (int num, int val)
-{
-  if (num>=GPOS) 
-    return -1;
-
-  GPO[num]=val;
-  
-  // Fixme
-  GPO[num]=255;
-
-  return 0;
-}
-
-
-static int drv_MO_flush (int protocol)
-{
-  int row, col, pos1, pos2;
-  int c, equal;
-  int gpo;
-  
-  bar_process(drv_MO_define_char);
-  
-  for (row=0; row<ROWS; row++) {
-    for (col=0; col<COLS; col++) {
-      c=bar_peek(row, col);
-      if (c==-1) c=icon_peek(row, col);
-      if (c!=-1) {
-	FrameBuffer1[row*COLS+col]=(char)c;
-      }
-    }
-    for (col=0; col<COLS; col++) {
-      if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) continue;
-      drv_MO_goto (row, col);
-      for (pos1=col++, pos2=pos1, equal=0; col<COLS; col++) {
-	if (FrameBuffer1[row*COLS+col]==FrameBuffer2[row*COLS+col]) {
-	  // If we find just one equal byte, we don't break, because this 
-	  // would require a goto, which takes one byte, too.
-	  if (++equal>5) break;
-	} else {
-	  pos2=col;
-	  equal=0;
-	}
-      }
-      drv_MO_write (FrameBuffer1+row*COLS+pos1, pos2-pos1+1);
-    }
-  }
-  
-  memcpy (FrameBuffer2, FrameBuffer1, ROWS*COLS*sizeof(char));
-  
-  switch (protocol) {
-  case 1:
-    if (GPO[0]) {
-      drv_MO_write ("\376W", 2);  // GPO on
-    } else {
-      drv_MO_write ("\376V", 2);  // GPO off
-    }
-    break;
-  case 2:
-    for (gpo=1; gpo<=GPOS; gpo++) {
-      char cmd[3]="\376";
-      cmd[1]=GPO[gpo]? 'W':'V';
-      cmd[2]=(char)gpo;
-      drv_MO_write (cmd, 3);
-    }
-    break;
-  }
-  
-  return 0;
-}
-
-
-// *****************************
-// exported functions start here
-// *****************************
-
-
+// list models
 int drv_MO_list (void)
 {
   int i;
@@ -508,6 +520,7 @@ int drv_MO_list (void)
 }
 
 
+// initialize driver & display
 int drv_MO_init (char *section)
 {
   int i;  
@@ -630,7 +643,7 @@ int drv_MO_init (char *section)
   drv_MO_write ("\376D", 2);  // line wrapping off
   drv_MO_write ("\376R", 2);  // auto scroll off
 
-  // register as a plugin
+  // register plugins
   AddFunction ("contrast",  1, plugin_contrast);
   AddFunction ("backlight", 1, plugin_backlight);
   AddFunction ("gpo",       2, plugin_gpo);
@@ -641,6 +654,7 @@ int drv_MO_init (char *section)
 }
 
 
+// close driver & display
 int drv_MO_quit (void) {
   info("MatrixOrbital: shutting down.");
   
