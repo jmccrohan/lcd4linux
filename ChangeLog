@@ -1,5 +1,12 @@
 2003-08-08  Michael Reinelt  <reinelt@lizard.reinelt>
 
+	* dvb.c, dvb.h: CVS Id and Log missing from dvb.{c,h}
+
+	* Makefile.am, Makefile.in, lcd4linux.c, pid.c, pid.h:
+	added PID file handling
+
+	* ChangeLog, configure, debug.c, lcd4linux.c: improved forking
+
 	* ChangeLog, TODO, config.h.in, configure, configure.in, dvb.c, CREDITS:
 	uClibc compatibility issue; small glitch in dvb.c
 
