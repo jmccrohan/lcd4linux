@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.17 2000/04/05 05:58:36 reinelt Exp $
+/* $Id: XWindow.c,v 1.18 2000/05/02 23:07:48 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.18  2000/05/02 23:07:48  herp
+ * Crystalfontz initial coding
+ *
  * Revision 1.17  2000/04/05 05:58:36  reinelt
  *
  * fixed bug in XWindow.c: union semun isn't defined with glibc-2.1
@@ -449,10 +452,8 @@ int dx,wx,wy;
 	/*lower right corner*/
 	x+=width-1;
 	y+=height-1;
-	xto=xres*(x/boxw)+(x%boxw)/(pixel+pgap)
-		-((x%boxw>xres*pixel+(xres-1)*pgap)?1:0);
-	yto=yres*(y/boxh)+(y%boxh)/(pixel+pgap)
-		-((y%boxh>yres*pixel+(yres-1)*pgap)?1:0);
+	xto=xres*(x/boxw)+(x%boxw)/(pixel+pgap);
+	yto=yres*(y/boxh)+(y%boxh)/(pixel+pgap);
 
 	pos=yfrom*xres*cols+xfrom;
 	wy=border+yfrom*(pixel+pgap)+(yfrom/yres)*(rgap-pgap);

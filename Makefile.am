@@ -29,6 +29,7 @@ Skeleton.c \
 MatrixOrbital.c \
 BeckmannEgle.c \
 HD44780.c \
+Crystalfontz.c Crystalfontz.h \
 PalmPilot.c \
 Raster.c \
 XWindow.c
@@ -44,6 +45,7 @@ TODO \
 README.Drivers \
 README.MatrixOrbital \
 README.HD44780 \
+README.Crystalfontz \
 README.X11 \
 README.KDE \
 README.Raster

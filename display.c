@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.17 2000/05/02 06:05:00 reinelt Exp $
+/* $Id: display.c,v 1.18 2000/05/02 23:07:48 herp Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.18  2000/05/02 23:07:48  herp
+ * Crystalfontz initial coding
+ *
  * Revision 1.17  2000/05/02 06:05:00  reinelt
  *
  * driver for 3Com Palm Pilot added
@@ -133,6 +136,7 @@ extern LCD Skeleton[];
 extern LCD MatrixOrbital[];
 extern LCD BeckmannEgle[];
 extern LCD HD44780[];
+extern LCD Crystalfontz[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
 extern LCD XWindow[];
@@ -142,6 +146,7 @@ FAMILY Driver[] = {
   { "Matrix Orbital",  MatrixOrbital },
   { "Beckmann+Egle",   BeckmannEgle },
   { "HD 44780 based",  HD44780 },
+  { "Crystalfontz",    Crystalfontz },
   { "3Com Palm Pilot", PalmPilot },
   { "Raster",          Raster },
 #ifndef X_DISPLAY_MISSING
