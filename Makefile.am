@@ -57,6 +57,7 @@ lcd4kde.conf \
 lcd4linux.kdelnk \
 lcd4linux.xpm \
 lcd4linux.lsm \
+curses.m4 \
 AUTHORS \
 CREDITS \
 FAQ \
