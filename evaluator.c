@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.12 2004/02/05 07:10:23 reinelt Exp $
+/* $Id: evaluator.c,v 1.13 2004/02/26 21:42:45 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.13  2004/02/26 21:42:45  reinelt
+ * memory leak fixes from Martin
+ *
  * Revision 1.12  2004/02/05 07:10:23  reinelt
  * evaluator function names are no longer case-sensitive
  * Crystalfontz Fan PWM control, Fan RPM monitoring, temperature monitoring
@@ -316,6 +319,7 @@ char* R2S (RESULT *result)
   if (result->type & R_NUMBER) {
     sprintf(buffer, "%g", result->number);
     result->type |= R_STRING;
+    if (result->string) free(result->string);
     result->string=strdup(buffer);
     return result->string;
   }
@@ -370,8 +374,13 @@ static int GetVariable (char *name, RESULT *value)
   if (V!=NULL) {
     value->type=V->value->type;
     value->number=V->value->number;
-    if (V->value->string!=NULL) value->string=strdup(V->value->string);
-    else value->string=NULL;
+    if(value->string) {
+      free(value->string);
+      value->string=0;
+    }
+    if (V->value->string!=NULL) {
+      value->string=strdup(V->value->string);
+    }
     return 1;
   }
   
