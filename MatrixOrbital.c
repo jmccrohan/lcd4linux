@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.31 2003/08/19 04:28:41 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.32 2003/08/22 03:45:08 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.32  2003/08/22 03:45:08  reinelt
+ * bug in parallel port code fixed, more icons stuff
+ *
  * Revision 1.31  2003/08/19 04:28:41  reinelt
  * more Icon stuff, minor glitches fixed
  *
@@ -417,7 +420,15 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
 
 int MO_icon (int num, int row, int col, unsigned char *bitmap)
 {
-  // Fixme: ToDo!!
+  // icons use last ascii codes
+  char ascii=CHARS-num;
+
+  MO_define_char (ascii, bitmap);
+  MO_goto(row, col);
+  MO_write(&ascii, 1);
+  FrameBuffer1[row*Lcd.cols+col]=(char)ascii;
+  FrameBuffer2[row*Lcd.cols+col]=(char)ascii;
+
   return 0;
 }
 
@@ -441,7 +452,7 @@ static int MO_flush (int protocol)
   int row, col, pos1, pos2;
   int c, equal;
   int gpo;
-  
+
   bar_process(MO_define_char);
   
   for (row=0; row<Lcd.rows; row++) {

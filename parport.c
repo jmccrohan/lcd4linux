@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.5 2003/08/19 05:23:55 reinelt Exp $
+/* $Id: parport.c,v 1.6 2003/08/22 03:45:09 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.6  2003/08/22 03:45:09  reinelt
+ * bug in parallel port code fixed, more icons stuff
+ *
  * Revision 1.5  2003/08/19 05:23:55  reinelt
  * HD44780 dual-controller patch from Jesse Brook Kovach
  *
@@ -374,7 +377,7 @@ void parport_toggle (unsigned char bits, int level, int delay)
   
   // Strobe, Select and AutoFeed are inverted!
   value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
-  value2 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+  value2 = bits & (value2 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
   
  
 #ifdef WITH_PPDEV

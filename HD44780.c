@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.34 2003/08/19 05:23:55 reinelt Exp $
+/* $Id: HD44780.c,v 1.35 2003/08/22 03:45:08 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.35  2003/08/22 03:45:08  reinelt
+ * bug in parallel port code fixed, more icons stuff
+ *
  * Revision 1.34  2003/08/19 05:23:55  reinelt
  * HD44780 dual-controller patch from Jesse Brook Kovach
  *
@@ -469,9 +472,9 @@ int HD_init (LCD *Self)
     return -1;
   }
 
-  // clear RW
+  // clear all signals
   if (Bits==8) {
-    parport_control (SIGNAL_RW, 0);
+    parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
   } else {
     parport_data (0);
   }
