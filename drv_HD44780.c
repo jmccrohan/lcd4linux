@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.35 2004/09/18 09:48:29 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.36 2004/09/18 10:57:29 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.36  2004/09/18 10:57:29  reinelt
+ * more parport/i2c cleanups
+ *
  * Revision 1.35  2004/09/18 09:48:29  reinelt
  * HD44780 cleanup and prepararation for I2C backend
  * LCM-162 submodel framework
@@ -219,8 +222,10 @@
 
 static char Name[]="HD44780";
 
+static int Bus;
 static int Model;
 static int Capabilities;
+
 
 /* low level communication timings [nanoseconds]
  * as these values differ from spec to spec,
@@ -273,17 +278,23 @@ typedef struct {
   int capabilities;
 } MODEL;
 
-#define CAP_BRIGHTNESS (1<<0)
-#define CAP_BUSY4BIT   (1<<1)
-#define CAP_HD66712    (1<<2)
-#define CAP_LCM162     (1<<3)
+#define CAP_PARPORT    (1<<0)
+#define CAP_I2C        (1<<1)
+#define CAP_BRIGHTNESS (1<<2)
+#define CAP_BUSY4BIT   (1<<3)
+#define CAP_HD66712    (1<<4)
+#define CAP_LCM162     (1<<5)
+
+#define BUS_PP  CAP_PARPORT
+#define BUS_I2C CAP_I2C
+
 
 static MODEL Models[] = {
-  { 0x01, "generic",  0 },
-  { 0x02, "Noritake", CAP_BRIGHTNESS },
-  { 0x03, "Soekris",  CAP_BUSY4BIT },
-  { 0x04, "HD66712",  CAP_HD66712 },
-  { 0x05, "LCM-162",  CAP_LCM162 },
+  { 0x01, "generic",  CAP_PARPORT|CAP_I2C },
+  { 0x02, "Noritake", CAP_PARPORT|CAP_I2C|CAP_BRIGHTNESS },
+  { 0x03, "Soekris",  CAP_PARPORT|CAP_BUSY4BIT },
+  { 0x04, "HD66712",  CAP_PARPORT|CAP_I2C|CAP_HD66712 },
+  { 0x05, "LCM-162",  CAP_PARPORT|CAP_LCM162 },
   { 0xff, "Unknown",  0 }
 };
 
@@ -293,6 +304,7 @@ static MODEL Models[] = {
 /***  generic functions               ***/
 /****************************************/
 
+static int  (*drv_HD_load)   (const char *section);
 static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const int delay);
 static void (*drv_HD_data)    (const unsigned char controller, const char *string, const int len, const int delay);
 static void (*drv_HD_stop)    (void);
@@ -548,7 +560,7 @@ static void drv_HD_PP_data (const unsigned char controller, const char *string, 
 }
 
 
-static int drv_HD_PP_start (const char *section)
+static int drv_HD_PP_load (const char *section)
 {
   if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
   if (Bits!=4 && Bits!=8) {
@@ -665,7 +677,7 @@ static void drv_HD_I2C_data (const unsigned char controller, const char *string,
 }
 
 
-static int drv_HD_I2C_start (const char *section)
+static int drv_HD_I2C_load (const char *section)
 {
   return 0;
 }
@@ -784,6 +796,15 @@ static void drv_HD_setGPO (const int bits)
 #endif
 
 
+static int drv_HD_LCM162_keypad (void)
+{
+  static unsigned char data = 0x00;
+  
+  if (!(Capabilities & CAP_LCM162)) return -1;
+  
+}
+
+  
 static int drv_HD_start (const char *section, const int quiet)
 {
   char *model, *size, *bus;
@@ -807,8 +828,46 @@ static int drv_HD_start (const char *section, const int quiet)
     if (model) free (model);
     return -1;
   }
-  free(model);
 
+  bus=cfg_get(section, "Bus", "parport");
+  if (bus==NULL && *bus=='\0') {
+    error ("%s: empty '%s.Bus' entry from %s", Name, section, cfg_source());
+    if (bus) free (bus);
+    return -1;
+  }
+
+  if (strcasecmp(bus, "parport") == 0) {
+    info ("%s: using parallel port", Name);
+    Bus = BUS_PP;
+    drv_HD_load    = drv_HD_PP_load;
+    drv_HD_command = drv_HD_PP_command;
+    drv_HD_data    = drv_HD_PP_data;
+    drv_HD_stop    = drv_HD_PP_stop;
+    
+  } else if (strcasecmp(bus, "i2c") == 0) {
+    info ("%s: using I2C bus", Name);
+    Bus = BUS_I2C;
+    drv_HD_load    = drv_HD_I2C_load;
+    drv_HD_command = drv_HD_I2C_command;
+    drv_HD_data    = drv_HD_I2C_data;
+    drv_HD_stop    = drv_HD_I2C_stop;
+
+  } else {
+    error ("%s: bad %s.Bus '%s' from %s, should be 'parport' or 'i2c'", Name, section, bus, cfg_source());
+    free (bus);
+    return -1;
+  }
+
+  /* sanity check: Model can use bus */
+  if (!(Capabilities & Bus)) {
+    error ("%s: Model '%s' cannot be used on the %s bus.", Name, model, bus);
+    free (model);
+    free (bus);
+    return -1;
+  }
+  free(model);
+  free(bus);
+  
   size=cfg_get(section, "Size", NULL);
   if (size==NULL || *size=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
@@ -821,10 +880,9 @@ static int drv_HD_start (const char *section, const int quiet)
     return -1;
   }
   free(size);
+  DROWS = rows;
+  DCOLS = cols;
   
-  if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
-  info ("%s: controlling %d GPO's", Name, gpos);
-
   if (cfg_number(section, "Controllers", 1, 1, 2, &numControllers)<0) return -1;
   info ("%s: using display with %d controllers", Name, numControllers);
   
@@ -834,44 +892,15 @@ static int drv_HD_start (const char *section, const int quiet)
   /* Bitmask for *all* Controllers */
   allControllers = numControllers==2 ? 3 : 1;
   
-  DROWS = rows;
-  DCOLS = cols;
+  if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   GPOS  = gpos;
+  info ("%s: controlling %d GPO's", Name, GPOS);
   
-  bus=cfg_get(section, "Bus", "parport");
-  if (bus==NULL && *bus=='\0') {
-    error ("%s: empty '%s.Bus' entry from %s", Name, section, cfg_source());
-    if (bus) free (bus);
+  if (drv_HD_load(section) < 0) {
+    error ("%s: start display failed!", Name);
     return -1;
   }
-
-  if (strcasecmp(bus, "parport") == 0) {
-    info ("%s: using parallel port", Name);
-    if (drv_HD_PP_start(section) < 0) {
-      free (bus);
-      return -1;
-    }
-    drv_HD_command = drv_HD_PP_command;
-    drv_HD_data    = drv_HD_PP_data;
-    drv_HD_stop    = drv_HD_PP_stop;
-    
-  } else if (strcasecmp(bus, "i2c") == 0) {
-    info ("%s: using I2C bus", Name);
-    if (drv_HD_I2C_start(section) < 0) {
-      free (bus);
-      return -1;
-    }
-    drv_HD_command = drv_HD_I2C_command;
-    drv_HD_data    = drv_HD_I2C_data;
-    drv_HD_stop    = drv_HD_I2C_stop;
-
-  } else {
-    error ("%s: bad %s.Bus '%s' from %s, should be 'parport' or 'i2c'", Name, section, bus, cfg_source());
-    free (bus);
-    return -1;
-  }
-  free(bus);
-
+  
   drv_HD_command (allControllers, 0x08, T_EXEC);  /* Display off, cursor off, blink off */
   drv_HD_command (allControllers, 0x0c, T_CLEAR); /* Display on, cursor off, blink off, wait 1.64 ms */
   drv_HD_command (allControllers, 0x06, T_EXEC);  /* curser moves to right, no shift */
