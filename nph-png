@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+
+use strict;
+use vars qw ($file $DELAY);
+########## CONFIG
+  $file = "lcd4linux"; # .png is appended
+  $DELAY = 0;          # delay in seconds
+                       # if delay is zero, file is sent when modified.
+#################
+
+use CGI qw/:push -nph/;
+$| = 1;
+my ($mtime, $nmtime, $size, $nsize);
+(undef, undef, undef, undef, undef, undef, undef, $size, undef,
+   $mtime) = stat "$file.png";
+print multipart_init(-boundary=>'----------------here we go!');
+while (1) {
+  print multipart_start(-type=>'image/png');
+  undef $/;
+  open(IN, "$file.png") or die("Can't read '$file.png'");
+  $_ = <IN>;
+  print $_;
+  close(IN);
+  print multipart_end;
+  if ($DELAY) {
+    sleep $DELAY;
+  }  
+  else {
+    W: while (1) {
+  #    sleep(1);
+      (undef, undef, undef, undef, undef, undef, undef, $nsize, undef,
+         $nmtime) = stat "$file.png";
+      if($mtime != $nmtime || $size != $nsize) {	 
+        $mtime = $nmtime;
+	$size = $nsize;
+	last W;
+      }	
+    }	 
+  }	
+}
+

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.12 2001/03/01 11:08:16 reinelt Exp $
+/* $Id: Raster.c,v 1.13 2001/03/01 15:11:30 ltoetsch Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.13  2001/03/01 15:11:30  ltoetsch
+ * added PNG,Webinterface
+ *
  * Revision 1.12  2001/03/01 11:08:16  reinelt
  *
  * reworked configure to allow selection of drivers
@@ -94,7 +97,9 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#ifdef WITH_PNG
+#include <gd.h>
+#endif
 
 #include "debug.h"
 #include "cfg.h"
@@ -203,12 +208,77 @@ int Raster_flush (void)
     return -1;
   }
   if (rename (tmp, path)<0) {
-    error ("Raster: close(%s) failed: %s", tmp, strerror(errno));
+    error ("Raster: rename(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   
   return 0;
 }
+
+
+#ifdef WITH_PNG
+int Png_flush (void)
+{
+  static int seq=0;
+  int xsize, ysize, row, col;
+  char path[256], tmp[256];
+  FILE *fp;
+  gdImagePtr im;
+  int bg, hg, fg;
+  
+  xsize=2*border+(Lcd.cols-1)*cgap+Lcd.cols*Lcd.xres*pixel+(Lcd.cols*Lcd.xres-1)*pgap;
+  ysize=2*border+(Lcd.rows-1)*rgap+Lcd.rows*Lcd.yres*pixel+(Lcd.rows*Lcd.yres-1)*pgap;
+
+  im = gdImageCreate(xsize, ysize);
+  /* first color = background */
+  bg = gdImageColorAllocate(im, 
+			    0xff&background>>16,
+			    0xff&background>>8,
+                            0xff&background);
+  hg = gdImageColorAllocate(im, 
+			    0xff&halfground>>16,
+			    0xff&halfground>>8,
+                            0xff&halfground);
+  
+  fg = gdImageColorAllocate(im, 
+			    0xff&foreground>>16,
+			    0xff&foreground>>8,
+                            0xff&foreground);
+  
+  
+  for (row=0; row<Lcd.rows*Lcd.yres; row++) {
+    int y=border+(row/Lcd.yres)*rgap+row*(pixel+pgap);
+    for (col=0; col<Lcd.cols*Lcd.xres; col++) {
+      int x=border+(col/Lcd.xres)*cgap+col*(pixel+pgap);
+      gdImageFilledRectangle(im, x, y, x + pixel - 1 , y + pixel - 1,
+			     LCDpixmap[row*Lcd.cols*Lcd.xres+col]? fg : hg);
+    }
+  }
+  
+  snprintf (path, sizeof(path), output, seq++);
+  snprintf (tmp, sizeof(tmp), "%s.tmp", path);
+  
+  if ((fp=fopen(tmp, "w")) == NULL) {
+    error("Png: fopen(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  gdImagePng(im, fp);
+  gdImageDestroy(im);
+  
+  
+  if (fclose (fp) != 0) {
+    error("Png: fclose(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  if (rename (tmp, path)<0) {
+    error("Png: rename(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  
+  return 0;
+}
+#endif
+
 
 int Raster_clear (void)
 {
@@ -297,7 +367,7 @@ LCD Raster[] = {
   { "PPM",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Raster_flush },
 #endif
 #ifdef WITH_PNG
-  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Raster_flush },
+  { "PNG",0,0,0,0,BARS,0,Raster_init,Raster_clear,Raster_put,Raster_bar,NULL,Png_flush },
 #endif
   { NULL }
 };
