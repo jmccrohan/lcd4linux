@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.7 2004/01/07 10:15:41 reinelt Exp $
+/* $Id: evaluator.c,v 1.8 2004/01/12 03:51:01 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.8  2004/01/12 03:51:01  reinelt
+ * evaluating the 'Variables' section in the config file
+ *
  * Revision 1.7  2004/01/07 10:15:41  reinelt
  * small glitch in evaluator fixed
  * made config table sorted and access with bsearch(),
@@ -76,6 +79,13 @@
 
 /* 
  * exported functions:
+ *
+ * void DelResult (RESULT *result)
+ *   sets a result to none
+ *   frees a probably allocated memory
+ *
+ * int SetVariable (char *name, RESULT *value)
+ *   adds a generic variable to the evaluator
  *
  * int AddNumericVariable(char *name, double value)
  *   adds a numerical variable to the evaluator
@@ -168,7 +178,7 @@ char* ErrMsg[] = {
 
 
 
-static void DelResult (RESULT *result)
+void DelResult (RESULT *result)
 {
   result->type=0;
   result->number=0.0;
@@ -348,7 +358,7 @@ static int GetVariable (char *name, RESULT *value)
 }
 
 
-static int SetVariable (char *name, RESULT *value)
+int SetVariable (char *name, RESULT *value)
 {
   VARIABLE *V;
 
@@ -819,7 +829,7 @@ int Eval (char* expression, RESULT *result)
   int i, err;
   
   if ((err=setjmp(jb))) {
-    error ("Error: %s in expression <%s>", ErrMsg[err], expression);
+    error ("Evaluator: %s in expression <%s>", ErrMsg[err], expression);
     return -1;
   }
   
@@ -830,7 +840,7 @@ int Eval (char* expression, RESULT *result)
     // sanity check: two functions with the same name?
     for (i=1; i<nFunction; i++) {
       if (strcmp(Function[i].name, Function[i-1].name)==0) {
-	error ("internal error: Function '%s' defined twice!", Function[i].name);
+	error ("Evaluator: internal error: Function '%s' defined twice!", Function[i].name);
       }
     }
   }

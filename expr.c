@@ -1,4 +1,4 @@
-/* $Id: expr.c,v 1.2 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: expr.c,v 1.3 2004/01/12 03:51:01 reinelt Exp $
  *
  * expr ('y*') functions
  * This is only a workaround to make the Evaluator usable until
@@ -24,6 +24,9 @@
  *
  *
  * $Log: expr.c,v $
+ * Revision 1.3  2004/01/12 03:51:01  reinelt
+ * evaluating the 'Variables' section in the config file
+ *
  * Revision 1.2  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -45,9 +48,9 @@
 #include "cfg.h"
 
 
-int Expr(int index, char result[EXPR_TXT_LEN], double *val)
+int Expr(int index, char string[EXPR_TXT_LEN], double *val)
 {
-  RESULT Result = {0, 0.0, NULL};
+  RESULT result = {0, 0.0, NULL};
   static int errs[EXPRS+1];
   char *expression;
   char yn[4];
@@ -67,14 +70,14 @@ int Expr(int index, char result[EXPR_TXT_LEN], double *val)
     return -1;
   }
 
-  Eval(expression, &Result);
-  strcpy(result, R2S(&Result));
+  Eval(expression, &result);
+  strcpy(string, R2S(&result));
   
   debug("%s: <%s> = '%s'",yn, expression, result);
 
-  if (isdigit(*result)) {
+  if (isdigit(*string)) {
     double max, min;
-    *val = atof(result);
+    *val = atof(string);
     sprintf(yn, "Max_y%d", index);
     max = atof(cfg_get(NULL, yn, "100"));
     sprintf(yn, "Min_y%d", index);
@@ -82,6 +85,9 @@ int Expr(int index, char result[EXPR_TXT_LEN], double *val)
     if (max != min)
       *val = (*val - min)/(max - min);
   }
+
+  DelResult (&result);
+
   return 0;
 }
 

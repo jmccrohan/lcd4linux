@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.58 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.59 2004/01/12 03:51:01 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.59  2004/01/12 03:51:01  reinelt
+ * evaluating the 'Variables' section in the config file
+ *
  * Revision 1.58  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -564,6 +567,7 @@ int main (int argc, char *argv[])
 	} else if (result.type==R_STRING) {
 	  printf ("'%s'\n", R2S(&result));
 	}
+	DelResult (&result);
       }
       printf("eval> ");
     }

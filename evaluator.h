@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.2 2003/10/11 06:01:53 reinelt Exp $
+/* $Id: evaluator.h,v 1.3 2004/01/12 03:51:01 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.h,v $
+ * Revision 1.3  2004/01/12 03:51:01  reinelt
+ * evaluating the 'Variables' section in the config file
+ *
  * Revision 1.2  2003/10/11 06:01:53  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -84,6 +87,8 @@ typedef struct {
 #define E_EMPTY   8 /* Empty expression */
 
 
+void DelResult         (RESULT *result);
+int SetVariable        (char *name, RESULT *value);
 int AddNumericVariable (char *name, double value);
 int AddStringVariable  (char *name, char *value);
 int AddFunction        (char *name, int args, void (*func)());

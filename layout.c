@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.3 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: layout.c,v 1.4 2004/01/12 03:51:01 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.4  2004/01/12 03:51:01  reinelt
+ * evaluating the 'Variables' section in the config file
+ *
  * Revision 1.3  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -54,6 +57,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "widget.h"
 #include "layout.h"
 
 
