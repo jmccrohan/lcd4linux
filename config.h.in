@@ -344,6 +344,9 @@
 /* driver */
 #undef WITH_PPM
 
+/* RouterBoard driver */
+#undef WITH_ROUTERBOARD
+
 /* T6963 driver */
 #undef WITH_T6963
 

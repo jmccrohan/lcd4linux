@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.32 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.33 2004/08/29 13:03:41 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.33  2004/08/29 13:03:41  reinelt
+ *
+ * added RouterBoard driver
+ *
  * Revision 1.32  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -658,7 +662,8 @@ static int drv_HD_start (const char *section, const int quiet)
     free(strsize);
     return -1;
   }
-    
+  free(strsize);
+  
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("%s: controlling %d GPO's", Name, gpos);
 
@@ -677,7 +682,7 @@ static int drv_HD_start (const char *section, const int quiet)
   
   if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
   if (Bits!=4 && Bits!=8) {
-    error ("%s: bad %s.Bits '%s' from %s, should be '4' or '8'", Name, section, strsize, cfg_source());
+    error ("%s: bad %s.Bits '%d' from %s, should be '4' or '8'", Name, section, Bits, cfg_source());
     return -1;
   }    
   info ("%s: using %d bit mode", Name, Bits);
@@ -743,7 +748,6 @@ static int drv_HD_start (const char *section, const int quiet)
   }
   
   info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
-  free(strsize);
 
   drv_HD_command (allControllers, 0x08, T_EXEC);  /* Display off, cursor off, blink off */
   drv_HD_command (allControllers, 0x0c, T_CLEAR); /* Display on, cursor off, blink off, wait 1.64 ms */

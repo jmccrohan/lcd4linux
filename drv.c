@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.21 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv.c,v 1.22 2004/08/29 13:03:41 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.22  2004/08/29 13:03:41  reinelt
+ *
+ * added RouterBoard driver
+ *
  * Revision 1.21  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -173,6 +177,7 @@ extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_NULL;
+extern DRIVER drv_RouterBoard;
 extern DRIVER drv_T6963;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_X11;
@@ -213,6 +218,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_NULL
   &drv_NULL,
+#endif
+#ifdef WITH_ROUTERBOARD
+  &drv_RouterBoard,
 #endif
 #ifdef WITH_T6963
   &drv_T6963,

@@ -9,9 +9,9 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]	
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux,]
-  [                        HD44780, M50530, T6963, USBLCD, MatrixOrbital,]
-  [                        MilfordInstruments, NULL, PNG, PPM, X11],
+  [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux, HD44780,]
+  [                        M50530, MatrixOrbital, MilfordInstruments, NULL]
+  [                        PNG, PPM, RouterBoard, T6963, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -38,14 +38,14 @@ for driver in $drivers; do
          CWLINUX="yes"
          HD44780="yes"
          M50530="yes"
-         T6963="yes"
-         USBLCD="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
          NULL="yes" 
-         PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
+	 ROUTERBOARD="yes"
+         T6963="yes"
+         USBLCD="yes"
          X11="yes"
          ;;
       BeckmannEgle)
@@ -66,26 +66,29 @@ for driver in $drivers; do
       M50530)
          M50530=$val
          ;;
-      NULL)
-         NULL=$val;
-         ;;
-      T6963)
-         T6963=$val
-         ;;
-      USBLCD)
-         USBLCD=$val
-         ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
          ;;
       MilfordInstruments)
          MILINST=$val
          ;;
+      NULL)
+         NULL=$val;
+         ;;
       PNG)
          PNG=$val
          ;;
       PPM)
          PPM=$val
+         ;;
+      RouterBoard)
+         ROUTERBOARD=$val
+         ;;
+      T6963)
+         T6963=$val
+         ;;
+      USBLCD)
+         USBLCD=$val
          ;;
       X11)
          X11=$val
@@ -183,6 +186,12 @@ fi
 
 if test "$IMAGE" = "yes"; then
    DRIVERS="$DRIVERS drv_Image.o"
+fi
+
+if test "$ROUTERBOARD" = "yes"; then
+   TEXT="yes"
+   DRIVERS="$DRIVERS drv_RouterBoard.o"
+   AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
 fi
 
 if test "$T6963" = "yes"; then
