@@ -54,7 +54,7 @@ Lcd4Linux NextGeneration porting status
 --------
 
 For 0.10.0 :
-* namespace support for plugins (with ::) {Michael}
++ namespace support for plugins (with ::) {Michael}
 * finish debian package {Xavier, Luk, Samuel}
 * new website ? {Xavier}
 - write decent documentation
