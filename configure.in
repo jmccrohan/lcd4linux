@@ -246,8 +246,9 @@ if test "$X11" = "yes"; then
    if test "$no_x" = "yes"; then
       AC_MSG_ERROR(X11 headers or libraries not available: X11 driver disabled)
    else
-#     DRIVERS="$DRIVERS XWindow.lo"
-#     DRIVERS="$DRIVERS XWindow.o"
+      GRAPHIC="yes"
+#     DRIVERS="$DRIVERS drv_X11.lo"
+      DRIVERS="$DRIVERS drv_X11.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
       AC_DEFINE(WITH_X11,1,[X11 driver])
    fi

@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.4  2004/02/24 05:55:04  reinelt
+ *
+ * X11 driver ported
+ *
  * Revision 1.3  2004/02/22 17:35:41  reinelt
  * some fixes for generic graphic driver and T6963
  * removed ^M from plugin_imon (Nico, are you editing under Windows?)
@@ -272,24 +276,9 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
 
 int drv_generic_graphic_init (char *section, char *driver)
 {
-  char *font;
-  
   Section=section;
   Driver=driver;
   
-  font=cfg_get(section, "Font", "6x8");
-  if (font==NULL || *font=='\0') {
-    error ("%s: no '%s.Font' entry from %s", Driver, section, cfg_source());
-    return -1;
-  }
-
-  XRES = -1;
-  YRES = -1;
-  if (sscanf(font, "%dx%d", &XRES, &YRES)!=2 || XRES<1 || YRES<1) {
-    error ("%s: bad Font '%s' from %s", Driver, font, cfg_source());
-    return -1;
-  }
-
   // init layout framebuffer
   LROWS = 0;
   LCOLS = 0;

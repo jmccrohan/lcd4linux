@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.8 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv.c,v 1.9 2004/02/24 05:55:04 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.9  2004/02/24 05:55:04  reinelt
+ *
+ * X11 driver ported
+ *
  * Revision 1.8  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -115,7 +119,7 @@ extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_PalmPilot;
 extern DRIVER drv_Raster;
-extern DRIVER drv_XWindow;
+extern DRIVER drv_X11;
 extern DRIVER drv_Text;
 
 // output file for Raster driver
@@ -163,9 +167,11 @@ DRIVER *Driver[] = {
      #if defined (WITH_PNG) || defined(WITH_PPM)
      &Raster,
      #endif
-     #ifdef WITH_X11
-     &XWindow,
-     #endif
+  */
+#ifdef WITH_X11
+  &drv_X11,
+#endif
+  /* Fixme
      #ifdef WITH_TEXT
      &Text,
      #endif

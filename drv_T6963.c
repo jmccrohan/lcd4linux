@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.3 2004/02/22 17:35:41 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.4 2004/02/24 05:55:04 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.4  2004/02/24 05:55:04  reinelt
+ *
+ * X11 driver ported
+ *
  * Revision 1.3  2004/02/22 17:35:41  reinelt
  * some fixes for generic graphic driver and T6963
  * removed ^M from plugin_imon (Nico, are you editing under Windows?)
@@ -68,6 +72,10 @@
 #include "drv.h"
 #include "drv_generic_graphic.h"
 #include "drv_generic_parport.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 static char Name[]="T6963";
 static int Model;
@@ -377,8 +385,27 @@ static int drv_T6_start (char *section)
     return -1;
   }
   
-  TROWS=DROWS/8;  // text rows, assume 6x8 font
-  TCOLS=DCOLS/6;  // text cols, assume 6x8 font
+  s=cfg_get(section, "Font", "6x8");
+  if (s==NULL || *s=='\0') {
+    error ("%s: no '%s.Font' entry from %s", Name, section, cfg_source());
+    return -1;
+  }
+
+  XRES = -1;
+  YRES = -1;
+  if (sscanf(s, "%dx%d", &XRES, &YRES)!=2 || XRES<1 || YRES<1) {
+    error ("%s: bad Font '%s' from %s", Name, s, cfg_source());
+    return -1;
+  }
+
+  // Fixme: provider other fonts someday...
+  if (XRES!=6 && YRES!=8) {
+    error ("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
+    return -1;
+  }
+  
+  TROWS=DROWS/YRES;  // text rows
+  TCOLS=DCOLS/XRES;  // text cols
 
   Buffer1=malloc(DCOLS*TROWS);
   if (Buffer1==NULL) {
@@ -526,6 +553,16 @@ int drv_T6_quit (void) {
   info("%s: shutting down.", Name);
   drv_generic_parport_close();
   drv_generic_graphic_quit();
+  
+  if (Buffer1) {
+    free (Buffer1);
+    Buffer1=NULL;
+  }
+  
+  if (Buffer2) {
+    free (Buffer2);
+    Buffer2=NULL;
+  }
   
   return (0);
 }

@@ -71,8 +71,7 @@ drv_MatrixOrbital.c \
 MilfordInstruments.c \
 PalmPilot.c \
 Raster.c \
-SIN.c \
-XWindow.c \
+drv_X11.c \
 Text.c \
 font_6x8.h
 

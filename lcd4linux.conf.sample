@@ -82,6 +82,18 @@ Display T6963-240x64 {
 }
 
 
+Display XWindow {
+    Driver 'X11'
+    Size   '120x32'
+    Font   '6x8'
+    Pixel  '4+1'
+    Gap    '-1x-1'
+    Border 20
+    Foreground '#000000'
+    Background '#80d000'
+    Halfground '#70c000'
+}
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
@@ -334,14 +346,14 @@ Layout Default {
 	Col1 'Load'
 	Col11 'LoadBar'
     }
-    Row5 {
-	Col1  'Disk'
-	Col11 'DiskBar'
-    }
-    Row6 {
-	Col1  'Eth0'
-	Col11 'Eth0Bar'
-    }
+#    Row5 {
+#	Col1  'Disk'
+#	Col11 'DiskBar'
+#    }
+#    Row6 {
+#	Col1  'Eth0'
+#	Col11 'Eth0Bar'
+#    }
 }
 
 Layout L24x8 {
@@ -395,7 +407,8 @@ Layout Test {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'USBLCD'
-Display 'T6963-240x64'
+#Display 'T6963-240x64'
+Display 'XWindow'
 
 Layout  'Default'
 #Layout  'L16x2'
