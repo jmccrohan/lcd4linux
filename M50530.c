@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.7 2003/04/04 06:01:59 reinelt Exp $
+/* $Id: M50530.c,v 1.8 2003/04/07 06:02:59 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.8  2003/04/07 06:02:59  reinelt
+ * further parallel port abstraction
+ *
  * Revision 1.7  2003/04/04 06:01:59  reinelt
  * new parallel port abstraction scheme
  *
@@ -79,7 +82,7 @@ static int  GPO=0;
 static unsigned char SIGNAL_EX;
 static unsigned char SIGNAL_IOC1;
 static unsigned char SIGNAL_IOC2;
-static unsigned char SIGNAL_ENABLE_GPO;
+static unsigned char SIGNAL_GPO;
 
 static void M5_command (unsigned int cmd, int delay)
 {
@@ -130,7 +133,7 @@ static void M5_setGPO (int bits)
     
     // send data
     // 74HCT573 enable pulse width = 24ns
-    parport_toggle (SIGNAL_ENABLE_GPO, 1, 24);
+    parport_toggle (SIGNAL_GPO, 1, 24);
   }
 }
 
@@ -193,16 +196,20 @@ int M5_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-  SIGNAL_EX=parport_wire ("EX",   "STROBE");
-  SIGNAL_EX=parport_wire ("IOC1", "SELECT");
-  SIGNAL_EX=parport_wire ("IOC2", "AUTOFD");
-  SIGNAL_EX=parport_wire ("ENABLE_GPO", "INIT");
-
+  if ((SIGNAL_EX=parport_wire ("EX",   "STROBE"))==0xff) return -1;
+  if ((SIGNAL_IOC1=parport_wire ("IOC1", "SELECT"))==0xff) return -1;
+  if ((SIGNAL_IOC2=parport_wire ("IOC2", "AUTOFD"))==0xff) return -1;
+  if ((SIGNAL_GPO=parport_wire ("GPO", "INIT"))==0xff) return -1;
+  
   if (parport_open() != 0) {
     error ("M50530: could not initialize parallel port!");
     return -1;
   }
   
+  // set direction: write
+  parport_direction (0);
+
+  // initialize display
   M5_command (0x00FA, 20); // set function mode
   M5_command (0x0020, 20); // set display mode
   M5_command (0x0050, 20); // set entry mode

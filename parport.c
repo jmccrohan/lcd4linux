@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.1 2003/04/04 06:02:03 reinelt Exp $
+/* $Id: parport.c,v 1.2 2003/04/07 06:03:05 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.2  2003/04/07 06:03:05  reinelt
+ * further parallel port abstraction
+ *
  * Revision 1.1  2003/04/04 06:02:03  reinelt
  * new parallel port abstraction scheme
  *
@@ -41,6 +44,10 @@
  *   reads wiring for one control signal from config
  *   returns PARPORT_CONTROL_* or 255 on error
  *
+ * void parport_direction (int direction)
+ *   0 - write to parport
+ *   1 - read from parport
+ *
  * void parport_control (unsigned char mask, unsigned char value)
  *   frobs control line and takes care of inverted signals
  *
@@ -50,6 +57,11 @@
  * void parport_data (unsigned char value)
  *   put data bits on DB1..DB8
  *
+ * unsigned char parport_read (void)
+ *   reads a byte from the parallel port
+ *
+ * void parport_debug(void)
+ *   prints status of control lines
  */
 
 
@@ -107,6 +119,7 @@ static unsigned char ctr = 0xc;
 #ifdef WITH_PPDEV
 static int PPfd=-1;
 #endif
+
 
 int parport_open (void)
 {
@@ -172,9 +185,16 @@ int parport_open (void)
     
     {
       debug ("using raw port 0x%x", Port);
-      if (ioperm(Port, 3, 1)!=0) {
-	error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
-	return -1;
+      if ((Port+3)<=0x3ff) {
+	if (ioperm(Port, 3, 1)!=0) {
+	  error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
+	  return -1;
+	}
+      } else {
+	if (iopl(3)!=0) {
+	  error ("parport: iopl(1) failed: %s", strerror(errno));
+	  return -1;
+	}
       }
     }
   return 0;
@@ -197,9 +217,16 @@ int parport_close (void)
 #endif    
     {
       debug ("closing raw port 0x%x", Port);
-      if (ioperm(Port, 3, 0)!=0) {
-	error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
-	return -1;
+      if ((Port+3)<=0x3ff) {
+	if (ioperm(Port, 3, 0)!=0) {
+	  error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
+	  return -1;
+	} 
+      } else {
+	if (iopl(0)!=0) {
+	  error ("parport: iopl(0) failed: %s", strerror(errno));
+	  return -1;
+	}
       }
     }
   return 0;
@@ -211,7 +238,6 @@ unsigned char parport_wire (char *name, unsigned char *deflt)
   unsigned char w;
   char wire[256];
   char *s;
-  int n;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);
   s=cfg_get (wire,deflt);
@@ -223,52 +249,58 @@ unsigned char parport_wire (char *name, unsigned char *deflt)
     w=PARPORT_CONTROL_INIT;
   } else if(strcasecmp(s,"SELECT")==0) {
     w=PARPORT_CONTROL_SELECT;
+  } else if(strcasecmp(s,"GND")==0) {
+    w=0;
   } else {
     error ("parport: unknown signal <%s> for wire <%s>", s, name);
-    error ("         should be STROBE, AUTOFD, INIT or SELECT");
-    return 255;
+    error ("         should be STROBE, AUTOFD, INIT, SELECT or GND");
+    return 0xff;
   }
   
-  n=0;
   if (w&PARPORT_CONTROL_STROBE) {
-    n++;
-    info ("wiring: [DISPLAY:%s]==[PARPORT:STROBE]", name);
+    info ("wiring: [PARPORT:STROBE]==>[DISPLAY:%s]", name);
   }
   if (w&PARPORT_CONTROL_AUTOFD) {
-    n++;
-    info ("wiring: [DISPLAY:%s]==[PARPORT:AUTOFD]", name);
+    info ("wiring: [PARPORT:AUTOFD]==>[DISPLAY:%s]", name);
   }
   if (w&PARPORT_CONTROL_INIT) {
-    n++;
-    info ("wiring: [DISPLAY:%s]==[PARPORT:INIT]", name);
+    info ("wiring: [PARPORT:INIT]==>[DISPLAY:%s]", name);
   }
   if (w&PARPORT_CONTROL_SELECT) {
-    n++;
-    info ("wiring: [DISPLAY:%s]==[PARPORT:SELECT]", name);
+    info ("wiring: [PARPORT:SELECT]==>[DISPLAY:%s]", name);
   }
-  if (n<1) {
-    error ("parport: no signal for wire <%s> found!", name);
-    return 255;
+  if (w==0) {
+    info ("wiring: [PARPORT:GND]==>[DISPLAY:%s]", name);
   }
-  if (n>1) {
-    error ("parport: more than one signal for wire <%s> found!", name);
-    return 255;
-  }
+  
   return w;
+}
+
+
+void parport_direction (int direction)
+{
+#ifdef WITH_PPDEV
+  if (PPdev) {
+    ioctl (PPfd, PPDATADIR, &direction);
+  } else
+#endif
+    {
+      // code stolen from linux/parport_pc.h
+      ctr = (ctr & ~0x20) ^ (direction?0x20:0x00);
+      outb (ctr, Port+2);
+    }
 }
 
 
 void parport_control (unsigned char mask, unsigned char value)
 {
-
-  // sanity check
-  if (mask==0) {
-    error ("parport: internal error: control without signal called!");
-    return;
-  }
+  // any signal affected?
+  // Note: this may happen in case a signal is hardwired to GND
+  if (mask==0) return;
 
   // Strobe, Select and AutoFeed are inverted!
-  value ^= PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD;
+  value = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+  // value ^= PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD;
 
 #ifdef WITH_PPDEV
   if (PPdev) {
@@ -289,13 +321,11 @@ void parport_control (unsigned char mask, unsigned char value)
 void parport_toggle (unsigned char bit, int level, int delay)
 {
 
-  // sanity check
-  if (bit==0) {
-    error ("parport: internal error: toggle without signal called!");
-    return;
-  }
+  // any signal affected?
+  // Note: this may happen in case a signal is hardwired to GND
+  if (bit==0) return;
 
-   // Strobe, Select and AutoFeed are inverted!
+  // Strobe, Select and AutoFeed are inverted!
   if (bit & (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD)) {
     level=!level;
   }
@@ -344,3 +374,32 @@ void parport_data (unsigned char data)
     }
 }
 
+unsigned char parport_read (void)
+{
+  unsigned char data;
+  
+#ifdef WITH_PPDEV
+  if (PPdev) {
+    ioctl (PPfd, PPRDATA, &data);
+  } else
+#endif
+    {
+      data=inb (Port);
+    }
+  return data;
+}
+
+
+void parport_debug(void)
+{
+  unsigned char control;
+  
+  ioctl (PPfd, PPRCONTROL, &control);
+  
+  debug ("%cSTROBE %cAUTOFD %cINIT %cSELECT", 
+	 control & PARPORT_CONTROL_STROBE ? '-':'+',
+	 control & PARPORT_CONTROL_AUTOFD ? '-':'+',
+	 control & PARPORT_CONTROL_INIT   ? '+':'-',
+	 control & PARPORT_CONTROL_SELECT ? '-':'+');
+  
+}

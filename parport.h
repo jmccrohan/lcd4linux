@@ -1,4 +1,4 @@
-/* $Id: parport.h,v 1.1 2003/04/04 06:02:03 reinelt Exp $
+/* $Id: parport.h,v 1.2 2003/04/07 06:03:10 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.h,v $
+ * Revision 1.2  2003/04/07 06:03:10  reinelt
+ * further parallel port abstraction
+ *
  * Revision 1.1  2003/04/04 06:02:03  reinelt
  * new parallel port abstraction scheme
  *
@@ -31,8 +34,11 @@
 int parport_open (void);
 int parport_close (void);
 unsigned char parport_wire (char *name, char *deflt);
+void parport_direction (int direction);
 void parport_control (unsigned char mask, unsigned char value);
 void parport_toggle (unsigned char bit, int level, int delay);
 void parport_data (unsigned char data);
+unsigned char parport_read (void);
+void parport_debug(void);
 
 #endif

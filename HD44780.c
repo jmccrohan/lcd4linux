@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.27 2003/04/04 06:01:59 reinelt Exp $
+/* $Id: HD44780.c,v 1.28 2003/04/07 06:02:58 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.28  2003/04/07 06:02:58  reinelt
+ * further parallel port abstraction
+ *
  * Revision 1.27  2003/04/04 06:01:59  reinelt
  * new parallel port abstraction scheme
  *
@@ -170,9 +173,10 @@ static LCD Lcd;
 static char Txt[4][40];
 static int  GPO=0;
 
+static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
 static unsigned char SIGNAL_ENABLE;
-static unsigned char SIGNAL_ENABLE_GPO;
+static unsigned char SIGNAL_GPO;
 
 
 static void HD_command (unsigned char cmd, int delay)
@@ -181,8 +185,8 @@ static void HD_command (unsigned char cmd, int delay)
   // put data on DB1..DB8
   parport_data (cmd);
   
-  // clear RS
-  parport_control (SIGNAL_RS, 0);
+  // clear RW and RS
+  parport_control (SIGNAL_RW | SIGNAL_RS, 0);
     
   // Address set-up time
   ndelay(40);
@@ -199,8 +203,8 @@ static void HD_command (unsigned char cmd, int delay)
 
 static void HD_write (char *string, int len, int delay)
 {
-  // set RS
-  parport_control (SIGNAL_RS, SIGNAL_RS);
+  // clear RW, set RS
+  parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
 
   // Address set-up time
   ndelay(40);
@@ -231,7 +235,7 @@ static void HD_setGPO (int bits)
     
     // send data
     // 74HCT573 enable pulse width = 24ns
-    parport_toggle (SIGNAL_ENABLE_GPO, 1, 230);
+    parport_toggle (SIGNAL_GPO, 1, 230);
   }
 }
 
@@ -291,15 +295,23 @@ int HD_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
-  SIGNAL_RS=parport_wire ("RS", "AUTOFD");
-  SIGNAL_ENABLE=parport_wire ("ENABLE", "STROBE");
-  SIGNAL_ENABLE_GPO=parport_wire ("ENABLE_GPO", "INIT");
+  if ((SIGNAL_RW=parport_wire ("RW", "GND"))==0xff) return -1;
+  if ((SIGNAL_RS=parport_wire ("RS", "AUTOFD"))==0xff) return -1;
+  if ((SIGNAL_ENABLE=parport_wire ("ENABLE", "STROBE"))==0xff) return -1;
+  if ((SIGNAL_GPO=parport_wire ("GPO", "INIT"))==0xff) return -1;
 
   if (parport_open() != 0) {
     error ("HD44780: could not initialize parallel port!");
     return -1;
   }
 
+  // clear RW
+  parport_control (SIGNAL_RW, 0);
+
+  // set direction: write
+  parport_direction (0);
+
+  // initialize display
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
   HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms

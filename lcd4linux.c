@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.36 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.37 2003/04/07 06:03:01 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.37  2003/04/07 06:03:01  reinelt
+ * further parallel port abstraction
+ *
  * Revision 1.36  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -231,7 +234,7 @@ static void usage(void)
 int hello (void)
 {
   int i, x, y, flag;
-  char *line1[] = { "* LCD4Linux V" VERSION " *",
+  char *line1[] = { "* LCD4Linux " VERSION " *",
 		    "LCD4Linux " VERSION,
 		    "LCD4Linux",
 		    "L4Linux",
