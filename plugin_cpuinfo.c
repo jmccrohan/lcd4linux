@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.5 2004/01/16 11:12:26 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.6 2004/01/21 10:48:17 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.6  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.5  2004/01/16 11:12:26  reinelt
  * some bugs in plugin_xmms fixed, parsing moved to own function
  * plugin_proc_stat nearly finished
@@ -62,24 +65,23 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <time.h>
 
 #include "debug.h"
 #include "plugin.h"
 #include "hash.h"
 
 
-static HASH CPUinfo = { 0, 0, NULL };
+static HASH CPUinfo = { 0, };
 
 
 static int parse_cpuinfo (void)
 {
-  static time_t now=0;
+  int age;
   FILE *stream;
-
+  
   // reread every second only
-  if (time(NULL)==now) return 0;
-  time(&now);
+  age=hash_age(&CPUinfo, NULL, NULL);
+  if (age>0 && age<=1000) return 0;
   
     
   stream=fopen("/proc/cpuinfo", "r");
@@ -136,4 +138,3 @@ int plugin_init_cpuinfo (void)
   AddFunction ("cpuinfo", 1, my_cpuinfo);
   return 0;
 }
-

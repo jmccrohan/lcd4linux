@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.6 2004/01/20 05:36:59 reinelt Exp $
+/* $Id: hash.c,v 1.7 2004/01/21 10:48:17 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.7  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.6  2004/01/20 05:36:59  reinelt
  * moved text-display-specific stuff to drv_generic_text
  * moved all the bar stuff from drv_generic_bar to generic_text
@@ -142,6 +145,7 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
   if (Item!=NULL) {
     if (Item->val) free (Item->val);
     Item->val = strdup(val);
+    gettimeofday(&(Item->time), NULL);
     return Item;
   }
 
@@ -155,7 +159,11 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
   Item->key   = strdup(key);
   Item->val   = strdup(val);
   Item->Slot  = NULL;
-  
+
+  // set timestamps
+  gettimeofday(&Hash->time, NULL);
+  Item->time=Hash->time;
+
   return Item;
 }
 
@@ -199,11 +207,41 @@ char *hash_get (HASH *Hash, char *key)
   return Item?Item->val:NULL;
 }
 
+
+// return the age in milliseconds of an entry from the hash table
+// or from the hash table itself if key is NULL
+// returns -1 if entry does not exist
+// if **value is set, return the value, too
+int hash_age (HASH *Hash, char *key, char **value)
+{
+  HASH_ITEM *Item;
+  timeval now, *stamp;
+  int age;
+  
+  if (key!=NULL) {
+    Item=hash_lookup(Hash, key, 1);
+    if (value) *value=Item?Item->val:NULL;
+    if (Item==NULL) {
+      return -1;
+    }
+    stamp=&Item->time;
+  } else {
+    stamp=&Hash->time;
+  }
+  
+  gettimeofday(&now, NULL);
+  
+  age = (now.tv_sec - stamp->tv_sec)*1000 + (now.tv_usec - stamp->tv_usec)/1000;
+
+  return age;
+}
+
+
 // get a delta value from the filter table
 double hash_get_filter (HASH *Hash, char *key, int delay)
 {
   HASH_ITEM *Item;
-  struct timeval now, end;
+  timeval now, end;
   int i;
   double dv, dt;
   

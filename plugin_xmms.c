@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.4 2004/01/16 11:12:26 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.5 2004/01/21 10:48:17 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.5  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.4  2004/01/16 11:12:26  reinelt
  * some bugs in plugin_xmms fixed, parsing moved to own function
  * plugin_proc_stat nearly finished
@@ -68,25 +71,23 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <time.h>
 
 #include "hash.h"
 #include "debug.h"
 #include "plugin.h"
 
 
-static HASH xmms = { 0, 0, NULL };
+static HASH xmms = { 0, };
 
 
 static int parse_xmms_info (void)
 {
-  static time_t now=0;
   FILE *xmms_stream;
   char zeile[200];
   
-  // reread every second only
-  if (time(NULL)==now) return 0;
-  time(&now);
+  // reread every 100msec only
+  age=hash_age(&xmms, NULL, NULL);
+  if (age>0 && age<=100) return 0;
   
   // Open Filestream for '/tmp/xmms-info'
   xmms_stream = fopen("/tmp/xmms-info","r");

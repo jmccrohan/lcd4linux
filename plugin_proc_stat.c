@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.6 2004/01/20 12:45:47 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.7 2004/01/21 10:48:17 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.7  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.6  2004/01/20 12:45:47  reinelt
  * "Default screen" working with MatrixOrbital
  *
@@ -63,36 +66,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <time.h>
-#include <sys/time.h>
 
 #include "debug.h"
 #include "plugin.h"
 #include "hash.h"
 
 
-static HASH Stat = { 0, 0, NULL };
-
-
-static int renew(int msec)
-{
-  static struct timeval end = {0, 0};
-  struct timeval now;
-
-  // update every 10 msec
-  gettimeofday(&now, NULL);
-  if (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec) {
-    return 0;
-  }
-  end.tv_sec  = now.tv_sec;
-  end.tv_usec = now.tv_usec + 1000*msec;
-  while (end.tv_usec > 1000000) {
-    end.tv_usec -= 1000000;
-    end.tv_sec++;
-  }
-  return 1;
-}
-
+static HASH Stat = { 0, };
 
 static void hash_set1 (char *key1, char *val) 
 {
@@ -122,8 +102,9 @@ static int parse_proc_stat (void)
 {
   FILE *stream;
   
-  // update every 10 msec
-  if (!renew(10)) return 0;
+  // reread every 10 msec only
+  age=hash_age(&Stat, NULL, NULL);
+  if (age>0 && age<=10) return 0;
   
   stream=fopen("/proc/stat", "r");
   if (stream==NULL) {

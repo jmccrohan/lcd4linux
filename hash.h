@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.5 2004/01/18 09:01:45 reinelt Exp $
+/* $Id: hash.h,v 1.6 2004/01/21 10:48:17 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.6  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.5  2004/01/18 09:01:45  reinelt
  * /proc/stat parsing finished
  *
@@ -53,22 +56,25 @@
 // struct timeval
 #include <sys/time.h>
 
+typedef struct timeval timeval;
 
 typedef struct {
-  struct timeval time;
-  double val;
+  timeval time;
+  double  val;
 } HASH_SLOT;
 
 
 typedef struct {
   char      *key;
   char      *val;
+  timeval   time;
   HASH_SLOT *Slot;
 } HASH_ITEM;
 
 
 typedef struct {
   int       sorted;
+  timeval   time;
   int       nItems;
   HASH_ITEM *Items;
 } HASH;
@@ -76,6 +82,7 @@ typedef struct {
 
 void   hash_set        (HASH *Hash, char *key, char *val);
 void   hash_set_filter (HASH *Hash, char *key, char *val);
+int    hash_age        (HASH *Hash, char *key, char **value);
 char  *hash_get        (HASH *Hash, char *key);
 double hash_get_filter (HASH *Hash, char *key, int delay);
 void   hash_destroy    (HASH *Hash);

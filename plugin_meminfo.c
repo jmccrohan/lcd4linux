@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.2 2004/01/16 07:26:25 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.3 2004/01/21 10:48:17 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.3  2004/01/21 10:48:17  reinelt
+ * hash_age function added
+ *
  * Revision 1.2  2004/01/16 07:26:25  reinelt
  * moved various /proc parsing to own functions
  * made some progress with /proc/stat parsing
@@ -49,7 +52,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <time.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -57,18 +59,18 @@
 #include "hash.h"
 
 
-static HASH MemInfo = { 0, 0, NULL };
+static HASH MemInfo = { 0, };
 
 
 static int parse_meminfo (void)
 {
-  static time_t now=0;
-  FILE *stream;
+  int age;
   int line;
+  FILE *stream;
   
-  // reread every second only
-  if (time(NULL)==now) return 0;
-  time(&now);
+  // reread every 100 msec only
+  age=hash_age(&MemInfo, NULL, NULL);
+  if (age>0 && age<=100) return 0;
   
   stream=fopen("/proc/meminfo", "r");
   if (stream==NULL) {
