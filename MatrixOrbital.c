@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.46 2003/10/12 04:46:19 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.47 2003/10/22 04:19:16 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.47  2003/10/22 04:19:16  reinelt
+ * Makefile.in for imon.c/.h, some MatrixOrbital clients
+ *
  * Revision 1.46  2003/10/12 04:46:19  reinelt
  *
  *
@@ -313,14 +316,14 @@ static int MO_open (void)
 
 static int MO_read (char *string, int len)
 {
-  int ret;
-
+  int run, ret;
+  
   if (Device==-1) return -1;
-  ret=read (Device, string, len);
-  if (ret<0 && errno==EAGAIN) {
-    debug ("read(): EAGAIN");
-    usleep(10000);
+  for (run=0; run<10; run++) {
     ret=read (Device, string, len);
+    if (ret>=0 || errno!=EAGAIN) break;
+    debug ("read(): EAGAIN");
+    usleep(1000);
   }
   
   if (ret<0) {
@@ -333,14 +336,26 @@ static int MO_read (char *string, int len)
 
 static void MO_write (char *string, int len)
 {
+  int run, ret;
+  
   if (Device==-1) return;
-  if (write (Device, string, len)==-1) {
-    if (errno==EAGAIN) {
-      usleep(1000);
-      if (write (Device, string, len)>=0) return;
-    }
+  for (run=0; run<10; run++) {
+    ret=write (Device, string, len);
+    if (ret>=0 || errno!=EAGAIN) break;
+    debug ("write(): EAGAIN");
+    usleep(1000);
+  }
+
+  if (ret<0) {
     error ("MatrixOrbital: write(%s) failed: %s", Port, strerror(errno));
   }
+
+  // Fixme
+  if (ret!=len) {
+    error ("MatrixOrbital: partial write: len=%d ret=%d", len, ret);
+  }
+
+  return;
 }
 
 
@@ -458,17 +473,21 @@ static void client_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
   num=R2N(arg1);
   val=R2N(arg2);
   
-  if (num<0.0) num=0.0;
-  if (val<0.0) val=0.0;
+  if (num<1) num=1;
+  if (num>6) num=6;
+  
+  if (val>=1.0) {
+    val=1.0;
+  } else {
+    val=0.0;
+  }
   
   switch (protocol) {
   case 1:
     if (num==0) {
       if (val>=1.0) {
-	val=1.0;
 	MO_write ("\376W", 2);  // GPO on
       } else {
-	val=0.0;
 	MO_write ("\376V", 2);  // GPO off
       }
     } else {
@@ -479,16 +498,64 @@ static void client_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
     
   case 2:
     if (val>=1.0) {
-      val=1.0;
       cmd[1]='W';  // GPO on
     } else {
-      val=0.0;
       cmd[1]='V';  // GPO off
     }
     cmd[2]=(char)num;
     MO_write (cmd, 3);
     break;
   }
+  
+  SetResult(&result, R_NUMBER, &val); 
+}
+
+
+static void client_pwm (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  int    num;
+  double val;
+  char   cmd[4]="\376\300";
+  
+  num=R2N(arg1);
+  if (num<1) num=1;
+  if (num>6) num=6;
+  cmd[2]=(char)num;
+  
+  val=R2N(arg2);
+  if (val<  0.0) val=  0.0;
+  if (val>255.0) val=255.0;
+  cmd[3]=(char)val;
+
+  MO_write (cmd, 4);
+
+  SetResult(&result, R_NUMBER, &val); 
+}
+
+
+static void client_rpm (RESULT *result, RESULT *arg1)
+{
+  int    num;
+  double val;
+  char   cmd[3]="\376\301";
+  char   buffer[7];
+  
+  num=R2N(arg1);
+  if (num<1) num=1;
+  if (num>6) num=6;
+  cmd[2]=(char)num;
+  
+  MO_write (cmd, 3);
+  usleep(100000);
+  MO_read (buffer, 7);
+  
+  debug ("rpm: buffer[0]=0x%01x", buffer[0]);
+  debug ("rpm: buffer[1]=0x%01x", buffer[1]);
+  debug ("rpm: buffer[2]=0x%01x", buffer[2]);
+  debug ("rpm: buffer[3]=0x%01x", buffer[3]);
+  debug ("rpm: buffer[4]=0x%01x", buffer[4]);
+  debug ("rpm: buffer[5]=0x%01x", buffer[5]);
+  debug ("rpm: buffer[6]=0x%01x", buffer[6]);
 
   SetResult(&result, R_NUMBER, &val); 
 }
@@ -522,7 +589,7 @@ static int MO_init (LCD *Self, int protocol)
   }
   Port=strdup(port);
 
-  if (cfg_number("Speed", 19200, 1200,19200, &i)<0) return -1;
+  if (cfg_number("Speed", 19200, 1200, 19200, &i)<0) return -1;
   switch (i) {
   case 1200:
     Speed=B1200;
@@ -593,9 +660,12 @@ static int MO_init (LCD *Self, int protocol)
   AddFunction ("contrast",  1, client_contrast);
   AddFunction ("backlight", 1, client_backlight);
   AddFunction ("gpo",       2, client_gpo);
+  AddFunction ("pwm",       2, client_pwm);
+  AddFunction ("rpm",       1, client_rpm);
 
   return 0;
 }
+
 
 int MO_init1 (LCD *Self)
 {

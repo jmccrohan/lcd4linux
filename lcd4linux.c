@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.49 2003/10/11 06:01:53 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.50 2003/10/22 04:19:16 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.50  2003/10/22 04:19:16  reinelt
+ * Makefile.in for imon.c/.h, some MatrixOrbital clients
+ *
  * Revision 1.49  2003/10/11 06:01:53  reinelt
  *
  * renamed expression.{c,h} to client.{c,h}
@@ -495,12 +498,6 @@ int main (int argc, char *argv[])
     exit (1);
   }
 
-  // now install our own signal handler
-  signal(SIGHUP,  handler);
-  signal(SIGINT,  handler);
-  signal(SIGQUIT, handler);
-  signal(SIGTERM, handler);
-  
   // process_init sets global vars tick, tack
   process_init();
 
@@ -512,11 +509,13 @@ int main (int argc, char *argv[])
     printf("\neval> ");
     for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
       if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
-      Eval(line, &result);
-      if (result.type==R_NUMBER) {
-	printf ("%g\n", R2N(&result));
-      } else if (result.type==R_STRING) {
-	printf ("'%s'\n", R2S(&result));
+      if (strlen(line)>0) {
+	Eval(line, &result);
+	if (result.type==R_NUMBER) {
+	  printf ("%g\n", R2N(&result));
+	} else if (result.type==R_STRING) {
+	  printf ("'%s'\n", R2S(&result));
+	}
       }
       printf("eval> ");
     }
@@ -533,6 +532,12 @@ int main (int argc, char *argv[])
   }
   
   debug ("starting main loop");
+  
+  // now install our own signal handler
+  signal(SIGHUP,  handler);
+  signal(SIGINT,  handler);
+  signal(SIGQUIT, handler);
+  signal(SIGTERM, handler);
   
   while (got_signal==0) {
     process ();

@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.9 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: icon.c,v 1.10 2003/10/22 04:19:16 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.10  2003/10/22 04:19:16  reinelt
+ * Makefile.in for imon.c/.h, some MatrixOrbital clients
+ *
  * Revision 1.9  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -186,7 +189,7 @@ void icon_clear(void)
   for (n=0; n<ROWS*COLS; n++) {
     Screen[n]=-1;
   }
-  
+
 }
 
 
