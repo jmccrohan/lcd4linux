@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.2 2001/02/18 21:16:06 reinelt Exp $
+/* $Id: seti.c,v 1.3 2001/02/19 00:15:46 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.3  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.2  2001/02/18 21:16:06  reinelt
  * *** empty log message ***
  *
@@ -58,7 +63,7 @@
 #include "debug.h"
 #include "seti.h"
 
-int Seti (int *perc, int *cput)
+int oldSeti (int *perc, int *cput)
 {
   FILE *fstr;
   static int err_marker=0; // Was there an erro before -> -2
@@ -182,7 +187,7 @@ int Seti (int *perc, int *cput)
 }
 
 
-int newSeti (double *perc, double *cput)
+int Seti (double *perc, double *cput)
 {
   static char fn[256];
   static time_t now=0;

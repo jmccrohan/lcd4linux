@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.9 2001/02/16 08:23:09 reinelt Exp $
+/* $Id: parser.c,v 1.10 2001/02/19 00:15:46 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.10  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.9  2001/02/16 08:23:09  reinelt
  *
  * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
@@ -129,24 +134,19 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "nw", T_ETH_TX,     C_ETH,     1 },
 			  { "nt", T_ETH_TOTAL,  C_ETH,     1 },
 			  { "nm", T_ETH_MAX,    C_ETH,     1 },
+			  { "ic", T_ISDN_USED,  C_ISDN,    0 },
 			  { "ii", T_ISDN_IN,    C_ISDN,    1 },
 			  { "io", T_ISDN_OUT,   C_ISDN,    1 },
 			  { "it", T_ISDN_TOTAL, C_ISDN,    1 },
 			  { "im", T_ISDN_MAX,   C_ISDN,    1 },
-			  { "ic", T_ISDN_CONNECT, C_ISDN,    0 },
 			  { "ti", T_PPP_RX,     C_PPP,     1 },
 			  { "to", T_PPP_TX,     C_PPP,     1 },
 			  { "tt", T_PPP_TOTAL,  C_PPP,     1 },
 			  { "tm", T_PPP_MAX,    C_PPP,     1 },
-			  { "s1", T_SENSOR_1,   C_SENSOR,  1 },
-			  { "s2", T_SENSOR_2,   C_SENSOR,  1 },
-			  { "s3", T_SENSOR_3,   C_SENSOR,  1 },
-			  { "s4", T_SENSOR_4,   C_SENSOR,  1 },
-			  { "s5", T_SENSOR_5,   C_SENSOR,  1 },
-			  { "s6", T_SENSOR_6,   C_SENSOR,  1 },
-			  { "s7", T_SENSOR_7,   C_SENSOR,  1 },
-			  { "s8", T_SENSOR_8,   C_SENSOR,  1 },
-			  { "s9", T_SENSOR_9,   C_SENSOR,  1 },
+			  { "hc", T_SETI_PRC,   C_SETI,    1 },
+			  { "ht", T_SETI_CPU,   C_SETI,    0 },
+			  { "e*", T_MAIL,       C_MAIL,    0 },
+			  { "s*", T_SENSOR,     C_SENSOR,  1 },
 			  { "",  -1,            0 }};
 
 static int bar_type (char tag)
@@ -165,16 +165,30 @@ static int bar_type (char tag)
   }
 }
 
-static TOKEN get_token (char *s, char **p, int bar, int usage[])
+static int get_token (char *s, char **p, int bar, int usage[])
 {
-  int i;
+  char c;
+  int  i, l;
+  
   for (i=0; Symtab[i].token!=-1; i++) {
-    int l=strlen(Symtab[i].symbol);
     if (bar && !Symtab[i].bar) continue;
-    if (strncmp(Symtab[i].symbol, s, l)==0) {
+    l=strlen(Symtab[i].symbol);
+    if (Symtab[i].symbol[l-1]=='*') {
+      if (Symtab[i].token<T_EXTENDED) {
+	error ("ERROR: internal error in symbol '%s'", Symtab[i].symbol);
+	return -1;
+      }
+      c=*(s+l-1);
+      if (strncmp(Symtab[i].symbol, s, l-1)==0 && c>='1' && c<='9') {
+	*p=s+l;
+	usage[Symtab[i].token]|=(1<<(c-'0'));
+	usage[Symtab[i].class]=1;
+	return Symtab[i].token+(c<<8);
+      }
+    } else if (strncmp(Symtab[i].symbol, s, l)==0) {
       *p=s+l;
-      usage[Symtab[i].token]++;
-      usage[Symtab[i].class]++;
+      usage[Symtab[i].token]=1;
+      usage[Symtab[i].class]=1;
       return Symtab[i].token;
     }
   }
@@ -186,7 +200,7 @@ char *parse_row (char *string, int supported_bars, int usage[])
   static char buffer[256];
   char *s=string;
   char *p=buffer;
-  TOKEN token, token2;
+  int token, token2;
   int type, len;
 
   do {
@@ -197,7 +211,8 @@ char *parse_row (char *string, int supported_bars, int usage[])
 	error ("WARNING: unknown token <%%%c> in <%s>", *s, string);
       } else {
 	*p++='%';
-	*p++=token;
+	*p++=token&255;
+	if (token>256) *p++=token>>8;
       }
       break;
       
@@ -239,8 +254,12 @@ char *parse_row (char *string, int supported_bars, int usage[])
       *p++='$';
       *p++=type;
       *p++=len;
-      *p++=token;
-      if (token2!=-1) *p++=token2;
+      *p++=token&255;
+      if (token>256) *p++=token>>8;
+      if (token2!=-1) {
+	*p++=token2&255;
+	if (token>256) *p++=token2>>8;
+      }
       break;
       
     case '\\':
@@ -269,10 +288,10 @@ char *parse_row (char *string, int supported_bars, int usage[])
   return buffer;
 }
 
-char parse_gpo (char *string, int usage[])
+int parse_gpo (char *string, int usage[])
 {
   char *s=string;
-  TOKEN token=-1;
+  int token=-1;
   
   if (*s=='%') {
     if ((token=get_token (++s, &s, 0, usage))==-1) {
@@ -283,6 +302,6 @@ char parse_gpo (char *string, int usage[])
   if (*s!='\0') {
     error ("WARNING: error while parsing <%s>", string);
   }
-
+  
   return token;
 }

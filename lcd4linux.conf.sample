@@ -1,7 +1,7 @@
-#Display LCD2041
-#Port /dev/ttyS2
-#Speed 19200
-#Contrast 160
+Display LCD2041
+Port /dev/ttyS2
+Speed 19200
+Contrast 160
 
 #Display HD44780
 #Port 0x378
@@ -41,11 +41,13 @@
 #halfground \#90c000
 #background \#a0d000
 
-Display SIN
-Port /dev/tty9
+#Display SIN
+#Port /dev/tty9
 
 Row1 "Disk%dm $R10dr+dw"
 Row2 "Net %nm $R10nr+nw"
+Row3 "%s1 %s2 %s3"
+Row4 "%hc %ht %e1"
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
@@ -70,14 +72,17 @@ Tau 500
 
 Overload 2.0
 
-Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp1
+SetiDir /etc/setiathome
+Mailbox1 /var/spool/mail/michii
+
+Sensor1 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp1
 Sensor1_min 30
 Sensor1_max 50
 
-Sensor2 /proc/sys/dev/sensors/w83781d-isa-0290/temp2
+Sensor2 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp2
 Sensor2_min 30
 Sensor2_max 50
 
-Sensor3 /proc/sys/dev/sensors/w83781d-isa-0290/temp3
+Sensor3 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp3
 Sensor3_min 30
 Sensor3_max 50

@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.1 2001/02/18 22:11:34 reinelt Exp $
+/* $Id: mail.c,v 1.2 2001/02/19 00:15:46 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.2  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.1  2001/02/18 22:11:34  reinelt
  * *** empty log message ***
  *
@@ -138,7 +143,7 @@ int Mail (int index, int *num)
     }
     fclose (fstr);
   }
-  *cnt=v1;
+  *num=v1;
   return (0);
 }
 

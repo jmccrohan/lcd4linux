@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.7 2001/02/16 08:23:09 reinelt Exp $
+/* $Id: parser.h,v 1.8 2001/02/19 00:15:46 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.8  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.7  2001/02/16 08:23:09  reinelt
  *
  * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
@@ -69,16 +74,18 @@ typedef enum {
   T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,
   T_ETH_RX, T_ETH_TX, T_ETH_TOTAL, T_ETH_MAX,
   T_PPP_RX, T_PPP_TX, T_PPP_TOTAL, T_PPP_MAX,
-  T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX, T_ISDN_CONNECT,
-  T_SENSOR_1, T_SENSOR_2, T_SENSOR_3, T_SENSOR_4, T_SENSOR_5, 
-  T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9
+  T_ISDN_USED, T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
+  T_SETI_PRC, T_SETI_CPU,
+  T_EXTENDED,
+  T_MAIL,
+  T_SENSOR
 } TOKEN;
 
 typedef enum {
-  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SENSOR
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, C_MAIL, C_SENSOR
 } CLASS;
 
 char *parse_row (char *string, int supported_bars, int usage[]);
-char  parse_gpo (char *string, int usage[]);
+int   parse_gpo (char *string, int usage[]);
 
 #endif

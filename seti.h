@@ -1,4 +1,4 @@
-/* $Id: seti.h,v 1.1 2001/02/18 21:15:15 reinelt Exp $
+/* $Id: seti.h,v 1.2 2001/02/19 00:15:46 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: seti.h,v $
+ * Revision 1.2  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.1  2001/02/18 21:15:15  reinelt
  *
  * added setiathome client
@@ -31,6 +36,6 @@
 
 #define DEFSETIPOLLEXT 10
 
-int Seti (int *perc, int *cput);
+int Seti (double *perc, double *cput);
 
 #endif

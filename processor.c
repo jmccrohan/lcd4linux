@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.13 2001/02/16 14:15:11 reinelt Exp $
+/* $Id: processor.c,v 1.14 2001/02/19 00:15:46 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.14  2001/02/19 00:15:46  reinelt
+ *
+ * integrated mail and seti client
+ * major rewrite of parser and tokenizer to support double-byte tokens
+ *
  * Revision 1.13  2001/02/16 14:15:11  reinelt
  *
  * fixed type in processor.c
@@ -107,7 +112,8 @@
 #include "parser.h"
 #include "display.h"
 #include "processor.h"
-
+#include "mail.h"
+#include "seti.h"
 
 #define ROWS 16
 #define GPOS 16
@@ -124,12 +130,14 @@ struct { int read, write, total, max, peak; } disk;
 struct { int rx, tx, total, max, peak, bytes; } net;
 struct { int usage, in, out, total, max, peak; } isdn;
 struct { int rx, tx, total, max, peak; } ppp;
+struct { double perc, cput; } seti;
+struct { int num; } mail[MAILBOXES];
 struct { double val, min, max; } sensor[SENSORS];
 
 
 static double query (int token)
 {
-  switch (token) {
+  switch (token&255) {
     
   case T_MEM_TOTAL:
     return ram.total;
@@ -190,7 +198,7 @@ static double query (int token)
     return isdn.total;
   case T_ISDN_MAX:
     return isdn.max;
-  case T_ISDN_CONNECT:
+  case T_ISDN_USED:
     return isdn.usage;
 
   case T_PPP_RX:
@@ -202,16 +210,16 @@ static double query (int token)
   case T_PPP_MAX:
     return ppp.max;
     
-  case T_SENSOR_1:
-  case T_SENSOR_2:
-  case T_SENSOR_3:
-  case T_SENSOR_4:
-  case T_SENSOR_5:
-  case T_SENSOR_6:
-  case T_SENSOR_7:
-  case T_SENSOR_8:
-  case T_SENSOR_9:
-    return sensor[token-T_SENSOR_1+1].val;
+  case T_SETI_PRC:
+    return seti.perc;
+  case T_SETI_CPU:
+    return seti.cput;
+    
+  case T_MAIL:
+    return mail[(token>>8)-'0'].num;
+
+  case T_SENSOR:
+    return sensor[(token>>8)-'0'].val;
   }
   return 0.0;
 }
@@ -265,16 +273,11 @@ static double query_bar (int token)
   case T_PPP_TOTAL:
     return value/ppp.peak/2.0;
     
-  case T_SENSOR_1:
-  case T_SENSOR_2:
-  case T_SENSOR_3:
-  case T_SENSOR_4:
-  case T_SENSOR_5:
-  case T_SENSOR_6:
-  case T_SENSOR_7:
-  case T_SENSOR_8:
-  case T_SENSOR_9:
-    i=token-T_SENSOR_1+1;
+  case T_SETI_PRC:
+    return value;
+
+  case T_SENSOR:
+    i=(token>>8)-'0';
     return (value-sensor[i].min)/(sensor[i].max-sensor[i].min);
   }
   return value;
@@ -318,15 +321,7 @@ static void print_token (int token, char **p)
   case T_LOAD_1:
   case T_LOAD_2:
   case T_LOAD_3:
-  case T_SENSOR_1:
-  case T_SENSOR_2:
-  case T_SENSOR_3:
-  case T_SENSOR_4:
-  case T_SENSOR_5:
-  case T_SENSOR_6:
-  case T_SENSOR_7:
-  case T_SENSOR_8:
-  case T_SENSOR_9:
+  case T_SENSOR:
     val=query(token);
     if (val<10.0)
       *p+=sprintf (*p, "%5.2f", val);
@@ -360,14 +355,31 @@ static void print_token (int token, char **p)
     else
       *p+=sprintf (*p, " ----");
     break;
-  case T_ISDN_CONNECT:
+  case T_ISDN_USED:
     if (isdn.usage)
       *p+=sprintf (*p, "*");
     else
       *p+=sprintf (*p, " ");
     break;
+  case T_SETI_PRC:
+    val=100.0*query(token);
+    if (val<100.0) 
+      *p+=sprintf (*p, "%4.1f", val);
+    else
+      *p+=sprintf (*p, " 100");
+    break;
+  case T_SETI_CPU:
+    val=query(token);
+    *p+=sprintf (*p, "%2d.%2.2d:%2.2d", (int)val/86400, 
+		 (int)((int)val%86400)/3600,
+		 (int)(((int)val%86400)%3600)/60 );
+    break;
+  case T_MAIL:
+    val=query(token);
+    *p+=sprintf (*p, "%3.0f", val);
+    break;
   default:
-      *p+=sprintf (*p, "%5.0f", query(token));
+    *p+=sprintf (*p, "%5.0f", query(token));
   }
 }
 
@@ -417,8 +429,18 @@ static void collect_data (void)
     if (ppp.max>ppp.peak) ppp.peak=ppp.max;
   }
 
+  if (token_usage[C_SETI]) {
+    Seti (&seti.perc, &seti.cput);
+  }
+  
+  for (i=1; i<=MAILBOXES; i++) {
+    if (token_usage[T_MAIL]&(1<<i)) {
+      Mail (i, &mail[i].num);
+    }
+  }
+  
   for (i=1; i<SENSORS; i++) {
-    if (token_usage[T_SENSOR_1+i-1]) {
+    if (token_usage[T_SENSOR]&(1<<i)) {
       Sensor (i, &sensor[i].val, &sensor[i].min, &sensor[i].max);
     }
   }
@@ -429,19 +451,28 @@ static char *process_row (int r)
   static char buffer[256];
   char *s=row[r];
   char *p=buffer;
+  int token;
   
   do {
     if (*s=='%') {
-      print_token (*(unsigned char*)++s, &p);
+      token = *(unsigned char*)++s;
+      if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
+      print_token (token, &p);
 	
     } else if (*s=='$') {
-      int i;
-      int type=*++s;
-      int len=*++s;
-      double val1=query_bar(*(unsigned char*)++s);
-      double val2=val1;
-      if (type & (BAR_H2 | BAR_V2))
-	val2=query_bar(*(unsigned char*)++s);
+      double val1, val2;
+      int i, type, len;
+      type=*++s;
+      len=*++s;
+      token = *(unsigned char*)++s;
+      if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
+      val1=query_bar(token);
+      val2=val1;
+      if (type & (BAR_H2 | BAR_V2)) {
+	token = *(unsigned char*)++s;
+	if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
+	val2=query_bar(token);
+      }
       if (type & BAR_H)
 	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
       else
@@ -468,7 +499,7 @@ static int process_gpo (int r)
   int token;
   double val;
 
-  token=(unsigned char)gpo[r];
+  token=gpo[r];
   val=query(token);
 
   return (val > 0.0);
