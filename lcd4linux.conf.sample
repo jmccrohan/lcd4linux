@@ -59,23 +59,50 @@ Display Curses {
     Size '20x6'
 }
 
-
-Display HD44780-20x4 {
+# generic HD44780 display (LCD4Linux wiring)
+Display HD44780-generic {
     Driver 'HD44780'
+    Model 'generic'
     Port '/dev/parports/0'	
-#   Port '0x378'
-    Bits '8'
     Size '20x4'
-    asc255bug 0
-    Icons 1
     Wire {
-	RW     'GND'
-	RS     'AUTOFD'
-	ENABLE 'STROBE'
-	GPO    'INIT'
+	RW      'GND'
+	RS      'AUTOFD'
+	ENABLE  'STROBE'
+	ENABLE2 'GND'
+	GPO     'GND'
     }
 }
 
+# generic HD44780 display (WinAmp wiring)
+Display HD44780-winamp {
+    Driver 'HD44780'
+    Model 'generic'
+    Port '/dev/parports/0'	
+    Size '20x4'
+    Wire {
+	RW      'AUTOFD'
+	RS      'INIT'
+	ENABLE  'STROBE'
+	ENABLE2 'GND'
+	GPO     'GND'
+    }
+}
+
+# HD44780 display from www.kernelconcepts.de
+Display HD44780-winamp {
+    Driver 'HD44780'
+    Model 'HD66712'
+    Port '/dev/parports/0'	
+    Size '20x4'
+    Wire {
+	RW      'AUTOFD'
+	RS      'INIT'
+	ENABLE  'STROBE'
+	ENABLE2 'GND'
+	GPO     'GND'
+    }
+}
 
 Display SC1602D {
     Driver 'HD44780'

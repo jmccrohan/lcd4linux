@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.23 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.24 2005/01/11 10:19:33 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.24  2005/01/11 10:19:33  reinelt
+ * changes to lcd4linux.conf.sample
+ *
  * Revision 1.23  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -208,6 +211,7 @@ static int parse_proc_stat (void)
 	beg=end?end+1:NULL;
       }
     } 
+
     else if (strncmp(buffer, "page ", 5)==0) {
       char *key[]  = { "in", "out" }; 
       char delim[] = " \t\n";
@@ -252,6 +256,7 @@ static int parse_proc_stat (void)
 	beg=end?end+1:NULL;
       }
     } 
+
     else if (strncmp(buffer, "disk_io:", 8)==0) {
       char *key[]  = { "io", "rio", "rblk", "wio", "wblk" }; 
       char delim[] = " ():,\t\n";
