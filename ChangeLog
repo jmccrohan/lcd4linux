@@ -1,4 +1,72 @@
+2003-10-08  andy-b  <andy-b@merlin.ethnet>
+
+	* MilfordInstruments.c:
+	Cleaned up code in MilfordInstruments.c, and added descriptions for other display sizes (untested)
+
+2003-10-08  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* HD44780.c: special handling for 16x4 displays
+
+	* HD44780.c: Support of two displays of the same size
+
+2003-10-07  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, Makefile.in, config.h.in, configure:
+	AM_PROG_LIBTOOL removed
+
+2003-10-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* expression.c: functions: min(), max()
+
+	* evaluator.c, expression.c: operators: ==, \!=, <=, >=
+
+	* evaluator.c, evaluator.h, expression.c, expression.h:
+	expression evaluator added
+
+	* bootstrap, libtool: files 'libtool' and 'bootstrap' added
+
+	* configure.in, Makefile.am, Makefile.in, configure:
+	libtool stuff again...
+
+2003-10-05  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, HD44780.c, M50530.c, Makefile.am, Makefile.in, MatrixOrbital.c, MilfordInstruments.c, PalmPilot.c, Raster.c, SIN.c, Skeleton.c, T6963.c, Text.c, USBLCD.c, XWindow.c, bar.c, bar.h, battery.c, battery.h, cfg.c, cfg.h, debug.c, debug.h, display.c, display.h, dvb.c, dvb.h, exec.c, exec.h, filter.c, filter.h, fontmap.c, fontmap.h, icon.c, icon.h, isdn.c, isdn.h, lcd4linux.c, lock.c, lock.h, mail.c, mail.h, mail2.c, parport.c, parport.h, parser.c, parser.h, pid.c, pid.h, pixmap.c, pixmap.h, processor.c, processor.h, seti.c, seti.h, socket.c, socket.h, system.c, system.h, udelay.c, udelay.h, widget.c, widget.h:
+	libtool junk; copyright messages cleaned up
+
+2003-10-04  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, ltmain.sh, Makefile.am, Makefile.in, aclocal.m4, config.h.in, configure:
+	autoconf/automake/libtool fixes from Ronald Landheer-Cieslak
+
+2003-10-03  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* parport.c:
+	compile error in parport fixed (thanks to Andrew from FilmCan)
+
+	* MatrixOrbital.c, processor.c:
+	start support for new MatrixOrbital MX2 displays
+
+2003-09-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, display.c, Makefile.am, Makefile.in, MilfordInstruments.c, config.h.in, configure:
+	new driver for Milford Instruments MI420 by Andy Baxter
+
+	* HD44780.c, MatrixOrbital.c, T6963.c:
+	changed default HD44780 wiring: unused signals are GND
+
+2003-09-21  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* HD44780.c, MatrixOrbital.c:
+
+	MatrixOrbital: bidirectional communication
+	HD44780: special handling for 16x1 displays (thanks to anonymous bug report on sf.net)
+
 2003-09-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog, configure, configure.in, lock.c:
+
+	increased version number to 0.9.12
+	port locking is done as /var/lock/LCK..usb_tts_0 for /dev/usb/tts/0
 
 	* Makefile.am, Makefile.in, TODO, icon.c, widget.c, widget.h:
 	minor fixes, widget.c added

@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.10 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: parport.c,v 1.11 2003/10/08 14:21:10 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.11  2003/10/08 14:21:10  reinelt
+ * Changelog; small type in parport.c
+ *
  * Revision 1.10  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -313,7 +316,7 @@ unsigned char parport_wire_data (char *name, unsigned char *deflt)
     w=0;
   } else {
     error ("parport: unknown signal <%s> for wire <%s>", s, name);
-    error ("         should be DB..7 or GND");
+    error ("         should be DB0..7 or GND");
     return 0xff;
   }
   
