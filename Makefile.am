@@ -67,7 +67,6 @@ drv_T6963.c                 \
 drv_USBLCD.c                \
 drv_MatrixOrbital.c         \
 MilfordInstruments.c        \
-PalmPilot.c                 \
 drv_X11.c                   \
 Text.c                      \
 font_6x8.h                  \
@@ -106,8 +105,6 @@ FAQ                         \
 NEWS                        \
 TODO                        \
 README                      \
-README.Rows                 \
-README.Tokens               \
 README.Drivers              \
 README.Plugins              \
 README.KDE                  \

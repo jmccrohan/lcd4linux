@@ -344,9 +344,6 @@
 /* Milford Instruments driver */
 #undef WITH_MILINST
 
-/* PalmPilot driver */
-#undef WITH_PALMPILOT
-
 /* driver */
 #undef WITH_PNG
 

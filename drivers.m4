@@ -11,7 +11,7 @@ AC_ARG_WITH(
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, M50530, T6963, USBLCD, MatrixOrbital,]
-  [                        MilfordInstruments, PalmPilot, PNG, PPM, X11],
+  [                        MilfordInstruments, PNG, PPM, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -76,9 +76,6 @@ for driver in $drivers; do
          ;;
       MilfordInstruments)
          MILINST=$val
-         ;;
-      PalmPilot)
-         PALMPILOT=$val
          ;;
       PNG)
          PNG=$val
@@ -180,12 +177,6 @@ if test "$MILINST" = "yes"; then
 #  DRIVERS="$DRIVERS MilfordInstruments.lo"
 #  DRIVERS="$DRIVERS MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
-fi
-
-if test "$PALMPILOT" = "yes"; then
-#  DRIVERS="$DRIVERS PalmPilot.lo"
-#  DRIVERS="$DRIVERS PalmPilot.o"
-   AC_DEFINE(WITH_PALMPILOT,1,[PalmPilot driver])
 fi
 
 if test "$PNG" = "yes"; then

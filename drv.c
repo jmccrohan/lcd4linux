@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.10 2004/05/25 14:26:29 reinelt Exp $
+/* $Id: drv.c,v 1.11 2004/05/25 19:54:15 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.11  2004/05/25 19:54:15  reinelt
+ *
+ * 'make distcheck' bugs fixed
+ * release number changed to 0.10.0-RC1
+ *
  * Revision 1.10  2004/05/25 14:26:29  reinelt
  *
  * added "Image" driver (was: Raster.c) for PPM and PNG creation
@@ -123,7 +128,6 @@ extern DRIVER drv_T6963;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
-extern DRIVER drv_PalmPilot;
 extern DRIVER drv_X11;
 extern DRIVER drv_Text;
 
@@ -163,14 +167,8 @@ DRIVER *Driver[] = {
   &drv_USBLCD,
 #endif
   /* Fixme
-     #ifdef WITH_MATRIXORBITAL
-     &MatrixOrbital,
-     #endif
      #ifdef WITH_MILINST
      &MilfordInstruments,
-     #endif
-     #ifdef WITH_PALMPILOT
-     &PalmPilot,
      #endif
   */
 #ifdef WITH_X11
