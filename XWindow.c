@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.11 2000/04/01 16:22:38 reinelt Exp $
+/* $Id: XWindow.c,v 1.12 2000/04/01 19:33:45 herp Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.12  2000/04/01 19:33:45  herp
+ *
+ * colors in format \#RRGGBB in config-file now understood
+ *
  * Revision 1.11  2000/04/01 16:22:38  reinelt
  *
  * bug that caused a segfault in processor.c fixed (thanks to herp)
@@ -54,7 +58,7 @@
 
 
 /*
- *
+ * Sat Apr  1 22:18:04 MET 2000 colors in format \#RRGGBB in config-file
  * Fri Mar 31 01:42:11 MET 2000 semaphore bug fixed
  * Sun Mar 26 15:28:23 MET 2000 various rewrites
  * Sat Mar 25 23:58:19 MET 2000 use generic pixmap driver
@@ -295,7 +299,9 @@ char *s;
 	rgbfg=cfg_get("foreground")?:"#000000";
         rgbbg=cfg_get("background")?:"#80d000";
         rgbhg=cfg_get("halfground")?:"#70c000";
-
+	if (*rgbfg=='\\') rgbfg++;
+	if (*rgbbg=='\\') rgbbg++;
+	if (*rgbhg=='\\') rgbhg++;
 
 	if (pix_init(rows,cols,xres,yres)==-1) return -1;
 	if (init_x(rows,cols,xres,yres)==-1) return -1;
