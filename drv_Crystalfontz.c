@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.12 2004/03/01 04:29:51 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.13 2004/03/03 03:41:02 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.13  2004/03/03 03:41:02  reinelt
+ * Crystalfontz Contrast issue fixed
+ *
  * Revision 1.12  2004/03/01 04:29:51  reinelt
  * cfg_number() returns -1 on error, 0 if value not found (but default val used),
  *  and 1 if value was used from the configuration.
@@ -409,31 +412,30 @@ static int drv_CF_contrast (int contrast)
   if (contrast == -1) return Contrast;
   
   if (contrast < 0  ) contrast = 0;
+  if (contrast > 255) contrast = 255;
   Contrast=contrast;
-
+  
   switch (Protocol) {
 
   case 1:
     // contrast range 0 to 100
-    if (contrast > 100) contrast = 100;
+    if (Contrast > 100) Contrast = 100;
     buffer[0] = 15; // Set LCD Contrast
-    buffer[1] = contrast;
+    buffer[1] = Contrast;
     drv_CF_write1 (buffer, 2);
     break;
 
   case 2:
     // contrast range 0 to 50
-    if (contrast > 50) contrast = 50;
-    drv_CF_send (13, 1, &contrast);
+    if (Contrast > 50) Contrast = 50;
+    drv_CF_send (13, 1, &Contrast);
     break;
   case 3:
     // contrast range 0 to 50
-    if (contrast > 255) contrast = 255;
-    drv_CF_send (13, 1, &contrast);
+    drv_CF_send (13, 1, &Contrast);
     break;
   }
   
-  Contrast=contrast;
   return Contrast;
 }
 
