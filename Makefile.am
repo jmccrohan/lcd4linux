@@ -20,6 +20,7 @@ parser.c parser.h \
 processor.c processor.h \
 system.c system.h \
 isdn.c isdn.h \
+seti.c seti.h \
 filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \
