@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.45 2003/10/08 06:45:00 nicowallmeier Exp $
+/* $Id: HD44780.c,v 1.46 2003/10/08 06:48:47 nicowallmeier Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.46  2003/10/08 06:48:47  nicowallmeier
+ * special handling for 16x4 displays
+ *
  * Revision 1.45  2003/10/08 06:45:00  nicowallmeier
  * Support of two displays of the same size
  *
@@ -575,7 +578,12 @@ void HD_goto (int row, int col)
     col-=8;
   }
   
-  pos=(row%2)*64+(row/2)*20+col;
+  if (Lcd.rows==4 && Lcd.cols==16) {
+  	pos=(row%2)*64+(row/2)*16+col;
+  } else {  
+    pos=(row%2)*64+(row/2)*20+col;
+  }
+  
   HD_command (Controller, (0x80|pos), T_EXEC);
 }
 
