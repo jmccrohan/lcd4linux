@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.41 2005/01/17 06:29:24 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.42 2005/01/17 06:38:48 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.42  2005/01/17 06:38:48  reinelt
+ * info about backlight and brightness
+ *
  * Revision 1.41  2005/01/17 06:29:24  reinelt
  * added software-controlled backlight support to HD44780
  *
@@ -1133,6 +1136,7 @@ static int drv_HD_start (const char *section, const int quiet)
   if (Capabilities & CAP_BACKLIGHT) {
     int backlight;
     if (cfg_number(section, "Backlight", 0, 0, 1, &backlight) > 0) {
+      info ("%s: backlight %s", Name, backlight ? "enabled" : "disabled");
       drv_HD_backlight(backlight);
     }
   }
@@ -1141,6 +1145,7 @@ static int drv_HD_start (const char *section, const int quiet)
   if (Capabilities & CAP_BRIGHTNESS) {
     int brightness;
     if (cfg_number(section, "Brightness", 0, 0, 3, &brightness) > 0) {
+      info ("%s: brightness level %d", Name, brightness);
       drv_HD_brightness(brightness);
     }
   }
