@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.16 2004/03/08 04:33:08 reinelt Exp $
+/* $Id: evaluator.c,v 1.17 2004/03/08 18:45:52 hejl Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.17  2004/03/08 18:45:52  hejl
+ * fixed segfault when using string concatenation
+ *
  * Revision 1.16  2004/03/08 04:33:08  reinelt
  * string concatenation fixed
  *
@@ -991,7 +994,7 @@ static int EvalTree (NODE *Root)
       i = Root->Children-1;
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
-      string = Root->Child[i]->Result->string;
+      string = strdup(Root->Child[i]->Result->string);
       break;
 
     case O_SET: // variable assignment
@@ -999,14 +1002,14 @@ static int EvalTree (NODE *Root)
       Root->Variable->value = DupResult (Root->Child[0]->Result);
       type   = Root->Child[0]->Result->type;
       number = Root->Child[0]->Result->number;
-      string = Root->Child[0]->Result->string;
+      string = strdup(Root->Child[0]->Result->string);
       break;
 
     case O_CND: // conditional expression
       i = 1+(R2N(Root->Child[0]->Result) == 0.0);
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
-      string = Root->Child[i]->Result->string;
+      string = strdup(Root->Child[i]->Result->string);
       break;
       
     case O_OR: // logical OR
