@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.6 2000/04/13 06:09:52 reinelt Exp $
+/* $Id: system.h,v 1.7 2000/05/21 06:20:35 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.7  2000/05/21 06:20:35  reinelt
+ *
+ * added ppp throughput
+ * token is '%t[iomt]' at the moment, but this will change in the near future
+ *
  * Revision 1.6  2000/04/13 06:09:52  reinelt
  *
  * added BogoMips() to system.c (not used by now, maybe sometimes we can
@@ -61,6 +66,7 @@ int    Load (double *load1, double *load2, double *load3);
 int    Busy (double *user, double *nice, double *system, double *idle);
 int    Disk (int *r, int *w);
 int    Net (int *rx, int *tx);
+int    PPP (int unit, int *rx, int *tx);
 int    Sensor (int index, double *val, double *min, double *max);
 
 #endif

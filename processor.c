@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.5 2000/04/15 11:56:35 reinelt Exp $
+/* $Id: processor.c,v 1.6 2000/05/21 06:20:35 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.6  2000/05/21 06:20:35  reinelt
+ *
+ * added ppp throughput
+ * token is '%t[iomt]' at the moment, but this will change in the near future
+ *
  * Revision 1.5  2000/04/15 11:56:35  reinelt
  *
  * more debug messages
@@ -84,6 +89,7 @@ struct { double user, nice, system, idle; } busy;
 struct { int read, write, total, max, peak; } disk;
 struct { int rx, tx, total, max, peak; } net;
 struct { int usage, in, out, total, max, peak; } isdn;
+struct { int rx, tx, total, max, peak; } ppp;
 struct { double val, min, max; } sensor[SENSORS];
 
 
@@ -133,13 +139,13 @@ static double query (int token)
   case T_DISK_MAX:
     return disk.max;
     
-  case T_NET_RX:
+  case T_ETH_RX:
     return net.rx;
-  case T_NET_TX:
+  case T_ETH_TX:
     return net.tx;
-  case T_NET_TOTAL:
+  case T_ETH_TOTAL:
     return net.total;
-  case T_NET_MAX:
+  case T_ETH_MAX:
     return net.max;
     
   case T_ISDN_IN:
@@ -151,6 +157,15 @@ static double query (int token)
   case T_ISDN_MAX:
     return isdn.max;
 
+  case T_PPP_RX:
+    return ppp.rx;
+  case T_PPP_TX:
+    return ppp.tx;
+  case T_PPP_TOTAL:
+    return ppp.total;
+  case T_PPP_MAX:
+    return ppp.max;
+    
   case T_SENSOR_1:
   case T_SENSOR_2:
   case T_SENSOR_3:
@@ -193,11 +208,11 @@ static double query_bar (int token)
   case T_DISK_TOTAL:
     return value/disk.peak/2.0;
     
-  case T_NET_RX:
-  case T_NET_TX:
-  case T_NET_MAX:
+  case T_ETH_RX:
+  case T_ETH_TX:
+  case T_ETH_MAX:
     return value/net.peak;
-  case T_NET_TOTAL:
+  case T_ETH_TOTAL:
     return value/net.peak/2.0;
     
   case T_ISDN_IN:
@@ -207,6 +222,13 @@ static double query_bar (int token)
   case T_ISDN_TOTAL:
     return value/isdn.peak/2.0;
 
+  case T_PPP_RX:
+  case T_PPP_TX:
+  case T_PPP_MAX:
+    return value/ppp.peak;
+  case T_PPP_TOTAL:
+    return value/ppp.peak/2.0;
+    
   case T_SENSOR_1:
   case T_SENSOR_2:
   case T_SENSOR_3:
@@ -294,6 +316,12 @@ static void print_token (int token, char **p)
     else
       *p+=sprintf (*p, "----");
     break;
+  case T_PPP_RX:
+  case T_PPP_TX:
+  case T_PPP_MAX:
+  case T_PPP_TOTAL:
+    *p+=sprintf (*p, "%5.0f", query(token));
+    break;
   default:
       *p+=sprintf (*p, "%4.0f", query(token));
   }
@@ -324,7 +352,7 @@ static void collect_data (void)
     if (disk.max>disk.peak) disk.peak=disk.max;
   }
   
-  if (token_usage[C_NET]) {
+  if (token_usage[C_ETH]) {
     Net (&net.rx, &net.tx);
     net.total=net.rx+net.tx;
     net.max=net.rx>net.tx?net.rx:net.tx;
@@ -336,6 +364,13 @@ static void collect_data (void)
     isdn.total=isdn.in+isdn.out;
     isdn.max=isdn.in>isdn.out?isdn.in:isdn.out;
     if (isdn.max>isdn.peak) isdn.peak=isdn.max;
+  }
+
+  if (token_usage[C_PPP]) {
+    PPP (0, &ppp.rx, &ppp.tx);
+    ppp.total=ppp.rx+ppp.tx;
+    ppp.max=ppp.rx>ppp.tx?ppp.rx:ppp.tx;
+    if (ppp.max>ppp.peak) ppp.peak=ppp.max;
   }
 
   for (i=1; i<SENSORS; i++) {

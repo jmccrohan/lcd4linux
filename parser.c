@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.5 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: parser.c,v 1.6 2000/05/21 06:20:35 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.6  2000/05/21 06:20:35  reinelt
+ *
+ * added ppp throughput
+ * token is '%t[iomt]' at the moment, but this will change in the near future
+ *
  * Revision 1.5  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -101,14 +106,18 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "dw", T_DISK_WRITE, C_DISK,    1 },
 			  { "dt", T_DISK_TOTAL, C_DISK,    1 },
 			  { "dm", T_DISK_MAX,   C_DISK,    1 },
-			  { "nr", T_NET_RX,     C_NET,     1 },
-			  { "nw", T_NET_TX,     C_NET,     1 },
-			  { "nt", T_NET_TOTAL,  C_NET,     1 },
-			  { "nm", T_NET_MAX,    C_NET,     1 },
+			  { "nr", T_ETH_RX,     C_ETH,     1 },
+			  { "nw", T_ETH_TX,     C_ETH,     1 },
+			  { "nt", T_ETH_TOTAL,  C_ETH,     1 },
+			  { "nm", T_ETH_MAX,    C_ETH,     1 },
 			  { "ii", T_ISDN_IN,    C_ISDN,    1 },
 			  { "io", T_ISDN_OUT,   C_ISDN,    1 },
 			  { "it", T_ISDN_TOTAL, C_ISDN,    1 },
 			  { "im", T_ISDN_MAX,   C_ISDN,    1 },
+			  { "ti", T_PPP_RX,     C_PPP,     1 },
+			  { "to", T_PPP_TX,     C_PPP,     1 },
+			  { "tt", T_PPP_TOTAL,  C_PPP,     1 },
+			  { "tm", T_PPP_MAX,    C_PPP,     1 },
 			  { "s1", T_SENSOR_1,   C_SENSOR,  1 },
 			  { "s2", T_SENSOR_2,   C_SENSOR,  1 },
 			  { "s3", T_SENSOR_3,   C_SENSOR,  1 },

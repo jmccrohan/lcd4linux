@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.11 2000/04/15 11:56:35 reinelt Exp $
+/* $Id: system.c,v 1.12 2000/05/21 06:20:35 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.12  2000/05/21 06:20:35  reinelt
+ *
+ * added ppp throughput
+ * token is '%t[iomt]' at the moment, but this will change in the near future
+ *
  * Revision 1.11  2000/04/15 11:56:35  reinelt
  *
  * more debug messages
@@ -110,6 +115,10 @@
  *   sets number of packets received and transmitted
  *   returns 0 if ok, -1 on error
  *
+ * int PPP (int unit, int *rx, int *tx);
+ *   sets number of packets received and transmitted
+ *   returns 0 if ok, -1 on error
+ *
  * int Sensor (int index, double *val, double *min, double *max)
  *   sets the current value of the index'th sensor and
  *   the minimum and maximum values from the config file
@@ -129,6 +138,9 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/param.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <net/if_ppp.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -544,6 +556,42 @@ int Net (int *rx, int *tx)
   }
   *rx=smooth("net_rx", 500, pkg_rx);
   *tx=smooth("net_tx", 500, pkg_tx);
+
+  return 0;
+}
+
+int PPP (int unit, int *rx, int *tx)
+{
+  static int fd=-2;
+  struct ifpppstatsreq req;
+  char buffer[16];
+  
+  *rx=0;
+  *tx=0;
+
+  if (fd==-1) return -1;
+  
+  if (fd==-2) {
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd==-1) {
+      perror ("socket() failed");
+      return -1;
+    }
+    debug ("socket()=%d\n", fd);
+  }
+
+  memset (&req, 0, sizeof (req));
+  req.stats_ptr = (caddr_t) &req.stats;
+  snprintf (req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
+  
+  if (ioctl(fd, SIOCGPPPSTATS, &req) < 0)
+    return 0;
+  
+  snprintf (buffer, sizeof(buffer), "ppp%d_rx", unit);
+  *rx=smooth(buffer, 500, req.stats.p.ppp_ibytes);
+
+  snprintf (buffer, sizeof(buffer), "ppp%d_tx", unit);
+  *tx=smooth(buffer, 500, req.stats.p.ppp_obytes);
 
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.4 2000/03/19 08:41:28 reinelt Exp $
+/* $Id: parser.h,v 1.5 2000/05/21 06:20:35 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.5  2000/05/21 06:20:35  reinelt
+ *
+ * added ppp throughput
+ * token is '%t[iomt]' at the moment, but this will change in the near future
+ *
  * Revision 1.4  2000/03/19 08:41:28  reinelt
  *
  * documentation available! README, README.MatrixOrbital, README.Drivers
@@ -54,14 +59,15 @@ typedef enum {
   T_LOAD_1, T_LOAD_2, T_LOAD_3, T_OVERLOAD, 
   T_CPU_USER, T_CPU_NICE, T_CPU_SYSTEM, T_CPU_BUSY, T_CPU_IDLE,
   T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,
-  T_NET_RX, T_NET_TX, T_NET_TOTAL, T_NET_MAX,
+  T_ETH_RX, T_ETH_TX, T_ETH_TOTAL, T_ETH_MAX,
+  T_PPP_RX, T_PPP_TX, T_PPP_TOTAL, T_PPP_MAX,
   T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
   T_SENSOR_1, T_SENSOR_2, T_SENSOR_3, T_SENSOR_4, T_SENSOR_5, 
   T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9
 } TOKEN;
 
 typedef enum {
-  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_NET, C_ISDN, C_SENSOR
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SENSOR
 } CLASS;
 
 char *parse (char *string, int supported_bars, int usage[]);

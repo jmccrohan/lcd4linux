@@ -1,5 +1,5 @@
 #
-# $Id: README.Drivers,v 1.2 2000/03/26 18:46:28 reinelt Exp $
+# $Id: README.Drivers,v 1.3 2000/05/21 06:20:35 reinelt Exp $
 #
 
 How to write new display drivers for lcd4linux
@@ -23,7 +23,14 @@ this guidelines:
 
 * create a LCD table at the bottom of your driver, and fill it with the
   appropriate values. Take care that you specify the correct bar capabilities
-  of your display or driver!
+  of your display or driver:
+
+  BAR_L:  horizontal bars headed left
+  BAR_R:  horizontal bars headed right
+  BAR_H2: driver supports horizontal dual-bars
+  BAR_U:  vertical bars bottom-up
+  BAR_D:  vertical bars top-down
+  BAR_V2: driver supports vertical dual-bars
 
 * edit display.c and create a reference to your LCD table:
 
