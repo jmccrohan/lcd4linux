@@ -17,10 +17,11 @@ AM_CONDITIONAL(WITH_X, test x$no_x = x)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h syslog.h unistd.h)
 AC_CHECK_HEADERS(sys/io.h asm/io.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
 AC_TYPE_PID_T
 AC_HEADER_TIME
 

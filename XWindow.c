@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.20 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: XWindow.c,v 1.21 2000/08/10 18:42:20 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.21  2000/08/10 18:42:20  reinelt
+ *
+ * fixed some bugs with the new syslog code
+ *
  * Revision 1.20  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -110,6 +114,7 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
+#include	<errno.h>
 #include	<sys/types.h>
 #include	<sys/ipc.h>
 #include	<sys/sem.h>

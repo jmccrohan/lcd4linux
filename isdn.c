@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.7 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: isdn.c,v 1.8 2000/08/10 18:42:20 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.8  2000/08/10 18:42:20  reinelt
+ *
+ * fixed some bugs with the new syslog code
+ *
  * Revision 1.7  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -63,6 +67,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.26 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.27 2000/08/10 18:42:20 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.27  2000/08/10 18:42:20  reinelt
+ *
+ * fixed some bugs with the new syslog code
+ *
  * Revision 1.26  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -152,7 +156,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 
 #include "cfg.h"
