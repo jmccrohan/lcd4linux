@@ -1,4 +1,4 @@
-/* $Id: widget_icon.h,v 1.2 2004/01/23 07:04:39 reinelt Exp $
+/* $Id: widget_icon.h,v 1.3 2004/02/04 19:11:44 reinelt Exp $
  *
  * icon widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_icon.h,v $
+ * Revision 1.3  2004/02/04 19:11:44  reinelt
+ * icon visibility patch from Xavier
+ *
  * Revision 1.2  2004/01/23 07:04:39  reinelt
  * icons finished!
  *
@@ -43,6 +46,8 @@ typedef struct WIDGET_ICON {
   int   prvmap;     // previous bitmap sequence 
   int   maxmap;     // number of bitmap sequences
   char *bitmap;     // bitmaps of (animated) icon
+  int   visible;
+  char *visible_expr;
 } WIDGET_ICON;
 
 extern WIDGET_CLASS Widget_Icon;

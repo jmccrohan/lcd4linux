@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: widget_icon.c,v 1.5 2004/02/04 19:11:44 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.5  2004/02/04 19:11:44  reinelt
+ * icon visibility patch from Xavier
+ *
  * Revision 1.4  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -117,10 +120,22 @@ void widget_icon_update (void *Self)
     DelResult(&result);
   }
   
+  Icon->visible = 1;
+  if (Icon->visible_expr!=NULL && *Icon->visible_expr!='\0') {
+    Eval(Icon->visible_expr, &result); 
+    Icon->visible = R2N(&result); 
+    if (Icon->visible<1) Icon->visible=0;
+    DelResult(&result);
+  }  
+  
+  if (Icon->visible) {  
   // rotate icon bitmap
   Icon->curmap++;
   if (Icon->curmap >= Icon->maxmap)
     Icon->curmap=0;
+  } else {
+    Icon->curmap=0;     // FIXME : put an emply map here !
+  }
   
   // finally, draw it!
   if (W->class->draw)
@@ -152,12 +167,17 @@ int widget_icon_init (WIDGET *Self)
 
   // get raw expressions (we evaluate them ourselves)
   Icon->speed_expr = cfg_get_raw (section, "speed",  NULL);
+  Icon->visible_expr = cfg_get_raw (section, "visible",  NULL);  
   
   // sanity check
   if (Icon->speed_expr==NULL || *Icon->speed_expr=='\0') {
     error ("Icon %s has no speed, using '100'", Self->name);
     Icon->speed_expr="100";
   }
+  if (Icon->visible_expr==NULL || *Icon->visible_expr=='\0') {
+    error ("Icon %s has no visible atribute, using '1'", Self->name);
+    Icon->visible_expr="1";
+  }  
   
   // read bitmap
   widget_icon_read_bitmap (section, Icon);
