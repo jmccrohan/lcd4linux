@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.6 2004/01/10 17:36:56 reinelt Exp $
+/* $Id: plugin.c,v 1.7 2004/01/10 17:45:26 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.7  2004/01/10 17:45:26  reinelt
+ * changed initialization order so cfg() gets initialized before plugins.
+ * This way a plugin's init() can use cfg_get().
+ * Thanks to Xavier for reporting this one!
+ *
  * Revision 1.6  2004/01/10 17:36:56  reinelt
  *
  * I2C Sensors plugin from Xavier added
@@ -91,7 +96,7 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_xmms();
-  plugin_init_i2c_sensors;
+  plugin_init_i2c_sensors();
   
   return 0;
 }

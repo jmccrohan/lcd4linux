@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.56 2004/01/09 17:03:07 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.57 2004/01/10 17:45:26 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.57  2004/01/10 17:45:26  reinelt
+ * changed initialization order so cfg() gets initialized before plugins.
+ * This way a plugin's init() can use cfg_get().
+ * Thanks to Xavier for reporting this one!
+ *
  * Revision 1.56  2004/01/09 17:03:07  reinelt
  * initiated transfer to new driver architecture
  * new file 'drv.c' will someday replace 'display.c'
@@ -456,10 +461,10 @@ int main (int argc, char *argv[])
     info ("invoked without full path; restart may not work!");
   }
   
-  if (plugin_init()==-1)
+  if (cfg_init(cfg)==-1)
     exit (1);
   
-  if (cfg_init(cfg)==-1)
+  if (plugin_init()==-1)
     exit (1);
   
   display=cfg_get(NULL, "Display", NULL);
