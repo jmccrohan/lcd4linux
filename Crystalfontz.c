@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.10 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.11 2003/08/17 06:57:04 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.11  2003/08/17 06:57:04  reinelt
+ * complete rewrite of the Crystalfontz driver
+ *
  * Revision 1.10  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -53,529 +56,357 @@
  * Revision 1.3  2000/06/04 21:43:50  herp
  * minor bugfix (zero length)
  *
- *
  */
 
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<string.h>
-#include	<errno.h>
-#include	<termios.h>
-#include	<unistd.h>
-#include	<fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <termios.h>
+#include <fcntl.h>
 
-#include        "debug.h"
-#include	"cfg.h"
-#include	"lock.h"
-#include	"display.h"
-#include	"bar.h"
-#include	"Crystalfontz.h"
+#include "debug.h"
+#include "cfg.h"
+#include "lock.h"
+#include "display.h"
+#include "bar.h"
 
-#define XRES	6
-#define YRES	8
-#define BARS	( BAR_L | BAR_R | BAR_H2 )
+#define XRES 5
+#define YRES 8
+#define CHARS 8
 
 static LCD Lcd;
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
+static int GPO;
 
-static char *Txtbuf,*BackupTxtbuf;	/* text (+backup) buffer */
-static char *Barbuf,*BackupBarbuf;	/* bar (+backup) buffer */
-static char *CustCharMap;
-static int tdim,bdim;			/* text/bar dimension */
-static char isTxtDirty;
-static char *isBarDirty;
-static char isAnyBarDirty;
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
 
-int cryfonquit(void) {
 
-        debug ("closing port %s", Port);
-	close(Device);
-	unlock_port(Port);
-	exit(0);
+static int CF_open (void)
+{
+  int fd;
+  pid_t pid;
+  struct termios portset;
+  
+  if ((pid=lock_port(Port))!=0) {
+    if (pid==-1)
+      error ("Crystalfontz: port %s could not be locked", Port);
+    else
+      error ("Crystalfontz: port %s is locked by process %d", Port, pid);
+    return -1;
+  }
+  fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
+  if (fd==-1) {
+    error ("Crystalfontz: open(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
+    return -1;
+  }
+  if (tcgetattr(fd, &portset)==-1) {
+    error ("Crystalfontz: tcgetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
+    return -1;
+  }
+  cfmakeraw(&portset);
+  cfsetospeed(&portset, Speed);
+  if (tcsetattr(fd, TCSANOW, &portset)==-1) {
+    error ("Crystalfontz: tcsetattr(%s) failed: %s", Port, strerror(errno));
+    unlock_port(Port);
+    return -1;
+  }
+  return fd;
 }
 
-static int cryfonopen() {
-int fd;
-pid_t pid;
-struct termios portset;
 
-	if ((pid=lock_port(Port))!=0) {
-		if (pid==-1) error ("Crystalfontz: port %s could not be locked",Port);
-		else  error ("Crystalfontz: port %s is locked by process %d",Port,pid);
-		return -1;
-	}
-	fd=open(Port,O_RDWR|O_NOCTTY|O_NDELAY);
-	if (fd==-1) {
-		error ("Crystalfontz: open(%s) failed: %s", Port, strerror(errno));
-		unlock_port(Port);
-		return -1;
-	}
-	if (tcgetattr(fd,&portset)==-1) {
-		error ("Crystalfontz: tcgetattr(%s) failed: %s", Port, strerror(errno));
-		unlock_port(Port);
-		return -1;
-	}
-	cfmakeraw(&portset);
-	cfsetospeed(&portset,Speed);
-	if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-		error ("Crystalfontz: tcsetattr(%s) failed: %s", Port, strerror(errno));
-		unlock_port(Port);
-		return -1;
-	}
-	return fd;
+static void CF_write (char *string, int len)
+{
+  if (Device==-1) return;
+  if (write (Device, string, len)==-1) {
+    if (errno==EAGAIN) {
+      usleep(1000);
+      if (write (Device, string, len)>=0) return;
+    }
+    error ("Crystalfontz: write(%s) failed: %s", Port, strerror(errno));
+  }
 }
 
-int cryfoninit(LCD *Self) {
-char *port;
-char *speed;
-char *backlight;
-char *contrast;
-char cmd_backlight[2]={ CRYFON_BACKLIGHT_CTRL, };
-char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 
-	Lcd=*Self;
+static int CF_backlight (void)
+{
+  char buffer[3];
+  int  backlight;
 
-	if (Port) {
-		free(Port);
-		Port=NULL;
-	}
-
-	if ((port=cfg_get("Port",NULL))==NULL || *port=='\0') {
-		error ("CrystalFontz: no 'Port' entry in %s", cfg_file());
-		return -1;
-	}
-	if (port[0]=='/') Port=strdup(port);
-	else {
-		Port=(char *)malloc(5/*/dev/ */+strlen(port)+1);
-		sprintf(Port,"/dev/%s",port);
-	}
-
-	speed=cfg_get("Speed","9600");
-	switch(atoi(speed)) {
-	case 1200:
-		Speed=B1200;
-		break;
-	case 2400:
-		Speed=B2400;
-		break;
-	case 9600:
-		Speed=B9600;
-		break;
-	case 19200:
-		Speed=B19200;
-		break;
-	default:
-		error ("CrystalFontz: unsupported speed '%s' in '%s'", speed, cfg_file());
-		return -1;
-	}
-
-	debug ("using port %s at %d baud", Port, atoi(speed));
-
-	if ((Device=cryfonopen())==-1)
-		return -1;
-
-	tdim=Lcd.rows*Lcd.cols;
-	bdim=Lcd.rows*Lcd.cols*2;
-			
-	Txtbuf=(char *)malloc(tdim);
-	if (Txtbuf==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	CustCharMap=(char *)malloc(tdim);
-	if (CustCharMap==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	BackupTxtbuf=(char *)malloc(tdim);
-	if (BackupTxtbuf==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	Barbuf=(char *)malloc(bdim);
-	if (Barbuf==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	BackupBarbuf=(char *)malloc(bdim);
-	if (BackupBarbuf==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	isBarDirty=(char *)malloc(Lcd.rows);
-	if (isBarDirty==NULL) {
-		error ("CrystalFontz: out of memory");
-		return -1;
-	}
-	memset(Txtbuf,' ',tdim);
-	memset(CustCharMap,-1,tdim);
-	memset(BackupTxtbuf,255,tdim);
-	memset(Barbuf,0,bdim);
-	memset(BackupBarbuf,0,bdim);
-	memset(isBarDirty,0,Lcd.rows);
-	isAnyBarDirty=0;
-	isTxtDirty=0;
-
-	usleep(350000);
-	write(Device, CRYFON_HIDE_CURSOR CRYFON_SCROLL_OFF CRYFON_WRAP_OFF,3);
-	backlight=cfg_get("Backlight",NULL);
-	if (backlight) {
-		cmd_backlight[1]=atoi(backlight);
-		write(Device,cmd_backlight,4);
-	}
-	
-	contrast=cfg_get("Contrast",NULL);
-	if (contrast) {
-		cmd_contrast[1]=atoi(contrast);
-		write(Device,cmd_contrast,2);
-	}
-	
-	return 0;
+  backlight=atoi(cfg_get("Backlight","0"));
+  snprintf (buffer, 3, "\016%c", backlight);
+  CF_write (buffer, 2);
+  return 0;
 }
 
-int cryfonclear(int full) {
-	memset(Txtbuf,' ',tdim);
-	memset(Barbuf,0,bdim);
-	return 0;
+
+static int CF_contrast (void)
+{
+  char buffer[3];
+  int  contrast;
+
+  contrast=atoi(cfg_get("Contrast","50"));
+  snprintf (buffer, 3, "\017%c", contrast);
+  CF_write (buffer, 2);
+  return 0;
 }
 
-int cryfonput(int row,int col,char *text) {
-int pos;
 
-	pos=row*Lcd.cols+col;
-	memcpy(Txtbuf+pos,text,strlen(text));
-	isTxtDirty|=memcmp(Txtbuf+pos,BackupTxtbuf+pos,strlen(text));
-	return 0;
+static void CF_define_char (int ascii, char *buffer)
+{
+  char cmd[3]="031"; // set custom char bitmap
+
+  cmd[1]=(char)ascii;
+  CF_write (cmd, 2);
+  CF_write (buffer, 8);
 }
 
-static unsigned char p1[] = { 0x3f,0x1f,0x0f,0x07,0x03,0x01,0x00 };
-static unsigned char p2[] = { 0x00,0x20,0x30,0x38,0x3c,0x3e,0x3f };
 
-static void blacken(int bitfrom,int len,int pos,int startbyte,int endbyte) {
+static int CF_clear (int full)
+{
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+  bar_clear();
+  GPO=0;
+  
+  if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+    // Fixme: is there a "clear screen" command?
+    // CF_write ("\000", 1);  // Clear Screen
+  }
+  
+  return 0;
+}
 
-	if (len<1) return;
-	if (startbyte==endbyte)
-		Barbuf[pos] |=
-			(p1[bitfrom%XRES] & p2[1+((bitfrom+len-1)%XRES)]);
-	else {
-	int n;
-		Barbuf[pos] |= p1[bitfrom%XRES];
-		n=endbyte-startbyte-1;
-		if (n>0) memset(Barbuf+pos+1,0x3f,n);
-		Barbuf[pos+n+1] |= p2[1+((bitfrom+len-1)%XRES)];
+
+static int CF_init (LCD *Self)
+{
+  char *port;
+  char *speed;
+
+  Lcd=*Self;
+
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("Crystalfontz: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+
+  if (Port) {
+    free (Port);
+    Port=NULL;
+  }
+
+  port=cfg_get ("Port",NULL);
+  if (port==NULL || *port=='\0') {
+    error ("Crystalfontz: no 'Port' entry in %s", cfg_file());
+    return -1;
+  }
+  Port=strdup(port);
+
+  speed=cfg_get("Speed","19200");
+  
+  switch (atoi(speed)) {
+  case 1200:
+    Speed=B1200;
+    break;
+  case 2400:
+    Speed=B2400;
+    break;
+  case 9600:
+    Speed=B9600;
+    break;
+  case 19200:
+    Speed=B19200;
+    break;
+  default:
+    error ("Crystalfontz: unsupported speed '%s' in %s", speed, cfg_file());
+    return -1;
+  }    
+
+  debug ("using port %s at %d baud", Port, atoi(speed));
+
+  Device=CF_open();
+  if (Device==-1) return -1;
+
+  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+  bar_add_segment(255,255,255,255); // ASCII 255 = block
+
+  // MR: why such a large delay?
+  usleep(350000);
+
+  CF_clear(1);
+
+  CF_write ("\004", 1);  // hide cursor
+  CF_write ("\024", 1);  // scroll off
+  CF_write ("\030", 1);  // wrap off
+
+  CF_backlight();
+  CF_contrast();
+
+  return 0;
+}
+
+
+void CF_goto (int row, int col)
+{
+  char cmd[3]="\021"; // set cursor position
+
+  if (row==0 && col==0) {
+    CF_write ("\001", 1); // cursor home
+  } else {
+    cmd[1]=(char)col;
+    cmd[2]=(char)row;
+    CF_write(cmd,3);
+  }
+}
+
+
+int CF_put (int row, int col, char *text)
+{
+  char *p=FrameBuffer1+row*Lcd.cols+col;
+  char *t=text;
+  
+  while (*t && col++<=Lcd.cols) {
+    *p++=*t++;
+  }
+  return 0;
+}
+
+
+int CF_bar (int type, int row, int col, int max, int len1, int len2)
+{
+  return bar_draw (type, row, col, max, len1, len2);
+}
+
+
+static int CF_flush (void)
+{
+  int row, col, pos1, pos2;
+  int c, equal;
+  
+  bar_process(CF_define_char);
+  
+  for (row=0; row<Lcd.rows; row++) {
+    for (col=0; col<Lcd.cols; col++) {
+      c=bar_peek(row, col);
+      if (c!=-1) {
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
+      }
+    }
+    for (col=0; col<Lcd.cols; col++) {
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
+      CF_goto (row, col);
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>4) break;
+	} else {
+	  pos2=col;
+	  equal=0;
 	}
+      }
+      CF_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
+    }
+  }
+  
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
+
+  return 0;
 }
 
-static void whiten(int bitfrom,int len,int pos,int startbyte,int endbyte) {
 
-	if (len<1) return;
-	if (startbyte==endbyte)
-		Barbuf[pos] &=
-			(p2[bitfrom%XRES] | p1[1+((bitfrom+len-1)%XRES)]);
-	else {
-	int n;
-		Barbuf[pos] &= p2[bitfrom%XRES];
-		n=endbyte-startbyte-1;
-		if (n>0) memset(Barbuf+pos+1,0x00,n);
-		Barbuf[pos+n+1] &= p1[1+((bitfrom+len-1)%XRES)];
-	}
+int CF_quit (void)
+{
+  info("Crystalfontz: shutting down.");
+
+  debug ("closing port %s", Port);
+  close (Device);
+  unlock_port(Port);
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
+  return (0);
 }
 
-int cryfonbar(int type,int row,int col,int max,int len1,int len2) {
-int endb,maxb;
-int bitfrom;
-int pos;
-
-	if (len1<1) len1=1;
-	else if (len1>max) len1=max;
-
-	if (len2<1) len2=1;
-	else if (len2>max) len2=max;
-
-	bitfrom=col*XRES;
-	endb=(bitfrom+len1-1)/XRES;
-	pos=row*Lcd.cols*2;
-
-	switch(type) {
-	case BAR_L:
-		blacken(bitfrom,len1,pos+col,col,endb);
-		endb=(bitfrom+len1)/XRES;
-		maxb=(bitfrom+max-1)/XRES;
-		whiten(bitfrom+len1,max-len1,pos+endb,endb,maxb);
-		if (len1==len2)
-			memcpy(Barbuf+pos+col+Lcd.cols,
-				Barbuf+pos+col,
-				maxb-col+1);
-		else {
-			pos+=Lcd.cols;
-			endb=(bitfrom+len2-1)/XRES;
-			blacken(bitfrom,len2,pos+col,col,endb);
-			endb=(bitfrom+len2)/XRES;
-			whiten(bitfrom+len2,max-len2,pos+endb,endb,maxb);
-		}
-		break;
-	case BAR_R:
-		blacken(bitfrom,len1,pos+col,col,endb);
-		endb=(bitfrom+len1)/XRES;
-		maxb=(bitfrom+max-1)/XRES;
-		whiten(bitfrom+len1,max-len1,pos+endb,endb,maxb);
-		if (len1==len2)
-			memcpy(Barbuf+pos+col+Lcd.cols,
-				Barbuf+pos+col,
-				maxb-col+1);
-		else {
-			pos+=Lcd.cols;
-			endb=(bitfrom+len2-1)/XRES;
-			blacken(bitfrom,len2,pos+col,col,endb);
-			endb=(bitfrom+len2)/XRES;
-			whiten(bitfrom+len2,max-len2,pos+endb,endb,maxb);
-		}
-		break;
-	}
-	isBarDirty[row]=1;
-	isAnyBarDirty=1;	/* dont know exactly, check anyway */
-	return 0;
-}
-
-static int txt_lc=-1,txt_lr=-1;
-
-static void writeTxt(char r,char c,int itxt,int len) {
-static char cmd_goto[3]=CRYFON_GOTO;
-
-	if (txt_lr!=r || txt_lc!=c) {
-		if (r==0 && c==0) write(Device,CRYFON_HOME,1);
-		else {
-			cmd_goto[1]=(unsigned char)c;
-			cmd_goto[2]=(unsigned char)r;
-			write(Device,(char *)&cmd_goto,3);
-		}
-	}
-	txt_lr=r;
-	txt_lc=c+len;
-	write(Device,Txtbuf+itxt,len);
-}
-
-static void writeTxtDiff() {
-int spos,scol;
-int i,j,k;
-
-	k=0;
-	txt_lr=txt_lc=-1;
-	for (i=0;i<Lcd.rows;i++) {
-		spos=-1;
-		scol=0;	/* make gcc happy */
-		for (j=0;j<Lcd.cols;j++) {
-			if (Txtbuf[k]^BackupTxtbuf[k]) {
-				if (spos==-1) {
-					spos=k;
-					scol=j;
-				}
-			} else if (spos>-1) {
-				writeTxt((char)i,(char)scol,spos,k-spos);
-				memcpy(BackupTxtbuf+spos,Txtbuf+spos,k-spos);
-				spos=-1;
-			}
-			k++;
-		}
-		if (spos>-1) {
-			writeTxt((char)i,(char)scol,spos,k-spos);
-			memcpy(BackupTxtbuf+spos,Txtbuf+spos,k-spos);
-		}
-	}
-}
-
-/* private bar flushing routines */
-
-static char BarCharBuf[256];
-static int bi=0;
-
-static void flushBarCharBuf() {
-	if (bi) {
-		write(Device,BarCharBuf,bi);	/* flush buffer */
-		tcdrain(Device);
-		bi=0;
-	}
-}
-
-static void writeBarCharBuf(char *s,int len) {
-	if (bi+len>=sizeof(BarCharBuf)) {
-		flushBarCharBuf();
-	}
-	memcpy(BarCharBuf+bi,s,len);
-	bi+=len;
-}
-
-static struct {
-	char use_count;	/* 0 - unused */
-	char data[8];
-} cust_chars[8] = {
- { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }
-};
-
-static int search_cust_char(char c1,char c2) {
-int i;
-	for (i=0;i<8;i++) {
-		if (cust_chars[i].data[0]==c1
-			&& cust_chars[i].data[4]==c2) {
-			return i;
-		}
-	}
-	return -1;	/* not found */
-}
-
-static void set_cust_char(int ci,char c1,char c2) {
-static char cmd_cust[10] = CRYFON_SET_CUSTOM_CHAR_BITMAP;
-
-	memset(cust_chars[ci].data,c1,4);
-	memset(cust_chars[ci].data+4,c2,4);
-	cmd_cust[1]=ci;
-	memset(cmd_cust+2,c1,4);
-	memset(cmd_cust+6,c2,4);
-	writeBarCharBuf(cmd_cust,10);
-}
-
-static int alloc_cust_char(char c1,char c2) {
-static char allzero[8]={0, };
-int i;
-
-	/* first, try to allocate a never used entry */
-
-	for(i=0;i<8;i++)
-		if (memcmp(cust_chars[i].data,allzero,8)==0) {
-			set_cust_char(i,c1,c2);
-			return i;
-		}
-
-	/* if that fails, pick an entry with is not yet in use */
-
-	for(i=0;i<8;i++)
-		if (cust_chars[i].use_count==0) {
-			set_cust_char(i,c1,c2);
-			return i;
-		}
-	return -1;	/* no free char */
-}
-
-static void use_cust_char(int i,int j,int ci) {
-int x;
-	x=i*Lcd.cols+j;
-	if (CustCharMap[x]==-1) {
-		cust_chars[ci].use_count++;
-		CustCharMap[x]=ci;
-	}
-	/* else: internal consistency failure */
-	else {
-		error ("Crystalfontz: internal consistency failure 1");
-		exit(0);
-	}
-}
-
-static void unuse_cust_char(int i,int j) {
-int ci,x;
-	x=i*Lcd.cols+j;
-	ci=CustCharMap[x];
-	if (ci>-1) {
-		CustCharMap[x]=-1;
-		cust_chars[ci].use_count--;
-		if (cust_chars[i].use_count==-1) {
-			error ("Crystalfontz: internal consistency failure 2");
-			exit(0);
-		}
-	}
-}
-
-static int bar_lc=-1,bar_lr=-1;
-
-
-static void writeChar(unsigned char r,unsigned char c,unsigned char ch) {
-static char cmd_goto[3]=CRYFON_GOTO;
-
-	if (bar_lr!=r || bar_lc!=c) {
-		if (r==0 && c==0) writeBarCharBuf(CRYFON_HOME,1);
-		else {
-			cmd_goto[1]=(unsigned char)c;
-			cmd_goto[2]=(unsigned char)r;
-			writeBarCharBuf((char *)&cmd_goto,3);
-		}
-	}
-	bar_lr=r;
-	bar_lc=c++;
-	writeBarCharBuf(&ch,1);
-}
-
-static void writeBarDiff() {
-char c1,c2;
-int i,j,k1,k2,ci;
-
-	for (i=0;i<Lcd.rows;i++) {
-		if (isBarDirty[i]) {
-			k1=i*Lcd.cols*2;
-			k2=k1+Lcd.cols;
-			bar_lr=bar_lc=-1;
-			for (j=0;j<Lcd.cols;j++) {
-				c1=Barbuf[k1];
-				c2=Barbuf[k2];
-				if (c1^BackupBarbuf[k1] ||
-				    c2^BackupBarbuf[k2]) {
-
-					if (c1==0 && c2==0) { /* blank */
-						unuse_cust_char(i,j);
-						writeChar(i,j,' ');
-					}
-					else if (c1==0x1f && c2==0x1f) { /*boxlike*/
-						unuse_cust_char(i,j);
-						writeChar(i,j,0xff);
-					}
-					else {
-						/* search cust char */
-						ci=search_cust_char(c1,c2);
-						if (ci>-1) { /* found: reuse that char */
-							unuse_cust_char(i,j);
-							writeChar(i,j,128+ci);
-							use_cust_char(i,j,ci);
-						}
-						else {	/* not found: get a new one */
-							ci=alloc_cust_char(c1,c2);
-							if (ci>-1) {
-								unuse_cust_char(i,j);
-								writeChar(i,j,128+ci);
-								use_cust_char(i,j,ci);
-							}
-							else error ("failed to alloc a custom char");
-						}
-					}
-					BackupBarbuf[k1]=c1;
-					BackupBarbuf[k2]=c2;
-				}
-				k1++;
-				k2++;
-			}
-		}
-		isBarDirty[i]=0;
-	}
-	flushBarCharBuf();
-}
-
-int cryfonflush() {
-
-	if (isTxtDirty) {
-		writeTxtDiff();
-		isTxtDirty=0;
-	}
-	if (isAnyBarDirty) {
-		writeBarDiff();
-		isAnyBarDirty=0;
-	}
-
-	return 0;
-}
 
 LCD Crystalfontz[] = {
-  { "626",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
-  { "636",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
-  { "632",2,16,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
-  { "634",4,20,XRES,YRES,BARS,0,cryfoninit,cryfonclear,cryfonput,cryfonbar,NULL,cryfonflush,cryfonquit },
+  { name: "626",
+    rows:  2, 
+    cols:  16,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  CF_init,
+    clear: CF_clear,
+    put:   CF_put,
+    bar:   CF_bar,
+    gpo:   NULL,
+    flush: CF_flush,
+    quit:  CF_quit 
+  },
+  { name: "636",
+    rows:  2, 
+    cols:  16,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  CF_init,
+    clear: CF_clear,
+    put:   CF_put,
+    bar:   CF_bar,
+    gpo:   NULL,
+    flush: CF_flush,
+    quit:  CF_quit 
+  },
+  { name: "632",
+    rows:  2, 
+    cols:  16,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  CF_init,
+    clear: CF_clear,
+    put:   CF_put,
+    bar:   CF_bar,
+    gpo:   NULL,
+    flush: CF_flush,
+    quit:  CF_quit 
+  },
+  { name: "634",
+    rows:  4, 
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  CF_init,
+    clear: CF_clear,
+    put:   CF_put,
+    bar:   CF_bar,
+    gpo:   NULL,
+    flush: CF_flush,
+    quit:  CF_quit 
+  },
   { NULL }
 };

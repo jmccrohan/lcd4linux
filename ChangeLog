@@ -1,4 +1,23 @@
+2003-08-17  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* config.guess: added config.guess
+
+2003-08-16  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* BeckmannEgle.c, Cwlinux.c, HD44780.c, M50530.c, MatrixOrbital.c, T6963.c, USBLCD.c, parport.c:
+	double buffering in all drivers
+
+2003-08-15  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* HD44780.c, M50530.c, T6963.c, parport.c, parport.h:
+	HD44780 4 bit mode implemented
+
 2003-08-14  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* Makefile.am, Makefile.in, configure, configure.in:
+	changed version to 0.9.11, added curses.m4 to Makefile.am
+
+	* ChangeLog: ChangeLog
 
 	* cfg.c, lcd4linux.c: remove PID file if driver initialisation fails
 

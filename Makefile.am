@@ -37,7 +37,7 @@ socket.c socket.h
 EXTRA_lcd4linux_SOURCES= \
 parport.c parport.h \
 BeckmannEgle.c \
-Crystalfontz.c Crystalfontz.h \
+Crystalfontz.c \
 Cwlinux.c \
 HD44780.c \
 M50530.c \
