@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.45 2003/09/11 04:09:53 reinelt Exp $
+/* $Id: processor.c,v 1.46 2003/10/03 03:51:14 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.46  2003/10/03 03:51:14  reinelt
+ * start support for new MatrixOrbital MX2 displays
+ *
  * Revision 1.45  2003/09/11 04:09:53  reinelt
  * minor cleanups
  *
@@ -206,6 +209,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/time.h>
+#include <math.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -732,12 +736,12 @@ static char *process_row (char *data, int row, int len)
 static int process_gpo (int n)
 {
   int token;
-  double val;
+  int val;
 
   token=gpo[n];
-  val=query(token);
+  val=round(query(token));
 
-  return (val > 0.0);
+  return val;
 }
 
 

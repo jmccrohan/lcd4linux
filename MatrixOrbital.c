@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.43 2003/09/29 06:12:56 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.44 2003/10/03 03:51:14 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.44  2003/10/03 03:51:14  reinelt
+ * start support for new MatrixOrbital MX2 displays
+ *
  * Revision 1.43  2003/09/29 06:12:56  reinelt
  * changed default HD44780 wiring: unused signals are GND
  *
@@ -220,12 +223,46 @@ static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
 static int Icons;
-static int GPO;
+static int GPO[8];
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
 
+typedef struct {
+  int type;
+  char *name;
+} MODEL;
 
+static MODEL Model[] = {
+  { 0x01, "LCD0821" },
+  { 0x03, "LCD2021" },
+  { 0x04, "LCD1641" },
+  { 0x05, "LCD2041" },
+  { 0x06, "LCD4021" },
+  { 0x07, "LCD4041" },
+  { 0x08, "LK202-25" },
+  { 0x09, "LK204-25" },
+  { 0x0a, "LK404-55" },
+  { 0x0b, "VFD2021" },
+  { 0x0c, "VFD2041" },
+  { 0x0d, "VFD4021" },
+  { 0x0e, "VK202-25" },
+  { 0x0f, "VK204-25" },
+  { 0x10, "GLC12232" },
+  { 0x13, "GLC24064" },
+  { 0x15, "GLK24064-25" },
+  { 0x22, "GLK12232-25" },
+  { 0x31, "LK404-AT" },
+  { 0x32, "VFD1621" },
+  { 0x33, "LK402-12" },
+  { 0x34, "LK162-12" },
+  { 0x35, "LK204-25PC" },
+  { 0x36, "LK202-24-USB" },
+  { 0x38, "LK204-24-USB" },
+  { 0xff, "Unknown" }
+};
+
+ 
 static int MO_open (void)
 {
   int fd;
@@ -261,7 +298,6 @@ static int MO_open (void)
 }
 
 
-#if 1
 static int MO_read (char *string, int len)
 {
   int ret;
@@ -275,12 +311,11 @@ static int MO_read (char *string, int len)
   }
   
   if (ret<0) {
-    error("MatrixOrbital: read() failed: %s", strerror(errno));
+    error("MatrixOrbital: read(%s, %d) failed: %s", Port, len, strerror(errno));
   }
   
   return ret;
 }
-#endif
 
 
 static void MO_write (char *string, int len)
@@ -326,7 +361,7 @@ static int MO_clear (int protocol)
 
   icon_clear();
   bar_clear();
-  GPO=0;
+  memset(GPO, 0, sizeof(GPO));
 
   if (protocol) {
     memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
@@ -338,9 +373,12 @@ static int MO_clear (int protocol)
     case 2:
       MO_write ("\376\130",  2);  // Clear Screen
       for (gpo=1; gpo<=Lcd.gpos; gpo++) {
-	char cmd[3]="\376V";
-	cmd[2]=(char)gpo;
-	MO_write (cmd, 3);  // GPO off
+	char cmd1[3]="\376V";
+	char cmd2[4]="\376\300x\377";
+	cmd1[2]=(char)gpo;
+	cmd2[2]=(char)gpo;
+	MO_write (cmd1, 3);  // GPO off
+	MO_write (cmd2, 4);  // PWM full power
       }
       break;
     }
@@ -362,12 +400,10 @@ int MO_clear2 (int full)
 
 static int MO_init (LCD *Self, int protocol)
 {
-  // Fixme
-  char buffer[256];
-  
-  char *port;
-  int speed;
+  int i;  
+  char *port, buffer[256];
 
+  
   Lcd=*Self;
 
   // Init the framebuffers
@@ -390,8 +426,8 @@ static int MO_init (LCD *Self, int protocol)
   }
   Port=strdup(port);
 
-  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
-  switch (speed) {
+  if (cfg_number("Speed", 19200, 1200,19200, &i)<0) return -1;
+  switch (i) {
   case 1200:
     Speed=B1200;
     break;
@@ -405,14 +441,36 @@ static int MO_init (LCD *Self, int protocol)
     Speed=B19200;
     break;
   default:
-    error ("MatrixOrbital: unsupported speed '%d' in %s", speed, cfg_source());
+    error ("MatrixOrbital: unsupported speed '%d' in %s", i, cfg_source());
     return -1;
   }    
   
-  debug ("using port %s at %d baud", Port, speed);
+  debug ("using port %s at %d baud", Port, i);
   
   Device=MO_open();
   if (Device==-1) return -1;
+
+  // read module type
+  MO_write ("\3767", 2);
+  usleep(1000);
+  MO_read (buffer, 1);
+  for (i=0; Model[i].type!=0xff; i++) {
+    if (Model[i].type == (int)*buffer) break;
+  }
+  info ("Display on %s is a MatrixOrbital %s (type 0x%02x)", Port, Model[i].name, Model[i].type);
+  
+  // read serial number
+  MO_write ("\3765", 2);
+  usleep(100000);
+  MO_read (buffer, 2);
+  info ("Display on %s has Serial Number 0x%x", Port, *(short*)buffer);
+  
+  // read version number
+  MO_write ("\3766", 2);
+  usleep(100000);
+  MO_read (buffer, 1);
+  info ("Display on %s has Firmware Version 0x%x", Port, *buffer);
+
 
   if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
@@ -434,23 +492,6 @@ static int MO_init (LCD *Self, int protocol)
   MO_write ("\376T", 2);  // blink off
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
-
-  #if 1
-  MO_write ("\3767", 2);  // read module type
-  usleep(100000);
-  MO_read (buffer, 1);
-  debug ("Read module type=<0x%x>", *buffer);
-  
-  MO_write ("\3765", 2);  // read serial number
-  usleep(100000);
-  MO_read (buffer, 2);
-  debug ("Serial Number=<0x%x>", *(short*)buffer);
-  
-  MO_write ("\3766", 2);  // read version number
-  usleep(100000);
-  MO_read (buffer, 1);
-  debug ("Version number=<0x%x>", *buffer);
-  #endif
 
   return 0;
 }
@@ -501,14 +542,15 @@ int MO_icon (int num, int seq, int row, int col)
 
 int MO_gpo (int num, int val)
 {
+  debug ("GPO(%d)=%d", num, val);
   if (num>=Lcd.gpos) 
     return -1;
 
-  if (val) {
-    GPO |= 1<<num;     // set bit
-  } else {
-    GPO &= ~(1<<num);  // clear bit
-  }
+  GPO[num]=val;
+  
+  // Fixme
+  GPO[num]=255;
+
   return 0;
 }
 
@@ -550,7 +592,7 @@ static int MO_flush (int protocol)
 
   switch (protocol) {
   case 1:
-    if (GPO & 1) {
+    if (GPO[0]) {
       MO_write ("\376W", 2);  // GPO on
     } else {
       MO_write ("\376V", 2);  // GPO off
@@ -559,7 +601,7 @@ static int MO_flush (int protocol)
   case 2:
     for (gpo=1; gpo<=Lcd.gpos; gpo++) {
       char cmd[3]="\376";
-      cmd[1]=(GPO&(1<<(gpo-1))) ? 'W':'V';
+      cmd[1]=GPO[gpo]? 'W':'V';
       cmd[2]=(char)gpo;
       MO_write (cmd, 3);
     }
