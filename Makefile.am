@@ -39,6 +39,7 @@ plugin.c      plugin.h      \
 plugin_cfg.c                \
 plugin_math.c               \
 plugin_string.c             \
+plugin_test.c               \
 plugin_time.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.31 2004/05/29 00:27:23 reinelt Exp $
+/* $Id: plugin.c,v 1.32 2004/06/07 06:56:55 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.32  2004/06/07 06:56:55  reinelt
+ *
+ * added test plugin from Andy Baxter
+ *
  * Revision 1.31  2004/05/29 00:27:23  reinelt
  *
  * added plugin_diskstats.c
@@ -182,6 +186,8 @@ int  plugin_init_math   (void);
 void plugin_exit_math   (void);
 int  plugin_init_string (void);
 void plugin_exit_string (void);
+int  plugin_init_test   (void);
+void plugin_exit_test   (void);
 int  plugin_init_time   (void);
 void plugin_exit_time   (void);
 
@@ -232,6 +238,7 @@ int plugin_init (void)
   plugin_init_cfg();
   plugin_init_math();
   plugin_init_string();
+  plugin_init_test();
   plugin_init_time();
   
 #ifdef PLUGIN_APM
@@ -364,6 +371,7 @@ void plugin_exit(void) {
   plugin_exit_cfg();
   plugin_exit_math();
   plugin_exit_string();
+  plugin_exit_test();
   plugin_exit_time();
 
   DeleteFunctions();

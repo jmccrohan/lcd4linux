@@ -92,7 +92,7 @@ lcd4linux_LDADD = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 #remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 
-lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         debug.c       debug.h       drv.c         drv.h         evaluator.c   evaluator.h   hash.c        hash.h        layout.c      layout.h      pid.c         pid.h         timer.c       timer.h       thread.c      thread.h      udelay.c      udelay.h      qprintf.c     qprintf.h                                 widget.c      widget.h      widget_text.c widget_text.h widget_bar.c  widget_bar.h  widget_icon.c widget_icon.h                             plugin.c      plugin.h      plugin_cfg.c                plugin_math.c               plugin_string.c             plugin_time.c
+lcd4linux_SOURCES =  lcd4linux.c                 cfg.c         cfg.h         debug.c       debug.h       drv.c         drv.h         evaluator.c   evaluator.h   hash.c        hash.h        layout.c      layout.h      pid.c         pid.h         timer.c       timer.h       thread.c      thread.h      udelay.c      udelay.h      qprintf.c     qprintf.h                                 widget.c      widget.h      widget_text.c widget_text.h widget_bar.c  widget_bar.h  widget_icon.c widget_icon.h                             plugin.c      plugin.h      plugin_cfg.c                plugin_math.c               plugin_string.c             plugin_test.c               plugin_time.c
 
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
@@ -124,7 +124,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 lcd4linux_OBJECTS =  lcd4linux.o cfg.o debug.o drv.o evaluator.o hash.o \
 layout.o pid.o timer.o thread.o udelay.o qprintf.o widget.o \
 widget_text.o widget_bar.o widget_icon.o plugin.o plugin_cfg.o \
-plugin_math.o plugin_string.o plugin_time.o
+plugin_math.o plugin_string.o plugin_test.o plugin_time.o
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -154,10 +154,11 @@ DEP_FILES =  .deps/cfg.P .deps/debug.P .deps/drv.P \
 .deps/plugin_math.P .deps/plugin_meminfo.P .deps/plugin_mysql.P \
 .deps/plugin_netdev.P .deps/plugin_pop3.P .deps/plugin_ppp.P \
 .deps/plugin_proc_stat.P .deps/plugin_seti.P .deps/plugin_string.P \
-.deps/plugin_time.P .deps/plugin_uname.P .deps/plugin_uptime.P \
-.deps/plugin_wireless.P .deps/plugin_xmms.P .deps/qprintf.P \
-.deps/thread.P .deps/timer.P .deps/udelay.P .deps/widget.P \
-.deps/widget_bar.P .deps/widget_icon.P .deps/widget_text.P
+.deps/plugin_test.P .deps/plugin_time.P .deps/plugin_uname.P \
+.deps/plugin_uptime.P .deps/plugin_wireless.P .deps/plugin_xmms.P \
+.deps/qprintf.P .deps/thread.P .deps/timer.P .deps/udelay.P \
+.deps/widget.P .deps/widget_bar.P .deps/widget_icon.P \
+.deps/widget_text.P
 SOURCES = $(lcd4linux_SOURCES) $(EXTRA_lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 
