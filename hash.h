@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.6 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: hash.h,v 1.7 2004/01/21 14:29:03 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.7  2004/01/21 14:29:03  reinelt
+ * new helper 'hash_get_regex' which delivers the sum over regex matched items
+ * new function 'disk()' which uses this regex matching
+ *
  * Revision 1.6  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -80,11 +84,12 @@ typedef struct {
 } HASH;
 
 
-void   hash_set        (HASH *Hash, char *key, char *val);
-void   hash_set_filter (HASH *Hash, char *key, char *val);
-int    hash_age        (HASH *Hash, char *key, char **value);
-char  *hash_get        (HASH *Hash, char *key);
-double hash_get_filter (HASH *Hash, char *key, int delay);
-void   hash_destroy    (HASH *Hash);
+void   hash_set       (HASH *Hash, char *key, char *val);
+void   hash_set_delta (HASH *Hash, char *key, char *val);
+int    hash_age       (HASH *Hash, char *key, char **value);
+char  *hash_get       (HASH *Hash, char *key);
+double hash_get_delta (HASH *Hash, char *key, int delay);
+double hash_get_regex (HASH *Hash, char *key, int delay);
+void   hash_destroy   (HASH *Hash);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.8 2004/01/21 11:31:23 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.9 2004/01/21 14:29:03 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.9  2004/01/21 14:29:03  reinelt
+ * new helper 'hash_get_regex' which delivers the sum over regex matched items
+ * new function 'disk()' which uses this regex matching
+ *
  * Revision 1.8  2004/01/21 11:31:23  reinelt
  * two bugs with hash_age() ixed
  *
@@ -79,7 +83,7 @@ static HASH Stat = { 0, };
 
 static void hash_set1 (char *key1, char *val) 
 {
-  hash_set_filter (&Stat, key1, val);
+  hash_set_delta (&Stat, key1, val);
 }
 
 
@@ -198,7 +202,7 @@ static void my_proc_stat (RESULT *result, int argc, RESULT *argv[])
     SetResult(&result, R_STRING, string); 
     break;
   case 2:
-    number=hash_get_filter(&Stat, R2S(argv[0]), R2N(argv[1]));
+    number=hash_get_delta(&Stat, R2S(argv[0]), R2N(argv[1]));
     SetResult(&result, R_NUMBER, &number); 
     break;
   default:
@@ -223,10 +227,10 @@ static void my_cpu (RESULT *result, RESULT *arg1, RESULT *arg2)
   key   = R2S(arg1);
   delay = R2N(arg2);
   
-  cpu_user   = hash_get_filter(&Stat, "cpu.user",   delay);
-  cpu_nice   = hash_get_filter(&Stat, "cpu.nice",   delay);
-  cpu_system = hash_get_filter(&Stat, "cpu.system", delay);
-  cpu_idle   = hash_get_filter(&Stat, "cpu.idle",   delay);
+  cpu_user   = hash_get_delta(&Stat, "cpu.user",   delay);
+  cpu_nice   = hash_get_delta(&Stat, "cpu.nice",   delay);
+  cpu_system = hash_get_delta(&Stat, "cpu.system", delay);
+  cpu_idle   = hash_get_delta(&Stat, "cpu.idle",   delay);
 
   cpu_total  = cpu_user+cpu_nice+cpu_system+cpu_idle;
   
@@ -245,9 +249,32 @@ static void my_cpu (RESULT *result, RESULT *arg1, RESULT *arg2)
 }
 
 
+static void my_disk (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
+{
+  char *dev, *key, buffer[32];
+  int delay;
+  double value;
+  
+  if (parse_proc_stat()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+  
+  dev   = R2S(arg1);
+  key   = R2S(arg2);
+  delay = R2N(arg3);
+  
+  snprintf (buffer, sizeof(buffer), "disk_io\\.%s\\.%s", dev, key);
+  value  = hash_get_regex(&Stat, buffer, delay);
+  
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
 int plugin_init_proc_stat (void)
 {
   AddFunction ("proc_stat", -1, my_proc_stat);
-  AddFunction ("cpu", 2, my_cpu);
+  AddFunction ("cpu",  2, my_cpu);
+  AddFunction ("disk", 3, my_disk);
   return 0;
 }

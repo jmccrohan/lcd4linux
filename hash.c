@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.7 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: hash.c,v 1.8 2004/01/21 14:29:03 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.8  2004/01/21 14:29:03  reinelt
+ * new helper 'hash_get_regex' which delivers the sum over regex matched items
+ * new function 'disk()' which uses this regex matching
+ *
  * Revision 1.7  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -65,12 +69,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <regex.h>
+//#include <sys/types.h>
 
 #include "debug.h"
 #include "hash.h"
 
 
-#define FILTER_SLOTS 64
+#define DELTA_SLOTS 64
 
 
 // bsearch compare function for hash entries
@@ -177,22 +183,22 @@ void hash_set (HASH *Hash, char *key, char *val)
 
 // insert a string into the hash table
 // convert it into a number, and store it in the
-// filter table, too
-void hash_set_filter (HASH *Hash, char *key, char *val)
+// delta table, too
+void hash_set_delta (HASH *Hash, char *key, char *val)
 {
   double number=atof(val);
   HASH_ITEM *Item;
   
   Item=hash_set_string (Hash, key, val);
   
-  // allocate filter table
+  // allocate delta table
   if (Item->Slot==NULL) {
-    Item->Slot  = malloc(FILTER_SLOTS*sizeof(HASH_SLOT));
-    memset(Item->Slot, 0, FILTER_SLOTS*sizeof(HASH_SLOT));
+    Item->Slot  = malloc(DELTA_SLOTS*sizeof(HASH_SLOT));
+    memset(Item->Slot, 0, DELTA_SLOTS*sizeof(HASH_SLOT));
   }
   
-  // shift filter table
-  memmove (Item->Slot+1, Item->Slot, (FILTER_SLOTS-1)*sizeof(HASH_SLOT));
+  // shift delta table
+  memmove (Item->Slot+1, Item->Slot, (DELTA_SLOTS-1)*sizeof(HASH_SLOT));
 
   // set first entry
   gettimeofday(&(Item->Slot[0].time), NULL);
@@ -237,8 +243,8 @@ int hash_age (HASH *Hash, char *key, char **value)
 }
 
 
-// get a delta value from the filter table
-double hash_get_filter (HASH *Hash, char *key, int delay)
+// get a delta value from the delta table
+double hash_get_delta (HASH *Hash, char *key, int delay)
 {
   HASH_ITEM *Item;
   timeval now, end;
@@ -250,6 +256,9 @@ double hash_get_filter (HASH *Hash, char *key, int delay)
   if (Item==NULL) return 0.0;
   if (Item->Slot==NULL) return 0.0;
   
+  // if delay is zero, return absolute value
+  if (delay==0) return Item->Slot[0].val;
+    
   // prepare timing values
   now=Item->Slot[0].time;
   end.tv_sec  = now.tv_sec;
@@ -259,8 +268,8 @@ double hash_get_filter (HASH *Hash, char *key, int delay)
     end.tv_usec += 1000000;
   }
   
-  // search filter slot
-  for (i=1; i<FILTER_SLOTS; i++) {
+  // search delta slot
+  for (i=1; i<DELTA_SLOTS; i++) {
     if (Item->Slot[i].time.tv_sec==0) break;
     if (timercmp(&Item->Slot[i].time, &end, <)) break;
     dt = (now.tv_sec - Item->Slot[i].time.tv_sec) + (now.tv_usec - Item->Slot[i].time.tv_usec)/1000000.0; 
@@ -278,6 +287,38 @@ double hash_get_filter (HASH *Hash, char *key, int delay)
 
   if (dt > 0.0 && dv >= 0.0) return dv/dt;
   return 0.0;
+}
+
+
+// get a delta value from the delta table
+// key may contain regular expressions, and the sum 
+// of all matching entries is returned.
+double hash_get_regex (HASH *Hash, char *key, int delay)
+{
+  double sum=0.0;
+  regex_t preg;
+  int i, err;
+  
+  debug ("Michi: regex=<%s>", key);
+  err=regcomp(&preg, key, REG_ICASE|REG_NOSUB);
+  if (err!=0) {
+    char buffer[32];
+    regerror(err, &preg, buffer, sizeof(buffer));
+    error ("error in regular expression: %s", buffer);
+    return 0.0;
+  }
+
+  // force the table to be sorted by requesting anything
+  hash_lookup(Hash, "", 1);
+  
+  for (i=0;i<Hash->nItems; i++) {
+    debug ("Michi: Testing <%s>", Hash->Items[i].key);
+    if (regexec(&preg, Hash->Items[i].key, 0, NULL, 0)==0) {
+      debug ("Michi: MATCHED <%s>", Hash->Items[i].key);
+      sum+=hash_get_delta(Hash, Hash->Items[i].key, delay);
+    }
+  }
+  return sum;
 }
 
 
