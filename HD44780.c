@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.31 2003/08/15 07:54:07 reinelt Exp $
+/* $Id: HD44780.c,v 1.32 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.32  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.31  2003/08/15 07:54:07  reinelt
  * HD44780 4 bit mode implemented
  *
@@ -168,6 +171,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -194,10 +198,11 @@
 
 
 static LCD Lcd;
+static int Bits=0;
+static int GPO=0;
 
-static char Txt[4][40];
-static int  Bits=0;
-static int  GPO=0;
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
 
 static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
@@ -333,19 +338,13 @@ static void HD_define_char (int ascii, char *buffer)
 
 int HD_clear (int full)
 {
-  int row, col;
 
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      Txt[row][col]='\t';
-    }
-  }
-
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
-
   GPO=0;
-
+  
   if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
     HD_command (0x01, 1640); // clear display
     HD_setGPO (GPO);         // All GPO's off
   }
@@ -383,6 +382,14 @@ int HD_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("HD44780: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+
   s=cfg_get("Bits", "8");
   if ((Bits=strtol(s, &e, 0))==0 || *e!='\0' || (Bits!=4 && Bits!=8)) {
     error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_file());
@@ -457,7 +464,7 @@ void HD_goto (int row, int col)
 
 int HD_put (int row, int col, char *text)
 {
-  char *p=&Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t=text;
   
   while (*t && col++<=Lcd.cols) {
@@ -489,9 +496,8 @@ int HD_gpo (int num, int val)
 
 int HD_flush (void)
 {
-  char buffer[256];
-  char *p;
-  int c, row, col;
+  int row, col, pos1, pos2;
+  int c, equal;
   
   bar_process(HD_define_char);
 
@@ -499,19 +505,27 @@ int HD_flush (void)
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
-	Txt[row][col]=(char)c;
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
-      if (Txt[row][col]=='\t') continue;
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
       HD_goto (row, col);
-      for (p=buffer; col<Lcd.cols; col++, p++) {
-	if (Txt[row][col]=='\t') break;
-	*p=Txt[row][col];
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>2) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      HD_write (buffer, p-buffer, 40); // 40 usec delay for write
+      HD_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, 40); // 40 usec delay for write
     }
   }
+
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
 
   HD_setGPO(GPO);
 
@@ -522,6 +536,17 @@ int HD_flush (void)
 int HD_quit (void)
 {
   info("HD44780: shutting down.");
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return parport_close();
 }
 

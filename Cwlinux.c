@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.10 2003/08/01 05:15:42 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.11  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.10  2003/08/01 05:15:42  reinelt
  * last cleanups for 0.9.9
  *
@@ -81,7 +84,8 @@ static char *Port = NULL;
 static speed_t Speed;
 static int Device = -1;
 
-static char Txt[4][20];
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
 
 
 static int CW_open(void)
@@ -162,7 +166,7 @@ static int CW_read(char *string, int len)
 
 static void CW_Goto(int row, int col)
 {
-  char cmd[5]="\376Gxy\375";
+  char cmd[6]="\376Gxy\375";
   cmd[2]=(char)col;
   cmd[3]=(char)row;
   CW_write(cmd,5);
@@ -208,17 +212,12 @@ static void CW1602_define_char (int ascii, char *buffer)
 
 int CW_clear(int full)
 {
-  int row, col;
 
-  for (row = 0; row < Lcd.rows; row++) {
-    for (col = 0; col < Lcd.cols; col++) {
-      Txt[row][col] = '\t';
-    }
-  }
-
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
 
   if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
 #if 0
     CW_write("\376X\375",3);
 #else
@@ -270,6 +269,14 @@ int CW_init(LCD * Self)
   // char buffer[16];
   
   Lcd = *Self;
+
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("Cwlinux: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
 
   if (Port) {
     free(Port);
@@ -344,7 +351,7 @@ int CW_init(LCD * Self)
 
 int CW_put(int row, int col, char *text)
 {
-  char *p = &Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t = text;
 
   while (*t && col++ <= Lcd.cols) {
@@ -362,30 +369,36 @@ int CW_bar(int type, int row, int col, int max, int len1, int len2)
 
 int CW_flush(void)
 {
-  char buffer[256];
-  char *p;
-  int c, row, col;
+  int row, col, pos1, pos2;
+  int c, equal;
 
   for (row = 0; row < Lcd.rows; row++) {
     for (col = 0; col < Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
 	if (c!=32) c++; //blank
-	Txt[row][col]=(char)c;
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col = 0; col < Lcd.cols; col++) {
-      if (Txt[row][col] == '\t')
-	continue;
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
       CW_Goto(row, col);
-      for (p = buffer; col < Lcd.cols; col++, p++) {
-	if (Txt[row][col] == '\t')
-	  break;
-	*p = Txt[row][col];
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>6) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      CW_write(buffer, p - buffer);
+      CW_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
     }
   }
+
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
+  
   return 0;
 }
 
@@ -404,9 +417,23 @@ int CW1602_flush(void)
 
 int CW_quit(void)
 {
+  info("Cwlinux: shutting down.");
+
   debug("closing port %s", Port);
   close(Device);
   unlock_port(Port);
+  
+  
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return (0);
 }
 

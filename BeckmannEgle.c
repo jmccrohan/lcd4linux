@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.13 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.14 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.14  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.13  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -105,7 +108,8 @@ static char *Port=NULL;
 static int Device=-1;
 static int Type=-1;
 
-static char Txt[4][40];
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
 
 static MODEL Model[]= {{ 16, 1,  0 },
 		       { 16, 2,  1 },
@@ -199,19 +203,15 @@ static void BE_define_char (int ascii, char *buffer)
 
 int BE_clear (int full)
 {
-  int row, col;
 
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      Txt[row][col]='\t';
-    }
-  }
-
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
 
-  if (full)
+  if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
     BE_write ("\033&#", 3);
-  
+  }
+
   return 0;
 }
 
@@ -262,6 +262,14 @@ int BE_init (LCD *Self)
   Self->cols=cols;
   Lcd=*Self;
 
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("BeckmannEgle: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+  
   Device=BE_open();
   if (Device==-1) return -1;
 
@@ -278,10 +286,18 @@ int BE_init (LCD *Self)
   return 0;
 }
 
+void BE_goto (int row, int col)
+{
+  char cmd[7]="\033[y;xH";
+  cmd[2]=(char)row;
+  cmd[4]=(char)col;
+  BE_write (cmd, 6);
+}
+
 
 int BE_put (int row, int col, char *text)
 {
-  char *p=&Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t=text;
   
   while (*t && col++<=Lcd.cols) {
@@ -299,30 +315,37 @@ int BE_bar (int type, int row, int col, int max, int len1, int len2)
 
 int BE_flush (void)
 {
-  char buffer[256]="\033[y;xH";
-  char *p;
-  int c, row, col;
-  
+  int row, col, pos1, pos2;
+  int c, equal;
+
   bar_process(BE_define_char);
   
   for (row=0; row<Lcd.rows; row++) {
-    buffer[2]=row;
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
-	Txt[row][col]=(char)c;
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
-      if (Txt[row][col]=='\t') continue;
-      buffer[4]=col;
-      for (p=buffer+6; col<Lcd.cols; col++, p++) {
-	if (Txt[row][col]=='\t') break;
-	*p=Txt[row][col];
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
+      BE_goto (row, col);
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes some bytes, too.
+	  if (++equal>5) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      BE_write (buffer, p-buffer);
+      BE_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
     }
   }
+
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
+
   return 0;
 }
 
@@ -332,6 +355,19 @@ int BE_quit (void)
   debug ("closing port %s", Port);
   close (Device);
   unlock_port(Port);
+
+  info("BeckmannEgle: shutting down.");
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.10 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: USBLCD.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.11  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.10  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -94,13 +97,13 @@
 #define CHARS 8
 
 static LCD Lcd;
-
-int usblcd_file;
-
 static char *Port=NULL;
-static char Txt[4][40];
+static int usblcd_file;
 
-static unsigned char  Buffer[1024];
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
+
+static unsigned char *Buffer;
 static unsigned char *BufPtr;
 
 static void USBLCD_send ()
@@ -195,19 +198,15 @@ static void USBLCD_define_char (int ascii, char *buffer)
 
 int USBLCD_clear (int full)
 {
-  int row, col;
-  
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      Txt[row][col]='\t';
-    }
-  }
-  
+
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
   
-  if (full)
+  if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
     USBLCD_command (0x01); // clear display
-
+  }
+  
   return 0;
 }
 
@@ -248,6 +247,21 @@ int USBLCD_init (LCD *Self)
   Self->cols=cols;
   Lcd=*Self;
   
+  // Init the command buffer
+  Buffer = (char*)malloc(1024);
+  if (Buffer==NULL) {
+    error ("USBLCD: coommand buffer could not be allocated: malloc() failed");
+    return -1;
+  }
+  
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("USBLCD: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+
   if (USBLCD_open()!=0)
     return -1;
   
@@ -271,7 +285,7 @@ void USBLCD_goto (int row, int col)
 
 int USBLCD_put (int row, int col, char *text)
 {
-  char *p=&Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t=text;
   
   while (*t && col++<=Lcd.cols) {
@@ -289,9 +303,8 @@ int USBLCD_bar (int type, int row, int col, int max, int len1, int len2)
 
 int USBLCD_flush (void)
 {
-  char buffer[256];
-  char *p;
-  int c, row, col;
+  int row, col, pos1, pos2;
+  int c, equal;
   
   bar_process(USBLCD_define_char);
 
@@ -299,21 +312,29 @@ int USBLCD_flush (void)
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
-	Txt[row][col]=(char)c;
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
-      if (Txt[row][col]=='\t') continue;
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
       USBLCD_goto (row, col);
-      for (p=buffer; col<Lcd.cols; col++, p++) {
-	if (Txt[row][col]=='\t') break;
-	*p=Txt[row][col];
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>2) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      USBLCD_write (buffer, p-buffer);
+      USBLCD_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
     }
   }
 
   USBLCD_send();
+
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
 
   return 0;
 }
@@ -321,9 +342,27 @@ int USBLCD_flush (void)
 
 int USBLCD_quit (void)
 {
+  info("USBLCD: shutting down.");
   USBLCD_send();
+
   debug ("closing port %s", Port);
   close(usblcd_file);
+
+  if (Buffer) {
+    free(Buffer);
+    Buffer=NULL;
+  }
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return 0;
 }
 

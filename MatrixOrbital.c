@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.28 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.29 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.29  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.28  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -170,9 +173,10 @@ static LCD Lcd;
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
+static int GPO;
 
-static char Txt[4][40];
-static int  GPO;
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
 
 
 static int MO_open (void)
@@ -247,31 +251,28 @@ static void MO_define_char (int ascii, char *buffer)
 
 static int MO_clear (int protocol)
 {
-  int row, col, gpo;
-
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      Txt[row][col]='\t';
-    }
-  }
-
+  int gpo;
+  
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
-
   GPO=0;
 
-  switch (protocol) {
-  case 1:
-    MO_write ("\014",  1);  // Clear Screen
-    MO_write ("\376V", 2);  // GPO off
-    break;
-  case 2:
-    MO_write ("\376\130",  2);  // Clear Screen
-    for (gpo=1; gpo<=Lcd.gpos; gpo++) {
-      char cmd[3]="\376V";
-      cmd[2]=(char)gpo;
-      MO_write (cmd, 3);  // GPO off
+  if (protocol) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+    switch (protocol) {
+    case 1:
+      MO_write ("\014",  1);  // Clear Screen
+      MO_write ("\376V", 2);  // GPO off
+      break;
+    case 2:
+      MO_write ("\376\130",  2);  // Clear Screen
+      for (gpo=1; gpo<=Lcd.gpos; gpo++) {
+	char cmd[3]="\376V";
+	cmd[2]=(char)gpo;
+	MO_write (cmd, 3);  // GPO off
+      }
+      break;
     }
-    break;
   }
   
   return 0;
@@ -294,6 +295,14 @@ static int MO_init (LCD *Self, int protocol)
   char *speed;
 
   Lcd=*Self;
+
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
 
   if (Port) {
     free (Port);
@@ -359,10 +368,18 @@ int MO_init2 (LCD *Self)
 }
 
 
+void MO_goto (int row, int col)
+{
+  char cmd[5]="\376Gyx";
+  cmd[2]=(char)col+1;
+  cmd[3]=(char)row+1;
+  MO_write(cmd,4);
+}
+
 
 int MO_put (int row, int col, char *text)
 {
-  char *p=&Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t=text;
   
   while (*t && col++<=Lcd.cols) {
@@ -394,30 +411,37 @@ int MO_gpo (int num, int val)
 
 static int MO_flush (int protocol)
 {
-  char buffer[256]="\376G";
-  char *p;
-  int c, row, col, gpo;
+  int row, col, pos1, pos2;
+  int c, equal;
+  int gpo;
   
   bar_process(MO_define_char);
   
   for (row=0; row<Lcd.rows; row++) {
-    buffer[3]=row+1;
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
       if (c!=-1) {
-	Txt[row][col]=(char)c;
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
-      if (Txt[row][col]=='\t') continue;
-      buffer[2]=col+1;
-      for (p=buffer+4; col<Lcd.cols; col++, p++) {
-	if (Txt[row][col]=='\t') break;
-	*p=Txt[row][col];
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
+      MO_goto (row, col);
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>5) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      MO_write (buffer, p-buffer);
+      MO_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
     }
   }
+  
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
 
   switch (protocol) {
   case 1:
@@ -453,9 +477,22 @@ int MO_flush2 (void)
 
 int MO_quit (void)
 {
+  info("MatrixOrbital: shutting down.");
+
   debug ("closing port %s", Port);
   close (Device);
   unlock_port(Port);
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return (0);
 }
 

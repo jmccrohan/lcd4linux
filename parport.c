@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.3 2003/08/15 07:54:07 reinelt Exp $
+/* $Id: parport.c,v 1.4 2003/08/16 07:31:35 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.4  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.3  2003/08/15 07:54:07  reinelt
  * HD44780 4 bit mode implemented
  *
@@ -288,7 +291,6 @@ unsigned char parport_wire_data (char *name, unsigned char *deflt)
 {
   unsigned char w;
   char wire[256];
-  int is_data=0;
   char *s;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);

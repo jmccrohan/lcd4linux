@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.10 2003/08/15 07:54:07 reinelt Exp $
+/* $Id: M50530.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.11  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.10  2003/08/15 07:54:07  reinelt
  * HD44780 4 bit mode implemented
  *
@@ -81,9 +84,11 @@
 #define CHARS 8
 
 static LCD Lcd;
-
-static char Txt[8][40];
 static int  GPO=0;
+
+static char *FrameBuffer1=NULL;
+static char *FrameBuffer2=NULL;
+
 
 static unsigned char SIGNAL_EX;
 static unsigned char SIGNAL_IOC1;
@@ -153,19 +158,13 @@ static void M5_define_char (int ascii, char *buffer)
 
 int M5_clear (int full)
 {
-  int row, col;
 
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      Txt[row][col]='\t';
-    }
-  }
-
+  memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
   bar_clear();
-
   GPO=0;
 
   if (full) {
+    memset (FrameBuffer2, ' ', Lcd.rows*Lcd.cols*sizeof(char));
     M5_command (0x0001, 1250); // clear display
     M5_setGPO (GPO);           // All GPO's off
   }
@@ -205,6 +204,14 @@ int M5_init (LCD *Self)
   Self->gpos=gpos;
   Lcd=*Self;
   
+  // Init the framebuffers
+  FrameBuffer1 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  FrameBuffer2 = (char*)malloc(Lcd.cols*Lcd.rows*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("HD44780: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+
   if ((SIGNAL_EX   = parport_wire_ctrl ("EX",   "STROBE"))==0xff) return -1;
   if ((SIGNAL_IOC1 = parport_wire_ctrl ("IOC1", "SELECT"))==0xff) return -1;
   if ((SIGNAL_IOC2 = parport_wire_ctrl ("IOC2", "AUTOFD"))==0xff) return -1;
@@ -245,7 +252,7 @@ void M5_goto (int row, int col)
 
 int M5_put (int row, int col, char *text)
 {
-  char *p=&Txt[row][col];
+  char *p=FrameBuffer1+row*Lcd.cols+col;
   char *t=text;
   
   while (*t && col++<=Lcd.cols) {
@@ -277,9 +284,8 @@ int M5_gpo (int num, int val)
 
 int M5_flush (void)
 {
-  unsigned char buffer[256];
-  unsigned char *p;
-  int c, row, col;
+  int row, col, pos1, pos2;
+  int c, equal;
   
   bar_process(M5_define_char);
 
@@ -288,19 +294,27 @@ int M5_flush (void)
       c=bar_peek(row, col);
       if (c!=-1) {
 	if (c!=32) c+=248; //blank
-	Txt[row][col]=(char)(c);
+	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
-      if (Txt[row][col]=='\t') continue;
+      if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) continue;
       M5_goto (row, col);
-      for (p=buffer; col<Lcd.cols; col++, p++) {
-	if (Txt[row][col]=='\t') break;
-	*p=Txt[row][col];
+      for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
+	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
+	  // If we find just one equal byte, we don't break, because this 
+	  // would require a goto, which takes one byte, too.
+	  if (++equal>2) break;
+	} else {
+	  pos2=col;
+	  equal=0;
+	}
       }
-      M5_write (buffer, p-buffer);
+      M5_write (FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1);
     }
   }
+  
+  memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
 
   M5_setGPO(GPO);
 
@@ -310,6 +324,18 @@ int M5_flush (void)
 
 int M5_quit (void)
 {
+  info("M50530: shutting down.");
+
+  if (FrameBuffer1) {
+    free(FrameBuffer1);
+    FrameBuffer1=NULL;
+  }
+
+  if (FrameBuffer2) {
+    free(FrameBuffer2);
+    FrameBuffer2=NULL;
+  }
+
   return parport_close();
 }
 

@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.9 2003/08/15 07:54:07 reinelt Exp $
+/* $Id: T6963.c,v 1.10 2003/08/16 07:31:35 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.10  2003/08/16 07:31:35  reinelt
+ * double buffering in all drivers
+ *
  * Revision 1.9  2003/08/15 07:54:07  reinelt
  * HD44780 4 bit mode implemented
  *
@@ -397,7 +400,6 @@ int T6_bar (int type, int row, int col, int max, int len1, int len2)
 int T6_flush (void)
 {
   int i, j, e;
-  int count=0;
 
   memset(Buffer1,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
   
@@ -418,7 +420,6 @@ int T6_flush (void)
       }
     }
     T6_memcpy (j, Buffer1+j, i-j-e+1);
-    count+=i-j-e+1;
   }
 
   memcpy(Buffer2,Buffer1,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
