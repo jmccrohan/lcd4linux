@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.22 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: Raster.c,v 1.23 2003/07/29 04:56:13 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.23  2003/07/29 04:56:13  reinelt
+ * disable Raster driver automagically if gd.h not found
+ *
  * Revision 1.22  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -138,8 +141,6 @@
 #else
 #error "gd.h not found!"
 #error "cannot compile PNG driver"
-#error "exclude the driver with"
-#error "configure --drivers=all,\!PNG"
 #endif
 #endif
 #endif
