@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.16 2000/04/03 04:46:38 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.17 2000/04/03 17:31:52 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.17  2000/04/03 17:31:52  reinelt
+ *
+ * suppress welcome message if display is smaller than 20x2
+ * change lcd4linux.ppm to 32 pixel high so KDE won't stretch the icon
+ *
  * Revision 1.16  2000/04/03 04:46:38  reinelt
  *
  * added '-c key=val' option
@@ -119,8 +124,8 @@ int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
-  int c, smooth;
-
+  int c, x, y, smooth;
+  
   while ((c=getopt (argc, argv, "c:f:hlo:"))!=EOF) {
     switch (c) {
     case 'c':
@@ -175,14 +180,16 @@ int main (int argc, char *argv[])
   tack=atoi(cfg_get("tack")?:"500");
 
   process_init();
-
   lcd_clear();
-  lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
-  lcd_put (2, 1, " (c) 2000 M.Reinelt");
-  lcd_flush();
 
-  sleep (3);
-  lcd_clear();
+  lcd_query (&y, &x, NULL, NULL, NULL);
+  if (x>=20 && y>=2) {
+    lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
+    lcd_put (2, 1, " (c) 2000 M.Reinelt");
+    lcd_flush();
+    sleep (3);
+    lcd_clear();
+  }
 
   smooth=0;
   while (1) {

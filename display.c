@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.13 2000/03/30 16:46:57 reinelt Exp $
+/* $Id: display.c,v 1.14 2000/04/03 17:31:52 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.14  2000/04/03 17:31:52  reinelt
+ *
+ * suppress welcome message if display is smaller than 20x2
+ * change lcd4linux.ppm to 32 pixel high so KDE won't stretch the icon
+ *
  * Revision 1.13  2000/03/30 16:46:57  reinelt
  *
  * configure now handles '--with-x' and '--without-x' correct
@@ -166,11 +171,11 @@ int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
   if (Lcd==NULL)
     return -1;
   
-  *rows=Lcd->rows;
-  *cols=Lcd->cols;
-  *xres=Lcd->xres;
-  *yres=Lcd->yres;
-  *bars=Lcd->bars;
+  if (rows) *rows=Lcd->rows;
+  if(cols) *cols=Lcd->cols;
+  if (xres) *xres=Lcd->xres;
+  if (yres) *yres=Lcd->yres;
+  if (bars) *bars=Lcd->bars;
 
   return 0;
 }

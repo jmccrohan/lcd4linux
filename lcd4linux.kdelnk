@@ -1,8 +1,8 @@
 # KDE Config File
 [KDE Desktop Entry]
 Comment[C]=LCD4Linux
-SwallowTitle=XLCD4Linux
 SwallowExec=lcd4linux -f /etc/lcd4kde.conf
+SwallowTitle=XLCD4Linux
 BinaryPattern=
 Name=LCD4Linux
 Name[C]=LCD4Linux
