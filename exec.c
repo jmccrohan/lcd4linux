@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.3 2001/03/08 15:25:38 ltoetsch Exp $
+/* $Id: exec.c,v 1.4 2001/03/09 14:24:49 ltoetsch Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.4  2001/03/09 14:24:49  ltoetsch
+ * exec: Scale_x ->Min/Max_x
+ *
  * Revision 1.3  2001/03/08 15:25:38  ltoetsch
  * improved exec
  *
@@ -36,7 +39,8 @@
  *   x1 .. x9      command to execute
  *   Tick_x1 ... 9 delay in ticks
  *   Delay_x1 .. 9 delay in seconds
- *   Scale_x1 .. 9 scale for bars
+ *   Max_x1 .. 9   max for scaling bars (100)
+ *   Min_x1 .. 9   min for scaling bars (0)
  */
 
 #include <stdio.h>
@@ -120,9 +124,14 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   for (p = buff ; *p && isspace(*p); p++)
     ;
   if (isdigit(*p)) {
+    double max, min;
     *val = atof(p);
-    sprintf(xn, "Scale_x%d", index);
-    *val /= atoi(cfg_get(xn)?:"100")?:100;
+    sprintf(xn, "Max_x%d", index);
+    max = atof(cfg_get(xn)?:"100")?:100;
+    sprintf(xn, "Min_x%d", index);
+    min = atof(cfg_get(xn)?:"0");
+    if (max != min)
+      *val = (*val - min)/(max - min);
   }
   return 0;
 }

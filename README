@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.15 2001/03/09 13:08:11 ltoetsch Exp $
+# $Id: README,v 1.16 2001/03/09 14:24:49 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -148,7 +148,8 @@ Data-specific options:
                 $X1 ... $X8 is result of command 1..8 in environment
      Tick_x1 .. 9 delay in ticks (overrides delay_x)
      Delay_x1 ..9 delay in seconds (default 1)
-     Scale_x1 ..9 scale for bars (default 100)
+     Max_x1 ..9 max value for bars (default 100)
+     Min_x1 ..9 min value for bars (default 0)
      
   battery: Battwarning 10 (default 10)
    
