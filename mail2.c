@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.3 2001/03/15 14:25:05 ltoetsch Exp $
+/* $Id: mail2.c,v 1.4 2001/03/16 09:28:08 ltoetsch Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.4  2001/03/16 09:28:08  ltoetsch
+ * bugfixes
+ *
  * Revision 1.3  2001/03/15 14:25:05  ltoetsch
  * added unread/total news
  *
@@ -222,11 +225,11 @@ static int check_nntp(char *user, char *pass, char *machine,
   err = 0;
   totg = unsg = 0; /* total, unseen */    
   while (fgets(line, sizeof(line)-1, fp) && err < 5) {
-    char group[BUFLEN];
+    char group[256];
     char *p;
     int smin, smax, lmin, lmax;
     
-    if (sscanf(line, "%s:", group) != 1) {
+    if (sscanf(line, "%255[^:]:", group) != 1) {
       error("Couldn't read group in '%s'", line);
       err++;
       continue;

@@ -78,5 +78,6 @@ add a new Token 'nc' for 'network collisions'
 add translation tables ('german umlauts' don't 
 follow any scheme on most displays)
 
-2001-03-15 Leopold Toetsch <lt@toetsch.at>
-Text display has troubles with '\r'
+// 2001-03-15 Leopold Toetsch <lt@toetsch.at>
+// Text display has troubles with '\r'
+// done 2001-03-16, replace \r,\n with '_'  -lt

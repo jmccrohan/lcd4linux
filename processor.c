@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.22 2001/03/15 15:49:23 ltoetsch Exp $
+/* $Id: processor.c,v 1.23 2001/03/16 09:28:08 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.23  2001/03/16 09:28:08  ltoetsch
+ * bugfixes
+ *
  * Revision 1.22  2001/03/15 15:49:23  ltoetsch
  * fixed compile HD44780.c, cosmetics
  *
@@ -561,8 +564,11 @@ static char *process_row (int r)
     if (*s=='%') {
       token = *(unsigned char*)++s;
       if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
-      for (q = p, len=0; *q && isspace(*q); q++)
-	len++;
+      if (!s[1]) 
+	len = cols - (s - row[r] - 1);
+      else
+        for (q = s+1, len=0; *q && isspace(*q); q++)
+  	  len++;
       print_token (token, &p, buffer, len);
 	
     } else if (*s=='$') {

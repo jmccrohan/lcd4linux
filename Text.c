@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.2 2001/03/09 15:04:53 reinelt Exp $
+/* $Id: Text.c,v 1.3 2001/03/16 09:28:08 ltoetsch Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.3  2001/03/16 09:28:08  ltoetsch
+ * bugfixes
+ *
  * Revision 1.2  2001/03/09 15:04:53  reinelt
  *
  * rename 'raster' to 'Text in Text.c
@@ -115,6 +118,7 @@ int Text_init (LCD *Self)
   delwin(w);
   w = newwin(rows+2,cols+2,0,0);
   err_rows = scr_rows-rows-3;
+  err_rows = min(99, err_rows);
   if (err_rows >= 4) {
     err_win = newwin(err_rows, scr_cols, rows+3, 0);
     err_rows -= 3;
@@ -134,8 +138,12 @@ int curs_err(char *buffer)
   static int lines;
   static char *lb[100];
   int start, i;
+  char *p;
   
   if (err_win) {
+    /* replace \r, \n with underscores */
+    while ((p = strpbrk(buffer, "\r\n")) != NULL)
+      *p='_';
     if (lines >= err_rows) {
       free(lb[0]);
       for (i=1; i<=err_rows; i++) 
@@ -161,6 +169,10 @@ int curs_err(char *buffer)
 
 int Text_put (int row, int col, char *text)
 {
+  char *p;
+  
+  if ((p = strpbrk(text, "\r\n")) != NULL)
+    *p='\0';
   if (col < Lcd.cols)
     mvwprintw(w, row+1 , col+1, "%.*s", Lcd.cols-col, text);
   return 0;
