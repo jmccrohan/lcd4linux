@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.2 2004/01/16 07:26:25 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.3 2004/01/16 11:12:26 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.3  2004/01/16 11:12:26  reinelt
+ * some bugs in plugin_xmms fixed, parsing moved to own function
+ * plugin_proc_stat nearly finished
+ *
  * Revision 1.2  2004/01/16 07:26:25  reinelt
  * moved various /proc parsing to own functions
  * made some progress with /proc/stat parsing
@@ -79,12 +83,26 @@ static int renew(int msec)
 }
 
 
-static void my_hash_set (char *key1, char *key2, char *val) 
+static void hash_set1 (char *key1, char *val) 
 {
-  char key[16];
+  hash_set (&Stat, key1, val);
+}
+
+static void hash_set2 (char *key1, char *key2, char *val) 
+{
+  char key[32];
   
   snprintf (key, sizeof(key), "%s.%s", key1, key2);
-  debug ("Michi: hash_set(%s, %s)", key, val);
+  // debug ("Michi: hash_set(%s, %s)", key, val);
+  hash_set (&Stat, key, val);
+}
+
+static void hash_set3 (char *key1, char *key2, char *key3, char *val) 
+{
+  char key[32];
+  
+  snprintf (key, sizeof(key), "%s.%s.%s", key1, key2, key3);
+  debug ("Michi: hash_set(%s)=<%s>", key, val);
   hash_set (&Stat, key, val);
 }
 
@@ -103,34 +121,64 @@ static int parse_proc_stat (void)
   }
   
   while (!feof(stream)) {
-    char buffer[256];
-    fgets (buffer, sizeof(buffer), stream);
-    
+    char buffer[1024];
+    if (fgets (buffer, sizeof(buffer), stream) ==NULL) break;
     if (strncmp(buffer, "cpu", 3)==0) {
       char *cpu;
-      cpu=strtok(buffer, " \t");
-      my_hash_set (cpu, "user",   strtok(NULL, " \t"));
-      my_hash_set (cpu, "nice",   strtok(NULL, " \t"));
-      my_hash_set (cpu, "system", strtok(NULL, " \t"));
-      my_hash_set (cpu, "idle",   strtok(NULL, " \t"));
+      cpu=strtok(buffer, " \t\n");
+      hash_set2 (cpu, "user",   strtok(NULL, " \t\n"));
+      hash_set2 (cpu, "nice",   strtok(NULL, " \t\n"));
+      hash_set2 (cpu, "system", strtok(NULL, " \t\n"));
+      hash_set2 (cpu, "idle",   strtok(NULL, " \t\n"));
     } 
     else if (strncmp(buffer, "page ", 5)==0) {
-      
+      strtok(buffer, " \t\n");
+      hash_set2 ("page", "in",  strtok(NULL, " \t\n"));
+      hash_set2 ("page", "out", strtok(NULL, " \t\n"));
     } 
     else if (strncmp(buffer, "swap ", 5)==0) {
+      strtok(buffer, " \t\n");
+      hash_set2 ("swap", "in",  strtok(NULL, " \t\n"));
+      hash_set2 ("swap", "out", strtok(NULL, " \t\n"));
     } 
     else if (strncmp(buffer, "intr ", 5)==0) {
+      int i;
+      strtok(buffer, " \t\n");
+      hash_set2 ("intr", "sum", strtok(NULL, " \t\n"));
+      for (i=0; i<16; i++) {
+	char buffer[3];
+	snprintf(buffer, sizeof(buffer), "%d", i);
+	hash_set2 ("intr", buffer, strtok(NULL, " \t\n"));
+      }
     } 
     else if (strncmp(buffer, "disk_io:", 8)==0) {
+      char *dev=strtok(buffer+8, " \t\n:()");
+      while (dev!=NULL) {
+	char *p;
+	while ((p=strchr(dev, ','))!=NULL) *p=':';
+	hash_set3 ("disk_io", dev, "io",   strtok(NULL, " :(,"));
+	hash_set3 ("disk_io", dev, "rio",  strtok(NULL, " ,"));
+	hash_set3 ("disk_io", dev, "rblk", strtok(NULL, " ,"));
+	hash_set3 ("disk_io", dev, "wio",  strtok(NULL, " ,"));
+	hash_set3 ("disk_io", dev, "wblk", strtok(NULL, " ,)"));
+	// Fixme: check this one...
+	dev=strtok(NULL, " \t\n:()");
+      }
     } 
     else if (strncmp(buffer, "ctxt ", 5)==0) {
+      strtok(buffer, " \t\n");
+      hash_set2 ("ctxt", NULL, strtok(NULL, " \t\n"));
     } 
-    else if (strncmp(buffer, "btime ", 5)==0) {
+    else if (strncmp(buffer, "btime ", 6)==0) {
+      strtok(buffer, " \t\n");
+      hash_set2 ("btime", NULL, strtok(NULL, " \t\n"));
     } 
-    else if (strncmp(buffer, "processes ", 5)==0) {
+    else if (strncmp(buffer, "processes ", 10)==0) {
+      strtok(buffer, " \t\n");
+      hash_set1 ("processes", strtok(NULL, " \t\n"));
     } 
     else {
-      error ("unknown line <%s> from /proc/stat");
+      error ("internal error: unhandled entry '%s' from /proc/stat", strtok(buffer, " \t\n"));
     }
   }
   fclose (stream);

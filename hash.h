@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.3 2004/01/16 07:26:25 reinelt Exp $
+/* $Id: hash.h,v 1.4 2004/01/16 11:12:26 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.4  2004/01/16 11:12:26  reinelt
+ * some bugs in plugin_xmms fixed, parsing moved to own function
+ * plugin_proc_stat nearly finished
+ *
  * Revision 1.3  2004/01/16 07:26:25  reinelt
  * moved various /proc parsing to own functions
  * made some progress with /proc/stat parsing
@@ -56,7 +60,7 @@ typedef struct {
 
 
 typedef struct {
-  struct timeval time;
+  // struct timeval time;
   double val;
 } FILTER_SLOT;
 

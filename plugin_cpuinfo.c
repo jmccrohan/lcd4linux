@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.4 2004/01/16 07:26:25 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.5 2004/01/16 11:12:26 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.5  2004/01/16 11:12:26  reinelt
+ * some bugs in plugin_xmms fixed, parsing moved to own function
+ * plugin_proc_stat nearly finished
+ *
  * Revision 1.4  2004/01/16 07:26:25  reinelt
  * moved various /proc parsing to own functions
  * made some progress with /proc/stat parsing
@@ -100,7 +104,7 @@ static int parse_cpuinfo (void)
     // strip trailing blanks from value
     for (c=val; *c!='\0';c++);
     while (isspace(*--c)) *c='\0';
-      
+    
     // add entry to hash table
     hash_set (&CPUinfo, key, val);
       
