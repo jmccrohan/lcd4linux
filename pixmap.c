@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.6 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: pixmap.c,v 1.7 2001/03/17 11:44:10 ltoetsch Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.7  2001/03/17 11:44:10  ltoetsch
+ * allow more then 1 BAR_T
+ *
  * Revision 1.6  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -138,13 +141,19 @@ int pix_put (int row, int col, char *text)
   return 0;
 }
 
+#define N_BAR_T 10
+
 int pix_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int x, y, len, rev;
-  static int *valbuf = NULL;
-  static int init = 0;
-  static time_t old;
+  static struct {
+    int row, col, len;
+    int *buf;
+    int init;
+    time_t old;
+  } vals[N_BAR_T];
   time_t now;
+  int i;
   
   row*=YRES;
   col*=XRES;
@@ -161,16 +170,27 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
   else if (len1>max) len1=max;
 
   if (type == BAR_T) {
-    if (init == 0 && valbuf == 0) {
-      valbuf = calloc(len2, sizeof(int));
-      if (valbuf == NULL) {
-	error("Couldn't allocte valbuf");
-	init = -1;
-        return -1;
+    for (i=0; i < N_BAR_T; i++) {
+      if (vals[i].init == 0 && vals[i].buf == 0) {
+        vals[i].buf = calloc(len2, sizeof(int));
+        if (vals[i].buf == NULL) {
+	  error("Couldn't allocte valbuf");
+  	  vals[i].init = -1;
+          return -1;
+        }
+        vals[i].init = 1;
+        vals[i].len = len2;	
+        vals[i].col = col;	
+        vals[i].row = row;	
+        time(&vals[i].old);
+    	break;
       }
-      init = 1;
-      debug("valbuf ok, len2=%d", len2);
-      time(&old);
+      else if (vals[i].init==1 && col==vals[i].col && row==vals[i].row)
+	break;
+    }
+    if (i == N_BAR_T) {
+      error("Too many $t, %d supported", N_BAR_T);
+      return -1;
     }
   }
   else {
@@ -211,21 +231,23 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
 
   case BAR_T:
     len1=max-len1;
+    len2=vals[i].len;
     rev=1;
     time(&now);
-    if (now == old) {
-      valbuf[len2-1] += len1;
-      valbuf[len2-1] /= 2;
+    if (now == vals[i].old) {
+      vals[i].buf[len2-1] += len1;
+      vals[i].buf[len2-1] /= 2;
     }
     else {  
-      for (; old < now; old++)
+      for (; vals[i].old < now; vals[i].old++)
         for (x=1; x<len2; x++)
-          valbuf[x-1]=valbuf[x];
-      valbuf[len2-1] = len1;
+          vals[i].buf[x-1]=vals[i].buf[x];
+      vals[i].buf[len2-1] = len1;
     }
     for (x=0; x<len2; x++) {
-      len = valbuf[x];
+      len = vals[i].buf[x];
       for (y=0; y<max; y++) {
+	// TODO: allow for drawing lines?
   	LCDpixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
       }
     }
