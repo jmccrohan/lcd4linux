@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.2 2005/01/30 06:43:22 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.3 2005/02/24 06:51:40 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.3  2005/02/24 06:51:40  reinelt
+ * LCD-Linux driver GOTO_COST corrected
+ *
  * Revision 1.2  2005/01/30 06:43:22  reinelt
  * driver for LCD-Linux finished
  *
@@ -227,9 +230,7 @@ int drv_LL_init (const char *section, const int quiet)
   YRES  = 8;      /* pixel height of one char  */
   CHARS = 8;      /* number of user-defineable characters */
   CHAR0 = 0;      /* ASCII of first user-defineable char */
-
-  /* Fixme: */
-  GOTO_COST = 2;  /* number of bytes a goto command requires */
+  GOTO_COST = 1;  /* number of bytes a goto command requires */
   
   /* real worker functions */
   drv_generic_text_real_write   = drv_LL_write;
