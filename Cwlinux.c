@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.5 2003/02/22 07:53:09 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.6 2003/02/24 04:50:57 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.6  2003/02/24 04:50:57  reinelt
+ * cwlinux fixes
+ *
  * Revision 1.5  2003/02/22 07:53:09  reinelt
  * cfg_get(key,defval)
  *
@@ -61,9 +64,7 @@
 
 #define XRES 6
 #define YRES 8
-#define CHARS 7
-
-#define DELAY 200
+#define CHARS 15
 
 static LCD Lcd;
 static char *Port = NULL;
@@ -113,14 +114,16 @@ static int CW_open(void)
 
 static void CW_write(char *string, int len)
 {
-  if (write (Device, string, len)==-1) {
-    if (errno==EAGAIN) {
-      usleep(1000);
-      if (write (Device, string, len)>=0) return;
-    }
+  int ret;
+  
+  ret=write (Device, string, len);
+  if (ret<0 && errno==EAGAIN) {
+    usleep(1000);
+    ret=write (Device, string, len);
+  }
+  if (ret<0) {
     error ("Cwlinux: write(%s) failed: %s", Port, strerror(errno));
   }
-  usleep(DELAY);
 }
 
 
@@ -130,7 +133,8 @@ static int CW_read(char *string, int len)
   
   ret=read (Device, string, len);
   if (ret<0 && errno==EAGAIN) {
-    usleep(1000);
+    debug ("read(): EAGAIN");
+    usleep(10000);
     ret=read (Device, string, len);
   }
   debug ("read(%s)=%d", string, ret);
@@ -139,7 +143,7 @@ static int CW_read(char *string, int len)
     error("Cwlinux: read() failed: %s", strerror(errno));
   }
 
-  usleep(DELAY);
+  usleep(20);
   
   return ret;
 }
@@ -148,13 +152,11 @@ static int CW_read(char *string, int len)
 static void CW_Goto(int row, int col)
 {
   char cmd[5]="\376Gxy\375";
-  
   cmd[2]=(char)col;
   cmd[3]=(char)row;
   CW_write(cmd,5);
-  usleep(DELAY);
-
 }
+
 
 static void CW_define_char (int ascii, char *buffer)
 {
@@ -175,7 +177,6 @@ static void CW_define_char (int ascii, char *buffer)
     }
   }
   CW_write(cmd,10);
-  usleep(DELAY);
 }
 
 int CW_clear(void)
@@ -190,11 +191,48 @@ int CW_clear(void)
 
   bar_clear();
 
+#if 0
   CW_write("\376X\375",3);
-  usleep(1000);
+#else
+  // for some mysterious reason, we have to sleep after 
+  // the command _and_ after the CMD_END...
+  usleep(20);
+  CW_write("\376X",2);
+  usleep(20);
+  CW_write("\375",1);
+  usleep(20);
+#endif
 
   return 0;
 }
+
+
+static void CW_Brightness(void)
+{
+  int level;
+  char cmd[5]="\376A_\375";
+
+  level=atoi(cfg_get("Brightness","8"));
+  if (level<0) level=0;
+  if (level>8) level=8;
+  
+  switch (level) {
+  case 0:
+    // backlight off
+    CW_write ("\376F\375", 3);
+    break;
+  case 8:
+    // backlight on
+    CW_write ("\376B\375", 3);
+    break;
+  default:
+    // backlight level
+    cmd[2]=level;
+    CW_write (cmd, 4);
+    break;
+  }
+}
+
 
 int CW_init(LCD * Self)
 {
@@ -236,33 +274,36 @@ int CW_init(LCD * Self)
   if (Device == -1)
     return -1;
 
+#if 0
   // read firmware version
   CW_read(buffer,sizeof(buffer));
-  CW_write ("\3761\375", 3);
+  usleep(100000);
+  CW_write ("\3761", 2);
+  usleep(100000);
+  CW_write ("\375", 1);
+  usleep(100000);
   if (CW_read(buffer,2)!=2) {
     info ("unable to read firmware version!");
-  } else {
-    info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
   }
   info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
+#endif
 
   CW_clear();
 
   // auto line wrap off
   CW_write ("\376D\375", 3);
-  usleep(DELAY);
 
   // auto scroll off
   CW_write ("\376R\375", 3);
-  usleep(DELAY);
 
   // underline cursor off
   CW_write ("\376K\375", 3);
-  usleep(DELAY);
 
   // backlight on
   CW_write ("\376B\375", 3);
-  usleep(DELAY);
+
+  // backlight brightness
+  CW_Brightness();
 
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
@@ -309,7 +350,6 @@ int CW_flush(void)
       if (Txt[row][col] == '\t')
 	continue;
       CW_Goto(row, col);
-      usleep(DELAY);
       for (p = buffer; col < Lcd.cols; col++, p++) {
 	if (Txt[row][col] == '\t')
 	  break;
