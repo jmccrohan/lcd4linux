@@ -1,0 +1,323 @@
+#
+# /etc/lcd4linux.conf
+# configuration file for lcd4linux
+#
+# http://lcd4linux.sourceforge.net
+#
+# for the complete lcd4linux documentation please refer to 
+# http://lcd4linux.sourceforge.net/manual.html
+
+
+# driver-specific options
+# 
+# Display:
+# the name of a display driver
+#
+# every driver has its own configuration options
+# (e.g. 'Port', 'Speed', ...)
+# for a detailed description of every option which is
+# available for a specific driver please refer to
+# http://lcd4linux.sourceforge.net/display/main.html 
+#
+#Display LCD2041
+#Port /dev/ttyS2
+#Speed 19200
+#Contrast 160
+#
+#Display HD44780
+#Port /dev/parport0
+#Size 24x2
+#Delay 503
+#
+#Display BLC100x
+#Port /dev/ttyS2
+#Type 20x4
+#
+#Display USBLCD
+#Port /dev/usb/usblcd
+#Size 20x4
+#
+#Display PalmPilot
+#Port /dev/ttyS2
+#Speed 4800
+#size 20x4
+#font 6x8
+#pixel 1+0
+#gap 0x0
+#border 2
+#
+#Display PPM
+#size 20x4
+#font 5x8
+#pixel 3+0
+#gap -1x-1
+#border 10
+#foreground \#102000
+#halfground \#70c000
+#background \#80d000
+#
+#Display PNG
+#size 20x4
+#font 5x8
+#pixel 2+0
+#gap -1x-1
+#border 5
+#foreground \#102000
+#halfground \#70c000
+#background \#80d000
+#
+#Display X11
+#size 20x5
+#font 5x8
+#pixel 1+0
+#gap -1x-1
+#border 1
+#foreground \#102000
+#halfground \#90c000
+#background \#a0d000
+#
+#Display Text
+#size 40x8
+#TextBar 1
+#
+#Display SIN
+#Port /dev/tty9
+
+
+# timing options - all values are milliseconds
+#
+# please note that starting with 0.9.11 the settings tick,
+# tack, tau are marked as obsolete and replaced by the
+# following ones:
+#
+# Tick.Text:
+# time between text updates - default is 500
+#
+# Tick.bar :
+# time between bar updates - default is 100
+#
+# Tick.icon:
+# time between icon updates - default is 100
+#
+# Tick.gpo :
+# time between gpo updates - default is 100
+#
+#Tick.Text 500
+#Tick.bar 100
+#Tick.icon 100
+#Tick.gpo 100
+
+
+# data-specific options
+#
+# Overload:
+# load average threshold and bar scaling
+#
+# SetiDir:
+# directory where seti@home stores its data files
+#
+# Battwarning:
+# flash bp-bar if running below Battwarning
+# I use: Row6 "Bat%bp%bs%bd$r10bp+bp"
+# which gives a nice flash effect - default is 10
+#
+Overload 2.0
+SetiDir /etc/setiathome
+#Battwarning 10
+
+
+# mail/news related options
+#
+# Mailbox[1..9]:
+# defines the mailbox for querying
+# the string may be a plain mbox file or a pop3/imap4/nntp
+# server string with the following format:
+#     pop3:[user[:pass]@]machine[:port]
+#     imap4:[user[:pass]@]machine[:port][/dir]
+#     nntp:[user[:pass]@]machine[:port][/dir]
+# quering a plain (local) mbox file is achieved by giving
+# the full path/name to the mbox file
+# port defaults to 110 (pop3 query) and 143 (imap query)
+# if [/dir] is not given, INBOX is assumed
+# if [/dir] is given for nntp it should be a valid group name
+# with '.' separating items
+# if [/dir] is not given for nntp all/unread news of subscribed
+# groups from Newsrc are calculated.
+#
+# Delay_e[1..9]:
+# delay in seconds for querying Mailbox[1..9] - default is 5
+#
+# Newsrc:
+# path/name of your .newsrc file containing subscribed news
+# please note that authorization on newsservers is currently untested
+# user and pass may not contain a '/' with above syntax
+#
+#Mailbox1 /var/spool/mail/michi
+#Delay_e1 5
+#
+#Mailbox2 pop3:user:pass@machine
+#Delay_e2 20
+#
+#Mailbox3 imap4:user:pass@machine/folder
+#Delay_e3 20
+#
+#Mailbox4 nntp:server/at.linux
+#Delay_e4 120
+
+
+# temperature sensors
+#
+# Sensor[1..9]:
+# path to temperature file [1...9]
+#
+# Sensor[1..9]_min:
+# temperature where the corresponding bar starts
+#
+# Sensor[1..9]_max:
+# temperature where bar ends
+#
+# Sensor[1..9]_factor:
+# formula to calculate real temperature
+# (display_value=raw_value*factor+offset)
+# lookup these values in /etc/sensors.conf
+#
+# Sensor[1..9]_offset:
+# offset to calculate the real temperature
+#
+#Sensor1 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp1
+#Sensor1_min 30
+#Sensor1_max 50
+#
+#Sensor2 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp2
+#Sensor2_min 30
+#Sensor2_max 50
+#
+#Sensor3 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp3
+#Sensor3_min 30
+#Sensor3_max 50
+
+
+
+# plugins
+#
+# x[1..9]:
+# command to execute. predefined $PATH:
+# PATH=/usr/local/bin:/usr/bin:/bin 
+# $X[1..9] is the result of command x[1..9] in environment
+#
+# Tick_x[1..9]:
+# delay in ticks (overrides Delay_x[1..9])
+#
+# Delay_x[1..9]:
+# delay in seconds - default is 1
+#
+# Max_x[1..9]:
+# max value for scaling bars - default is 100 (value should be numeric)
+#
+# Min_x[1..9]:
+# min value for bars - default is 0 (should be != Max_x[1..9])
+#
+#x1 tail -1 /var/log/messages
+#Tick_x1 10
+#Delay_x1 1
+#Max_x1 50
+#Min_x1 10
+#
+#x2 echo $X1 | cut -b25-
+
+
+# display options
+#
+# Row[1..9]:
+# text to display in row [1..9]
+#
+# the text to be displayed can contain specific directives which will
+# be replaced by the appropriate values or will create bars or icons.
+# for a detailed description of every possible directive please refer to
+# http://lcd4linux.sourceforge.net/manual.html or
+# /usr/share/doc/packages/lcd4linux/README.Rows
+#
+Row1 "Busy %cb%% $r14cs+cb"
+Row2 "Load%l1%L$r14l1"
+#
+#Row1 "$u3l1$u3cb$u3cs $u3mu$u3ma$u3ms $u3dr$u3dw $u3nr$u3nw $u3ii$u3io"
+#Row2 " "
+#Row3 " "
+#Row4 "CPU MEM IO IP"
+#
+#Row1 "*** %o %v ***"
+#Row2 "%p CPU  %r MB RAM"
+#Row3 "Busy %cb%% $r10cs+cb"
+#Row4 "Load%l1%L$r10l1"
+#
+#Row1 "Load%l1%L$r10cs+cb"
+#Row2 "Disk%dm $R10dr+dw"
+#Row3 "Net %nm $R10nr+nw"
+#Row4 "ISDN%im $r10ii+io"
+#Row4 "DSL %tm $r10ti+to"
+#Row5 "Temp%s2°$r10s1+s2"
+#
+#Row5 %x1
+#Row6 %x2
+#
+#Row6 "Mails %e3/%u3"
+
+
+# icons
+#
+# Icons:
+# number of icons
+#
+# every icon you are reserving here is no longer available
+# for bars. As most displays have only eight user-defineable
+# characters, and a dual-bar needs at least five of them
+# you should not use more than 3 icons in parallel
+# with bars...
+#
+# Icon<num>.Bitmap<row>:
+# bitmap row 'row' for icon 'num'
+#
+# for a detailed description of how to use icons please refer to
+# http://lcd4linux.sourceforge.net/display/main.html
+#
+#Icons 1
+#
+#Icon1.Bitmap1 .....
+#Icon1.Bitmap2 .*.*.
+#Icon1.Bitmap3 *****
+#Icon1.Bitmap4 *****
+#Icon1.Bitmap5 .***.
+#Icon1.Bitmap6 .***.
+#Icon1.Bitmap7 ..*..
+#Icon1.Bitmap8 .....
+
+
+# virtual rows
+#
+# Rows:
+# number of rows to use (maybe greater than your displays rows)
+#
+# Scroll:
+# number of rows to scroll
+#
+# Turn:
+# time in milliseconds between scrolling events
+#
+#Rows 10
+#Scroll 2
+#Turn 5000
+
+
+# general purpose outputs
+#
+# GPOs:
+# number of outputs to use
+#
+# GPO[1..max]:
+# token to use for GPO[1..max]
+#
+# the token should return a numeric value. If this value is greater
+# than zero the output will be enabled otherwise disabled.
+# please refer to the corresponding documentation under
+# http://lcd4linux.sourceforge.net/display/main.html to
+# find out if GPOs are supported with your display

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.11 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: plugin.c,v 1.12 2004/01/15 04:29:45 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.12  2004/01/15 04:29:45  reinelt
+ * moved lcd4linux.conf.sample to *.old
+ * lcd4linux.conf.sample with new layout
+ * new plugins 'loadavg' and 'meminfo'
+ * text widget have pre- and postfix
+ *
  * Revision 1.11  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -107,7 +113,9 @@ int plugin_init_math (void);
 int plugin_init_string (void);
 int plugin_init_cfg (void);
 int plugin_init_uname (void);
+int plugin_init_loadavg (void);
 int plugin_init_cpuinfo (void);
+int plugin_init_meminfo (void);
 int plugin_init_i2c_sensors (void);
 int plugin_init_xmms (void);
 
@@ -118,7 +126,9 @@ int plugin_init (void)
   plugin_init_string();
   plugin_init_cfg();
   plugin_init_uname();
+  plugin_init_loadavg();
   plugin_init_cpuinfo();
+  plugin_init_meminfo();
   // MR: segfaults here
   // plugin_init_i2c_sensors();
   plugin_init_xmms();

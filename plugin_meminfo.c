@@ -1,6 +1,6 @@
-/* $Id: plugin_cpuinfo.c,v 1.3 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.1 2004/01/15 04:29:45 reinelt Exp $
  *
- * plugin for /proc/cpuinfo parsing
+ * plugin for /proc/meminfo parsing
  *
  * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
  * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -22,29 +22,20 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: plugin_cpuinfo.c,v $
- * Revision 1.3  2004/01/15 04:29:45  reinelt
+ * $Log: plugin_meminfo.c,v $
+ * Revision 1.1  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
  * new plugins 'loadavg' and 'meminfo'
  * text widget have pre- and postfix
- *
- * Revision 1.2  2004/01/14 11:33:00  reinelt
- * new plugin 'uname' which does what it's called
- * text widget nearly finished
- * first results displayed on MatrixOrbital
- *
- * Revision 1.1  2004/01/13 10:03:01  reinelt
- * new util 'hash' for associative arrays
- * new plugin 'cpuinfo'
  *
  */
 
 /* 
  * exported functions:
  *
- * int plugin_init_cpuinfo (void)
- *  adds functions to access /proc/cpuinfo
+ * int plugin_init_meminfo (void)
+ *  adds functions to access /proc/meminfo
  *
  */
 
@@ -61,27 +52,29 @@
 #include "hash.h"
 
 
-static void my_cpuinfo (RESULT *result, RESULT *arg1)
+static void my_meminfo (RESULT *result, RESULT *arg1)
 {
-  static HASH CPUinfo = { 0, 0, NULL };
+  static HASH MemInfo = { 0, 0, NULL };
   
   static time_t now=0;
   char *key, *val;
+  int line;
   
   // reread every second only
   if (time(NULL)!=now) {
     FILE *stream;
     
     // destroy previous hash table
-    hash_destroy (&CPUinfo);
+    hash_destroy (&MemInfo);
 
-    stream=fopen("/proc/cpuinfo", "r");
+    stream=fopen("/proc/meminfo", "r");
     if (stream==NULL) {
-      error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
+      error ("fopen(/proc/meminfo) failed: %s", strerror(errno));
       SetResult(&result, R_STRING, ""); 
       return;
     }
     
+    line=0;
     while (!feof(stream)) {
       char buffer[256];
       char *c;
@@ -98,26 +91,29 @@ static void my_cpuinfo (RESULT *result, RESULT *arg1)
       // strip trailing blanks from value
       for (c=val; *c!='\0';c++);
       while (isspace(*--c)) *c='\0';
-      
-      // add entry to hash table
-      hash_set (&CPUinfo, key, val);
-      
+      // skip lines that do not end with " kB"
+      if (*c=='B' && *(c-1)=='k' && *(c-2)==' ') {
+	// strip trailing " kB" from value
+	*(c-2)='\0';
+	// add entry to hash table
+	hash_set (&MemInfo, key, val);
+      }
     }
     fclose (stream);
     time(&now);
   }
   
   key=R2S(arg1);
-  val=hash_get(&CPUinfo, key);
+  val=hash_get(&MemInfo, key);
   if (val==NULL) val="";
 
   SetResult(&result, R_STRING, val); 
 }
 
 
-int plugin_init_cpuinfo (void)
+int plugin_init_meminfo (void)
 {
-  AddFunction ("cpuinfo", 1, my_cpuinfo);
+  AddFunction ("meminfo", 1, my_meminfo);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.4 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: widget_text.c,v 1.5 2004/01/15 04:29:45 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,12 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.5  2004/01/15 04:29:45  reinelt
+ * moved lcd4linux.conf.sample to *.old
+ * lcd4linux.conf.sample with new layout
+ * new plugins 'loadavg' and 'meminfo'
+ * text widget have pre- and postfix
+ *
  * Revision 1.4  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -136,7 +142,26 @@ void widget_text_update (void *Self)
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_TEXT *T = W->data;
   RESULT result = {0, 0.0, NULL};
-  char *value;
+  char *prefix, *postfix, *value;
+  
+  // evaluate prefix
+  if (T->prefix!=NULL && strlen(T->prefix)>0) {
+    Eval(T->prefix, &result);
+    prefix=strdup(R2S(&result));
+    DelResult (&result);
+  } else {
+    prefix=strdup("");
+  }
+  
+  // evaluate postfix
+  if (T->postfix!=NULL && *(T->postfix)!='\0') {
+    debug ("Eval_postfix(%s)", T->postfix);
+    Eval(T->postfix, &result);
+    postfix=strdup(R2S(&result));
+    DelResult (&result);
+  } else {
+    postfix=strdup("");
+  }
   
   // evaluate expression
   Eval(T->expression, &result);
@@ -171,6 +196,8 @@ void widget_text_update (void *Self)
       snprintf (value, size+1, "%.*f", precision, number);
     }
   }
+
+  DelResult (&result);
   
   // has value changed?
   if (T->value == NULL || strcmp(T->value, value)!=0) {
@@ -190,7 +217,6 @@ void widget_text_update (void *Self)
     free (value);
   }
 
-  DelResult (&result);
 }
 
 
@@ -207,6 +233,10 @@ int widget_text_init (WIDGET *Self)
   
   T=malloc(sizeof(WIDGET_TEXT));
   memset (T, 0, sizeof(WIDGET_TEXT));
+
+  // get raw pre- and postfix (we evaluate it ourselves)
+  T->prefix  = cfg_get_raw (section, "prefix", NULL);
+  T->postfix = cfg_get_raw (section, "prefix", NULL);
 
   // get raw expression (we evaluate it ourselves)
   T->expression = cfg_get_raw (section, "expression",  "''");
