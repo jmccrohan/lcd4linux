@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.37 2003/08/17 16:37:39 reinelt Exp $
+/* $Id: display.c,v 1.38 2003/08/24 04:31:56 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.38  2003/08/24 04:31:56  reinelt
+ * icon.c icon.h added
+ *
  * Revision 1.37  2003/08/17 16:37:39  reinelt
  * more icon framework
  *
@@ -358,9 +361,7 @@ int lcd_icon (int num, int row, int col, unsigned char *bitmap)
   if (row<1 || row>Lcd->rows)  return -1;
   if (col<1 || col>Lcd->cols)  return -1;
   if (Lcd->icon==NULL)         return  0;
-
-  // Fixme: ToDo!
-  return 0;
+  return Lcd->icon(num-1, row-1, col-1, bitmap);
 }
 
 int lcd_gpo (int num, int val)

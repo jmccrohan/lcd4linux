@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.32 2003/08/22 03:45:08 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.33 2003/08/24 04:31:56 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.33  2003/08/24 04:31:56  reinelt
+ * icon.c icon.h added
+ *
  * Revision 1.32  2003/08/22 03:45:08  reinelt
  * bug in parallel port code fixed, more icons stuff
  *
@@ -172,6 +175,7 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
+#include "icon.h"
 #include "bar.h"
 
 #define XRES 5
@@ -264,6 +268,7 @@ static int MO_clear (int protocol)
   int gpo;
   
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+  icon_clear();
   bar_clear();
   GPO=0;
 
@@ -363,6 +368,8 @@ static int MO_init (LCD *Self, int protocol)
     Self->icons=Icons;
     Lcd.icons=Icons;
   }
+
+  icon_init(Lcd.rows, Lcd.cols, XRES, YRES, Icons);
 
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
