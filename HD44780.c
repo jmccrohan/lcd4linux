@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.44 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: HD44780.c,v 1.45 2003/10/08 06:45:00 nicowallmeier Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.45  2003/10/08 06:45:00  nicowallmeier
+ * Support of two displays of the same size
+ *
  * Revision 1.44  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -559,8 +562,8 @@ void HD_goto (int row, int col)
 {
   int pos;
 
-  if (Controllers>1 && row>=2) {
-    row -= 2;
+  if (Controllers>1 && row>=Lcd.rows/2) {
+    row -= Lcd.rows/2;
     Controller = 2;
   } else {
     Controller = 1;
