@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.10 2004/02/02 05:22:16 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.11 2004/02/04 19:10:51 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.11  2004/02/04 19:10:51  reinelt
+ * Crystalfontz driver nearly finished
+ *
  * Revision 1.10  2004/02/02 05:22:16  reinelt
  * Brightness fpr Noritake Displays avaliable as a plugin
  *
@@ -763,18 +766,3 @@ DRIVER drv_HD44780 = {
 };
 
 
-#if 0
-+
-+// Change Noritake CU series VFD brightness level
-+  char tmpbuffer[2];
-+  int cu_vfd_brightness;
-+  if (cfg_number("CU_VFD_Brightness", 0, 0, 3, &cu_vfd_brightness)<0) return -1;
-+  if (cu_vfd_brightness) {
-  +    snprintf (tmpbuffer, 2, "\%o", cu_vfd_brightness);
-  +    HD_command (0x03, 0x38, T_EXEC);           // enable function
-  +    HD_write (0x03, tmpbuffer, 1, T_WRCG);     // set brightness
-  +    info ("HD44780: Noritake CU VFD detected. Brightness = %d (0-3)", cu_vfd_brightness);
-  +    info ("         Settings: 0=100\%, 1=75\%, 2=50\%, 3=25\%");
-  + }
- 
-#endif

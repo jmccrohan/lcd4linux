@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.14 2004/02/01 19:37:40 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.15 2004/02/04 19:10:51 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.15  2004/02/04 19:10:51  reinelt
+ * Crystalfontz driver nearly finished
+ *
  * Revision 1.14  2004/02/01 19:37:40  reinelt
  * got rid of every strtok() incarnation.
  *
@@ -100,7 +103,6 @@ static HASH Stat = { 0, };
 
 static void hash_set1 (char *key1, char *val) 
 {
-  debug ("Michi: hash_set (<%s>=<%s>)", key1, val);
   hash_set_delta (&Stat, key1, val);
 }
 

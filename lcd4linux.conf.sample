@@ -26,11 +26,13 @@ Display CF632 {
 }
 
 Display CF633 {
-    Icons 1
+    Icons 4
     Driver 'Crystalfontz'
     Model '633'
     Port '/dev/tts/0'
     Speed 19200
+    Contrast 16
+    Backlight 50
 }
 
 Display HD44780-20x4 {

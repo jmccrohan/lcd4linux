@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.4 2004/02/01 08:05:12 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.5 2004/02/04 19:10:51 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.5  2004/02/04 19:10:51  reinelt
+ * Crystalfontz driver nearly finished
+ *
  * Revision 1.4  2004/02/01 08:05:12  reinelt
  * Crystalfontz 633 extensions (CRC checking and stuff)
  * Models table for HD44780
@@ -54,8 +57,13 @@
  * int  drv_generic_serial_open    (char *driver, char *port, speed_t speed);
  *   opens the serial port
  *
+ * int drv_generic_serial_poll (char *string, int len)
+ *   reads from the serial or USB port
+ *   without retry
+ *
  * int  drv_generic_serial_read    (char *string, int len);
  *   reads from the serial or USB port
+ *   with retry
  *
  * void drv_generic_serial_write   (char *string, int len);
  *   writes to the serial or USB port
@@ -285,8 +293,13 @@ int drv_generic_serial_open (char *section, char *driver)
 
 int drv_generic_serial_poll (char *string, int len)
 {
+  int ret;
   if (Device==-1) return -1;
-  return read (Device, string, len);
+  ret=read (Device, string, len);
+  if (ret<0 && errno!=EAGAIN) {
+    error("%s: read(%s) failed: %s", Driver, Port, strerror(errno));
+  }
+  return ret;
 }
 
 
@@ -297,14 +310,12 @@ int drv_generic_serial_read (char *string, int len)
   for (run=0; run<10; run++) {
     ret=drv_generic_serial_poll(string, len);
     if (ret>=0 || errno!=EAGAIN) break;
-    debug ("read(): EAGAIN");
+    info ("%s: read(%s): EAGAIN", Driver, Port);
     usleep(1000);
   }
   
-  if (ret<0) {
-    error("%s: read(%s, %d) failed: %s", Driver, Port, len, strerror(errno));
-  } else if (ret!=len) {
-    error ("%s: partial read: len=%d ret=%d", Driver, len, ret);
+  if (ret>0 && ret!=len) {
+    error ("%s: partial read(%s): len=%d ret=%d", Driver, Port, len, ret);
   }
   
   return ret;
@@ -319,14 +330,14 @@ void drv_generic_serial_write (char *string, int len)
   for (run=0; run<10; run++) {
     ret=write (Device, string, len);
     if (ret>=0 || errno!=EAGAIN) break;
-    debug ("write(): EAGAIN");
+    info ("%s: write(%s): EAGAIN", Driver, Port);
     usleep(1000);
   }
   
   if (ret<0) {
-    error ("MatrixOrbital: write(%s) failed: %s", Port, strerror(errno));
+    error ("%s: write(%s) failed: %s", Driver, Port, strerror(errno));
   } else if (ret!=len) {
-    error ("MatrixOrbital: partial write: len=%d ret=%d", len, ret);
+    error ("%s: partial write(%s): len=%d ret=%d", Driver, Port, len, ret);
   }
   
   return;
@@ -335,7 +346,7 @@ void drv_generic_serial_write (char *string, int len)
 
 int drv_generic_serial_close (void)
 {
-  debug ("%s: closing port %s", Driver, Port);
+  info ("%s: closing port %s", Driver, Port);
   close (Device);
   drv_generic_serial_unlock_port(Port);
   return 0;
