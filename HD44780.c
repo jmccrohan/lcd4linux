@@ -1,8 +1,10 @@
-/* $Id: HD44780.c,v 1.43 2003/09/29 06:12:56 reinelt Exp $
+/* $Id: HD44780.c,v 1.44 2003/10/05 17:58:50 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ *
+ * This file is part of LCD4Linux.
  *
  * Modification for 4-Bit mode
  * 2003 Martin Hejl (martin@hejl.de)
@@ -11,12 +13,12 @@
  * 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
  *
  *
- * This program is free software; you can redistribute it and/or modify
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -27,6 +29,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.44  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.43  2003/09/29 06:12:56  reinelt
  * changed default HD44780 wiring: unused signals are GND
  *

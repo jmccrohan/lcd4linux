@@ -1,8 +1,8 @@
-/* $Id: widget.c,v 1.1 2003/09/19 03:51:29 reinelt Exp $
+/* $Id: widget.c,v 1.2 2003/10/05 17:58:50 reinelt Exp $
  *
  * generic widget handling
  *
- * written 2003 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.2  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.1  2003/09/19 03:51:29  reinelt
  * minor fixes, widget.c added
  *

@@ -10,14 +10,18 @@ lib_LTLIBRARIES = liblcd4linux.la
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
 lcd4linux_LDFLAGS = $(X_LIBS)
-lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@ liblcd4linux.la
-lcd4linux_DEPENDENCIES = @DRIVERS@
+lcd4linux_LDADD = liblcd4linux.la @DRVLIBS@ 
+# Fixme: if this line is active, all drivers will be compiled in
+# and not taken from the library
+# lcd4linux_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
 pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
+evaluator.c evaluator.h \
+expression.c expression.h \
 system.c system.h \
 isdn.c isdn.h \
 mail.c mail.h \
@@ -31,7 +35,8 @@ mail2.c \
 socket.c socket.h
 
 liblcd4linux_la_LDFLAGS = -version-info 9:11:9
-liblcd4linux_la_LIBADD=$(DRIVERS)
+# Fixme: why? Why not?
+# liblcd4linux_la_LIBADD=$(DRIVERS)
 
 liblcd4linux_la_SOURCES = \
 display.c display.h \
@@ -42,10 +47,14 @@ pixmap.c pixmap.h \
 bar.c bar.h \
 icon.c icon.h \
 fontmap.c fontmap.h \
-parport.c parport.h \
-udelay.c udelay.h 
+udelay.c udelay.h \
+@DRIVERS@
+# Fixme: wwhy? why not?
+# Fixme: $DRIVERS? S(DRIVERS)? @DRIVERS@?
+
 
 EXTRA_lcd4linux_SOURCES= \
+parport.c parport.h \
 BeckmannEgle.c \
 Crystalfontz.c \
 Cwlinux.c \

@@ -1,15 +1,17 @@
-/* $Id: battery.h,v 1.2 2001/03/02 11:04:08 reinelt Exp $
+/* $Id: battery.h,v 1.3 2003/10/05 17:58:50 reinelt Exp $
  *
  * APM and ACPI specific functions
  *
- * Copyright 2001 by Leo Tötsch (lt@toetsch.at)
+ * Copyright 2001 Leo Tötsch <lt@toetsch.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: battery.h,v $
+ * Revision 1.3  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.2  2001/03/02 11:04:08  reinelt
  *
  * cosmetic cleanups (comment headers)

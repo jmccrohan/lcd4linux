@@ -1,15 +1,17 @@
-/* $Id: display.h,v 1.21 2003/09/09 05:30:34 reinelt Exp $
+/* $Id: display.h,v 1.22 2003/10/05 17:58:50 reinelt Exp $
  *
  * framework for device drivers
  *
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.22  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.21  2003/09/09 05:30:34  reinelt
  * even more icons stuff
  *

@@ -1,15 +1,17 @@
-/* $Id: Crystalfontz.c,v 1.15 2003/09/13 06:45:43 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.16 2003/10/05 17:58:50 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
- * Copyright 2000 by Herbert Rosmanith (herp@wildsau.idv.uni-linz.ac.at)
+ * Copyright 2000 Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -19,6 +21,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.16  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.15  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
  *

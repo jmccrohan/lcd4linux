@@ -1,15 +1,17 @@
-/* $Id: seti.c,v 1.9 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: seti.c,v 1.10 2003/10/05 17:58:50 reinelt Exp $
  *
  * seti@home specific functions
  *
- * Copyright 2001 by Axel Ehnert <Axel@Ehnert.net>
+ * Copyright 2001 Axel Ehnert <Axel@Ehnert.net>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.10  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.9  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *

@@ -1,15 +1,17 @@
-/* $Id: BeckmannEgle.c,v 1.16 2003/09/13 06:45:43 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.17 2003/10/05 17:58:50 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
- * Copyright 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.17  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.16  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
  *

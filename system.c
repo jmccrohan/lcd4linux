@@ -1,15 +1,17 @@
-/* $Id: system.c,v 1.29 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: system.c,v 1.30 2003/10/05 17:58:50 reinelt Exp $
  *
  * system status retreivement
  *
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.30  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.29  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *

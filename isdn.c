@@ -1,15 +1,17 @@
-/* $Id: isdn.c,v 1.10 2003/06/21 05:46:18 reinelt Exp $
+/* $Id: isdn.c,v 1.11 2003/10/05 17:58:50 reinelt Exp $
  *
  * ISDN specific functions
  *
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.11  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.10  2003/06/21 05:46:18  reinelt
  * DVB client integrated
  *

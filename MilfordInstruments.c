@@ -1,17 +1,18 @@
-/* $Id: MilfordInstruments.c,v 1.1 2003/09/29 06:58:36 reinelt Exp $
+/* $Id: MilfordInstruments.c,v 1.2 2003/10/05 17:58:50 reinelt Exp $
  *
  * driver for Milford Instruments serial display modules
- *
- * Written 2003 by Andy Baxter <andy@earthsong.free-online.co.uk>
- *
  * based on the MatrixOrbital driver by M. Reinelt 
  *
- * This program is free software; you can redistribute it and/or modify
+ * Copyright 2003 Andy Baxter <andy@earthsong.free-online.co.uk>
+ *
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -22,6 +23,9 @@
  *
  *
  * $Log: MilfordInstruments.c,v $
+ * Revision 1.2  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.1  2003/09/29 06:58:36  reinelt
  * new driver for Milford Instruments MI420 by Andy Baxter
  *

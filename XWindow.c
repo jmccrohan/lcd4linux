@@ -1,15 +1,17 @@
-/* $Id: XWindow.c,v 1.34 2003/09/10 14:01:53 reinelt Exp $
+/* $Id: XWindow.c,v 1.35 2003/10/05 17:58:50 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
- * (c) 2000 Herbert Rosmanith <herp@widsau.idv.uni-linz.ac.at>
+ * Copyright 2000 Herbert Rosmanith <herp@widsau.idv.uni-linz.ac.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.35  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.34  2003/09/10 14:01:53  reinelt
  * icons nearly finished\!
  *

@@ -1,15 +1,17 @@
-/* $Id: lcd4linux.c,v 1.47 2003/09/10 08:37:09 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.48 2003/10/05 17:58:50 reinelt Exp $
  *
  * LCD4Linux
  *
- * Copyright 1999-2003 Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999-2003 Michael Reinelt <reinelt@eunet.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.48  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.47  2003/09/10 08:37:09  reinelt
  * icons: reorganized tick_* again...
  *
@@ -399,6 +404,10 @@ int main (int argc, char *argv[])
   
   if (cfg_init (cfg)==-1)
     exit (1);
+  
+  // Fixme:
+  EX_init();
+  EX_test();
   
   driver=cfg_get("display",NULL);
   if (driver==NULL || *driver=='\0') {

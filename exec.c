@@ -1,15 +1,17 @@
-/* $Id: exec.c,v 1.9 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: exec.c,v 1.10 2003/10/05 17:58:50 reinelt Exp $
  *
  * exec ('x*') functions
  *
- * Copyright 2001 by Leopold Tötsch (lt@toetsch.at)
+ * Copyright 2001 Leopold Tötsch <lt@toetsch.at>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.10  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.9  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *

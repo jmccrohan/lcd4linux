@@ -1,15 +1,17 @@
-/* $Id: Cwlinux.c,v 1.14 2003/09/13 06:45:43 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.15 2003/10/05 17:58:50 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
- * Copyright 2002 by Andrew Ip (aip@cwlinux.com)
+ * Copyright 2002 Andrew Ip <aip@cwlinux.com>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of LCD4Linux.
+ *
+ * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * LCD4Linux is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,6 +22,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.15  2003/10/05 17:58:50  reinelt
+ * libtool junk; copyright messages cleaned up
+ *
  * Revision 1.14  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
  *
