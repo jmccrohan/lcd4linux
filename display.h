@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.5 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: display.h,v 1.6 2000/03/13 15:58:24 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.6  2000/03/13 15:58:24  reinelt
+ *
+ * release 0.9
+ * moved row parsing to parser.c
+ * all basic work finished
+ *
  * Revision 1.5  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -40,11 +46,16 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
-#define BAR_L 1
-#define BAR_R 2
-#define BAR_U 4
-#define BAR_D 8
-#define BAR_S 16
+#define BAR_L   (1<<0)
+#define BAR_R   (1<<1)
+#define BAR_U   (1<<2)
+#define BAR_D   (1<<3)
+#define BAR_H2  (1<<4)
+#define BAR_V2  (1<<5)
+#define BAR_LOG (1<<6)
+
+#define BAR_H (BAR_L | BAR_R)
+#define BAR_V (BAR_U | BAR_D)
 
 typedef struct DISPLAY {
   char name[16];

@@ -1,11 +1,17 @@
 Display LCD2041
 Port /dev/ttyS2
+Speed 19200
 Contrast 160
 
-Row1 "*** %o %r ***"
-Row2 "%p CPU  %m MB RAM"
-Row3 "Busy %cu%% $r10cu"
-Row4 "L$$D %l1%L$r10l1"
+#Row1 "*** %o %r ***"
+#Row2 "%p CPU  %m MB RAM"
+#Row3 "Busy %cu%% $r10cs"
+#Row4 "Load %l1%L$r10l1"
+
+Row1 "Busy %cb%% $r10cs+cb"
+Row2 "Disk %dm $R10dr+dw"
+Row3 "Net  %nm $R10nr+nw"
+Row4 "ISDN %im $r10ii+io"
 
 Tick 100
 Tack 400

@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.4 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: isdn.c,v 1.5 2000/03/13 15:58:24 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.5  2000/03/13 15:58:24  reinelt
+ *
+ * release 0.9
+ * moved row parsing to parser.c
+ * all basic work finished
+ *
  * Revision 1.4  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -31,7 +37,6 @@
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
- *
  *
  */
 
@@ -56,7 +61,6 @@
 
 #include "isdn.h"
 #include "filter.h"
-#include "lcd4linux.h"
 
 typedef struct {
   unsigned long in;

@@ -3,9 +3,17 @@
 AUTOMAKE_OPTIONS = foreign
 
 CLEANFILES = *~
-CFLAGS = -Wall -O2
+AM_CFLAGS = -Wall
 
 bin_PROGRAMS = lcd4linux
-lcd4linux_SOURCES = lcd4linux.c cfg.c display.c filter.c system.c isdn.c MatrixOrbital.c
+lcd4linux_SOURCES = \
+	lcd4linux.c \
+	cfg.c cfg.h \
+	parser.c parser.h \
+	system.c system.h \
+	isdn.c isdn.h \
+	filter.c filter.h \
+	display.c display.h \
+	MatrixOrbital.c
 
 

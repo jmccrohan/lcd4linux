@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.4 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.5 2000/03/13 15:58:24 reinelt Exp $
  *
  *  driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.5  2000/03/13 15:58:24  reinelt
+ *
+ * release 0.9
+ * moved row parsing to parser.c
+ * all basic work finished
+ *
  * Revision 1.4  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -46,12 +52,16 @@
 #include "cfg.h"
 #include "display.h"
 
+#define SPEED 19200
 #define XRES 5
 #define YRES 8
 #define CHARS 8
+#define BARS ( BAR_L | BAR_R | BAR_H2 )
+// Fixme: BAR_U, BAR_D
 
 static DISPLAY Display;
 static char *Port=NULL;
+static speed_t Speed;
 static int Device=-1;
 
 typedef struct {
@@ -92,7 +102,7 @@ static int MO_open (void)
     return -1;
   }
   cfmakeraw(&portset);
-  cfsetospeed(&portset, B19200);
+  cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     fprintf (stderr, "MatrixOrbital: tcsetattr(%s) failed: %s\n", Port, strerror(errno));
     return -1;
@@ -117,7 +127,7 @@ static int MO_contrast (void)
   char buffer[4];
   int  contrast;
 
-  contrast=atoi(cfg_get("contrast"));
+  contrast=atoi(cfg_get("Contrast"));
   if (contrast==0) contrast=160;
   snprintf (buffer, 4, "\376P%c", contrast);
   MO_write (buffer, 3);
@@ -222,10 +232,9 @@ static void MO_compact_bars (void)
 
 static void MO_define_chars (void)
 {
-  int i, j, c;
+  int c, i, j;
   char buffer[12]="\376N";
-  char Pixel[] = {0, 16, 24, 28, 30, 31};
-  
+
   for (i=2; i<nSegment; i++) {
     if (Segment[i].used) continue;
     if (Segment[i].ascii!=-1) continue;
@@ -237,14 +246,22 @@ static void MO_define_chars (void)
     }
     Segment[i].ascii=c;
     buffer[2]=c;
-    buffer[3]=Pixel[Segment[i].len1];
-    buffer[4]=Pixel[Segment[i].len1];
-    buffer[5]=Pixel[Segment[i].len1];
-    buffer[6]=Pixel[Segment[i].len1];
-    buffer[7]=Pixel[Segment[i].len2];
-    buffer[8]=Pixel[Segment[i].len2];
-    buffer[9]=Pixel[Segment[i].len2];
-    buffer[10]=Pixel[Segment[i].len2];
+    switch (Segment[i].type & (BAR_L | BAR_R | BAR_U | BAR_D)) {
+    case BAR_L:
+      for (j=0; j<4; j++) {
+	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
+	buffer[j+3]=Pixel[Segment[i].len1];
+	buffer[j+7]=Pixel[Segment[i].len2];
+      }
+      break;
+    case BAR_R:
+      for (j=0; j<4; j++) {
+	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
+	buffer[j+3]=Pixel[Segment[i].len1];
+	buffer[j+7]=Pixel[Segment[i].len2];
+      }
+      break;
+    }
     MO_write (buffer, 11);
   }
 }
@@ -269,6 +286,7 @@ int MO_clear (void)
 int MO_init (DISPLAY *Self)
 {
   char *port;
+  char *speed;
 
   Display=*Self;
 
@@ -277,12 +295,33 @@ int MO_init (DISPLAY *Self)
     Port=NULL;
   }
 
-  port=cfg_get ("port");
+  port=cfg_get ("Port");
   if (port==NULL || *port=='\0') {
-    fprintf (stderr, "MatrixOrbital: no 'port' entry in %s\n", cfg_file());
+    fprintf (stderr, "MatrixOrbital: no 'Port' entry in %s\n", cfg_file());
     return -1;
   }
   Port=strdup(port);
+
+  speed=cfg_get("Speed");
+  if (speed==NULL) speed="19200";
+  
+  switch (atoi(speed)) {
+  case 1200:
+    Speed=B1200;
+    break;
+  case 2400:
+    Speed=B2400;
+    break;
+  case 9600:
+    Speed=B9600;
+    break;
+  case 19200:
+    Speed=B19200;
+    break;
+  default:
+    fprintf (stderr, "MatrixOrbital: unsupported speed '%s' in %s\n", speed, cfg_file());
+    return -1;
+  }    
 
   Device=MO_open();
   if (Device==-1) return -1;
@@ -313,31 +352,49 @@ int MO_put (int row, int col, char *text)
 
 int MO_bar (int type, int row, int col, int max, int len1, int len2)
 {
+  int rev=0;
+  
   if (len1<1) len1=1;
   else if (len1>max) len1=max;
   
   if (len2<1) len2=1;
   else if (len2>max) len2=max;
   
-  while (max>0 && col<=Display.cols) {
-    Bar[row][col].type=type;
-    Bar[row][col].segment=-1;
-    if (len1>=XRES) {
-      Bar[row][col].len1=XRES;
-      len1-=XRES;
-    } else {
-      Bar[row][col].len1=len1;
-      len1=0;
+  switch (type & (BAR_L | BAR_R | BAR_U | BAR_D)) {
+  case BAR_L:
+    len1=max-len1;
+    len2=max-len2;
+    rev=1;
+    
+  case BAR_R:
+    while (max>0 && col<=Display.cols) {
+      Bar[row][col].type=type;
+      Bar[row][col].segment=-1;
+      if (len1>=XRES) {
+	Bar[row][col].len1=rev?0:XRES;
+	len1-=XRES;
+      } else {
+	Bar[row][col].len1=rev?XRES-len1:len1;
+	len1=0;
+      }
+      if (len2>=XRES) {
+	Bar[row][col].len2=rev?0:XRES;
+	len2-=XRES;
+      } else {
+	Bar[row][col].len2=rev?XRES-len2:len2;
+	len2=0;
+      }
+      max-=XRES;
+      col++;
     }
-    if (len2>=XRES) {
-      Bar[row][col].len2=XRES;
-      len2-=XRES;
-    } else {
-      Bar[row][col].len2=len2;
-      len2=0;
-    }
-    max-=XRES;
-    col++;
+    break;
+
+  case BAR_U:
+    break;
+
+  case BAR_D:
+    break;
+
   }
   return 0;
 }
@@ -378,8 +435,6 @@ int MO_flush (void)
   return 0;
 }
 
-
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_S )
 
 DISPLAY MatrixOrbital[] = {
   { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },

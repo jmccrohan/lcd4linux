@@ -1,6 +1,6 @@
-/* $Id: isdn.h,v 1.5 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: parser.h,v 1.1 2000/03/13 15:58:24 reinelt Exp $
  *
- * ISDN specific functions
+ * row definition parser
  *
  * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
  *
@@ -19,30 +19,30 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: isdn.h,v $
- * Revision 1.5  2000/03/13 15:58:24  reinelt
+ * $Log: parser.h,v $
+ * Revision 1.1  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
  * moved row parsing to parser.c
  * all basic work finished
  *
- * Revision 1.4  2000/03/10 17:36:02  reinelt
- *
- * first unstable but running release
- *
- * Revision 1.3  2000/03/07 11:01:34  reinelt
- *
- * system.c cleanup
- *
- * Revision 1.2  2000/03/06 06:04:06  reinelt
- *
- * minor cleanups
- *
  */
 
-#ifndef _ISDN_H_
-#define _ISDN_H_
+#ifndef _PARSER_H_
+#define _PARSER_H_
 
-int Isdn (int *rx, int *tx, int *usage);
+typedef enum {
+  T_PERCENT=128, T_DOLLAR,
+  T_OS, T_RELEASE, T_CPU, T_RAM,
+  T_LOAD_1, T_LOAD_2, T_LOAD_3, T_OVERLOAD, 
+  T_CPU_USER, T_CPU_NICE, T_CPU_SYSTEM, T_CPU_BUSY, T_CPU_IDLE,
+  T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,
+  T_NET_RX, T_NET_TX, T_NET_TOTAL, T_NET_MAX,
+  T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
+  T_SENSOR_1, T_SENSOR_2, T_SENSOR_3, T_SENSOR_4, T_SENSOR_5, 
+  T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9,
+} TOKEN;
+
+char *parse (char *string, int supported_bars);
 
 #endif

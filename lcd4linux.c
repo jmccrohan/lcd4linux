@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.2 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.3 2000/03/13 15:58:24 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.3  2000/03/13 15:58:24  reinelt
+ *
+ * release 0.9
+ * moved row parsing to parser.c
+ * all basic work finished
+ *
  * Revision 1.2  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -32,10 +38,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <math.h>
 
 #include "cfg.h"
 #include "display.h"
+#include "parser.h"
 #include "system.h"
 #include "isdn.h"
 
@@ -43,380 +49,214 @@
 
 double overload;
 int tick, tack, tau;
-int rows, cols, xres, yres, bars;
-char *row[ROWS];
+int rows, cols, xres, yres, supported_bars;
 
-void usage(void)
+struct { double load1, load2, load3, overload; } load;
+struct { double user, nice, system, idle; } busy;
+struct { int read, write, total, max, peak; } disk;
+struct { int rx, tx, total, max, peak; } net;
+struct { int usage, in, out, total, max, peak; } isdn;
+
+static void usage(void)
 {
-  printf ("LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>");
-  printf ("usage: lcd4linux [configuration]\n");
+  printf ("LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>");
+  printf ("usage: lcd4linux [config file]\n");
 }
 
-int bar_type (char tag)
+static void collect_data (void) 
 {
-  switch (tag) {
-  case 'l':
-    return BAR_L;
-  case 'r':
-    return BAR_R;
-  case 'u':
-    return BAR_U;
-  case 'd':
-    return BAR_D;
-  default:
-    return 0;
+  Busy (&busy.user, &busy.nice, &busy.system, &busy.idle);
+  Load (&load.load1, &load.load2, &load.load3);
+
+  Disk (&disk.read, &disk.write);
+  disk.total=disk.read+disk.write;
+  disk.max=disk.read>disk.write?disk.read:disk.write;
+  if (disk.max>disk.peak) disk.peak=disk.max;
+
+  Net (&net.rx, &net.tx);
+  net.total=net.rx+net.tx;
+  net.max=net.rx>net.tx?net.rx:net.tx;
+  if (net.max>net.peak) net.peak=net.max;
+
+  Isdn (&isdn.in, &isdn.out, &isdn.usage);
+  isdn.total=isdn.in+isdn.out;
+  isdn.max=isdn.in>isdn.out?isdn.in:isdn.out;
+  if (isdn.max>isdn.peak) isdn.peak=isdn.max;
+}
+
+static double query (int token)
+{
+  switch (token) {
+    
+  case T_LOAD_1:
+    return load.load1;
+  case T_LOAD_2:
+    return load.load2;
+  case T_LOAD_3:
+    return load.load3;
+    
+  case T_CPU_USER:
+    return busy.user;
+  case T_CPU_NICE:
+    return busy.nice;
+  case T_CPU_SYSTEM:
+    return busy.system;
+  case T_CPU_BUSY:
+    return 1.0-busy.idle;
+  case T_CPU_IDLE:
+    return busy.idle;
+    
+  case T_DISK_READ:
+    return disk.read;
+  case T_DISK_WRITE:
+    return disk.write;
+  case T_DISK_TOTAL:
+    return disk.total;
+  case T_DISK_MAX:
+    return disk.max;
+    
+  case T_NET_RX:
+    return net.rx;
+  case T_NET_TX:
+    return net.tx;
+  case T_NET_TOTAL:
+    return net.total;
+  case T_NET_MAX:
+    return net.max;
+    
+  case T_ISDN_IN:
+    return isdn.in;
+  case T_ISDN_OUT:
+    return isdn.out;
+  case T_ISDN_TOTAL:
+    return isdn.total;
+  case T_ISDN_MAX:
+    return isdn.max;
+
+  case T_SENSOR_1:
+  case T_SENSOR_2:
+  case T_SENSOR_3:
+  case T_SENSOR_4:
+  case T_SENSOR_5:
+  case T_SENSOR_6:
+  case T_SENSOR_7:
+  case T_SENSOR_8:
+  case T_SENSOR_9:
   }
+  return 0.0;
 }
 
-int strpos (char *s, int c)
+static double query_bar (int token)
 {
-  int i;
-  char *p;
-  for (p=s, i=0; *p; p++, i++) {
-    if (*p==c) return i;
-  }
-  return -1;
-}
+  double value=query(token);
   
-int print4f (char *p, double val)
+  switch (token) {
+  case T_LOAD_1:
+  case T_LOAD_2:
+  case T_LOAD_3:
+    return value/load.overload;
+    
+  case T_DISK_READ:
+  case T_DISK_WRITE:
+  case T_DISK_MAX:
+    return value/disk.peak;
+  case T_DISK_TOTAL:
+    return value/disk.peak/2.0;
+    
+  case T_NET_RX:
+  case T_NET_TX:
+  case T_NET_MAX:
+    return value/net.peak;
+  case T_NET_TOTAL:
+    return value/net.peak/2.0;
+    
+  case T_ISDN_IN:
+  case T_ISDN_OUT:
+  case T_ISDN_MAX:
+    return value/isdn.peak;
+  case T_ISDN_TOTAL:
+    return value/isdn.peak/2.0;
+
+  }
+  return value;
+}
+
+void print_token (int token, char **p)
 {
-  if (val<10.0) {
-    return sprintf (p, "%4.2f", val);
-  } else if (val<100.0) {
-    return sprintf (p, "%4.1f", val);
-  } else {
-    return sprintf (p, "%4.0f", val);
+  double val;
+  
+  switch (token) {
+  case T_PERCENT:
+    *(*p)++='%';
+    break;
+  case T_DOLLAR:
+    *(*p)++='$';
+    break;
+  case T_OS:
+    *p+=sprintf (*p, "%s", System());
+    break;
+  case T_RELEASE:
+    *p+=sprintf (*p, "%s", Release());
+    break;
+  case T_CPU:
+    *p+=sprintf (*p, "%s", Processor());
+    break;
+  case T_RAM:
+    *p+=sprintf (*p, "%d", Memory());
+    break;
+  case T_OVERLOAD:
+    *(*p)++=load.load1>load.overload?'!':' ';
+    break;
+  case T_CPU_USER:
+  case T_CPU_NICE:
+  case T_CPU_SYSTEM:
+  case T_CPU_BUSY:
+  case T_CPU_IDLE:
+    *p+=sprintf (*p, "%3.0f", 100.0*query(token));
+    break;
+  default:
+    val=query(token);
+    if (val<10.0) {
+      *p+=sprintf (*p, "%4.2f", val);
+    } else if (val<100.0) {
+      *p+=sprintf (*p, "%4.1f", val);
+    } else {
+      *p+=sprintf (*p, "%4.0f", val);
+    }
   }
 }
 
-char *parse (char *string)
+char *process_row (int r, char *s)
 {
-  int pos;
   static char buffer[256];
-  char *s=string;
   char *p=buffer;
-
+  
   do {
     if (*s=='%') {
-      if (strchr("orpmlLcdDnNiIs%", *++s)==NULL) {
-	fprintf (stderr, "WARNING: unknown format <%%%c> in <%s>\n", *s, string);
-	continue;
-      } 
-      *p='%';
-      *(p+1)=*s;
-      switch (*s) {
-      case 'l':
-	pos=strpos("123", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown Load tag <%%l%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      case 'c':
-	pos=strpos("unsi", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown CPU tag <%%c%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      case 'd':
-	pos=strpos("rwtm", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown disk tag <%%d%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      case 'n':
-	pos=strpos("iotm", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown net tag <%%n%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      case 'i':
-	pos=strpos("iotm", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown ISDN tag <%%i%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      case 's':
-	pos=strpos("123456789", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown sensor <%%s%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+2)=pos+1;
-	p+=3;
-	break;
-      default:
-	p+=2;
-      }
-      
+      print_token (*(unsigned char*)++s, &p);
+	
     } else if (*s=='$') {
-      char dir;
-      int type;
-      int len=0;
-      dir=*++s;
-      if (dir=='$') {
-	*p++='$';
-	*p++='$';
-	continue;
-      }
-      if (strchr("lrud", tolower(dir))==NULL) {
-	fprintf (stderr, "invalid bar direction '%c' in <%s>\n", dir, string);
-	continue;
-      }
-      type=bar_type(tolower(dir));
-      if (type==0) {
-	fprintf (stderr, "driver does not support bar type '%c'\n", dir);
-	continue;
-      }
-      if (isdigit(*++s)) len=strtol(s, &s, 10);
-      if (len<1 || len>255) {
-	fprintf (stderr, "invalid bar length in <%s>\n", string);
-	continue;
-      }
-      *p='$';
-      *(p+1)=isupper(dir)?-type:type;
-      *(p+2)=len;
-      *(p+3)=*s;
-      switch (*s) {
-      case 'l':
-	pos=strpos("123", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown Load tag <$l%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      case 'c':
-	pos=strpos("unsi", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown CPU tag <$d%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      case 'd':
-	pos=strpos("rwm", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown disk tag <$d%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      case 'n':
-	pos=strpos("iom", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown net tag <$n%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      case 'i':
-	pos=strpos("iom", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown ISDN tag <$i%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      case 's':
-	pos=strpos("123456789", *++s);
-	if (pos<0) {
-	  fprintf (stderr, "WARNING: unknown sensor <$s%c> in <%s>\n", *s, string);
-	  continue;
-	} 
-	*(p+4)=pos+1;
-	p+=5;
-	break;
-      default:
-	fprintf (stderr, "WARNING: unknown bar format <$%c> in <%s>\n", *s, string);
-	p+=4;
-      }
-      
-    } else if (*s=='\\') {
-      unsigned int c=0; int n;
-      if (*(s+1)=='\\') {
-	*p++='\\';
-	s+=2;
-      } else {
-	sscanf (s+1, "%3o%n", &c, &n);
-	if (c==0 || c>255) {
-	  fprintf (stderr, "WARNING: illegal '\\' in <%s> <%s>\n", string, s);
-	  continue;
-	}
-	*p++=c;
-	s+=n;
-      }
-      
+      int i;
+      int type=*++s;
+      int len=*++s;
+      double val1=query_bar(*(unsigned char*)++s);
+      double val2;
+      if (type & (BAR_H2 | BAR_V2))
+	val2=query_bar(*(unsigned char*)++s);
+      else
+	val2=val1;
+      lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
+	
+      for (i=0; i<len && p-buffer<cols; i++)
+	*p++='\t';
+	
     } else {
       *p++=*s;
     }
     
-  } while (*s++);
-  
-  return buffer;
-}
-
-
-void draw (int smooth)
-{
-  double load[3];
-  double busy[4];
-  int disk[4]; static int disk_peak=1;
-  int net[4]; static int net_peak=1;
-  int isdn[4]; int isdn_usage; static int isdn_peak=1;
-  char buffer[256];
-  double val;
-  int i, r;
-  
-  Busy (&busy[0], &busy[1], &busy[2], &busy[3]);
-  Load (&load[0], &load[1], &load[2]);
-
-  Disk (&disk[0], &disk[1]);
-  disk[2]=disk[0]+disk[1];
-  disk[3]=disk[0]>disk[1]?disk[0]:disk[1];
-  if (disk[3]>disk_peak) disk_peak=disk[3];
-
-  Net (&net[0], &net[1]);
-  net[2]=net[0]+net[1];
-  net[3]=net[0]>net[1]?net[0]:net[1];
-  if (net[3]>net_peak) net_peak=net[3];
-
-  Isdn (&isdn[0], &isdn[1], &isdn_usage);
-  isdn[2]=isdn[0]+isdn[1];
-  isdn[3]=isdn[0]>isdn[1]?isdn[0]:isdn[1];
-  if (isdn[3]>isdn_peak) isdn_peak=isdn[3];
-  
-  for (r=1; r<=rows; r++) {
-    char *s=row[r];
-    char *p=buffer;
-    do {
-      if (*s=='%') {
-	switch (*++s) {
-	case '%':
-	  *p++='%';
-	  break;
-	case 'o':
-	  p+=sprintf (p, "%s", System());
-	  break;
-	case 'r':
-	  p+=sprintf (p, "%s", Release());
-	  break;
-	case 'p':
-	  p+=sprintf (p, "%s", Processor());
-	  break;
-	case 'm':
-	  p+=sprintf (p, "%d", Memory());
-	  break;
-	case 'l':
-	  p+=print4f (p, load[*++s-1]);
-	  break;
-	case 'L':
-	  *p++=load[0]>overload?'!':' ';
-	  break;
-	case 'c':
-	  p+=sprintf (p, "%3.0f", 100.0*busy[*++s-1]);
-	  break;
-	case 'd':
-	  p+=print4f (p, disk[*++s-1]);
-	  break;
-	case 'D':
-	  if (disk[0]+disk[1]==0)
-	    *p++=' ';
-	  else
-	    *p++=disk[0]>disk[1]?'\176':'\177';
-	  break;
-	case 'n':
-	  p+=print4f (p, net[*++s-1]/1024.0);
-	  break;
-	case 'N':
-	  if (net[0]+net[1]==0)
-	    *p++=' ';
-	  else
-	    *p++=net[0]>net[1]?'\176':'\177';
-	  break;
-	case 'i':
-	  if (isdn_usage) {
-	    p+=print4f (p, isdn[*++s-1]/1024.0);
-	  } else {
-	    p+=sprintf (p, "----");
-	    s++;
-	  }
-	  break;
-	case 'I':
-	  if (isdn[0]+isdn[1]==0)
-	    *p++=' ';
-	  else
-	    *p++=isdn[0]>isdn[1]?'\176':'\177';
-	  break;
-	}
-	
-      } else if (*s=='$') {
-	int dir, len;
-	if ((dir=*++s)=='$') {
-	  *p++='$';
-	  continue;
-	}
-	len=*++s;
-	switch (*++s) {
-	case 'l':
-	  val=load[*++s-1]/overload;
-	  break;
-	case  'c':
-	  val=busy[*++s-1];
-	  break;
-	case 'd':
-	  val=disk[*++s-1]/disk_peak;
-	  break;
-	case 'n':
-	  val=net[*++s-1]/net_peak;
-	  break;
-	case 'i':
-	  val=isdn[*++s-1]/8000.0;
-	  break;
-	default:
-	  val=0.0;
-	}
-
-	if (dir>0) {
-	  int bar=val*len*xres;
-	  lcd_bar (dir, r, p-buffer+1, len*xres, bar, bar);
-	} else {
-	  double bar=len*xres*log(val*len*xres+1)/log(len*xres); 
-	  lcd_bar (-dir, r, p-buffer+1, len*xres, bar, bar);
-	}
-	
-	for (i=0; i<len && p-buffer<cols; i++)
-	  *p++='\t';
-	
-      } else {
-	*p++=*s;
-      }
-    } while (*s++);
+  } while (*s++); 
     
-    if (smooth==0) {
-      lcd_put (r, 1, buffer);
-    }
-  }
-  lcd_flush();
+  return buffer;
 }
 
 
@@ -424,8 +264,8 @@ void main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *display;
-  int i;
-  int smooth;
+  char *row[ROWS];
+  int i, smooth;
   
   if (argc>2) {
     usage();
@@ -458,31 +298,38 @@ void main (int argc, char *argv[])
   if (lcd_init(display)==-1) {
     exit (1);
   }
-  lcd_query (&rows, &cols, &xres, &yres, &bars);
+  lcd_query (&rows, &cols, &xres, &yres, &supported_bars);
 
   tick=atoi(cfg_get("tick"));
   tack=atoi(cfg_get("tack"));
   tau=atoi(cfg_get("tau"));
-  overload=atof(cfg_get("overload"));
+
+  load.overload=atof(cfg_get("overload"));
 
   for (i=1; i<=rows; i++) {
     char buffer[8];
     snprintf (buffer, sizeof(buffer), "row%d", i);
-    row[i]=strdup(parse(cfg_get(buffer)));
+    row[i]=strdup(parse(cfg_get(buffer), supported_bars));
   }
   
   lcd_clear();
   
-  lcd_put (1,     1, "** LCD4Linux V" VERSION " **");
-  lcd_put (rows-1,1, "(c) 2000 M. Reinelt");
+  lcd_put (1, 1, "** LCD4Linux V" VERSION " **");
+  lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
   
-  sleep (2);
+  sleep (3);
   lcd_clear();
 
   smooth=0;
   while (1) {
-    draw(smooth);
+    collect_data();
+    for (i=1; i<=rows; i++) {
+      row[0]=process_row (i, row[i]);
+      if (smooth==0)
+	lcd_put (i, 1, row[0]);
+    }
+    lcd_flush();
     smooth+=tick;
     if (smooth>tack) smooth=0;
     usleep(1000*tick);
