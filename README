@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.3 2000/04/03 04:46:38 reinelt Exp $
+# $Id: README,v 1.4 2000/04/10 04:40:53 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -22,16 +22,16 @@ print version number and a small help text, then exit
 lcd4linux -l 
 list available drivers
 
-lcd4linux [-c key=val] [-f config-file] [-o output]
+lcd4linux [-c key=val] [-f config-file] [-o output] [-q]
 run lcd4linux 
 use configuration from 'config-file' instead of /etc/lcd4linux.conf
 write picture to 'output' (raster driver only)
 overwrite entries from the config-file with '-c'
-
+supress startup splash screen with '-q_
 
 SUPPORTED DISPLAYS
 
-* Matrox Orbital <http://www.matrixorbital.com>
+* Matrox Orbital: <http://www.matrixorbital.com>
 	
   "LCD0821": 2 lines by  8 characters
   "LCD1621": 2 lines by 16 characters
@@ -39,7 +39,15 @@ SUPPORTED DISPLAYS
   "LCD2041": 4 lines by 20 characters (tested)
   "LCD4021": 2 lines by 40 characters
 
-* X11: not available now, but on top of my ToDo-List!
+* X11
+  thanks to Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at> a driver for the 
+  X Window System is available. It supports any size at any resolution. A very
+  small XLCD4Linux-Window can even swallow on the KDE Panel!
+  
+* Raster formats:
+  a generic raster driver (which is used by the X11-driver, too) is availiable,
+  PPM (portable pixmap) is the only output format at the moment. I'm working
+  on PNG!
 
 * other displays: lcd4linux and especially the display driver code is very modular, 
   so it should be quite easy to write a driver for any display. See README.driver

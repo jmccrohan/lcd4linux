@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(lcd4linux.c)
-AM_INIT_AUTOMAKE(lcd4linux, 0.96a)
+AM_INIT_AUTOMAKE(lcd4linux, 0.97)
 
 dnl Checks for programs.
 AC_PROG_AWK

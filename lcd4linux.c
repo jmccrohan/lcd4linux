@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.18 2000/04/07 05:42:20 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.19 2000/04/10 04:40:53 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.19  2000/04/10 04:40:53  reinelt
+ *
+ * minor changes and cleanups
+ *
  * Revision 1.18  2000/04/07 05:42:20  reinelt
  *
  * UUCP style lockfiles for the serial port
@@ -121,31 +125,43 @@ int tick, tack;
 static void usage(void)
 {
   printf ("%s\n", release);
-  printf ("usage: lcd4linux [-h] [-l] [-c key=value] [-f config-file] [-o output-file]\n");
+  printf ("usage: lcd4linux [-h] [-l] [-c key=value] [-f config-file] [-o output-file] [-q]\n");
 }
 
-static int hello (void)
+int lcd_hello (void)
 {
-  int x, y;
+  int i, x, y, flag;
+  char *line1[] = { "* LCD4Linux V" VERSION " *",
+		    "LCD4Linux " VERSION,
+		    "LCD4Linux",
+		    "L4Linux",
+		    NULL };
+  
+  char *line2[] = { "(c) 2000 M.Reinelt",
+		    "(c) M.Reinelt",
+		    NULL };
   
   lcd_query (&y, &x, NULL, NULL, NULL);
   
-  if (x>=20) {
-    lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
-    lcd_put (2, 1, " (c) 2000 M.Reinelt");
-  } else if (x >=16) {
-    lcd_put (1, 1, "LCD4Linux " VERSION);
-    lcd_put (2, 1, "(c) M.Reinelt");
-  } else if (x >=9) {
-    lcd_put (1, 1, "LCD4Linux");
-  } else if (x>=7) {
-    lcd_put (1, 1, "L4Linux");
-  } else return 0;
+  flag=0;
+  for (i=0; line1[i]; i++) {
+    if (strlen(line1[i])<=x) {
+      lcd_put (1, (x-strlen(line1[i]))/2+1, line1[i]);
+      flag=1;
+      break;
+    }
+  }
   
-  lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
-  lcd_put (2, 1, " (c) 2000 M.Reinelt");
-  lcd_flush();
-  return 1;
+  for (i=0; line2[i]; i++) {
+    if (strlen(line2[i])<=x) {
+      lcd_put (2, (x-strlen(line2[i]))/2+1, line2[i]);
+      flag=1;
+      break;
+    }
+  }
+  
+  if (flag) lcd_flush();
+  return flag;
 }
 
 int main (int argc, char *argv[])
@@ -153,8 +169,9 @@ int main (int argc, char *argv[])
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
   int c, smooth;
-  
-  while ((c=getopt (argc, argv, "c:f:hlo:"))!=EOF) {
+  int quiet=0;
+
+  while ((c=getopt (argc, argv, "c:f:hlo:q"))!=EOF) {
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
@@ -174,6 +191,9 @@ int main (int argc, char *argv[])
       break;
     case 'o':
       output=optarg;
+      break;
+    case 'q':
+      quiet++;
       break;
     default:
       exit(2);
@@ -210,7 +230,7 @@ int main (int argc, char *argv[])
   process_init();
   lcd_clear();
 
-  if (hello()) {
+  if (!quiet && lcd_hello()) {
     sleep (3);
     lcd_clear();
   }

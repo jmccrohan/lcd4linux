@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.13 2000/04/07 05:42:20 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.14 2000/04/10 04:40:53 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.14  2000/04/10 04:40:53  reinelt
+ *
+ * minor changes and cleanups
+ *
  * Revision 1.13  2000/04/07 05:42:20  reinelt
  *
  * UUCP style lockfiles for the serial port
@@ -542,10 +546,12 @@ int MO_flush (void)
   return 0;
 }
 
+int lcd_hello (void); // prototype from lcd4linux.c
+
 static void MO_quit (int signal)
 {
   MO_clear();
-  MO_flush();
+  lcd_hello();
   close (Device);
   unlock_port(Port);
   exit (0);
