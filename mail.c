@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.4 2001/03/08 09:02:04 reinelt Exp $
+/* $Id: mail.c,v 1.5 2001/03/13 08:34:15 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.5  2001/03/13 08:34:15  reinelt
+ *
+ * corrected a off-by-one bug with sensors
+ *
  * Revision 1.4  2001/03/08 09:02:04  reinelt
  *
  * seti client cleanup
@@ -83,7 +87,7 @@ int Mail (int index, int *num)
   char *txt;
   char txt1[100];
 
-  if (index<1 || index>MAILBOXES) return -1;
+  if (index<0 || index>MAILBOXES) return -1;
 
   if (time(NULL)==now[index]) return 0;   // More then 1 second after last check
   time(&now[index]);                      // for Mailbox #index

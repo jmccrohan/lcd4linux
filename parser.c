@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.13 2001/03/08 15:25:38 ltoetsch Exp $
+/* $Id: parser.c,v 1.14 2001/03/13 08:34:15 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.14  2001/03/13 08:34:15  reinelt
+ *
+ * corrected a off-by-one bug with sensors
+ *
  * Revision 1.13  2001/03/08 15:25:38  ltoetsch
  * improved exec
  *
@@ -192,7 +196,7 @@ static int get_token (char *s, char **p, int bar, int usage[])
 	return -1;
       }
       c=*(s+l-1);
-      if (strncmp(Symtab[i].symbol, s, l-1)==0 && c>='1' && c<='9') {
+      if (strncmp(Symtab[i].symbol, s, l-1)==0 && c>='0' && c<='9') {
 	*p=s+l;
 	usage[Symtab[i].token]|=(1<<(c-'0'));
 	usage[Symtab[i].class]=1;

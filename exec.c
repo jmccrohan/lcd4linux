@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.4 2001/03/09 14:24:49 ltoetsch Exp $
+/* $Id: exec.c,v 1.5 2001/03/13 08:34:15 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.5  2001/03/13 08:34:15  reinelt
+ *
+ * corrected a off-by-one bug with sensors
+ *
  * Revision 1.4  2001/03/09 14:24:49  ltoetsch
  * exec: Scale_x ->Min/Max_x
  *
@@ -67,7 +71,7 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   size_t len;
   int i;
 
-  if (index < 1 || index > EXECS)
+  if (index < 0 || index > EXECS)
     return -1; 
   if (errs[index])
     return -1;

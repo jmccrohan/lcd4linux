@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.18 2001/03/08 15:25:38 ltoetsch Exp $
+/* $Id: processor.c,v 1.19 2001/03/13 08:34:15 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.19  2001/03/13 08:34:15  reinelt
+ *
+ * corrected a off-by-one bug with sensors
+ *
  * Revision 1.18  2001/03/08 15:25:38  ltoetsch
  * improved exec
  *
@@ -148,8 +152,8 @@ struct { int usage, in, out, total, max, peak; } isdn;
 struct { int rx, tx, total, max, peak; } ppp;
 struct { int perc, stat; double dur; } batt;
 struct { double perc, cput; } seti;
-struct { int num; } mail[MAILBOXES];
-struct { double val, min, max; } sensor[SENSORS];
+struct { int num; } mail[MAILBOXES+1];
+struct { double val, min, max; } sensor[SENSORS+1];
 
 static double query (int token)
 {
@@ -516,19 +520,19 @@ static void collect_data (void)
     Battery (&batt.perc, &batt.stat, &batt.dur);
   }
   
-  for (i=1; i<=MAILBOXES; i++) {
+  for (i=0; i<=MAILBOXES; i++) {
     if (token_usage[T_MAIL]&(1<<i)) {
       Mail (i, &mail[i].num);
     }
   }
   
-  for (i=1; i<SENSORS; i++) {
+  for (i=0; i<=SENSORS; i++) {
     if (token_usage[T_SENSOR]&(1<<i)) {
       Sensor (i, &sensor[i].val, &sensor[i].min, &sensor[i].max);
     }
   }
 
-  for (i=1; i<EXECS; i++) {
+  for (i=0; i<=EXECS; i++) {
     if (token_usage[T_EXEC]&(1<<i)) {
       Exec (i, exec[i].s, &exec[i].val);
     }

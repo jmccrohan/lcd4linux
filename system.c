@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.22 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: system.c,v 1.23 2001/03/13 08:34:15 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.23  2001/03/13 08:34:15  reinelt
+ *
+ * corrected a off-by-one bug with sensors
+ *
  * Revision 1.22  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -730,14 +734,14 @@ int Sensor (int index, double *val, double *min, double *max)
 {
   char buffer[32];
   double dummy, value;
-  static int fd[SENSORS]={[0 ... SENSORS-1]=-2,};
-  static char *sensor[SENSORS]={NULL,};
-  static double val_buf[SENSORS]={0.0,};
-  static double min_buf[SENSORS]={0.0,};
-  static double max_buf[SENSORS]={0.0,};
-  static time_t now[SENSORS]={0,};
+  static int fd[SENSORS+1]={[0 ... SENSORS]=-2,};
+  static char *sensor[SENSORS+1]={NULL,};
+  static double val_buf[SENSORS+1]={0.0,};
+  static double min_buf[SENSORS+1]={0.0,};
+  static double max_buf[SENSORS+1]={0.0,};
+  static time_t now[SENSORS+1]={0,};
 
-  if (index<1 || index>=SENSORS) return -1;
+  if (index<0 || index>SENSORS) return -1;
 
   *val=val_buf[index];
   *min=min_buf[index];

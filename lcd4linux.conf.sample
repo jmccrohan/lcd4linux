@@ -1,12 +1,12 @@
-#Display LCD2041
-#Port /dev/ttyS2
-#Speed 19200
-#Contrast 160
+Display LCD2041
+Port /dev/ttyS2
+Speed 19200
+Contrast 160
 
-Display HD44780
-Port 0x278
-Size 24x2
-Delay 503
+#Display HD44780
+#Port 0x278
+#Size 24x2
+#Delay 503
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -118,3 +118,4 @@ Sensor2_max 50
 Sensor3 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp3
 Sensor3_min 30
 Sensor3_max 50
+
