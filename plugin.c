@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.9 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: plugin.c,v 1.10 2004/01/13 10:03:01 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.10  2004/01/13 10:03:01  reinelt
+ * new util 'hash' for associative arrays
+ * new plugin 'cpuinfo'
+ *
  * Revision 1.9  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -97,8 +101,9 @@
 int plugin_init_math (void);
 int plugin_init_string (void);
 int plugin_init_cfg (void);
-int plugin_init_xmms (void);
+int plugin_init_cpuinfo (void);
 int plugin_init_i2c_sensors (void);
+int plugin_init_xmms (void);
 
 
 int plugin_init (void)
@@ -106,9 +111,10 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_cfg();
-  plugin_init_xmms();
+  plugin_init_cpuinfo();
   // MR: segfaults here
   // plugin_init_i2c_sensors();
+  plugin_init_xmms();
   
   return 0;
 }

@@ -1,8 +1,9 @@
-/* $Id: plugin_sample.c,v 1.1 2004/01/06 17:33:45 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.2 2004/01/13 10:03:01 reinelt Exp $
  *
  * plugin template
  *
  * Copyright 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,10 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.2  2004/01/13 10:03:01  reinelt
+ * new util 'hash' for associative arrays
+ * new plugin 'cpuinfo'
+ *
  * Revision 1.1  2004/01/06 17:33:45  reinelt
  *
  * Evaluator: functions with variable argument lists

@@ -18,6 +18,7 @@ lcd4linux_DEPENDENCIES = @DRIVERS@
 lcd4linux_SOURCES = \
 lcd4linux.c \
 pid.c pid.h \
+hash.c hash.h \
 parser.c parser.h \
 processor.c processor.h \
 layout.c layout.h \
@@ -29,8 +30,9 @@ plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
 plugin_cfg.c \
-plugin_xmms.c \
+plugin_cpuinfo.c \
 plugin_i2c_sensors.c \
+plugin_xmms.c \
 system.c system.h \
 isdn.c isdn.h \
 wifi.c wifi.h \
