@@ -236,6 +236,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h malloc.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS(sys/io.h asm/io.h)
 AC_CHECK_HEADERS(linux/parport.h linux/ppdev.h)
+AC_CHECK_HEADERS(linux/dvb/frontend.h)
 AC_CHECK_HEADERS(gd/gd.h gd.h)
 AC_CHECK_HEADERS(net/if_ppp.h)
 AC_CHECK_HEADERS(asm/msr.h)

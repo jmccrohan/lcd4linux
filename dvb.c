@@ -41,6 +41,30 @@
 #include <time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+
+#ifndef HAVE_LINUX_DVB_FRONTEND_H
+
+#warning linux/dvb/frontend.h not found.
+#warning DVB client will be disabled.
+
+int DVB (double *strength, double *snr)
+{
+  static int flag=0;
+
+  if (flag==0) {
+    error("lcd4linux has been compiled without DVB support");
+    error("DVB client will be disabled");
+    flag=1;
+  }
+
+  *strength=0.0;
+  *snr=0.0;
+
+  return 0;
+}
+
+#else
+
 #include <linux/dvb/frontend.h>
 
 #include "debug.h"
@@ -79,20 +103,21 @@ int DVB (double *strength, double *snr)
     fd=-1;
     return -1;
   }
-
+  
   if (ioctl(fd, FE_READ_SNR, &raw_snr)) {
     error("ioctl(FE_READ_SNR) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
-
+  
   // Normalize to 1.0
   strength0=raw_strength/65535.0;
   snr0=raw_snr/65535.0;
-
+  
   *strength=strength0;
   *snr=snr0;
 
   return 0;
 }
 
+#endif

@@ -39,6 +39,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
+#undef HAVE_LINUX_DVB_FRONTEND_H
+
 /* Define to 1 if you have the <linux/parport.h> header file. */
 #undef HAVE_LINUX_PARPORT_H
 
