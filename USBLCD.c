@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.1 2002/08/17 13:10:22 reinelt Exp $
+/* $Id: USBLCD.c,v 1.2 2002/08/17 14:14:21 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -20,6 +20,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
+ *
+ * $Log: USBLCD.c,v $
+ * Revision 1.2  2002/08/17 14:14:21  reinelt
+ *
+ * USBLCD fixes
  *
  * Revision 1.0  2002/07/08 12:16:10  radams
  *
@@ -48,6 +53,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+
+#include <sys/time.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -92,27 +99,42 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
-static void USBLCD_command (unsigned char cmd, int delay)
+static void USBLCD_command (unsigned char cmd)
 {
+  char a=0; 
+  
+  struct timeval now, end;
+  gettimeofday (&now, NULL);
 
-    {
-      char a=0; 
-      write(usblcd_file,&a,1);
-      write(usblcd_file,&cmd,1);
-    }
+  write(usblcd_file,&a,1);
+  write(usblcd_file,&cmd,1);
+
+  gettimeofday (&end, NULL);
+
+  debug ("command %x: %d usec", cmd, 1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec);
 }
 
-static void USBLCD_write (char *string, int len, int delay)
+static void USBLCD_write (char *string, int len)
 {
-    {
-      char a;
-      while (len--) {
-        a=*string++;
-    
-        if(a==0) write(usblcd_file,&a,1);
-        write(usblcd_file,&a,1);
-      }
-    }
+  int len0=len;
+  int dur;
+  struct timeval now, end;
+  gettimeofday (&now, NULL);
+  
+#if 0
+  while (len--) {
+    char a=*string++;
+    if(a==0) write(usblcd_file,&a,1);
+    write(usblcd_file,&a,1);
+  }
+#else
+  write(usblcd_file,string,len);
+
+#endif
+  gettimeofday (&end, NULL);
+  dur=1000000*(end.tv_sec-now.tv_sec)+end.tv_usec-now.tv_usec;
+  debug ("write (%d): %d usec (%d usec/byte)", len0, dur, dur/len0);
+
 }
 
 
@@ -127,48 +149,48 @@ static int USBLCD_open (void)
     return -1;
   }
 
-  memset(buf,0,128);
+  memset(buf,0,sizeof(buf));
 
   if( ioctl(usblcd_file,GET_DRV_VERSION, buf)!=0) {
-      error ("IOCTL failed, could not get Driver Version!\n");
-      return -2;
+    error ("USBLCD: ioctl() failed, could not get Driver Version!");
+    return -2;
   } ;
 
-  debug("Driver Version: %s\n",buf);
+  debug("Driver Version: %s",buf);
 
   if( sscanf(buf,"USBLCD Driver Version %d.%d",&major,&minor)!=2) {
-    error("Could not read Driver Version!\n");
+    error("USBLCD: could not read Driver Version!");
     return -4;
   };
  
   if(major!=1) {
-    error("Driver Version not supported!\n");
+    error("USBLCD: Driver Version not supported!");
     return -4;
   }
 
-  memset(buf,0,128);
+  memset(buf,0,sizeof(buf));
 
   if( ioctl(usblcd_file,GET_HARD_VERSION, buf)!=0) {
-      error ("IOCTL failed, could not get Hardware Version!\n");
-      return -3;
+    error ("USBLCD: ioctl() failed, could not get Hardware Version!");
+    return -3;
   } ;
 
-  debug("Hardware Version: %s\n\n",buf);
+  debug("Hardware Version: %s",buf);
 
   if( sscanf(buf,"%d.%d",&major,&minor)!=2) {
-    error("Could not read Hardware Version!\n");
+    error("USBLCD: could not read Hardware Version!");
     return -4;
   };
 
   if(major!=1) {
-    error("Hardware Version not supported!\n");
+    error("USBLCD: Hardware Version not supported!");
     return -4;
   }
 
-  USBLCD_command (0x29, 40);   // 8 Bit mode, 1/16 duty cycle, 5x8 font
-  USBLCD_command (0x08, 40);   // Display off, cursor off, blink off
-  USBLCD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
-  USBLCD_command (0x06, 40);   // curser moves to right, no shift
+  USBLCD_command (0x29); // 8 Bit mode, 1/16 duty cycle, 5x8 font
+  USBLCD_command (0x08); // Display off, cursor off, blink off
+  USBLCD_command (0x0c); // Display on, cursor off, blink off
+  USBLCD_command (0x06); // curser moves to right, no shift
 
   return 0;
 }
@@ -335,8 +357,8 @@ static void USBLCD_define_chars (void)
       }
       break;
     }
-    USBLCD_command (0x40|8*c, 40);
-    USBLCD_write (buffer, 8, 120); // 120 usec delay for CG RAM write
+    USBLCD_command (0x40|8*c);
+    USBLCD_write (buffer, 8);
   }
 }
 
@@ -353,7 +375,7 @@ int USBLCD_clear (void)
       Bar[row][col].segment=-1;
     }
   }
-  USBLCD_command (0x01, 1640); // clear display
+  USBLCD_command (0x01); // clear display
   return 0;
 }
 
@@ -370,13 +392,14 @@ int USBLCD_init (LCD *Self)
     error ("USBLCD: no 'Port' entry in %s", cfg_file());
     return -1;
   }
-  if (port[0]=='/') Port=strdup(port);
-  else {
+  if (port[0]=='/') {
+    Port=strdup(port);
+  } else {
     Port=(char *)malloc(5/*/dev/ */+strlen(port)+1);
     sprintf(Port,"/dev/%s",port);
   }
 
-  debug ("USBLCD using device %s ", Port);
+  debug ("using device %s ", Port);
 
   s=cfg_get("Size");
   if (s==NULL || *s=='\0') {
@@ -402,10 +425,8 @@ int USBLCD_init (LCD *Self)
 
 void USBLCD_goto (int row, int col)
 {
-  int pos;
-
-  pos=(row%2)*64+(row/2)*20+col;
-  USBLCD_command (0x80|pos, 40);
+  int pos=(row%2)*64+(row/2)*20+col;
+  USBLCD_command (0x80|pos);
 }
 
 int USBLCD_put (int row, int col, char *text)
@@ -519,7 +540,7 @@ int USBLCD_flush (void)
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
-      USBLCD_write (buffer, p-buffer, 40); // 40 usec delay for write
+      USBLCD_write (buffer, p-buffer);
     }
   }
 
@@ -529,10 +550,8 @@ int USBLCD_flush (void)
 
 int USBLCD_quit (void)
 {
-    debug ("closing port %s", Port);
-    close(usblcd_file);
-    exit(0);
-
+  debug ("closing port %s", Port);
+  close(usblcd_file);
   return 0;
 }
 

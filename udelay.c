@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.7 2002/04/29 11:00:28 reinelt Exp $
+/* $Id: udelay.c,v 1.8 2002/08/17 14:14:21 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.8  2002/08/17 14:14:21  reinelt
+ *
+ * USBLCD fixes
+ *
  * Revision 1.7  2002/04/29 11:00:28  reinelt
  *
  * added Toshiba T6963 driver
@@ -229,6 +233,9 @@ void udelay_init (void)
 
 void ndelay (unsigned long nsec)
 {
+
+#ifdef HAVE_ASM_MSR_H
+
   if (ticks_per_usec) {
 
     unsigned int t1, t2;
@@ -241,22 +248,26 @@ void ndelay (unsigned long nsec)
       rdtscl(t2);
     } while ((t2-t1)<nsec);
     
-  } else {
+  } else
 
-    struct timeval now, end;
+#endif
+
+    {
+
+      struct timeval now, end;
     
-    gettimeofday (&end, NULL);
-    end.tv_usec+=(nsec+999)/1000;
-    while (end.tv_usec>1000000) {
-      end.tv_usec-=1000000;
-      end.tv_sec++;
+      gettimeofday (&end, NULL);
+      end.tv_usec+=(nsec+999)/1000;
+      while (end.tv_usec>1000000) {
+	end.tv_usec-=1000000;
+	end.tv_sec++;
+      }
+    
+      do {
+	rep_nop();
+	gettimeofday(&now, NULL);
+      } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
     }
-    
-    do {
-      rep_nop();
-      gettimeofday(&now, NULL);
-    } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
-  }
 }
 
 #endif

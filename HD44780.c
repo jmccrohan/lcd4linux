@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.21 2002/04/30 07:20:15 reinelt Exp $
+/* $Id: HD44780.c,v 1.22 2002/08/17 14:14:21 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.22  2002/08/17 14:14:21  reinelt
+ *
+ * USBLCD fixes
+ *
  * Revision 1.21  2002/04/30 07:20:15  reinelt
  *
  * implemented the new ndelay(nanoseconds) in all parallel port drivers
@@ -349,7 +353,7 @@ static int HD_open (void)
     debug ("using ppdev %s", PPdev);
     PPfd=open(PPdev, O_RDWR);
     if (PPfd==-1) {
-      error ("open(%s) failed: %s", PPdev, strerror(errno));
+      error ("HD44780: open(%s) failed: %s", PPdev, strerror(errno));
       return -1;
     }
 
@@ -362,7 +366,7 @@ static int HD_open (void)
 #endif
 
     if (ioctl(PPfd, PPCLAIM)) {
-      error ("ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
+      error ("HD44780: ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
       return -1;
     }
   } else
@@ -790,10 +794,10 @@ int HD_quit (void)
   if (PPdev) {
     debug ("closing ppdev %s", PPdev);
     if (ioctl(PPfd, PPRELEASE)) {
-      error ("ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
+      error ("HD44780: ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
     }
     if (close(PPfd)==-1) {
-      error ("close(%s) failed: %s", PPdev, strerror(errno));
+      error ("HD44780: close(%s) failed: %s", PPdev, strerror(errno));
       return -1;
     }
   } else 
