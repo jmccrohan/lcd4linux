@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.2 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: parser.c,v 1.3 2000/03/18 10:31:06 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.3  2000/03/18 10:31:06  reinelt
+ *
+ * added sensor handling (for temperature etc.)
+ * made data collecting happen only if data is used
+ * (reading /proc/meminfo takes a lot of CPU!)
+ * released lcd4linux-0.92
+ *
  * Revision 1.2  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -35,9 +42,11 @@
 /* 
  * exported functions:
  *
- * char *parse (char *string, int supported_bars)
+ * char *parse (char *string, int supported_bars, int usage[])
  *    converts a row definition from the config file
  *    into the internal form using tokens
+ *    sets the array usage[token] to usage count
+ *
  */
 
 #include <stdlib.h>
@@ -51,54 +60,54 @@
 typedef struct {
   char *symbol;
   TOKEN token;
+  CLASS class;
   int bar;
 } SYMTAB;
 
-static SYMTAB Symtab[] = {{ "%",  T_PERCENT, 0 },
-			  { "$",  T_DOLLAR, 0 },
-			  { "o",  T_OS, 0 },
-			  { "v",  T_RELEASE, 0 },
-			  { "p",  T_CPU, 0 },
-			  { "r",  T_RAM, 0 },
-			  { "mt", T_MEM_TOTAL, 1 },
-			  { "mu", T_MEM_USED, 1 },
-			  { "mf", T_MEM_FREE, 1 },
-			  { "ms", T_MEM_SHARED, 1 },
-			  { "mb", T_MEM_BUFFER, 1 },
-			  { "mc", T_MEM_CACHE, 1 },
-			  { "ma", T_MEM_APP, 1 },
-			  { "l1", T_LOAD_1, 1 },
-			  { "l2", T_LOAD_2, 1 },
-			  { "l3", T_LOAD_3, 1 },
-			  { "L",  T_OVERLOAD, 0 },
-			  { "cu", T_CPU_USER, 1 },
-			  { "cn", T_CPU_NICE, 1 },
-			  { "cs", T_CPU_SYSTEM, 1 },
-			  { "cb", T_CPU_BUSY, 1 },
-			  { "ci", T_CPU_IDLE, 1 },
-			  { "dr", T_DISK_READ, 1 },
-			  { "dw", T_DISK_WRITE, 1 },
-			  { "dt", T_DISK_TOTAL, 1 },
-			  { "dm", T_DISK_MAX, 1 },
-			  { "nr", T_NET_RX, 1 },
-			  { "nw", T_NET_TX, 1 },
-			  { "nt", T_NET_TOTAL, 1 },
-			  { "nm", T_NET_MAX, 1 },
-			  { "ii", T_ISDN_IN, 1 },
-			  { "io", T_ISDN_OUT, 1 },
-			  { "it", T_ISDN_TOTAL, 1 },
-			  { "im", T_ISDN_MAX, 1 },
-			  { "s1", T_SENSOR_1, 1 },
-			  { "s1", T_SENSOR_2, 1 },
-			  { "s2", T_SENSOR_3, 1 },
-			  { "s3", T_SENSOR_4, 1 },
-			  { "s4", T_SENSOR_5, 1 },
-			  { "s5", T_SENSOR_6, 1 },
-			  { "s6", T_SENSOR_7, 1 },
-			  { "s7", T_SENSOR_8, 1 },
-			  { "s8", T_SENSOR_9, 1 },
-			  { "",   -1 }};
-
+static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
+			  { "$",  T_DOLLAR,     C_GENERIC, 0 },
+			  { "o",  T_OS,         C_GENERIC, 0 },
+			  { "v",  T_RELEASE,    C_GENERIC, 0 },
+			  { "p",  T_CPU,        C_GENERIC, 0 },
+			  { "r",  T_RAM,        C_GENERIC, 0 },
+			  { "mt", T_MEM_TOTAL,  C_MEM,     1 },
+			  { "mu", T_MEM_USED,   C_MEM,     1 },
+			  { "mf", T_MEM_FREE,   C_MEM,     1 },
+			  { "ms", T_MEM_SHARED, C_MEM,     1 },
+			  { "mb", T_MEM_BUFFER, C_MEM,     1 },
+			  { "mc", T_MEM_CACHE,  C_MEM,     1 },
+			  { "ma", T_MEM_APP,    C_MEM,     1 },
+			  { "l1", T_LOAD_1,     C_LOAD,    1 },
+			  { "l2", T_LOAD_2,     C_LOAD,    1 },
+			  { "l3", T_LOAD_3,     C_LOAD,    1 },
+			  { "L",  T_OVERLOAD,   C_LOAD,    0 },
+			  { "cu", T_CPU_USER,   C_CPU,     1 },
+			  { "cn", T_CPU_NICE,   C_CPU,     1 },
+			  { "cs", T_CPU_SYSTEM, C_CPU,     1 },
+			  { "cb", T_CPU_BUSY,   C_CPU,     1 },
+			  { "ci", T_CPU_IDLE,   C_CPU,     1 },
+			  { "dr", T_DISK_READ,  C_DISK,    1 },
+			  { "dw", T_DISK_WRITE, C_DISK,    1 },
+			  { "dt", T_DISK_TOTAL, C_DISK,    1 },
+			  { "dm", T_DISK_MAX,   C_DISK,    1 },
+			  { "nr", T_NET_RX,     C_NET,     1 },
+			  { "nw", T_NET_TX,     C_NET,     1 },
+			  { "nt", T_NET_TOTAL,  C_NET,     1 },
+			  { "nm", T_NET_MAX,    C_NET,     1 },
+			  { "ii", T_ISDN_IN,    C_ISDN,    1 },
+			  { "io", T_ISDN_OUT,   C_ISDN,    1 },
+			  { "it", T_ISDN_TOTAL, C_ISDN,    1 },
+			  { "im", T_ISDN_MAX,   C_ISDN,    1 },
+			  { "s1", T_SENSOR_1,   C_SENSOR,  1 },
+			  { "s2", T_SENSOR_2,   C_SENSOR,  1 },
+			  { "s3", T_SENSOR_3,   C_SENSOR,  1 },
+			  { "s4", T_SENSOR_4,   C_SENSOR,  1 },
+			  { "s5", T_SENSOR_5,   C_SENSOR,  1 },
+			  { "s6", T_SENSOR_6,   C_SENSOR,  1 },
+			  { "s7", T_SENSOR_7,   C_SENSOR,  1 },
+			  { "s8", T_SENSOR_8,   C_SENSOR,  1 },
+			  { "s9", T_SENSOR_9,   C_SENSOR,  1 },
+			  { "",  -1,            0 }};
 
 static int bar_type (char tag)
 {
@@ -116,7 +125,7 @@ static int bar_type (char tag)
   }
 }
 
-static TOKEN get_token (char *s, char **p, int bar)
+static TOKEN get_token (char *s, char **p, int bar, int usage[])
 {
   int i;
   for (i=0; Symtab[i].token!=-1; i++) {
@@ -124,24 +133,27 @@ static TOKEN get_token (char *s, char **p, int bar)
     if (bar && !Symtab[i].bar) continue;
     if (strncmp(Symtab[i].symbol, s, l)==0) {
       *p=s+l;
+      usage[Symtab[i].token]++;
+      usage[Symtab[i].class]++;
       return Symtab[i].token;
     }
   }
   return -1;
 }
 
-char *parse (char *string, int supported_bars)
+char *parse (char *string, int supported_bars, int usage[])
 {
   static char buffer[256];
   char *s=string;
   char *p=buffer;
-  int token, token2, type, len;
+  TOKEN token, token2;
+  int type, len;
 
   do {
     switch (*s) {
       
     case '%':
-      if ((token=get_token (++s, &s, 0))==-1) {
+      if ((token=get_token (++s, &s, 0, usage))==-1) {
 	fprintf (stderr, "WARNING: unknown token <%%%c> in <%s>\n", *s, string);
       } else {
 	*p++='%';
@@ -165,7 +177,7 @@ char *parse (char *string, int supported_bars)
 	fprintf (stderr, "WARNING: invalid bar length in <%s>\n", string);
 	break;
       }
-      if ((token=get_token (s, &s, 0))==-1) {
+      if ((token=get_token (s, &s, 0, usage))==-1) {
 	fprintf (stderr, "WARNING: unknown token <$%c> in <%s>\n", *s, string);
 	break;
       }
@@ -179,7 +191,7 @@ char *parse (char *string, int supported_bars)
 	  fprintf (stderr, "WARNING: driver does not support double bars\n");
 	  break;
 	}
-	if ((token2=get_token (s+1, &s, 0))==-1) {
+	if ((token2=get_token (s+1, &s, 0, usage))==-1) {
 	  fprintf (stderr, "WARNING: unknown token <$%c> in <%s>\n", *s, string);
 	  break;
 	}
@@ -202,7 +214,7 @@ char *parse (char *string, int supported_bars)
 	  fprintf (stderr, "WARNING: illegal '\\' in <%s>\n", string);
 	} else {
 	  *p++=c;
-	  s+=n-1;
+	  s+=n+1;
 	}
       }
       break;
@@ -216,4 +228,3 @@ char *parse (char *string, int supported_bars)
   *p='\0';
   return buffer;
 }
-

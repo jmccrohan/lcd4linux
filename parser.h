@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.2 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: parser.h,v 1.3 2000/03/18 10:31:06 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.3  2000/03/18 10:31:06  reinelt
+ *
+ * added sensor handling (for temperature etc.)
+ * made data collecting happen only if data is used
+ * (reading /proc/meminfo takes a lot of CPU!)
+ * released lcd4linux-0.92
+ *
  * Revision 1.2  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -45,9 +52,13 @@ typedef enum {
   T_NET_RX, T_NET_TX, T_NET_TOTAL, T_NET_MAX,
   T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
   T_SENSOR_1, T_SENSOR_2, T_SENSOR_3, T_SENSOR_4, T_SENSOR_5, 
-  T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9,
+  T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9
 } TOKEN;
 
-char *parse (char *string, int supported_bars);
+typedef enum {
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_NET, C_ISDN, C_SENSOR
+} CLASS;
+
+char *parse (char *string, int supported_bars, int usage[]);
 
 #endif

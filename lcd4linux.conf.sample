@@ -8,10 +8,15 @@ Contrast 160
 #Row3 "Busy %cu%% $r10cs+cb"
 #Row4 "Load %l1%L$r10l1"
 
+#Row1 "Load %l1%L$r10cs+cb"
+#Row2 "Disk %dm $R10dr+dw"
+#Row3 "Net  %nm $R10nr+nw"
+#Row4 "ISDN %im $r10ii+io"
+
 Row1 "Load %l1%L$r10cs+cb"
-Row2 "Disk %dm $R10dr+dw"
-Row3 "Net  %nm $R10nr+nw"
-Row4 "ISDN %im $r10ii+io"
+Row2 "Temp %s2\337$r10s1+s2"
+Row3 "Disk %dm $R10dr+dw"
+Row4 "Net  %nm $R10nr+nw"
 
 #Row1 "$u3l1$u3cb$u3cs $u3mu$u3ma$u3ms $u3dr$u3dw $u3nr$u3nw $u3ii$u3io"
 #Row2 " "
@@ -23,8 +28,16 @@ Tack 400
 Tau 500
 Overload 2.0
 
-Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp2
+Sensor1 /proc/sys/dev/sensors/w83781d-isa-0290/temp1
 Sensor1_min 30
 Sensor1_max 50
+
+Sensor2 /proc/sys/dev/sensors/w83781d-isa-0290/temp2
+Sensor2_min 30
+Sensor2_max 50
+
+Sensor3 /proc/sys/dev/sensors/w83781d-isa-0290/temp3
+Sensor3_min 30
+Sensor3_max 50
 
 Fifo /var/run/lcd4linux

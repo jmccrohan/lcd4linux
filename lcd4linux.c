@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.5 2000/03/18 08:07:04 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.6 2000/03/18 10:31:06 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.6  2000/03/18 10:31:06  reinelt
+ *
+ * added sensor handling (for temperature etc.)
+ * made data collecting happen only if data is used
+ * (reading /proc/meminfo takes a lot of CPU!)
+ * released lcd4linux-0.92
+ *
  * Revision 1.5  2000/03/18 08:07:04  reinelt
  *
  * vertical bars implemented
@@ -60,12 +67,15 @@ double overload;
 int tick, tack, tau;
 int rows, cols, xres, yres, supported_bars;
 
+int token_usage[256]={0,};
+
 struct { int total, used, free, shared, buffer, cache, apps; } ram;
 struct { double load1, load2, load3, overload; } load;
 struct { double user, nice, system, idle; } busy;
 struct { int read, write, total, max, peak; } disk;
 struct { int rx, tx, total, max, peak; } net;
 struct { int usage, in, out, total, max, peak; } isdn;
+struct { double val, min, max; } sensor[SENSORS];
 
 static void usage(void)
 {
@@ -75,27 +85,48 @@ static void usage(void)
 
 static void collect_data (void) 
 {
-  Ram (&ram.total, &ram.free, &ram.shared, &ram.buffer, &ram.cache); 
-  ram.used=ram.total-ram.free;
-  ram.apps=ram.used-ram.buffer-ram.cache;
+  int i;
 
-  Load (&load.load1, &load.load2, &load.load3);
-  Busy (&busy.user, &busy.nice, &busy.system, &busy.idle);
+  if (token_usage[C_MEM]) {
+    Ram (&ram.total, &ram.free, &ram.shared, &ram.buffer, &ram.cache); 
+    ram.used=ram.total-ram.free;
+    ram.apps=ram.used-ram.buffer-ram.cache;
+  }
+  
+  if (token_usage[C_LOAD]) {
+    Load (&load.load1, &load.load2, &load.load3);
+  }
+  
+  if (token_usage[C_CPU]) {
+    Busy (&busy.user, &busy.nice, &busy.system, &busy.idle);
+  }
+  
+  if (token_usage[C_DISK]) {
+    Disk (&disk.read, &disk.write);
+    disk.total=disk.read+disk.write;
+    disk.max=disk.read>disk.write?disk.read:disk.write;
+    if (disk.max>disk.peak) disk.peak=disk.max;
+  }
+  
+  if (token_usage[C_NET]) {
+    Net (&net.rx, &net.tx);
+    net.total=net.rx+net.tx;
+    net.max=net.rx>net.tx?net.rx:net.tx;
+    if (net.max>net.peak) net.peak=net.max;
+  }
 
-  Disk (&disk.read, &disk.write);
-  disk.total=disk.read+disk.write;
-  disk.max=disk.read>disk.write?disk.read:disk.write;
-  if (disk.max>disk.peak) disk.peak=disk.max;
+  if (token_usage[C_ISDN]) {
+    Isdn (&isdn.in, &isdn.out, &isdn.usage);
+    isdn.total=isdn.in+isdn.out;
+    isdn.max=isdn.in>isdn.out?isdn.in:isdn.out;
+    if (isdn.max>isdn.peak) isdn.peak=isdn.max;
+  }
 
-  Net (&net.rx, &net.tx);
-  net.total=net.rx+net.tx;
-  net.max=net.rx>net.tx?net.rx:net.tx;
-  if (net.max>net.peak) net.peak=net.max;
-
-  Isdn (&isdn.in, &isdn.out, &isdn.usage);
-  isdn.total=isdn.in+isdn.out;
-  isdn.max=isdn.in>isdn.out?isdn.in:isdn.out;
-  if (isdn.max>isdn.peak) isdn.peak=isdn.max;
+  for (i=1; i<SENSORS; i++) {
+    if (token_usage[T_SENSOR_1+i-1]) {
+      Sensor (i, &sensor[i].val, &sensor[i].min, &sensor[i].max);
+    }
+  }
 }
 
 static double query (int token)
@@ -171,12 +202,14 @@ static double query (int token)
   case T_SENSOR_7:
   case T_SENSOR_8:
   case T_SENSOR_9:
+    return sensor[token-T_SENSOR_1+1].val;
   }
   return 0.0;
 }
 
 static double query_bar (int token)
 {
+  int i;
   double value=query(token);
   
   switch (token) {
@@ -216,6 +249,17 @@ static double query_bar (int token)
   case T_ISDN_TOTAL:
     return value/isdn.peak/2.0;
 
+  case T_SENSOR_1:
+  case T_SENSOR_2:
+  case T_SENSOR_3:
+  case T_SENSOR_4:
+  case T_SENSOR_5:
+  case T_SENSOR_6:
+  case T_SENSOR_7:
+  case T_SENSOR_8:
+  case T_SENSOR_9:
+    i=token-T_SENSOR_1+1;
+    return (value-sensor[i].min)/(sensor[i].max-sensor[i].min);
   }
   return value;
 }
@@ -258,6 +302,15 @@ void print_token (int token, char **p)
   case T_LOAD_1:
   case T_LOAD_2:
   case T_LOAD_3:
+  case T_SENSOR_1:
+  case T_SENSOR_2:
+  case T_SENSOR_3:
+  case T_SENSOR_4:
+  case T_SENSOR_5:
+  case T_SENSOR_6:
+  case T_SENSOR_7:
+  case T_SENSOR_8:
+  case T_SENSOR_9:
     val=query(token);
     if (val<10.0) {
       *p+=sprintf (*p, "%4.2f", val);
@@ -342,8 +395,8 @@ void main (int argc, char *argv[])
     cfg=argv[1];
   }
 
-  cfg_set ("row1", "*** %o %r ***");
-  cfg_set ("row2", "%p CPU  %m MB RAM");
+  cfg_set ("row1", "*** %o %v ***");
+  cfg_set ("row2", "%p CPU  %r MB RAM");
   cfg_set ("row3", "Busy %cu%% $r10cu");
   cfg_set ("row4", "Load %l1%L$r10l1");
 
@@ -376,9 +429,9 @@ void main (int argc, char *argv[])
   for (i=1; i<=rows; i++) {
     char buffer[8];
     snprintf (buffer, sizeof(buffer), "row%d", i);
-    row[i]=strdup(parse(cfg_get(buffer), supported_bars));
+    row[i]=strdup(parse(cfg_get(buffer), supported_bars, token_usage));
   }
-  
+
   lcd_clear();
   lcd_put (1, 1, "** LCD4Linux V" VERSION " **");
   lcd_put (2, 1, " (c) 2000 M.Reinelt");

@@ -1,13 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(lcd4linux.c)
-AM_INIT_AUTOMAKE(lcd4linux, 0.91)
+AM_INIT_AUTOMAKE(lcd4linux, 0.92)
 
 dnl Checks for programs.
 AC_PROG_CC
 
 dnl Checks for libraries.
-dnl Replace `main' with a function in -lm:
-AC_CHECK_LIB(m, main)
+AC_CHECK_LIB(m, log)
 
 dnl Checks for header files.
 AC_HEADER_STDC
