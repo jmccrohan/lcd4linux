@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.31 2005/02/24 07:06:48 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.32 2005/03/23 12:23:35 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.32  2005/03/23 12:23:35  reinelt
+ * fixed some signed/unsigned char mismatches in the Crystalfontz driver (ticket #12)
+ *
  * Revision 1.31  2005/02/24 07:06:48  reinelt
  * SimpleLCD driver added
  *
@@ -186,7 +189,7 @@ static int Protocol;
 static int Payload;
 
 /* ring buffer for bytes received from the display */
-static char RingBuffer[256];
+static unsigned char RingBuffer[256];
 static unsigned int  RingRPos = 0;
 static unsigned int  RingWPos = 0;
 
@@ -198,7 +201,7 @@ struct {
 } Packet;
 
 /* Line Buffer for 633 displays */
-static char Line[2*16];
+static unsigned char Line[2*16];
 
 /* Fan RPM */
 static double Fan_RPM[4] = {0.0,};
@@ -243,7 +246,7 @@ static MODEL Models[] = {
 /* x^0 + x^5 + x^12 */
 #define CRCPOLY 0x8408 
 
-static unsigned short CRC (const char *p, size_t len, unsigned short seed)
+static unsigned short CRC (const unsigned char *p, size_t len, unsigned short seed)
 {
   int i;
   while (len--) {
@@ -254,18 +257,18 @@ static unsigned short CRC (const char *p, size_t len, unsigned short seed)
   return ~seed;
 }
 
-static char LSB (const unsigned short word)
+static unsigned char LSB (const unsigned short word)
 {
   return word & 0xff;
 }
 
-static char MSB (const unsigned short word)
+static unsigned char MSB (const unsigned short word)
 {
   return word >> 8;
 }
 
 
-static char byte (unsigned int pos)
+static unsigned char byte (unsigned int pos)
 {
   pos += RingRPos;
   if (pos >= sizeof(RingBuffer))
@@ -318,13 +321,12 @@ static void drv_CF_process_packet (void)
 
 static int drv_CF_poll (void)
 {
-  char buffer[32];
-  unsigned short crc;
-  int n, num, size;
+  unsigned char buffer[32];
   
   /* read into RingBuffer */
   while (1) {
-    num = drv_generic_serial_poll(buffer, 32);
+    int num, n;
+    num = drv_generic_serial_poll(buffer, sizeof(buffer));
     if (num <= 0) break;
     /* put result into RingBuffer */
     for (n = 0; n < num; n++) {
@@ -335,38 +337,41 @@ static int drv_CF_poll (void)
   
   /* process RingBuffer */
   while (1) {
+    int n, num, size;
+    unsigned short crc;
     /* packet size */
-    num=RingWPos-RingRPos;
-    if (num < 0) num+=sizeof(RingBuffer);
+    num = RingWPos - RingRPos;
+    if (num < 0) num += sizeof(RingBuffer);
     /* minimum packet size=4 */
     if (num < 4) return 0;
     /* valid response types: 01xxxxx 10.. 11.. */
     /* therefore: 00xxxxxx is invalid */
-    if (byte(0)>>6 == 0) goto GARBAGE;
+    if (byte(0) >> 6 == 0) goto GARBAGE;
+    /* command length */
+    size = byte(1);
     /* valid command length is 0 to 16 */
-    if (byte(1) > 16) goto GARBAGE;
+    if (size > 16) goto GARBAGE;
     /* all bytes available? */
-    size=byte(1);
     if (num < size+4) return 0;
     /* check CRC */
-    for (n=0; n<size+4; n++) buffer[n]=byte(n);
+    for (n = 0; n < size+4; n++) buffer[n] = byte(n);
     crc = CRC(buffer, size+2, 0xffff);
-    if (LSB(crc) != byte(size+2)) goto GARBAGE;
-    if (MSB(crc) != byte(size+3)) goto GARBAGE;
+    if (LSB(crc) != buffer[size+2]) goto GARBAGE;
+    if (MSB(crc) != buffer[size+3]) goto GARBAGE;
     /* process packet */
     Packet.type = buffer[0];
     Packet.size = size;
     memcpy(Packet.data, buffer+2, size);
-    Packet.data[size]='\0'; /* trailing zero */
+    Packet.data[size] = '\0'; /* trailing zero */
     /* increment read pointer */
     RingRPos += size+4;
     if (RingRPos >= sizeof(RingBuffer)) RingRPos -= sizeof(RingBuffer);
     /* a packet arrived */
     return 1;
   GARBAGE:
-    debug ("dropping garbage byte %d", byte(0));
+    debug ("dropping garbage byte %02x", byte(0));
     RingRPos++;
-    if (RingRPos>=sizeof(RingBuffer)) RingRPos=0;
+    if (RingRPos >= sizeof(RingBuffer)) RingRPos = 0;
     continue;
   }
   
@@ -385,7 +390,7 @@ static void drv_CF_timer (void __attribute__((unused)) *notused)
 
 static void drv_CF_send (const int cmd, int len, const unsigned char *data)
 {
-  char buffer[22];
+  unsigned char buffer[22];
   unsigned short crc;
   
   if (len > Payload) {
@@ -411,7 +416,7 @@ static void drv_CF_send (const int cmd, int len, const unsigned char *data)
 
 static void drv_CF_write1 (const int row, const int col, const char *data, const int len)
 {
-  char cmd[3]="\021xy"; /* set cursor position */
+  unsigned char cmd[3]="\021xy"; /* set cursor position */
   
   if (row==0 && col==0) {
     drv_generic_serial_write ("\001", 1); /* cursor home */
@@ -470,7 +475,7 @@ static void drv_CF_write3 (const int row, const int col, const char *data, const
 static void drv_CF_defchar1 (const int ascii, const unsigned char *matrix)
 {
   int i;
-  char cmd[10]="\031n"; /* set custom char bitmap */
+  unsigned char cmd[10]="\031n"; /* set custom char bitmap */
   
   /* user-defineable chars start at 128, but are defined at 0 */
   cmd[1]=(char)(ascii-CHAR0); 
@@ -501,7 +506,7 @@ static void drv_CF_defchar23 (const int ascii, const unsigned char *matrix)
 static int drv_CF_contrast (int contrast)
 {
   static unsigned char Contrast=0;
-  char buffer[2];
+  unsigned char buffer[2];
 
   /* -1 is used to query the current contrast */
   if (contrast == -1) return Contrast;
@@ -539,7 +544,7 @@ static int drv_CF_contrast (int contrast)
 static int drv_CF_backlight (int backlight)
 {
   static unsigned char Backlight=0;
-  char buffer[2];
+  unsigned char buffer[2];
 
   /* -1 is used to query the current backlight */
   if (backlight == -1) return Backlight;
