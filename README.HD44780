@@ -1,5 +1,5 @@
 #
-# $Id: README.HD44780,v 1.1 2000/04/17 05:14:27 reinelt Exp $
+# $Id: README.HD44780,v 1.2 2000/04/19 04:44:20 reinelt Exp $
 #
 
 This is the README file for the HD44780 display driver for lcd4linux
@@ -10,7 +10,7 @@ These displays are made by different manufactures, and come in various sizes.
 The following types are known to work:
 
 DataVision DV16244: 2 lines by 16 characters
-           PM0820A: 2 lines by  8 characters 
+Nan Ya NLC 08x2x06: 2 lines by  8 characters 
 
 The displays are connected to the parallel board (see Wiring below), and are quite timing-critical.
 There's no way to delay a usermode program under Linux for e.g. 40 usec, so we have to do 
