@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.27 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: processor.c,v 1.28 2002/12/05 19:23:01 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.28  2002/12/05 19:23:01  reinelt
+ * fixed undefined operations found by gcc3
+ *
  * Revision 1.27  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -342,7 +345,7 @@ static double query_bar (int token)
   case T_BATT_PERC:
     {
       static int alarm;
-      alarm=(++alarm % 3);
+      alarm=((alarm+1) % 3);
       if(value < atoi(cfg_get("battwarning")?:"10") && !alarm) /* flash bar */
 	value = 0;
       return value/100;

@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.17 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: parser.c,v 1.18 2002/12/05 19:23:01 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.18  2002/12/05 19:23:01  reinelt
+ * fixed undefined operations found by gcc3
+ *
  * Revision 1.17  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -257,7 +260,7 @@ char *parse_row (char *string, int supported_bars, int usage[])
 	break;
       }
       if (isupper(*s)) type |= BAR_LOG;
-      len=strtol(++s, &s, 10);
+      len=strtol(s+1, &s, 10);
       if (len<1 || len>127) {
 	error ("WARNING: invalid bar length in <%s>", string);
 	break;
@@ -282,7 +285,7 @@ char *parse_row (char *string, int supported_bars, int usage[])
 	}
       }
       else if (*s == ',' && (type & BAR_T))
-        token2=strtol(++s, &s, 10); /* get horizontal length */
+        token2=strtol(s+1, &s, 10); /* get horizontal length */
       *p++='$';
       *p++=type;
       *p++=len;

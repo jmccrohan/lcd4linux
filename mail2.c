@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.6 2001/09/12 06:17:22 reinelt Exp $
+/* $Id: mail2.c,v 1.7 2002/12/05 19:23:01 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.7  2002/12/05 19:23:01  reinelt
+ * fixed undefined operations found by gcc3
+ *
  * Revision 1.6  2001/09/12 06:17:22  reinelt
  * *** empty log message ***
  *
@@ -266,7 +269,7 @@ static int check_nntp(char *user, char *pass, char *machine,
     while (1) {
       lmin = strtol(p, &p, 10);
       if (*p == '-') 
-	lmax = strtol(++p, &p, 10);
+	lmax = strtol(p+1, &p, 10);
       else
 	lmax=lmin;
       debug("nntp: %s: lmin=%d lmax=%d", group, lmin, lmax);
