@@ -101,6 +101,14 @@ Plugin Seti {
 }
 
 
+Plugin MySQL {
+    server 'gsmlandia.com'	# if none, localhost assumed
+    port 3306			# if none, MySQL default assumed
+    user 'lcd4linux'		# if none, lcd4linux unix owner assumed
+    password 'lcd4linux'	# if none, empty password assumed
+    database 'lcd4linux'	# MUST be specified
+}
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
@@ -211,6 +219,24 @@ Widget Eth0Bar {
     length 14	
     direction 'E'
     update tack
+}
+
+Widget MySQLtest1 {
+	class 'Text'
+	expression MySQLquery('SELECT id FROM table1')
+	width 8
+	align 'R'
+	prefix 'MySQL'
+	update minute
+}
+
+Widget MySQLtest2 {
+	class 'Text'
+	expression MySQLstatus()
+	width 20
+	align 'M'
+	prefix 'Status: '
+	update minute
 }
 
 Widget Heartbeat {
@@ -410,6 +436,18 @@ Layout Test {
 #    Row15.Col1 'Test'
 #    Row16.Col1 'Test'
 }
+
+
+Layout testMySQL {
+	Row1 {
+		Col1 'Heartbeat'
+		Col2 'MySQLtest1'
+	}
+	Row2 {
+		Col1 'MySQLtest2'
+	}
+}
+
 
 #Display 'LK204'
 #Display 'HD44780-20x4'

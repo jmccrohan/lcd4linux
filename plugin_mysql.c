@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.1 2004/03/10 07:16:15 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.2 2004/03/20 23:09:01 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.2  2004/03/20 23:09:01  reinelt
+ * MySQL plugin fixes from Javi
+ *
  * Revision 1.1  2004/03/10 07:16:15  reinelt
  * MySQL plugin from Javier added
  *
@@ -38,11 +41,12 @@
  * int plugin_init_mysql (void)
  *
  *  adds various functions:
- *     mySQLquery(server,login,pass,database,query) 
- *        Returns the number of rows in a query.
- *     mySQLstatus(server,login,pass)
+ *     MySQLquery(query) 
+ *        Returns the number of rows in query.
+ *     MySQLstatus()
  *        Returns the current server status:
- *        Uptime, Threads, Questions,Slow queries, Flush tables,...
+ *        Uptime in seconds and the number of running threads,
+ *        questions, reloads, and open tables.
  *
  */
 
@@ -52,6 +56,7 @@
 #include <ctype.h>
 #include "debug.h"
 #include "plugin.h"
+#include "cfg.h"
 
 #ifdef HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
@@ -65,74 +70,52 @@
 
 
 #ifdef HAVE_MYSQL_MYSQL_H
-static void my_mySQLquery (RESULT *result, RESULT *server, RESULT *login, RESULT *pass, RESULT *database, RESULT *query)
+static MYSQL conex;
+
+static char Section[] = "Plugin:MySQL";
+
+static void my_MySQLquery (RESULT *result, RESULT *query)
 {
-	double value;
-	MYSQL conex;
-	MYSQL_RES *res;
-	char *s=R2S(server);
-	char *l=R2S(login);
-	char *p=R2S(pass);
-	char *db=R2S(database);
-	char *q=R2S(query);
-	
-	mysql_init(&conex);
-	if (!mysql_real_connect(&conex,s,l,p,db,0,NULL,0))
-	{
-		error( "mySQL conection error: %s",mysql_error(&conex));
-		value=-1;
-	}
-	else
-	{
-		if (mysql_real_query(&conex,q,(unsigned int) strlen(q)))
-		{
-			error( "mySQL query error: %s",mysql_error(&conex));
-			value=-2;
-		}
-		else
-		{
-			/* We don't use res=mysql_use_result();  because mysql_num_rows() will not
-			 return the correct value until all the rows in the result set have been retrieved
-			  with mysql_fetch_row(), so we use res=mysql_store_result(); instead */
-			res=mysql_store_result(&conex);	 
-			value = (double) mysql_num_rows(res);
-			mysql_free_result(res);
-		}
-	}
-	mysql_close(&conex);
-	SetResult(&result, R_NUMBER, &value); 
+  double value;
+  MYSQL_RES *res;
+  char *q=R2S(query);
+  
+  /* mysql_ping(MYSQL *mysql) checks whether the connection to the server is working.
+     If it has gone down, an automatic reconnection is attempted. */
+  mysql_ping(&conex);
+  if (mysql_real_query(&conex,q,(unsigned int) strlen(q)))
+  {
+    error( "[MySQL] query error: %s",mysql_error(&conex));
+    value=-1;
+  }
+  else
+    {
+    /* We don't use res=mysql_use_result();  because mysql_num_rows() will not
+       return the correct value until all the rows in the result set have been retrieved
+       with mysql_fetch_row(), so we use res=mysql_store_result(); instead */
+    res=mysql_store_result(&conex);   
+    value = (double) mysql_num_rows(res);
+    mysql_free_result(res);
+  }
+
+  SetResult(&result, R_NUMBER, &value); 
 }
 
-static void my_mySQLstatus (RESULT *result, RESULT *server, RESULT *login, RESULT *pass)
+static void my_MySQLstatus (RESULT *result)
 {
-	char *value;
-	MYSQL conex;
-	char *s=R2S(server);
-	char *l=R2S(login);
-	char *p=R2S(pass);
-	char *status;
-	
-	mysql_init(&conex);
-	if (!mysql_real_connect(&conex,s,l,p,NULL,0,NULL,0))
-	{
-		error( "mySQL conection error: %s",mysql_error(&conex));
-		value="error";
-	}
-	else
-	{
-		status=strdup(mysql_stat(&conex));
-		if (!status)
-		{
-			error( "mySQLstatus error: %s",mysql_error(&conex));
-			value="error";
-		}
-		else
-		{
-			value = status;
-		}
-	}
-	mysql_close(&conex);
-	SetResult(&result, R_STRING, value); 
+  char *value;
+  char *status;
+  
+  mysql_ping(&conex);
+  status=strdup(mysql_stat(&conex));
+  if (!status)
+  {
+    error( "[MySQL] status error: %s",mysql_error(&conex));
+    value="error";
+  }
+  else value = status;
+  
+  SetResult(&result, R_STRING, value); 
 }
 
 #endif
@@ -140,12 +123,68 @@ static void my_mySQLstatus (RESULT *result, RESULT *server, RESULT *login, RESUL
 int plugin_init_mysql (void)
 {
 #ifdef HAVE_MYSQL_MYSQL_H
-  AddFunction ("mySQLquery",    5, my_mySQLquery);
-  AddFunction ("mySQLstatus",   3, my_mySQLstatus);
+  char server[256];
+  unsigned int port;
+  char user[128];
+  char password[256];
+  char database[256];  
+
+  char *s = cfg_get (Section, "server", "localhost");
+  if (*s=='\0') {
+    info ("[MySQL] empty '%s.server' entry from %s, assuming 'localhost'", Section, cfg_source());
+    strcpy(server,"localhost"); 
+  }
+  else strcpy(server,s);
+  free(s);
+  
+  if (cfg_number(Section, "port", 0, 1, 65536, &port)<1) {
+    /* using * as default port because mysql_real_connect() will convert it to real default one */
+    info ("[MySQL] no '%s.port' entry from %s using MySQL's default", Section, cfg_source());
+  }
+
+  s = cfg_get (Section, "user", "");
+  if (*s=='\0') {
+    /* If user is NULL or the empty string "", the lcd4linux Unix user is assumed. */
+    info ("[MySQL] empty '%s.user' entry from %s, assuming lcd4linux owner", Section, cfg_source());
+    strcpy(user,""); 
+  }
+  else strcpy(user,s);
+  free(s);   
+
+  s = cfg_get (Section, "password","");
+  /*Do not encrypt the password because encryption is handled automatically
+   by the MySQL client API.*/  
+  if (*s=='\0') {
+    info ("[MySQL] empty '%s.password' entry in %s, assuming none", Section, cfg_source());
+    strcpy(password,""); 
+  }
+  else strcpy(password,s);
+  free(s);  
+  
+  s = cfg_get (Section, "database","\0");
+  if (*s=='\0') {
+    error ("[MySQL] no '%s:database' entry from %s, specify one", Section, cfg_source());
+  }
+  else {
+    strcpy(database,s);
+    free(s);  
+    
+    mysql_init(&conex);
+    if (!mysql_real_connect(&conex,server,user,password,database,port,NULL,0))
+      error( "[MySQL] conection error: %s",mysql_error(&conex));
+    else
+    {
+      AddFunction ("MySQL::query",  1, my_MySQLquery);
+      AddFunction ("MySQL::status", 0, my_MySQLstatus);
+    }
+  }
 #endif
   return 0;
 }
 
 void plugin_exit_mysql(void) 
 {
+#ifdef HAVE_MYSQL_MYSQL_H
+  mysql_close(&conex);
+#endif
 }
