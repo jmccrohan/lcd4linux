@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.2 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.3 2004/01/16 10:09:49 mkeil Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.3  2004/01/16 10:09:49  mkeil
+ *   -include caching for values
+ *
  * Revision 1.2  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -39,9 +42,6 @@
 
 
 /*
- *
- * ATTENTION: This is a convert of my Plugin that i wrote in C++! It might by very buggy!
- *
  * The Argument 'arg1' must be one of these Things (without brackets):
  *
  * 'Title' - The title of the current song
@@ -63,37 +63,54 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 
+#include "hash.h"
 #include "debug.h"
 #include "plugin.h"
 
 static void my_xmms (RESULT *result, RESULT *arg1)
 {	
-  FILE *xmms;
+  static HASH xmms = { 0, 0, NULL };
+  char *hash_key, *val;
+  static time_t now=0;
+  FILE *xmms_stream;
   char zeile[200];
   char *key=R2S(arg1);
   int len=strlen(key);
   
+  // reread every second only
+  if (time(NULL)!=now) { 
+
   //Open Filestream for '/tmp/xmms-info'
-  xmms = fopen("/tmp/xmms-info","r");
+  xmms_stream = fopen("/tmp/xmms-info","r");
 
   //Check for File
-  if( !xmms ) {
+  if( !xmms_stream ) {
     error("Error: Cannot open XMMS-Info Stream! Is XMMS started?");
     SetResult(&result, R_STRING, "");
     return;
   }
   
   //Read Lines from the Stream
-  while(fgets(zeile,200,xmms)) {
-    if (strncmp(key, zeile, len)==0 && zeile[len]==':') {
+  while(fgets(zeile,200,xmms_stream)) {
+   hash_key=key; val=zeile; 
+   if (strncmp(key, zeile, len)==0 && zeile[len]==':') {
       // remove trailing newline
       zeile[strlen(zeile)-1]='\0';
-      SetResult(&result, R_STRING, zeile+len+2);
-      return;
+      // add entry to hash table
+      val=zeile+len+2;
+      hash_set (&xmms, hash_key, val);
+      time(&now);
+      fclose(xmms_stream);
     }
+   }
   }
-  SetResult(&result, R_STRING, "");
+  hash_key=R2S(arg1);
+  val=hash_get(&xmms, hash_key);
+  if (val==NULL) val="";
+
+  SetResult(&result, R_STRING, val);
 }
 
 
