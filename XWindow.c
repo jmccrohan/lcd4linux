@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.16 2000/04/03 23:53:23 herp Exp $
+/* $Id: XWindow.c,v 1.17 2000/04/05 05:58:36 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.17  2000/04/05 05:58:36  reinelt
+ *
+ * fixed bug in XWindow.c: union semun isn't defined with glibc-2.1
+ *
  * Revision 1.16  2000/04/03 23:53:23  herp
  * fixed a bug that caused pixel-errors ("fliegendreck") under high load
  *
@@ -101,6 +105,16 @@
 #include	"cfg.h"
 #include	"display.h"
 #include	"pixmap.h"
+
+/* glibc 2.1 requires defining semun ourselves */
+#ifdef _SEM_SEMUN_UNDEFINED
+union semun {
+  int val;
+  struct semid_ds *buf;
+  unsigned short int *array;
+  struct seminfo *__buf;
+};
+#endif
 
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
 
