@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.41 2003/09/13 06:20:39 reinelt Exp $
+/* $Id: HD44780.c,v 1.42 2003/09/21 06:43:02 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,12 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.42  2003/09/21 06:43:02  reinelt
+ *
+ *
+ * MatrixOrbital: bidirectional communication
+ * HD44780: special handling for 16x1 displays (thanks to anonymous bug report on sf.net)
+ *
  * Revision 1.41  2003/09/13 06:20:39  reinelt
  * HD44780 timings changed; deactivated libtool
  *
@@ -342,6 +348,9 @@ static void HD_write (unsigned char controller, char *string, int len, int delay
 {
   unsigned char enable;
 
+  // sanity check
+  if (len<=0) return;
+
   if (Bits==8) {
 
     // enable signal: 'controller' is a bitmask
@@ -549,6 +558,12 @@ void HD_goto (int row, int col)
     Controller = 1;
   }
    
+  // 16x1 Displays are organized as 8x2 :-(
+  if (Lcd.rows==1 && Lcd.cols==16 && col>7) {
+    row++;
+    col-=8;
+  }
+  
   pos=(row%2)*64+(row/2)*20+col;
   HD_command (Controller, (0x80|pos), T_EXEC);
 }
@@ -618,6 +633,10 @@ int HD_flush (void)
 	} else {
 	  pos2=col;
 	  equal=0;
+	}
+	// special handling of 16x1 displays
+	if (Lcd.rows==1 && Lcd.cols==16 && col==7) {
+	  break;
 	}
       }
       HD_write (Controller, FrameBuffer1+row*Lcd.cols+pos1, pos2-pos1+1, T_EXEC);

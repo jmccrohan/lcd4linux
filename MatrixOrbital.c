@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.41 2003/09/13 06:45:43 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.42 2003/09/21 06:43:02 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.42  2003/09/21 06:43:02  reinelt
+ *
+ *
+ * MatrixOrbital: bidirectional communication
+ * HD44780: special handling for 16x1 displays (thanks to anonymous bug report on sf.net)
+ *
  * Revision 1.41  2003/09/13 06:45:43  reinelt
  * icons for all remaining drivers
  *
@@ -252,6 +258,28 @@ static int MO_open (void)
 }
 
 
+#if 1
+static int MO_read (char *string, int len)
+{
+  int ret;
+
+  if (Device==-1) return -1;
+  ret=read (Device, string, len);
+  if (ret<0 && errno==EAGAIN) {
+    debug ("read(): EAGAIN");
+    usleep(10000);
+    ret=read (Device, string, len);
+  }
+  
+  if (ret<0) {
+    error("Cwlinux: read() failed: %s", strerror(errno));
+  }
+  
+  return ret;
+}
+#endif
+
+
 static void MO_write (char *string, int len)
 {
   if (Device==-1) return;
@@ -331,6 +359,9 @@ int MO_clear2 (int full)
 
 static int MO_init (LCD *Self, int protocol)
 {
+  // Fixme
+  char buffer[256];
+  
   char *port;
   int speed;
 
@@ -400,6 +431,25 @@ static int MO_init (LCD *Self, int protocol)
   MO_write ("\376T", 2);  // blink off
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
+
+  #if 1
+  MO_write ("\3767", 2);  // read module type
+  usleep(100000);
+  MO_read (buffer, 1);
+  debug ("Read module type=<0x%x>", *buffer);
+  
+  MO_write ("\3765", 2);  // read serial number
+  usleep(100000);
+  MO_read (buffer, 2);
+  debug ("Serial Number=<0x%x>", *(short*)buffer);
+  
+  MO_write ("\3766", 2);  // read version number
+  usleep(100000);
+  MO_read (buffer, 1);
+  debug ("Version number=<0x%x>", *buffer);
+  
+
+  #endif
 
   return 0;
 }
