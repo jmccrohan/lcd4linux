@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.1 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: pixmap.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.2  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.1  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -108,8 +112,7 @@ int pix_put (int row, int col, char *text)
 
 int pix_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  int i, x, y, len, rev;
-  unsigned char *p;
+  int x, y, len, rev;
   
   row*=YRES;
   col*=XRES;

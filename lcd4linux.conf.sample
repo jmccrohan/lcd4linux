@@ -3,10 +3,22 @@
 #Speed 19200
 #Contrast 160
 
-Display X11
-rows 2
-columns 20
+#Display X11
+#rows 2
+#columns 20
  
+DISPLAY PPM
+rows 4
+columns 20
+pixelsize 5
+pixelgap 1
+rowgap 1
+colgap 1
+border 20
+foreground 102000
+halfground 70c000
+background 80d000
+
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
 #Row3 "Busy %cu%% $r10cs+cb"

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.1 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: XWindow.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
  *
  * driver for X11
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.2  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.1  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -77,8 +81,8 @@ int X_init (DISPLAY *Self)
   int rows=-1;
   int cols=-1;
 
-  rows=atoi(cfg_get("rows"));
-  cols=atoi(cfg_get("columns"));
+  rows=atoi(cfg_get("rows")?:"4");
+  cols=atoi(cfg_get("columns")?:"20");
 
   if (rows<1 || cols<1) {
     fprintf (stderr, "X11: incorrect number of rows or columns\n");

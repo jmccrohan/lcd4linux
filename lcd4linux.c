@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.9 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.10  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.9  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -117,13 +121,6 @@ void main (int argc, char *argv[])
   cfg_set ("row3", "Busy %cu%% $r10cu");
   cfg_set ("row4", "Load %l1%L$r10l1");
 
-  cfg_set ("tick", "100");
-  cfg_set ("tack", "500");
-  cfg_set ("tau", "500");
-  
-  cfg_set ("fifo", "/var/run/LCD4Linux");
-  cfg_set ("overload", "2.0");
-
   if (cfg_read (cfg)==-1)
     exit (1);
   
@@ -136,8 +133,8 @@ void main (int argc, char *argv[])
     exit (1);
   }
 
-  tick=atoi(cfg_get("tick"));
-  tack=atoi(cfg_get("tack"));
+  tick=atoi(cfg_get("tick")?:"100");
+  tack=atoi(cfg_get("tack")?:"500");
 
   process_init();
 
@@ -145,7 +142,9 @@ void main (int argc, char *argv[])
   lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
   lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
-  
+
+  exit (0);
+
   sleep (3);
   lcd_clear();
 

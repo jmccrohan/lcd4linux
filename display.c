@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.9 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: display.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.10  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.9  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -96,11 +100,13 @@
 
 extern DISPLAY Skeleton[];
 extern DISPLAY MatrixOrbital[];
+extern DISPLAY Raster[];
 extern DISPLAY XWindow[];
 
 FAMILY Driver[] = {
   { "Skeleton",        Skeleton },
   { "Matrix Orbital",  MatrixOrbital },
+  { "Raster", Raster },
   { "X Window System", XWindow },
   { "" }
 };

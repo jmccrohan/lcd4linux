@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.1 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: processor.c,v 1.2 2000/03/23 07:24:48 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.2  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.1  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -369,7 +373,7 @@ void process_init (void)
   int i;
   char buffer[8];
 
-  load.overload=atof(cfg_get("overload"));
+  load.overload=atof(cfg_get("overload")?:"2.0");
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars);
 
   for (i=1; i<=rows; i++) {

@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.9 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.10  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.9  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -145,8 +149,7 @@ static int MO_contrast (void)
   char buffer[4];
   int  contrast;
 
-  contrast=atoi(cfg_get("Contrast"));
-  if (contrast==0) contrast=160;
+  contrast=atoi(cfg_get("Contrast")?:"160");
   snprintf (buffer, 4, "\376P%c", contrast);
   MO_write (buffer, 3);
   return 0;
@@ -355,8 +358,7 @@ int MO_init (DISPLAY *Self)
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed");
-  if (speed==NULL) speed="19200";
+  speed=cfg_get("Speed")?:"19200";
   
   switch (atoi(speed)) {
   case 1200:

@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.3 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: filter.c,v 1.4 2000/03/23 07:24:48 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.4  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.3  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -127,7 +131,7 @@ double damp(char *name, double value)
   int i, j;
   
   if (tau==-1)
-    tau=atoi(cfg_get("tau"));
+    tau=atoi(cfg_get("tau")?:"500");
 
   if (tau==0.0)
     return value;

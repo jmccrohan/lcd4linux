@@ -19,6 +19,7 @@ lcd4linux_SOURCES = \
 	fontmap.c fontmap.h \
 	Skeleton.c \
 	MatrixOrbital.c \
+	Raster.c \
 	XWindow.c
 
 

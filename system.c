@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.7 2000/03/18 08:07:04 reinelt Exp $
+/* $Id: system.c,v 1.8 2000/03/23 07:24:48 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.8  2000/03/23 07:24:48  reinelt
+ *
+ * PPM driver up and running (but slow!)
+ *
  * Revision 1.7  2000/03/18 08:07:04  reinelt
  *
  * vertical bars implemented
@@ -503,10 +507,9 @@ int Sensor (int index, double *val, double *min, double *max)
     }
 
     snprintf(buffer, 32, "Sensor%d_min", index);
-    min_buf[index]=atof(cfg_get(buffer));
+    min_buf[index]=atof(cfg_get(buffer)?:"0");
     snprintf(buffer, 32, "Sensor%d_max", index);
-    max_buf[index]=atof(cfg_get(buffer));
-    if (max_buf[index]==0.0) max_buf[index]=100.0;
+    max_buf[index]=atof(cfg_get(buffer)?:"100");
     
     fd[index]=open(sensor[index], O_RDONLY);
     if (fd[index]==-1) {
