@@ -90,7 +90,7 @@ Display HD44780-winamp {
 }
 
 # HD44780 display from www.kernelconcepts.de
-Display HD44780-winamp {
+Display HD44780-kernelconcepts {
     Driver 'HD44780'
     Model 'HD66712'
     Port '/dev/parports/0'	
