@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.15 2003/09/09 11:47:47 reinelt Exp $
+/* $Id: USBLCD.c,v 1.16 2003/09/10 03:48:23 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.16  2003/09/10 03:48:23  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.15  2003/09/09 11:47:47  reinelt
  * basic icon support for HD44780
  *
@@ -281,7 +284,7 @@ int USBLCD_init (LCD *Self)
   if (USBLCD_open()!=0)
     return -1;
   
-  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, USBLCD_define_char);

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.41 2003/09/09 05:30:34 reinelt Exp $
+/* $Id: display.c,v 1.42 2003/09/10 03:48:23 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.42  2003/09/10 03:48:23  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.41  2003/09/09 05:30:34  reinelt
  * even more icons stuff
  *
@@ -382,9 +385,8 @@ int lcd_icon (int num, int seq, int row, int col)
 {
   if (Lcd->icon==NULL)         return  0;
   if (num<1 || num>Lcd->icons) return -1;
-  if (seq<1)                   return -1;
-  if (row<1 || row>Lcd->rows)  return -1;
-  if (col<1 || col>Lcd->cols)  return -1;
+  if (         row>Lcd->rows)  return -1;
+  if (         col>Lcd->cols)  return -1;
   return Lcd->icon(num-1, seq-1, row-1, col-1);
 }
 

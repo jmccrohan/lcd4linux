@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.38 2003/09/09 11:47:47 reinelt Exp $
+/* $Id: HD44780.c,v 1.39 2003/09/10 03:48:22 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.39  2003/09/10 03:48:22  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.38  2003/09/09 11:47:47  reinelt
  * basic icon support for HD44780
  *
@@ -499,7 +502,7 @@ int HD_init (LCD *Self)
   HD_command (0x03, 0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x03, 0x06, 40);   // curser moves to right, no shift
 
-  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, HD_define_char);

@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.38 2003/09/09 11:47:47 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.39 2003/09/10 03:48:23 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.39  2003/09/10 03:48:23  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.38  2003/09/09 11:47:47  reinelt
  * basic icon support for HD44780
  *
@@ -371,7 +374,7 @@ static int MO_init (LCD *Self, int protocol)
   Device=MO_open();
   if (Device==-1) return -1;
 
-  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);

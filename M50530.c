@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.13 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: M50530.c,v 1.14 2003/09/10 03:48:22 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.14  2003/09/10 03:48:22  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.13  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -82,6 +85,7 @@
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "parport.h"
 #include "udelay.h"
 
@@ -90,7 +94,8 @@
 #define CHARS 8
 
 static LCD Lcd;
-static int  GPO=0;
+static int GPO=0;
+static int Icons;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -166,7 +171,10 @@ int M5_clear (int full)
 {
 
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
+
   GPO=0;
 
   if (full) {
@@ -228,7 +236,15 @@ int M5_init (LCD *Self)
   M5_command (0x0050, 20); // set entry mode
   M5_command (0x0030, 20); // set display mode
   
-  bar_init(rows, cols, XRES, YRES, CHARS);
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (Icons>0) {
+    info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, M5_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(rows, cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(0,0,255,32); // ASCII 32 = blank
   
   M5_clear(1);
@@ -265,6 +281,12 @@ int M5_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int M5_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int M5_gpo (int num, int val)
 {
   if (num>=Lcd.gpos) 
@@ -289,6 +311,7 @@ int M5_flush (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	if (c!=32) c+=248; //blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
@@ -344,11 +367,13 @@ LCD M50530[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  M5_init,
     clear: M5_clear,
     put:   M5_put,
     bar:   M5_bar,
+    icon:  M5_icon,
     gpo:   M5_gpo,
     flush: M5_flush,
     quit:  M5_quit 

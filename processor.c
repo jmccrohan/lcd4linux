@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.40 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: processor.c,v 1.41 2003/09/10 03:48:23 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.41  2003/09/10 03:48:23  reinelt
+ * Icons for M50530, new processing scheme (Ticks.Text...)
+ *
  * Revision 1.40  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -213,6 +216,7 @@
 static char *row[ROWS+1];
 static int   gpo[GPOS+1];
 static int   rows, cols, xres, yres, supported_bars, icons, gpos;
+static int   tick_txt, tick_bar, tick_icn, tick_gpo;
 static int   lines, scroll, turn;
 static int   token_usage[256]={0,};
 
@@ -690,7 +694,7 @@ static char *process_row (char *data, int row, int len)
       }
       
     } else if (*s=='&') {
-      lcd_icon(*(++s)-'0', 1, row, p-buffer+1);
+      lcd_icon(*(++s)-'0', 0, row, p-buffer+1);
       *p++=' ';
       
     } else {
@@ -801,6 +805,23 @@ void process_init (void)
   }
 
 
+  if (cfg_number("Ticks.Text", 5, 1, 1000, &tick_txt)<0) {
+    tick_txt=5;
+    error ("ignoring bad 'Ticks.Text' value and using '%d'", tick_txt);
+  }
+  if (cfg_number("Ticks.Bar", 1, 1, 1000, &tick_bar)<0) {
+    tick_bar=1;
+    error ("ignoring bad 'Ticks.Bar' value and using '%d'", tick_bar);
+  }
+  if (cfg_number("Ticks.Icon", 1, 1, 1000, &tick_icn)<0) {
+    tick_icn=1;
+    error ("ignoring bad 'Ticks.Icon' value and using '%d'", tick_icn);
+  }
+  if (cfg_number("Ticks.GPO", 1, 1, 1000, &tick_gpo)<0) {
+    tick_gpo=1;
+    error ("ignoring bad 'Ticks.GPO' value and using '%d'", tick_gpo);
+  }
+
   for (i=1; i<=lines; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
@@ -817,21 +838,43 @@ void process_init (void)
     debug ("%s: %s", buffer, p);
     gpo[i]=parse_gpo(p, token_usage);
   }
+
 }
 
 
 void process (void)
 {
+  static int loop_txt=-1;
+  static int loop_bar=-1;
+  static int loop_icn=-1;
+  static int loop_gpo=-1;
+  static int offset=0;
+
   int i, j, val;
   char *txt;
-  static int offset=0;
   
-  // Fixme: smooth has gone...
-  int smooth=0;
+  // Fixme:
+  static int junk=0;
+  
+  if (++loop_txt > tick_txt) loop_txt=0;
+  if (++loop_bar > tick_bar) loop_bar=0;
+  if (++loop_icn > tick_icn) loop_icn=0;
+  if (++loop_gpo > tick_gpo) loop_gpo=0;
+
+  // update icon animations
+  if (loop_icn==0) {
+    lcd_icon (1, ++junk, 0, 0);
+  }
+  
+  // is there anything to process?
+  if (loop_txt>0 && loop_bar>0 && loop_gpo>0) {
+    // no, there isn't :-)
+    return;
+  }
   
   collect_data();
-
-  if (smooth==0 && Turn()) {
+  
+  if (Turn() && loop_txt==0) {
     offset+=scroll;
     while (offset>=lines) {
       offset-=lines;
@@ -839,21 +882,25 @@ void process (void)
     lcd_clear(0); // soft clear
   }
   
-  for (i=1; i<=rows; i++) {
-    j=i+offset;
-    while (j>lines) {
-      j-=lines;
+  if (loop_txt==0 || loop_bar==0) {
+    for (i=1; i<=rows; i++) {
+      j=i+offset;
+      while (j>lines) {
+	j-=lines;
+      }
+      txt=process_row (row[j], i, cols);
+      if (loop_txt==0)
+	lcd_put (i, 1, txt);
     }
-    txt=process_row (row[j], i, cols);
-    if (smooth==0)
-      lcd_put (i, 1, txt);
   }
-
-  for (i=1; i<=gpos; i++) {
-    val=process_gpo (i);
-    lcd_gpo (i, val);
+  
+  if (loop_gpo==0) {
+    for (i=1; i<=gpos; i++) {
+      val=process_gpo (i);
+      lcd_gpo (i, val);
+    }
   }
-
+  
   lcd_flush();
-
+  
 }
