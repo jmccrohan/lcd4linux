@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.1 2001/03/09 13:08:11 ltoetsch Exp $
+/* $Id: Text.c,v 1.2 2001/03/09 15:04:53 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.2  2001/03/09 15:04:53  reinelt
+ *
+ * rename 'raster' to 'Text in Text.c
+ * added TOTO item
+ *
  * Revision 1.1  2001/03/09 13:08:11  ltoetsch
  * Added Text driver
  *
@@ -37,6 +42,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <curses.h>
+
+#define min(x,y) (x)<(y)?x:y
 
 #ifdef STANDALONE
 
@@ -93,7 +100,7 @@ int Text_init (LCD *Self)
   }
   
   if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
-    error ("Raster: bad size '%s'", s);
+    error ("Text: bad size '%s'", s);
     return -1;
   }
   Self->rows=rows;
@@ -159,7 +166,6 @@ int Text_put (int row, int col, char *text)
   return 0;
 }
 
-#define min(x,y) (x)<(y)?x:y
 int Text_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int len, i;
@@ -202,7 +208,7 @@ int Text_flush (void)
 
 LCD Text[] = {
   { "Text",4,20,1,1,BARS,0,
-      Text_init,Text_clear,Text_put,Text_bar,0,Text_flush,Text_quit },
+      Text_init,Text_clear,Text_put,Text_bar,Text_gpo,Text_flush,Text_quit },
   { NULL }
 };
 

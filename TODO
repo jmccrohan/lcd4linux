@@ -53,3 +53,8 @@ use ppdev instead of ugly outb()
 2001-03-09 Michael Reinelt <reinelt@eunet.at>
 replace udelay() assembly loop with rdtsc (read time stamp counter)
 at least try to....
+
+2001-03-09 Leo Tötsch <lt@toetsch.at>
+read configuration file earlier (before forking) so that specific drivers
+(especially 'Text') would not fork.
+There's a reason for forking that early, but I forgot...
