@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.1 2003/10/06 04:34:06 reinelt Exp $
+/* $Id: evaluator.c,v 1.2 2003/10/06 05:47:27 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.2  2003/10/06 05:47:27  reinelt
+ * operators: ==, \!=, <=, >=
+ *
  * Revision 1.1  2003/10/06 04:34:06  reinelt
  * expression evaluator added
  *
@@ -96,7 +99,7 @@
 #define is_blank(c)  (c==' ' || c=='\t')
 #define is_number(c) (isdigit(c) || c=='.')
 #define is_name(c)   (isalnum(c) || c=='_')
-#define is_delim(c)  (strchr("+-*/%^().,;=<>&|", c)!=NULL)
+#define is_delim(c)  (strchr("+-*/%^().,;=<>!&|", c)!=NULL)
 
 
 typedef struct {
@@ -422,7 +425,14 @@ static void Parse (void)
   
   if (is_delim(*Expression)) {
     Type=T_DELIMITER;
-    Token=strndup(Expression++, 1);
+    // special case for <=, >=, ==, !=
+    if (strchr("<>=!", *Expression)!=NULL && *(Expression+1)=='=') {
+      Token=strndup(Expression, 2);
+      Expression+=2;
+    } else {
+      Token=strndup(Expression, 1);
+      Expression++;
+    }
   }
   
   else if (isdigit(*Expression)) {
@@ -475,7 +485,7 @@ static void Level02 (RESULT *result)
   char *name;
   
   if (Type==T_NAME) {
-    if (*Expression == '=') {
+    if (Expression[0]=='=' && Expression[1]!='=') {
       name=strdup(Token);
       Parse();
       Parse();
@@ -520,7 +530,7 @@ static void Level04 (RESULT *result)
   
   while(*Token=='&') {
     Parse();
-    Level06 (&operand);
+    Level05 (&operand);
     value = (R2N(result)!=0.0) && (R2N(&operand)!=0.0);
     SetResult(&result, R_NUMBER, &value); 
   }
@@ -536,13 +546,13 @@ static void Level05 (RESULT *result)
   
   Level06 (result);
   
-  if ((operator=*Token)=='<' || operator=='>') {
+  if (((operator=Token[0])=='=' || operator=='!') && Token[1]=='=') {
     Parse();
-    Level07 (&operand);
-    if (operator=='<')
-      value = (R2N(result) < R2N(&operand));
+    Level06 (&operand);
+    if (operator=='=')
+      value = (R2N(result) == R2N(&operand));
     else
-      value = (R2N(result) > R2N(&operand));
+      value = (R2N(result) != R2N(&operand));
     SetResult(&result, R_NUMBER, &value); 
   }
 }
@@ -551,19 +561,27 @@ static void Level05 (RESULT *result)
 // relational operators
 static void Level06 (RESULT *result)
 {
-  char operator;
+  char operator[2];
   RESULT operand = {0, 0.0, NULL};
   double value;
   
   Level07 (result);
   
-  if ((operator=*Token)=='<' || operator=='>') {
+  if (*Token=='<' || *Token=='>') {
+    operator[0]=Token[0];
+    operator[1]=Token[1];
     Parse();
     Level07 (&operand);
-    if (operator=='<')
-      value = (R2N(result) < R2N(&operand));
+    if (operator[0]=='<')
+      if (operator[1]=='=')
+	value = (R2N(result) <= R2N(&operand));
+      else
+	value = (R2N(result) <  R2N(&operand));
     else
-      value = (R2N(result) > R2N(&operand));
+      if (operator[1]=='=')
+	value = (R2N(result) >= R2N(&operand));
+      else
+	value = (R2N(result) >  R2N(&operand));
     SetResult(&result, R_NUMBER, &value); 
   }
 }

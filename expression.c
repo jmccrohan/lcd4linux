@@ -1,4 +1,4 @@
-/* $Id: expression.c,v 1.1 2003/10/06 04:34:06 reinelt Exp $
+/* $Id: expression.c,v 1.2 2003/10/06 05:47:27 reinelt Exp $
  *
  * expression handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: expression.c,v $
+ * Revision 1.2  2003/10/06 05:47:27  reinelt
+ * operators: ==, \!=, <=, >=
+ *
  * Revision 1.1  2003/10/06 04:34:06  reinelt
  * expression evaluator added
  *
@@ -132,8 +135,6 @@ int EX_init (void)
 }
 
 
-#if 1
-
 int EX_test(int argc, char* argv[])
 {
   int ec;
@@ -153,4 +154,3 @@ int EX_test(int argc, char* argv[])
 
   return 0;
 }
-#endif
