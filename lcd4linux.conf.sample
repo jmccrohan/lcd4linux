@@ -3,10 +3,10 @@
 #Speed 19200
 #Contrast 160
 
-Display HD44780
-Port 0x378
-Size 24x2
-Delay 503
+#Display HD44780
+#Port 0x378
+#Size 24x2
+#Delay 503
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -31,6 +31,16 @@ Delay 503
 #halfground \#70c000
 #background \#80d000
 
+Display PNG
+size 20x4
+font 5x8
+pixel 2+0
+gap -1x-1
+border 5
+foreground \#102000
+halfground \#70c000
+background \#80d000
+
 #Display X11
 #size 20x5
 #font 5x8
@@ -44,18 +54,13 @@ Delay 503
 #Display SIN
 #Port /dev/tty9
 
-Row1 "Disk%dm $R14dr+dw"
-Row2 "Net %nm $R14nr+nw"
-Row3 "%s1 %s2 %s3"
-Row4 "%hc %ht %e1"
-
 #Row1 "abcdefghijklmnopqrstuvwxyz"
 #Row2 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-#Row1 "*** %o %v ***"
-#Row2 "%p CPU  %r MB RAM"
-#Row3 "Busy %cb%% $r10cs+cb"
-#Row4 "Load%l1%L$r10l1"
+Row1 "*** %o %v ***"
+Row2 "%p CPU  %r MB RAM"
+Row3 "Busy %cb%% $r10cs+cb"
+Row4 "Load%l1%L$r10l1"
 
 #Row1 "Load%l1%L$r10cs+cb"
 #Row2 "Disk%dm $R10dr+dw"

@@ -35,3 +35,10 @@ is online
 // - display numer of emails in a mailbox
 // - display seti@home values
 done.
+
+2001-03-05 Leo Tötsch <lt@toetsch.at>
+rename some tokens: %o->%os, %v->%ov, %r->%or, %p->%op,
+will be done with the big config-rework
+
+2001-03-05 Leo Tötsch <lt@toetsch.at>
+replace T_EXTENDED with a Flag similar to 'bar'
