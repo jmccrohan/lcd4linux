@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.30 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: XWindow.c,v 1.31 2003/04/12 16:23:10 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.31  2003/04/12 16:23:10  reinelt
+ * small glitch in XWindow.c (thanks to Moe Wibble)
+ *
  * Revision 1.30  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -515,8 +518,9 @@ static void update(int x,int y,int width,int height)
     if (y<y0 || y>y1) continue;
     for(col=0;col<cols*xres;col++) {
       int x=border+(col/xres)*cgap+col*(pixel+pgap);
+      int p;
       if (x<x0 || x>x1) continue;
-      int p=row*cols*xres+col;
+      p=row*cols*xres+col;
       XFillRectangle(dp,w,LCDpixmap2[p]?gc:gch,x,y,pixel,pixel);
       dirty=1;
     }
