@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.10 2003/08/01 05:15:42 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.10  2003/08/01 05:15:42  reinelt
+ * last cleanups for 0.9.9
+ *
  * Revision 1.9  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -134,6 +137,7 @@ static void CW_write(char *string, int len)
 }
 
 
+#if 0
 static int CW_read(char *string, int len)
 {
   int ret;
@@ -154,7 +158,7 @@ static int CW_read(char *string, int len)
   
   return ret;
 }
-
+#endif
 
 static void CW_Goto(int row, int col)
 {
@@ -299,6 +303,7 @@ int CW_init(LCD * Self)
   if (Device == -1)
     return -1;
 
+  // this does not work as I'd expect it...
 #if 0
   // read firmware version
   CW_read(buffer,sizeof(buffer));

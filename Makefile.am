@@ -34,6 +34,7 @@ mail2.c \
 socket.c socket.h
 
 EXTRA_lcd4linux_SOURCES= \
+parport.c parport.h \
 BeckmannEgle.c \
 Crystalfontz.c Crystalfontz.h \
 Cwlinux.c \
@@ -62,13 +63,4 @@ NEWS \
 TODO \
 README \
 README.Drivers \
-README.MatrixOrbital \
-README.HD44780 \
-README.HD44780.GPO \
-README.Crystalfontz \
-README.X11 \
-README.KDE \
-README.Raster \
-README.Png \
-README.Webinterface \
-README.Text
+README.KDE

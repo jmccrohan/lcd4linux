@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.7 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: T6963.c,v 1.8 2003/08/01 05:15:42 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.8  2003/08/01 05:15:42  reinelt
+ * last cleanups for 0.9.9
+ *
  * Revision 1.7  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -242,12 +245,13 @@ static void T6_write_auto (unsigned char data)
 }
 
 
+#if 0 // not used
 static void T6_send_byte (unsigned char cmd, unsigned char data)
 {
   T6_write_data(data);
   T6_write_cmd(cmd);
 }
-
+#endif
 
 static void T6_send_word (unsigned char cmd, unsigned short data)
 {
