@@ -153,6 +153,15 @@ Display HD44780-I2C {
 }
 
 
+Display LCDTerm {
+    Driver 'LCDTerm
+    Port '/dev/tts/0'
+    Speed 19200
+    Size '20x4'
+    Icons 1
+}
+
+
 Display M50530-24x8 {
     Driver 'M50530'
     Port '/dev/parport0'	
@@ -719,7 +728,8 @@ Layout testMySQL {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-Display 'M50530-24x8'
+#Display 'M50530-24x8'
+Display 'LCDTerm'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
