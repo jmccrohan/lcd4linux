@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.1 2002/09/11 05:16:32 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.2 2002/09/11 05:32:35 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.2  2002/09/11 05:32:35  reinelt
+ * changed to use new bar functions
+ *
  * Revision 1.1  2002/09/11 05:16:32  reinelt
  * added Cwlinux driver
  *
@@ -45,11 +48,11 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
+#include "bar.h"
 
 #define XRES 6
 #define YRES 8
 #define CHARS 7
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 #define LCD_CMD			254
 #define LCD_CMD_END		253
@@ -73,34 +76,18 @@
 #define UPDATE_DELAY		0	/* 1 sec */
 #define SETUP_DELAY		0	/* 2 sec */
 
-typedef struct {
-    int len1;
-    int len2;
-    int type;
-    int segment;
-} BAR;
-
-typedef struct {
-    int len1;
-    int len2;
-    int type;
-    int used;
-    int ascii;
-} SEGMENT;
-
 static LCD Lcd;
 static char *Port = NULL;
 static speed_t Speed;
 static int Device = -1;
 
 static char Txt[4][20];
-static BAR Bar[4][20];
 
 static int nSegment = 2;
 static SEGMENT Segment[128] = { {len1: 0, len2: 0, type: 255, \
 				used: 0, ascii:32} };
 
-int Read_LCD(int fd, char *c, int size)
+static int Read_LCD(int fd, char *c, int size)
 {
     int rc;
 
@@ -109,7 +96,7 @@ int Read_LCD(int fd, char *c, int size)
     return rc;
 }
 
-int Write_LCD(int fd, char *c, int size)
+static int Write_LCD(int fd, char *c, int size)
 {
     int rc;
 
@@ -119,7 +106,7 @@ int Write_LCD(int fd, char *c, int size)
 }
 
 
-void Enable_Cursor(int fd)
+static void Enable_Cursor(int fd)
 {
     char c;
     int rc;
@@ -132,7 +119,7 @@ void Enable_Cursor(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void Disable_Cursor(int fd)
+static void Disable_Cursor(int fd)
 {
     char c;
     int rc;
@@ -145,7 +132,7 @@ void Disable_Cursor(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void Clear_Screen(int fd)
+static void Clear_Screen(int fd)
 {
     char c;
     int rc;
@@ -158,7 +145,7 @@ void Clear_Screen(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void Enable_Wrap(int fd)
+static void Enable_Wrap(int fd)
 {
     char c;
     int rc;
@@ -171,7 +158,7 @@ void Enable_Wrap(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void Init_Port(fd)
+static void Init_Port(fd)
 {
     /* Posix - set baudrate to 0 and back */
     struct termios tty, old;
@@ -185,7 +172,7 @@ void Init_Port(fd)
     tcsetattr(fd, TCSANOW, &old);
 }
 
-void Setup_Port(int fd, speed_t speed)
+static void Setup_Port(int fd, speed_t speed)
 {
     struct termios portset;
 
@@ -202,7 +189,7 @@ void Setup_Port(int fd, speed_t speed)
     tcsetattr(fd, TCSANOW, &portset);
 }
 
-void Set_9600(int fd)
+static void Set_9600(int fd)
 {
     char c;
     int rc;
@@ -217,7 +204,7 @@ void Set_9600(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void Set_19200(int fd)
+static void Set_19200(int fd)
 {
     char c;
     int rc;
@@ -232,7 +219,7 @@ void Set_19200(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
-int Write_Line_LCD(int fd, char *buf, int size)
+static int Write_Line_LCD(int fd, char *buf, int size)
 {
     int i;
     char c;
@@ -254,7 +241,7 @@ int Write_Line_LCD(int fd, char *buf, int size)
     return 0;
 }
 
-void Set_Insert(int fd, int row, int col)
+static void Set_Insert(int fd, int row, int col)
 {
     char c;
     int rc;
@@ -271,7 +258,7 @@ void Set_Insert(int fd, int row, int col)
     rc = Write_LCD(fd, &c, 1);
 }
 
-void CwLnx_backlight(int on)
+static void CwLnx_backlight(int on)
 {
     static int current = -1;
     int realbacklight = -1;
@@ -369,141 +356,7 @@ static int CwLnx_contrast(void)
     return 0;
 }
 
-static void CwLnx_process_bars(void)
-{
-    int row, col;
-    int i, j;
-
-    for (i = 2; i < nSegment && Segment[i].used; i++);
-    for (j = i + 1; j < nSegment; j++) {
-	if (Segment[j].used)
-	    Segment[i++] = Segment[j];
-    }
-    nSegment = i;
-
-    for (row = 0; row < Lcd.rows; row++) {
-	for (col = 0; col < Lcd.cols; col++) {
-	    if (Bar[row][col].type == 0)
-		continue;
-	    for (i = 0; i < nSegment; i++) {
-		if (Segment[i].type & Bar[row][col].type &&
-		    Segment[i].len1 == Bar[row][col].len1 &&
-		    Segment[i].len2 == Bar[row][col].len2)
-		    break;
-	    }
-	    if (i == nSegment) {
-		nSegment++;
-		Segment[i].len1 = Bar[row][col].len1;
-		Segment[i].len2 = Bar[row][col].len2;
-		Segment[i].type = Bar[row][col].type;
-		Segment[i].used = 0;
-		Segment[i].ascii = -1;
-	    }
-	    Bar[row][col].segment = i;
-	}
-    }
-}
-
-static int CwLnx_segment_diff(int i, int j)
-{
-    int RES;
-    int i1, i2, j1, j2;
-
-    if (i == j)
-	return 65535;
-    if (!(Segment[i].type & Segment[j].type))
-	return 65535;
-    if (Segment[i].len1 == 0 && Segment[j].len1 != 0)
-	return 65535;
-    if (Segment[i].len2 == 0 && Segment[j].len2 != 0)
-	return 65535;
-    RES = Segment[i].type & BAR_H ? XRES : YRES;
-    if (Segment[i].len1 >= RES && Segment[j].len1 < RES)
-	return 65535;
-    if (Segment[i].len2 >= RES && Segment[j].len2 < RES)
-	return 65535;
-    if (Segment[i].len1 == Segment[i].len2
-	&& Segment[j].len1 != Segment[j].len2)
-	return 65535;
-
-    i1 = Segment[i].len1;
-    if (i1 > RES)
-	i1 = RES;
-    i2 = Segment[i].len2;
-    if (i2 > RES)
-	i2 = RES;
-    j1 = Segment[j].len1;
-    if (j1 > RES)
-	i1 = RES;
-    j2 = Segment[j].len2;
-    if (j2 > RES)
-	i2 = RES;
-
-    return (i1 - i2) * (i1 - i2) + (j1 - j2) * (j1 - j2);
-}
-
-static void CwLnx_compact_bars(void)
-{
-    int i, j, r, c, min;
-    int pack_i, pack_j;
-    int pass1 = 1;
-    int deviation[nSegment][nSegment];
-
-    if (nSegment > CHARS + 2) {
-
-	for (i = 2; i < nSegment; i++) {
-	    for (j = 0; j < nSegment; j++) {
-		deviation[i][j] = CwLnx_segment_diff(i, j);
-	    }
-	}
-
-	while (nSegment > CHARS + 2) {
-	    min = 65535;
-	    pack_i = -1;
-	    pack_j = -1;
-	    for (i = 2; i < nSegment; i++) {
-		if (pass1 && Segment[i].used)
-		    continue;
-		for (j = 0; j < nSegment; j++) {
-		    if (deviation[i][j] < min) {
-			min = deviation[i][j];
-			pack_i = i;
-			pack_j = j;
-		    }
-		}
-	    }
-	    if (pack_i == -1) {
-		if (pass1) {
-		    pass1 = 0;
-		    continue;
-		} else {
-		    error("Cwlinux: unable to compact bar characters");
-		    nSegment = CHARS;
-		    break;
-		}
-	    }
-
-	    nSegment--;
-	    Segment[pack_i] = Segment[nSegment];
-
-	    for (i = 0; i < nSegment; i++) {
-		deviation[pack_i][i] = deviation[nSegment][i];
-		deviation[i][pack_i] = deviation[i][nSegment];
-	    }
-
-	    for (r = 0; r < Lcd.rows; r++) {
-		for (c = 0; c < Lcd.cols; c++) {
-		    if (Bar[r][c].segment == pack_i)
-			Bar[r][c].segment = pack_j;
-		    if (Bar[r][c].segment == nSegment)
-			Bar[r][c].segment = pack_i;
-		}
-	    }
-	}
-    }
-}
-
-void CwLnx_set_char(int n, char *dat)
+static void CwLnx_set_char(int n, char *dat)
 {
     int row, col;
     char letter;
@@ -616,12 +469,11 @@ int CwLnx_clear(void)
     for (row = 0; row < Lcd.rows; row++) {
 	for (col = 0; col < Lcd.cols; col++) {
 	    Txt[row][col] = '\t';
-	    Bar[row][col].len1 = -1;
-	    Bar[row][col].len2 = -1;
-	    Bar[row][col].type = 0;
-	    Bar[row][col].segment = -1;
 	}
     }
+
+    bar_clear();
+
     Clear_Screen(Device);
     return 0;
 }
@@ -671,6 +523,10 @@ int CwLnx_init(LCD * Self)
     if (Device == -1)
 	return -1;
 
+    bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+    bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+    bar_add_segment(255,255,255,255); // ASCII 255 = block
+    
     CwLnx_clear();
     CwLnx_contrast();
 
@@ -695,99 +551,22 @@ int CwLnx_put(int row, int col, char *text)
 
 int CwLnx_bar(int type, int row, int col, int max, int len1, int len2)
 {
-    int rev = 0;
-
-    if (len1 < 1)
-	len1 = 1;
-    else if (len1 > max)
-	len1 = max;
-
-    if (len2 < 1)
-	len2 = 1;
-    else if (len2 > max)
-	len2 = max;
-
-    switch (type) {
-    case BAR_L:
-	len1 = max - len1;
-	len2 = max - len2;
-	rev = 1;
-
-    case BAR_R:
-	while (max > 0 && col < Lcd.cols) {
-	    Bar[row][col].type = type;
-	    Bar[row][col].segment = -1;
-	    if (len1 >= XRES) {
-		Bar[row][col].len1 = rev ? 0 : XRES;
-		len1 -= XRES;
-	    } else {
-		Bar[row][col].len1 = rev ? XRES - len1 : len1;
-		len1 = 0;
-	    }
-	    if (len2 >= XRES) {
-		Bar[row][col].len2 = rev ? 0 : XRES;
-		len2 -= XRES;
-	    } else {
-		Bar[row][col].len2 = rev ? XRES - len2 : len2;
-		len2 = 0;
-	    }
-	    max -= XRES;
-	    col++;
-	}
-	break;
-
-    case BAR_U:
-	len1 = max - len1;
-	len2 = max - len2;
-	rev = 1;
-
-    case BAR_D:
-	while (max > 0 && row < Lcd.rows) {
-	    Bar[row][col].type = type;
-	    Bar[row][col].segment = -1;
-	    if (len1 >= YRES) {
-		Bar[row][col].len1 = rev ? 0 : YRES;
-		len1 -= YRES;
-	    } else {
-		Bar[row][col].len1 = rev ? YRES - len1 : len1;
-		len1 = 0;
-	    }
-	    if (len2 >= YRES) {
-		Bar[row][col].len2 = rev ? 0 : YRES;
-		len2 -= YRES;
-	    } else {
-		Bar[row][col].len2 = rev ? YRES - len2 : len2;
-		len2 = 0;
-	    }
-	    max -= YRES;
-	    row++;
-	}
-	break;
-
-    }
-    return 0;
+  return bar_draw (type, row, col, max, len1, len2);
 }
 
 int CwLnx_flush(void)
 {
     char buffer[256];
     char *p;
-    int s, row, col;
+    int c, row, col;
 
-    CwLnx_process_bars();
-    CwLnx_compact_bars();
-    CwLnx_define_chars();
-
-    for (s = 0; s < nSegment; s++) {
-	Segment[s].used = 0;
-    }
+    bar_process(CwLnx_define_char);
 
     for (row = 0; row < Lcd.rows; row++) {
 	for (col = 0; col < Lcd.cols; col++) {
-	    s = Bar[row][col].segment;
-	    if (s != -1) {
-		Segment[s].used = 1;
-		Txt[row][col] = Segment[s].ascii;
+	    c=bar_peek(row, col);
+	    if (c!=-1) {
+	        Txt[row][col]=(char)c;
 	    }
 	}
 	Set_Insert(Device, row, col);
@@ -815,7 +594,20 @@ int CwLnx_quit(void)
 }
 
 LCD Cwlinux[] = {
-    {"CW12232", 4, 20, XRES, YRES, BARS, 0, CwLnx_init, CwLnx_clear, \
-	    CwLnx_put, CwLnx_bar, NULL, CwLnx_flush, CwLnx_quit},
+    {name: "CW12232", 
+     rows:  4, 
+     cols:  20, 
+     xres:  XRES, 
+     yres:  YRES, 
+     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+     gpos:  0, 
+     init:  CwLnx_init, 
+     clear: CwLnx_clear,
+     put:   CwLnx_put, 
+     bar:   CwLnx_bar, 
+     gpo:   NULL, 
+     flush: CwLnx_flush, 
+     quit:  CwLnx_quit
+    },
     {NULL}
 };
