@@ -1,4 +1,4 @@
-/* $Id: drv_RouterBoard.c,v 1.1 2004/08/29 13:03:41 reinelt Exp $
+/* $Id: drv_RouterBoard.c,v 1.2 2004/08/29 20:07:55 reinelt Exp $
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com
@@ -22,6 +22,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: drv_RouterBoard.c,v $
+ * Revision 1.2  2004/08/29 20:07:55  reinelt
+ *
+ * Patch from Joco: Make RouterBoard Backlight configurable
  *
  */
 
@@ -78,6 +84,10 @@
  *      (http://www.national.com/ds/SC/SC1100.pdf)	   
  *    [RB User Manual]
  *      (http://www.routerboard.com)
+ *
+ *
+ * Revision 1.2 
+ * Added backlight control
  */
 
 
@@ -169,6 +179,7 @@ static int GPOS;
 /* Fixme: This actually ARE the GPO's... */
 static unsigned RB_Leds = 0;
 
+static unsigned RB_BackLight = 0;
 
 typedef struct {
   int type;
@@ -238,9 +249,28 @@ static void drv_RB_poll_data ( void __attribute__((unused)) *notused)
 #endif
 
 
+static int drv_RB_backlight ( int backlight)
+{
+  /* -1 is used to query  the current Backlight */
+  if(backlight == -1 ) {
+    if (RB_BackLight > 0) return 1;  // because RB_Backlight actually is 0x0800 or 0
+    return 0;
+  }
+  
+  if (backlight < 0) backlight = 0;
+  if (backlight > 1) backlight = 1;
+
+  RB_BackLight = backlight ? LCD_BACKLIGHT : 0;
+  
+  /* The status will be updated on next lcd operation! */
+  /* Fixme: should be updated immediately! */
+     
+  return backlight;    
+}
+
+
 /* IOCS0 port number can read from PCI Configuration Space Function 0 (F0) */
 /* at index 74h as 16 bit value (see [GEODE] 5.3.1 pg.151 and pg.176 Table 5-29 */
-
 
 static unsigned getIocs0Port (void) 
 {
@@ -257,15 +287,14 @@ static unsigned getIocs0Port (void)
 }  
 
 
-
 static void drv_RB_command ( const unsigned char cmd, const int delay)
 {
 
-  outw( RB_Leds | LCD_INITX | LCD_BACKLIGHT | cmd, getIocs0Port());
+  outw( RB_Leds | LCD_INITX | RB_BackLight | cmd, getIocs0Port());
 
   ndelay(T_AS);
   
-  outw( RB_Leds | LCD_BACKLIGHT | cmd, getIocs0Port());
+  outw( RB_Leds | RB_BackLight | cmd, getIocs0Port());
   
   // wait for command completion
   udelay(delay);
@@ -279,17 +308,17 @@ static void drv_RB_data ( const char *string, const int len, const int delay)
   unsigned char ch;
 
   /* sanity check */
-  if (len<=0) return;
+  if (len <= 0) return;
 
   while (l--) {
 
     ch = *(string++);
       
-    outw( RB_Leds | LCD_AFDX | LCD_INITX | LCD_BACKLIGHT | ch, getIocs0Port());
+    outw( RB_Leds | LCD_AFDX | LCD_INITX | RB_BackLight | ch, getIocs0Port());
 
     ndelay(T_AS);
      
-    outw( RB_Leds | LCD_AFDX | LCD_BACKLIGHT | ch, getIocs0Port());      
+    outw( RB_Leds | LCD_AFDX | RB_BackLight | ch, getIocs0Port());      
 
     // wait for command completion
     udelay(delay);
@@ -360,6 +389,7 @@ static int drv_RB_start (const char *section, const int quiet)
 {
   char *model, *strsize;
   int rows=-1, cols=-1, gpos=-1;
+  int l;
   
   model=cfg_get(section, "Model", "HD44780");
   if (model!=NULL && *model!='\0') {
@@ -392,6 +422,11 @@ static int drv_RB_start (const char *section, const int quiet)
     return -1;
   }
   free(strsize);
+  
+  /*set backlight*/
+  if (cfg_number(section, "Backlight", 1, 0, 1, &l) > 0 ) {
+    drv_RB_backlight(l);
+  }
   
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("%s: controlling %d GPO's", Name, gpos);
@@ -443,7 +478,23 @@ static int drv_RB_start (const char *section, const int quiet)
 /****************************************/
 /***            plugins               ***/
 /****************************************/
-
+static void plugin_backlight (RESULT *result , const int argc, RESULT *argv[])
+{
+  double backlight;
+  
+  switch (argc) {
+  case 0:
+    backlight = drv_RB_backlight(-1);
+    SetResult(&result, R_NUMBER, &backlight);
+    break;
+  case 1:
+    backlight = drv_RB_backlight(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &backlight);
+  default:
+    error ("%s::backlight(): wrong number of parameters", Name);
+    SetResult(&result, R_STRING, "");
+  }    
+}
 
 
 
@@ -532,6 +583,8 @@ int drv_RB_init (const char *section, const int quiet)
   wc.draw=drv_generic_text_bar_draw;
   widget_register(&wc);
   
+  /* register plugins*/
+  AddFunction ("LCD::backlight", -1, plugin_backlight);
   
   return 0;
 }
