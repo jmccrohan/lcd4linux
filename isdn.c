@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.11 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: isdn.c,v 1.12 2003/11/24 11:34:54 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.12  2003/11/24 11:34:54  reinelt
+ *
+ * 'Fixed' Rows which do not scroll by Lars Kempe
+ * temporary workaround for debian kernel-header bug
+ *
  * Revision 1.11  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -85,7 +90,13 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+
+// Fixme: my debian has some bugs with kernel headers
+#if 0
 #include <linux/isdn.h>
+#else
+#define IIOCGETCPS  _IO('I',21)
+#endif
 
 // Fixme: ISDN_MAX_CHANNELS seems undefined in recent kernels
 #ifndef ISDN_MAX_CHANNELS

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.50 2003/11/11 04:40:20 reinelt Exp $
+/* $Id: processor.c,v 1.51 2003/11/24 11:34:54 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.51  2003/11/24 11:34:54  reinelt
+ *
+ * 'Fixed' Rows which do not scroll by Lars Kempe
+ * temporary workaround for debian kernel-header bug
+ *
  * Revision 1.50  2003/11/11 04:40:20  reinelt
  * WIFI patch from Xavier Vello
  *
@@ -252,7 +257,7 @@
 static char *row[ROWS+1];
 static int   gpo[GPOS+1];
 static int   rows, cols, xres, yres, supported_bars, icons, gpos;
-static int   lines, scroll, turn;
+static int   lines, scroll, turn, fixed;
 static int   token_usage[256]={0,};
 
 static struct { int total, used, free, shared, buffer, cache, avail; } ram;
@@ -960,6 +965,15 @@ void process_init (void)
       error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_source(), scroll, rows);
       error ("This may lead to unexpected results!");
     }
+    if (cfg_number("Fixed", 0, -1000000, 1000000, &fixed)<0) {
+      fixed=0;
+      error ("ignoring bad 'Fixed' value and using '%d'", fixed);
+    }
+    if (abs(fixed)>=rows) {
+      error ("'Fixed' entry in %s is abs(%d), >= %d display rows.", cfg_source(), fixed, rows);
+      fixed=(fixed<0)? -rows+1 : rows-1;
+      error ("ignoring bad 'Fixed' value and using '%d'", fixed);
+    }
     if (cfg_number("Turn", 1000, 1, 1000000, &turn)<0) {
       turn=1000;
       error ("ignoring bad 'Scroll' value and using '%d'", turn);
@@ -969,6 +983,7 @@ void process_init (void)
     lines=rows;
     scroll=0;
     turn=0;
+    fixed=0;
   }
 
   if (cfg_number("Tick.Text", 500, 1, 1000000, &tick_text)<0) {
@@ -1044,25 +1059,53 @@ void process (void)
   if (loop_tick==0) {
     collect_data();
   }
-  
   // maybe scroll
   if (Turn() && loop_text==0) {
     offset+=scroll;
-    while (offset>=lines) {
-      offset-=lines;
-    }
+    while (offset>=lines) offset-=lines;
     lcd_clear(0); // soft clear
   }
   
   if (loop_text==0 || loop_bar==0) {
-    for (i=1; i<=rows; i++) {
-      j=i+offset;
-      while (j>lines) {
-	j-=lines;
+    if (fixed > 0){ // first n lines fixed, rest scrolled
+      // fixed part
+      for (i=1; i<=fixed; i++) {
+        txt=process_row (row[i], i, cols);
+	if (loop_text==0)
+	  lcd_put(i, 1, txt);
       }
-      txt=process_row (row[j], i, cols);
-      if (loop_text==0)
-	lcd_put (i, 1, txt);
+      // scrolled part
+      for (i=fixed+1; i<=rows; i++) {
+        j=i+offset;
+        while (j>lines) j-=lines-fixed;
+        txt=process_row (row[j], i, cols);
+        if (loop_text==0)
+          lcd_put (i, 1, txt);
+      }
+    } else if (fixed < 0) { // first lines scrolled, last n fixed
+      // scrolled part
+      for (i=1; i <= rows+fixed; i++){
+        j=i+offset;
+        while (j>lines+fixed) j-=lines+fixed;
+        txt=process_row (row[j], i, cols);
+        if (loop_text==0)
+          lcd_put (i, 1, txt);
+      }
+      //fixed part
+      for (i=rows+fixed+1; i<=rows;i++){
+	j = i+lines-rows;
+        txt=process_row (row[j], j, cols);
+        if (loop_text==0)
+	  lcd_put(i,1,txt);
+      }
+    } else { // only scroll
+      for (i=1; i<=rows; i++) {
+	j=i+offset;
+	while (j>lines) j-=lines;
+	txt=process_row (row[j], i, cols);
+	if (loop_text==0)
+	  lcd_put (i, 1, txt);
+      }
     }
   }
   
