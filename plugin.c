@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.5 2004/01/06 17:33:45 reinelt Exp $
+/* $Id: plugin.c,v 1.6 2004/01/10 17:36:56 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.6  2004/01/10 17:36:56  reinelt
+ *
+ * I2C Sensors plugin from Xavier added
+ *
  * Revision 1.5  2004/01/06 17:33:45  reinelt
  *
  * Evaluator: functions with variable argument lists
@@ -79,6 +83,7 @@
 int plugin_init_math (void);
 int plugin_init_string (void);
 int plugin_init_xmms (void);
+int plugin_init_i2c_sensors (void);
 
 
 int plugin_init (void)
@@ -86,7 +91,8 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_xmms();
-
+  plugin_init_i2c_sensors;
+  
   return 0;
 }
 
