@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.9 2004/09/18 08:22:59 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.10 2004/09/18 09:48:29 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.10  2004/09/18 09:48:29  reinelt
+ * HD44780 cleanup and prepararation for I2C backend
+ * LCM-162 submodel framework
+ *
  * Revision 1.9  2004/09/18 08:22:59  reinelt
  * drv_generic_parport_status() to read status lines
  *
@@ -170,7 +174,7 @@ int drv_generic_parport_open (const char *section, const char *driver)
 #ifdef WITH_PPDEV
   
   if (PPdev) {
-    info ("using ppdev %s", PPdev);
+    info ("%s: using ppdev %s", Driver, PPdev);
     PPfd=open(PPdev, O_RDWR);
     if (PPfd==-1) {
       error ("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.17 2004/06/20 10:09:56 reinelt Exp $
+/* $Id: udelay.c,v 1.18 2004/09/18 09:48:29 reinelt Exp $
  *
  * short delays
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.18  2004/09/18 09:48:29  reinelt
+ * HD44780 cleanup and prepararation for I2C backend
+ * LCM-162 submodel framework
+ *
  * Revision 1.17  2004/06/20 10:09:56  reinelt
  *
  * 'const'ified the whole source
@@ -205,11 +209,11 @@ static void getCPUinfo (int *hasTSC, double *MHz)
   
   fd=open("/proc/cpuinfo", O_RDONLY);
   if (fd==-1) {
-    error ("open(/proc/cpuinfo) failed: %s", strerror(errno));
+    error ("udelay: open(/proc/cpuinfo) failed: %s", strerror(errno));
     return;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    error ("read(/proc/cpuinfo) failed: %s", strerror(errno));
+    error ("udelay: read(/proc/cpuinfo) failed: %s", strerror(errno));
     close (fd);
     return;
   }
@@ -217,26 +221,26 @@ static void getCPUinfo (int *hasTSC, double *MHz)
 
   p=strstr(buffer, "flags");
   if (p==NULL) {
-    info ("/proc/cpuinfo has no 'flags' line");
+    info ("udelay: /proc/cpuinfo has no 'flags' line");
   } else {
     p=strstr(p, "tsc");
     if (p==NULL) {
-      info ("CPU does not support Time Stamp Counter");
+      info ("udelay: CPU does not support Time Stamp Counter");
     } else {
-      info ("CPU supports Time Stamp Counter");
+      info ("udelay: CPU supports Time Stamp Counter");
       *hasTSC=1;
     }
   }
   
   p=strstr(buffer, "cpu MHz");
   if (p==NULL) {
-    info ("/proc/cpuinfo has no 'cpu MHz' line");
+    info ("udelay: /proc/cpuinfo has no 'cpu MHz' line");
   } else {
     if (sscanf(p+7, " : %lf", MHz)!=1) {
-      error ("parse(/proc/cpuinfo) failed: unknown 'cpu MHz' format");
+      error ("udelay: parse(/proc/cpuinfo) failed: unknown 'cpu MHz' format");
       *MHz=-1;
     } else {
-      info ("CPU runs at %f MHz", *MHz);
+      info ("udelay: CPU runs at %f MHz", *MHz);
     }
   }
 
@@ -254,17 +258,17 @@ void udelay_init (void)
   
   if (tsc && mhz>0.0) {
     ticks_per_usec=ceil(mhz);
-    info ("using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
+    info ("udelay: using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
   } else
 #else
-    error ("The file 'include/asm/msr.h' was missing at compile time.");
-    error ("Even if your CPU supports TSC, it will not be used!");
-    error ("You *really* should install msr.h and recompile LCD4linux!");
+    error ("udelay: The file 'include/asm/msr.h' was missing at compile time.");
+    error ("udelay: Even if your CPU supports TSC, it will not be used!");
+    error ("udelay: You *really* should install msr.h and recompile LCD4linux!");
 #endif
 
  {
     ticks_per_usec=0;
-    info ("using gettimeofday() delay loop");
+    info ("udelay: using gettimeofday() delay loop");
   }
 }
 

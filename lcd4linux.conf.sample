@@ -95,6 +95,7 @@ Display SC1602D {
 
 Display LCM-162 {
     Driver 'HD44780'
+    Model 'LCM-162'
     Port '/dev/parports/0'	
     Bits '8'
     Size '16x2'

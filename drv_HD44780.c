@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.34 2004/09/18 08:22:59 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.35 2004/09/18 09:48:29 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.35  2004/09/18 09:48:29  reinelt
+ * HD44780 cleanup and prepararation for I2C backend
+ * LCM-162 submodel framework
+ *
  * Revision 1.34  2004/09/18 08:22:59  reinelt
  * drv_generic_parport_status() to read status lines
  *
@@ -272,21 +276,34 @@ typedef struct {
 #define CAP_BRIGHTNESS (1<<0)
 #define CAP_BUSY4BIT   (1<<1)
 #define CAP_HD66712    (1<<2)
+#define CAP_LCM162     (1<<3)
 
 static MODEL Models[] = {
   { 0x01, "generic",  0 },
   { 0x02, "Noritake", CAP_BRIGHTNESS },
   { 0x03, "Soekris",  CAP_BUSY4BIT },
   { 0x04, "HD66712",  CAP_HD66712 },
+  { 0x05, "LCM-162",  CAP_LCM162 },
   { 0xff, "Unknown",  0 }
 };
 
 
+
 /****************************************/
-/***  hardware dependant functions    ***/
+/***  generic functions               ***/
 /****************************************/
 
-static void wait_for_busy_flag(int controller)
+static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const int delay);
+static void (*drv_HD_data)    (const unsigned char controller, const char *string, const int len, const int delay);
+static void (*drv_HD_stop)    (void);
+
+
+
+/****************************************/
+/***  parport dependant functions     ***/
+/****************************************/
+
+static void drv_HD_PP_busy(int controller)
 {
   unsigned char enable;
   unsigned int counter;
@@ -387,7 +404,7 @@ static void wait_for_busy_flag(int controller)
 }
 
 
-static void drv_HD_nibble(const unsigned char controller, const unsigned char nibble)
+static void drv_HD_PP_nibble(const unsigned char controller, const unsigned char nibble)
 {
   unsigned char enable;
 
@@ -418,24 +435,24 @@ static void drv_HD_nibble(const unsigned char controller, const unsigned char ni
 }
 
 
-static void drv_HD_byte (const unsigned char controller, const unsigned char data, const unsigned char RS)
+static void drv_HD_PP_byte (const unsigned char controller, const unsigned char data, const unsigned char RS)
 {
   /* send high nibble of the data */
-  drv_HD_nibble (controller, ((data>>4)&0x0f)|RS);
+  drv_HD_PP_nibble (controller, ((data>>4)&0x0f)|RS);
 
   /* Make sure we honour T_CYCLE */
   ndelay(T_CYCLE-T_AS-T_PW);
 
   /* send low nibble of the data */
-  drv_HD_nibble(controller, (data&0x0f)|RS);
+  drv_HD_PP_nibble(controller, (data&0x0f)|RS);
 }
 
 
-static void drv_HD_command (const unsigned char controller, const unsigned char cmd, const int delay)
+static void drv_HD_PP_command (const unsigned char controller, const unsigned char cmd, const int delay)
 {
   unsigned char enable;
 
-  if (UseBusy) wait_for_busy_flag(controller);
+  if (UseBusy) drv_HD_PP_busy(controller);
 
   if (Bits==8) {
     
@@ -461,7 +478,7 @@ static void drv_HD_command (const unsigned char controller, const unsigned char 
     
   } else {
 
-    drv_HD_byte (controller, cmd, 0);
+    drv_HD_PP_byte (controller, cmd, 0);
 
   }
   
@@ -471,7 +488,7 @@ static void drv_HD_command (const unsigned char controller, const unsigned char 
 }
 
 
-static void drv_HD_data (const unsigned char controller, const char *string, const int len, const int delay)
+static void drv_HD_PP_data (const unsigned char controller, const char *string, const int len, const int delay)
 {
   int l = len;
   unsigned char enable;
@@ -499,7 +516,7 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
     while (l--) {
 
       if (UseBusy) {
-	wait_for_busy_flag(controller);
+	drv_HD_PP_busy(controller);
 	/* clear RW, set RS */
 	drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
 	/* Address set-up time */
@@ -519,10 +536,10 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
   } else { /* 4 bit mode */
     
     while (l--) {
-      if (UseBusy) wait_for_busy_flag(controller);
+      if (UseBusy) drv_HD_PP_busy(controller);
 
       /* send data with RS enabled */
-      drv_HD_byte (controller, *(string++), SIGNAL_RS);
+      drv_HD_PP_byte (controller, *(string++), SIGNAL_RS);
       
       /* wait for command completion */
       if (!UseBusy) udelay(delay);
@@ -530,6 +547,143 @@ static void drv_HD_data (const unsigned char controller, const char *string, con
   }
 }
 
+
+static int drv_HD_PP_start (const char *section)
+{
+  if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
+  if (Bits!=4 && Bits!=8) {
+    error ("%s: bad %s.Bits '%d' from %s, should be '4' or '8'", Name, section, Bits, cfg_source());
+    return -1;
+  }    
+  info ("%s: using %d bit mode", Name, Bits);
+  
+  if (drv_generic_parport_open(section, Name) != 0) {
+    error ("%s: could not initialize parallel port!", Name);
+    return -1;
+  }
+
+  if (Bits==8) {
+    if ((SIGNAL_RS      = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
+    if ((SIGNAL_RW      = drv_generic_parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
+    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
+    if ((SIGNAL_GPO     = drv_generic_parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
+  } else {
+    if ((SIGNAL_RS      = drv_generic_parport_wire_data ("RS",      "DB4"))==0xff) return -1;
+    if ((SIGNAL_RW      = drv_generic_parport_wire_data ("RW",      "DB5"))==0xff) return -1;
+    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
+    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
+    if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
+  }
+  
+  /* clear all signals */
+  if (Bits==8) {
+    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
+  } else {
+    drv_generic_parport_data (0);
+  }
+  
+  /* set direction: write */
+  drv_generic_parport_direction (0);
+  
+  /* initialize *both* displays */
+  if (Bits==8) {
+    drv_HD_PP_command (allControllers, 0x30, T_INIT1); /* 8 Bit mode, wait 4.1 ms */
+    drv_HD_PP_command (allControllers, 0x30, T_INIT2); /* 8 Bit mode, wait 100 us */
+    drv_HD_PP_command (allControllers, 0x38, T_EXEC);  /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
+  } else {
+    drv_HD_PP_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
+    drv_HD_PP_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
+    drv_HD_PP_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
+    drv_HD_PP_nibble  (allControllers, 0x02); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
+    drv_HD_PP_command (allControllers, 0x28, T_EXEC);	    /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
+  }
+
+  /* maybe use busy-flag from now on  */
+  /* (we can't use the busy flag during the init sequence) */
+  cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
+  
+  /* make sure we don't use the busy flag with RW wired to GND */
+  if (UseBusy && !SIGNAL_RW)   {
+    error("%s: Busyflag is to be used, but RW is wired to GND", Name);
+    UseBusy=0;
+  }
+
+  /* make sure the display supports busy-flag checking in 4-Bit-Mode */
+  /* at the moment this is inly possible with Martin Hejl's gpio driver, */
+  /* which allows to use 4 bits as input and 4 bits as output */
+  if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
+    error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
+    UseBusy=0;
+  }
+  
+  info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
+
+  return 0;
+}
+
+
+static void drv_HD_PP_stop (void) 
+{
+  /* clear all signals */
+  if (Bits==8) {
+    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
+  } else {
+    drv_generic_parport_data (0);
+  }
+
+  drv_generic_parport_close();
+  
+}
+
+
+
+/****************************************/
+/***  i2c dependant functions         ***/
+/****************************************/
+
+
+static void drv_HD_I2C_command (const unsigned char controller, const unsigned char cmd, const int delay)
+{
+  /* send data with RS disabled */
+  // drv_HD_I2C_byte (controller, cmd, 0);
+}
+
+
+static void drv_HD_I2C_data (const unsigned char controller, const char *string, const int len, const int delay)
+{
+  int l = len;
+  unsigned char enable;
+  
+  /* sanity check */
+  if (len<=0) return;
+  
+  while (l--) {
+    /* send data with RS enabled */
+    // drv_HD_I2C_byte (controller, *(string++), SIGNAL_RS);
+  }
+}
+
+
+static int drv_HD_I2C_start (const char *section)
+{
+  return 0;
+}
+
+
+static void drv_HD_I2C_stop (void) 
+{
+  /* clear all signals */
+  // drv_generic_i2c_data (0);
+  /* slose port */
+  // drv_generic_i2c_close();
+}
+
+
+
+/****************************************/
+/***  display dependant functions     ***/
+/****************************************/
 
 static void drv_HD_clear (void)
 {
@@ -632,7 +786,7 @@ static void drv_HD_setGPO (const int bits)
 
 static int drv_HD_start (const char *section, const int quiet)
 {
-  char *model, *strsize;
+  char *model, *size, *bus;
   int rows=-1, cols=-1, gpos=-1;
   
   model=cfg_get(section, "Model", "generic");
@@ -650,22 +804,23 @@ static int drv_HD_start (const char *section, const int quiet)
     info ("%s: using model '%s'", Name, Models[Model].name);
   } else {
     error ("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());
+    if (model) free (model);
     return -1;
   }
   free(model);
 
-  strsize=cfg_get(section, "Size", NULL);
-  if (strsize==NULL || *strsize=='\0') {
+  size=cfg_get(section, "Size", NULL);
+  if (size==NULL || *size=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
-    free(strsize);
+    free(size);
     return -1;
   }
-  if (sscanf(strsize,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    error ("%s: bad %s.Size '%s' from %s", Name, section, strsize, cfg_source());
-    free(strsize);
+  if (sscanf(size,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
+    error ("%s: bad %s.Size '%s' from %s", Name, section, size, cfg_source());
+    free(size);
     return -1;
   }
-  free(strsize);
+  free(size);
   
   if (cfg_number(section, "GPOs", 0, 0, 8, &gpos)<0) return -1;
   info ("%s: controlling %d GPO's", Name, gpos);
@@ -683,74 +838,39 @@ static int drv_HD_start (const char *section, const int quiet)
   DCOLS = cols;
   GPOS  = gpos;
   
-  if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
-  if (Bits!=4 && Bits!=8) {
-    error ("%s: bad %s.Bits '%d' from %s, should be '4' or '8'", Name, section, Bits, cfg_source());
-    return -1;
-  }    
-  info ("%s: using %d bit mode", Name, Bits);
-  
-  if (drv_generic_parport_open(section, Name) != 0) {
-    error ("%s: could not initialize parallel port!", Name);
+  bus=cfg_get(section, "Bus", "parport");
+  if (bus==NULL && *bus=='\0') {
+    error ("%s: empty '%s.Bus' entry from %s", Name, section, cfg_source());
+    if (bus) free (bus);
     return -1;
   }
 
-  if (Bits==8) {
-    if ((SIGNAL_RS      = drv_generic_parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
-    if ((SIGNAL_RW      = drv_generic_parport_wire_ctrl ("RW",      "GND"   ))==0xff) return -1;
-    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_ctrl ("ENABLE",  "STROBE"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_ctrl ("ENABLE2", "GND"   ))==0xff) return -1;
-    if ((SIGNAL_GPO     = drv_generic_parport_wire_ctrl ("GPO",     "GND"   ))==0xff) return -1;
-  } else {
-    if ((SIGNAL_RS      = drv_generic_parport_wire_data ("RS",      "DB4"))==0xff) return -1;
-    if ((SIGNAL_RW      = drv_generic_parport_wire_data ("RW",      "DB5"))==0xff) return -1;
-    if ((SIGNAL_ENABLE  = drv_generic_parport_wire_data ("ENABLE",  "DB6"))==0xff) return -1;
-    if ((SIGNAL_ENABLE2 = drv_generic_parport_wire_data ("ENABLE2", "GND"))==0xff) return -1;
-    if ((SIGNAL_GPO     = drv_generic_parport_wire_data ("GPO",     "GND"))==0xff) return -1;
-  }
-  
-  /* clear all signals */
-  if (Bits==8) {
-    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
-  } else {
-    drv_generic_parport_data (0);
-  }
-  
-  /* set direction: write */
-  drv_generic_parport_direction (0);
-  
-  /* initialize *both* displays */
-  if (Bits==8) {
-    drv_HD_command (allControllers, 0x30, T_INIT1); /* 8 Bit mode, wait 4.1 ms */
-    drv_HD_command (allControllers, 0x30, T_INIT2); /* 8 Bit mode, wait 100 us */
-    drv_HD_command (allControllers, 0x38, T_EXEC);  /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
-  } else {
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
-    drv_HD_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
-    drv_HD_nibble  (allControllers, 0x02); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
-    drv_HD_command (allControllers, 0x28, T_EXEC);	    /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
-  }
+  if (strcasecmp(bus, "parport") == 0) {
+    info ("%s: using parallel port", Name);
+    if (drv_HD_PP_start(section) < 0) {
+      free (bus);
+      return -1;
+    }
+    drv_HD_command = drv_HD_PP_command;
+    drv_HD_data    = drv_HD_PP_data;
+    drv_HD_stop    = drv_HD_PP_stop;
+    
+  } else if (strcasecmp(bus, "i2c") == 0) {
+    info ("%s: using I2C bus", Name);
+    if (drv_HD_I2C_start(section) < 0) {
+      free (bus);
+      return -1;
+    }
+    drv_HD_command = drv_HD_I2C_command;
+    drv_HD_data    = drv_HD_I2C_data;
+    drv_HD_stop    = drv_HD_I2C_stop;
 
-  /* maybe use busy-flag from now on  */
-  /* (we can't use the busy flag during the init sequence) */
-  cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
-  
-  /* make sure we don't use the busy flag with RW wired to GND */
-  if (UseBusy && !SIGNAL_RW)   {
-    error("%s: Busyflag is to be used, but RW is wired to GND", Name);
-    UseBusy=0;
+  } else {
+    error ("%s: bad %s.Bus '%s' from %s, should be 'parport' or 'i2c'", Name, section, bus, cfg_source());
+    free (bus);
+    return -1;
   }
-
-  /* make sure the display supports busy-flag checking in 4-Bit-Mode */
-  /* at the moment this is inly possible with Martin Hejl's gpio driver, */
-  /* which allows to use 4 bits as input and 4 bits as output */
-  if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
-    error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
-    UseBusy=0;
-  }
-  
-  info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
+  free(bus);
 
   drv_HD_command (allControllers, 0x08, T_EXEC);  /* Display off, cursor off, blink off */
   drv_HD_command (allControllers, 0x0c, T_CLEAR); /* Display on, cursor off, blink off, wait 1.64 ms */
@@ -910,14 +1030,7 @@ int drv_HD_quit (const int quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }
   
-  /* clear all signals */
-  if (Bits==8) {
-    drv_generic_parport_control (SIGNAL_RS|SIGNAL_RW|SIGNAL_ENABLE|SIGNAL_ENABLE2|SIGNAL_GPO, 0);
-  } else {
-    drv_generic_parport_data (0);
-  }
-
-  drv_generic_parport_close();
+  drv_HD_stop();
   
   return (0);
 }
