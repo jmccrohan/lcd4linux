@@ -1,4 +1,4 @@
-/* $Id: expr.c,v 1.4 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: expr.c,v 1.5 2004/01/18 06:54:08 reinelt Exp $
  *
  * expr ('y*') functions
  * This is only a workaround to make the Evaluator usable until
@@ -24,6 +24,10 @@
  *
  *
  * $Log: expr.c,v $
+ * Revision 1.5  2004/01/18 06:54:08  reinelt
+ * bug in expr.c fixed (thanks to Xavier)
+ * some progress with /proc/stat parsing
+ *
  * Revision 1.4  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -67,7 +71,7 @@ int Expr(int index, char string[EXPR_TXT_LEN], double *val)
     return -1;
 
   sprintf(yn, "y%d", index);
-  expression = cfg_get(NULL, yn, NULL);
+  expression = cfg_get_raw(NULL, yn, NULL);
   
   if (!expression || !*expression) {
     error("Empty expression for 'y%d'", index);
@@ -78,7 +82,7 @@ int Expr(int index, char string[EXPR_TXT_LEN], double *val)
   Eval(expression, &result);
   strcpy(string, R2S(&result));
   
-  debug("%s: <%s> = '%s'",yn, expression, result);
+  debug("%s: <%s> = '%s'", yn, expression, string);
 
   if (isdigit(*string)) {
     double max, min;

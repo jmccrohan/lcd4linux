@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.3 2004/01/16 11:12:26 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.4 2004/01/18 06:54:08 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.4  2004/01/18 06:54:08  reinelt
+ * bug in expr.c fixed (thanks to Xavier)
+ * some progress with /proc/stat parsing
+ *
  * Revision 1.3  2004/01/16 11:12:26  reinelt
  * some bugs in plugin_xmms fixed, parsing moved to own function
  * plugin_proc_stat nearly finished
@@ -85,6 +89,10 @@ static int renew(int msec)
 
 static void hash_set1 (char *key1, char *val) 
 {
+  double number;
+  
+  number=atof(val);
+  
   hash_set (&Stat, key1, val);
 }
 
@@ -93,8 +101,7 @@ static void hash_set2 (char *key1, char *key2, char *val)
   char key[32];
   
   snprintf (key, sizeof(key), "%s.%s", key1, key2);
-  // debug ("Michi: hash_set(%s, %s)", key, val);
-  hash_set (&Stat, key, val);
+  hash_set1 (key, val);
 }
 
 static void hash_set3 (char *key1, char *key2, char *key3, char *val) 
@@ -102,8 +109,7 @@ static void hash_set3 (char *key1, char *key2, char *key3, char *val)
   char key[32];
   
   snprintf (key, sizeof(key), "%s.%s.%s", key1, key2, key3);
-  debug ("Michi: hash_set(%s)=<%s>", key, val);
-  hash_set (&Stat, key, val);
+  hash_set1 (key, val);
 }
 
 
@@ -114,7 +120,8 @@ static int parse_proc_stat (void)
   // update every 10 msec
   if (!renew(10)) return 0;
   
-  stream=fopen("/proc/stat", "r");
+  // stream=fopen("/proc/stat", "r");
+  stream=fopen("proc_stat", "r");
   if (stream==NULL) {
     error ("fopen(/proc/stat) failed: %s", strerror(errno));
     return -1;
@@ -161,7 +168,6 @@ static int parse_proc_stat (void)
 	hash_set3 ("disk_io", dev, "rblk", strtok(NULL, " ,"));
 	hash_set3 ("disk_io", dev, "wio",  strtok(NULL, " ,"));
 	hash_set3 ("disk_io", dev, "wblk", strtok(NULL, " ,)"));
-	// Fixme: check this one...
 	dev=strtok(NULL, " \t\n:()");
       }
     } 

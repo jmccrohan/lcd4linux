@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.28 2004/01/16 05:04:53 reinelt Exp $^
+/* $Id: cfg.c,v 1.29 2004/01/18 06:54:08 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.29  2004/01/18 06:54:08  reinelt
+ * bug in expr.c fixed (thanks to Xavier)
+ * some progress with /proc/stat parsing
+ *
  * Revision 1.28  2004/01/16 05:04:53  reinelt
  * started plugin proc_stat which should parse /proc/stat
  * which again is a paint in the a**
@@ -382,7 +386,7 @@ char *l4l_cfg_list (char *section)
 }
 
 
-char *l4l_cfg_get_raw (char *section, char *key, char *defval)
+static char *cfg_lookup (char *section, char *key)
 {
   int len;
   char *buffer;
@@ -413,6 +417,15 @@ char *l4l_cfg_get_raw (char *section, char *key, char *defval)
   if (entry!=NULL)
     return entry->val;
 
+  return NULL;
+}
+
+
+char *l4l_cfg_get_raw (char *section, char *key, char *defval)
+{
+  char *val=cfg_lookup(section, key);
+  
+  if (val!=NULL) return val;
   return defval;
 }
 
@@ -422,9 +435,10 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
   char *expression;
   RESULT result = {0, 0.0, NULL};
   
-  expression=cfg_get_raw(section, key, defval);
+  expression=cfg_lookup(section, key);
   
-  if (expression!=NULL && *expression!='\0') {
+  if (expression!=NULL) {
+    if (*expression=='\0') return "";
     if (Eval(expression, &result)==0) {
       return R2S(&result);
     }

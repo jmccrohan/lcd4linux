@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.3 2004/01/16 07:26:25 reinelt Exp $
+/* $Id: hash.c,v 1.4 2004/01/18 06:54:08 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.4  2004/01/18 06:54:08  reinelt
+ * bug in expr.c fixed (thanks to Xavier)
+ * some progress with /proc/stat parsing
+ *
  * Revision 1.3  2004/01/16 07:26:25  reinelt
  * moved various /proc parsing to own functions
  * made some progress with /proc/stat parsing
@@ -76,29 +80,50 @@ static int hash_sort_f (const void *a, const void *b)
 }
 
 
+
 // insert a key/val pair into the hash table
-// the tbale will be searched linearly if the entry 
-// does already exist, for the table may not be sorted.
+// If the table is flagged "sorted", the entry is looked
+// up using the bsearch function. If the table is 
+// unsorted, it will be searched in a linear way if the entry 
+// does already exist.
+// If the entry does already exist, it will be overwritten,
+// and the table stays sorted (if it has been before).
+// Otherwise, the entry is appended at the end, and 
 // the table will be flagged 'unsorted' afterwards
+
 void hash_set (HASH *Hash, char *key, char *val)
 {
-  int i;
-
-  // entry already exists?
-  for (i=0;i<Hash->nItems; i++) {
-    if (strcmp(key, Hash->Items[i].key)==0) {
-      if (Hash->Items[i].val) free (Hash->Items[i].val);
-      Hash->Items[i].val=strdup(val);
-      return;
-    }
+  HASH_ITEM *Item=NULL;
+  
+  // lookup using bsearch
+  if (Hash->sorted) {
+    Item=bsearch(key, Hash->Items, Hash->nItems, sizeof(HASH_ITEM), hash_lookup_f);
   }
   
+  // linear search
+  if (Item==NULL) {
+    int i;
+    for (i=0;i<Hash->nItems; i++) {
+      if (strcmp(key, Hash->Items[i].key)==0) {
+	Item=&(Hash->Items[i]);
+	break;
+      }
+    }
+  }
+
+  // entry already exists?
+  if (Item!=NULL) {
+    if (Item->val) free (Item->val);
+    Item->val=strdup(val);
+    return;
+  }
+
   // add entry
   Hash->sorted=0;
   Hash->nItems++;
   Hash->Items=realloc(Hash->Items,Hash->nItems*sizeof(HASH_ITEM));
-  Hash->Items[i].key=strdup(key);
-  Hash->Items[i].val=strdup(val);
+  Hash->Items[Hash->nItems-1].key=strdup(key);
+  Hash->Items[Hash->nItems-1].val=strdup(val);
 }
 
 
