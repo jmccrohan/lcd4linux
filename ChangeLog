@@ -1,3 +1,136 @@
+2004-05-25  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Image.c:
+	added drv_Image.c (this time really!)
+
+	* drivers.m4, drv.c, drv_Crystalfontz.c, drv_X11.c, lcd4linux.conf.sample, Makefile.am, Makefile.in, Raster.c, configure:
+	added "Image" driver (was: Raster.c) for PPM and PNG creation
+	fixed some glitches in the X11 driver
+
+	* lcd4linux.conf.sample.old:
+	removed old sample config lcd4linux.conf.sample.old from CVS
+
+2004-05-23  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_USBLCD.c, lcd4linux.conf.sample:
+	icon bug with USBLCD fixed
+
+2004-05-22  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample, plugin.c, plugin_uptime.c, plugins.m4, Makefile.am, Makefile.in, config.h.in, configure:
+	added plugin 'uptime'
+
+	* drv_HD44780.c:
+	removed 16*x fix again (next time think before commit :-)
+
+	* drv_HD44780.c:
+	fix for display RAM layout on 16x4 displays (thanks to toxicated101)
+
+2004-05-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, plugin.c, plugin_time.c: added plugin_time
+
+	* plugin_pop3.c, configure, Makefile.in:
+	made all local functions static
+
+2004-05-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, Makefile.in, configure:
+	removed AC_PROG_CXX (C++-Compiler) from configure
+
+	* plugin_isdn.c:
+	plugin_isdn.c added (sorry, I forgot...)
+
+2004-05-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* plugin_i2c_sensors.c, ltmain.sh:
+	i2c fix for kernel 2.6.5 (temp_input1 vs. temp1_input) from Xavier
+
+2004-04-17  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* plugin_wireless.c, plugin_pop3.c: minor bugfix
+
+2004-04-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* isdn.c, isdn.h, plugin.c, plugins.m4, qprintf.c, evaluator.c, Makefile.am, Makefile.in, config.h.in, configure:
+	added plugin_isdn, removed old ISDN client
+	fixed some real bad bugs in the evaluator
+
+	* Status: Status update
+
+	* drv_generic_parport.c, udelay.c:
+	another BIG FAT WARNING on the use of raw ports instead of ppdev
+
+	* lcd4linux.conf.sample, udelay.c, debug.h:
+	emitted a BIG FAT WARNING if msr.h could not be found (and therefore
+	the gettimeofday() delay loop would be used)
+
+2004-04-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drivers.m4, plugins.m4: forgot these files at last checkin... sorry!
+
+2004-04-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* exec.c, exec.h: removed old exec stuff
+
+	* configure.in, plugin.c, Makefile.am, Makefile.in, config.h.in, configure:
+	big configure rework from Xavier
+
+2004-04-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, lcd4linux.conf.sample, plugin.c, plugin_pop3.c:
+	added plugin_pop3 from Javi
+
+	* plugin_exec.c, qprintf.c, thread.c, thread.h, Makefile.in, configure:
+	finished plugin_exec
+	modified thread handling
+	added '%x' format to qprintf (hexadecimal)
+
+2004-04-07  hejl  <hejl@merlin.ethnet>
+
+	* Makefile.am, plugin.c, plugin_wireless.c:
+	New plugin for wireless info
+
+2004-03-21  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample, plugin_mysql.c: MySQL plugin fixes from Javi
+
+2004-03-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample, plugin_mysql.c: MySQL plugin fixes from Javi
+
+	* plugin_exec.c: forgot to add plugin_exec.c ...
+
+	* thread.c, thread.h, drv_HD44780.c:
+	support for HD66712 (which has a different RAM layout)
+	further threading development
+
+2004-03-19  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Crystalfontz.c, drv_Cwlinux.c, drv_HD44780.c, drv_M50530.c, drv_MatrixOrbital.c, drv_USBLCD.c, drv_generic_text.c, drv_generic_text.h:
+	removed the extra 'goto' function, row and col are additional parameters
+	of the write() function now.
+
+	* Makefile.am, Makefile.in, Status, aclocal.m4, config.h.in, configure, configure.in, pid.c, plugin.c, thread.c, thread.h:
+	asynchronous thread handling started
+
+2004-03-14  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Status, battery.c, battery.h:
+	old battery.[ch] files removed
+
+	* Makefile.am, Makefile.in, configure, lcd4linux.c, plugin.c, plugin_apm.c, plugin_dvb.c:
+	parameter count fixed for plugin_dvb()
+	plugin_APM (battery status) ported
+
+	* Status, configure.in: Status update.
+	Fixed bug in configure.in with X11 disabled (thanks to Kevin Liu)
+
+2004-03-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog, Status, plugin_seti.c:
+	ChangeLog and Status update; small glitch in plugin_seti fixed.
+
 2004-03-13  nicowallmeier  <nicowallmeier@merlin.ethnet>
 
 	* plugin_imon.c:
