@@ -189,8 +189,8 @@ if test "$T6963" = "yes"; then
 fi
 
 if test "$USBLCD" = "yes"; then
-#  DRIVERS="$DRIVERS USBLCD.lo"
-#  DRIVERS="$DRIVERS USBLCD.o"
+#  DRIVERS="$DRIVERS drv_USBLCD.lo"
+   DRIVERS="$DRIVERS drv_USBLCD.o"
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
 fi
 

@@ -54,12 +54,20 @@ Display HD44780-20x4 {
 Display M50530-24x8 {
     Driver 'M50530'
     Port '/dev/parports/0'	
-    Port '0x378'
+#   Port '0x378'
     Size '24x8'
     Wire.EX   'STROBE'
     Wire.IOC1 'SELECT'
     Wire.IOC2 'AUTOFD'
     Wire.GPO  'INIT'
+}
+
+
+Display USBLCD {
+    Driver 'USBLCD'
+    Port '/dev/usb/lcd'
+    Size '20x4'
+    asc255bug 1
 }
 
 
@@ -279,10 +287,11 @@ Layout L16x2 {
 
 #Display 'LK204'
 #Display 'HD44780-20x4'
-Display 'M50530-24x8'
+#Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
+Display 'USBLCD'
 
 Layout  'Default'
 #Layout  'L16x2'

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.6 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv.c,v 1.7 2004/02/15 08:22:47 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.7  2004/02/15 08:22:47  reinelt
+ * ported USBLCD driver to NextGeneration
+ * added drv_M50530.c (I forgot yesterday, sorry)
+ * removed old drivers M50530.c and USBLCD.c
+ *
  * Revision 1.6  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -99,7 +104,7 @@ extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_M50530;
 extern DRIVER drv_T6963;
-extern DRIVER drv_USBDRIVER;
+extern DRIVER drv_USBLCD;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_PalmPilot;
@@ -137,9 +142,11 @@ DRIVER *Driver[] = {
      #ifdef WITH_T6963
      &T6963,
      #endif
-     #ifdef WITH_USBLCD
-     &USBLCD,
-     #endif
+  */
+#ifdef WITH_USBLCD
+  &drv_USBLCD,
+#endif
+  /* Fixme
      #ifdef WITH_MATRIXORBITAL
      &MatrixOrbital,
      #endif

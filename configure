@@ -21006,8 +21006,8 @@ _ACEOF
 fi
 
 if test "$USBLCD" = "yes"; then
-#  DRIVERS="$DRIVERS USBLCD.lo"
-#  DRIVERS="$DRIVERS USBLCD.o"
+#  DRIVERS="$DRIVERS drv_USBLCD.lo"
+   DRIVERS="$DRIVERS drv_USBLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_USBLCD 1
