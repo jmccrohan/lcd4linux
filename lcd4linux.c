@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.50 2003/10/22 04:19:16 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.51 2003/11/16 09:45:49 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.51  2003/11/16 09:45:49  reinelt
+ * Crystalfontz changes, small glitch in getopt() fixed
+ *
  * Revision 1.50  2003/10/22 04:19:16  reinelt
  * Makefile.in for imon.c/.h, some MatrixOrbital clients
  *
@@ -366,7 +369,7 @@ int main (int argc, char *argv[])
 #ifdef USE_OLD_UDELAY
   while ((c=getopt (argc, argv, "c:dFf:hilo:qv"))!=EOF) {
 #else
-  while ((c=getopt (argc, argv, "c:dFf:hilo:qv"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:Ff:hilo:qv"))!=EOF) {
 #endif
     switch (c) {
     case 'c':
@@ -375,13 +378,10 @@ int main (int argc, char *argv[])
 	exit(2);
       }
       break;
-    case 'd':
 #ifdef USE_OLD_UDELAY
+    case 'd':
       calibrate();
       exit(0);
-#else
-      fprintf (stderr, "delay calibration no longer supported!\n");
-      exit(1);
 #endif
     case 'F':
       running_foreground++;

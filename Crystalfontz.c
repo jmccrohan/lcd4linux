@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.16 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.17 2003/11/16 09:45:49 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -21,6 +21,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.17  2003/11/16 09:45:49  reinelt
+ * Crystalfontz changes, small glitch in getopt() fixed
+ *
  * Revision 1.16  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -90,7 +93,7 @@
 #include "bar.h"
 #include "icon.h"
 
-#define XRES 5
+#define XRES 6
 #define YRES 8
 #define CHARS 8
 
@@ -179,9 +182,9 @@ static int CF_contrast (void)
 
 static void CF_define_char (int ascii, char *buffer)
 {
-  char cmd[3]="031"; // set custom char bitmap
+  char cmd[2]="\031"; // set custom char bitmap
 
-  cmd[1]=128+(char)ascii;
+  cmd[1]=(char)ascii;
   CF_write (cmd, 2);
   CF_write (buffer, 8);
 }
@@ -267,10 +270,11 @@ static int CF_init (LCD *Self)
   
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
-  bar_add_segment(255,255,255,255); // ASCII 255 = block
+  // Fixme
+  // bar_add_segment(255,255,255,255); // ASCII 255 = block
 
   // MR: why such a large delay?
-  usleep(350000);
+  usleep(350*1000);
 
   CF_clear(1);
 
@@ -335,7 +339,7 @@ static int CF_flush (void)
       c=bar_peek(row, col);
       if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
-	if (c!=32) c+=128; //blank
+	if (c!=32) c+=128; // non-blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
     }

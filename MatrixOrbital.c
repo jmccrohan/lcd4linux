@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.47 2003/10/22 04:19:16 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.48 2003/11/16 09:45:49 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.48  2003/11/16 09:45:49  reinelt
+ * Crystalfontz changes, small glitch in getopt() fixed
+ *
  * Revision 1.47  2003/10/22 04:19:16  reinelt
  * Makefile.in for imon.c/.h, some MatrixOrbital clients
  *
@@ -713,7 +716,6 @@ int MO_icon (int num, int seq, int row, int col)
 
 int MO_gpo (int num, int val)
 {
-  debug ("GPO(%d)=%d", num, val);
   if (num>=Lcd.gpos) 
     return -1;
 
