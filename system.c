@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.14 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: system.c,v 1.15 2000/08/09 11:03:07 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.15  2000/08/09 11:03:07  reinelt
+ *
+ * fixed a bug in system.c where the format of /proc/net/dev was not correctly
+ * detected and parsed with different kernels
+ *
  * Revision 1.14  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -548,6 +553,8 @@ int Disk (int *r, int *w)
 int Net (int *rx, int *tx, int *bytes)
 {
   char buffer[4096], *p, *s;
+  static char *proc_net_dev_fmt=NULL;
+  static int   proc_net_dev_bytes=0;
   static int fd=-2;
   unsigned long pkg_rx, pkg_tx;
   
@@ -558,6 +565,22 @@ int Net (int *rx, int *tx, int *bytes)
   if (fd==-1) return -1;
   
   if (fd==-2) {
+    struct utsname ubuf;
+    if (uname(&ubuf)==-1) {
+      perror ("uname() failed");
+      fd=-1;
+      return -1;
+    }
+    if (strncmp(ubuf.release,"2.0.",4)==0) {
+      debug ("using old /proc/net/dev format\n");
+      proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %ld";
+      proc_net_dev_bytes=0;
+    } else {
+      debug ("using new /proc/net/dev format\n");
+      proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %*d %*d %*d %ld";
+      proc_net_dev_bytes=1;
+    }
+    
     fd = open("/proc/net/dev", O_RDONLY | O_NDELAY);
     if (fd==-1) {
       perror ("open(/proc/net/dev) failed");
@@ -583,24 +606,16 @@ int Net (int *rx, int *tx, int *bytes)
   p=buffer;
   while ((s=strsep(&p, "\n"))) {
     unsigned long r, t;
-    
-    if (sscanf (s, " eth%*d:%ld %*d %*d %*d %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d %*d %*d", &r, &t)==2) {
+    if (sscanf (s, proc_net_dev_fmt, &r, &t)==2) {
       pkg_rx+=r;
       pkg_tx+=t;
-      *bytes=1;
-    } else {
-      if (sscanf (s, " eth%*d:%*d: %ld %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d", &r, &t)==2 ||
-	  sscanf (s, " eth%*d:%ld %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d",      &r, &t)==2) {
-	pkg_rx+=r;
-	pkg_tx+=t;
-	*bytes=0;
-      }
     }
   }
-  
+
   *rx=smooth("net_rx", 500, pkg_rx);
   *tx=smooth("net_tx", 500, pkg_tx);
-  
+  *bytes=proc_net_dev_bytes;
+
   return 0;
 }
 
