@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.12 2000/05/21 06:20:35 reinelt Exp $
+/* $Id: system.c,v 1.13 2000/07/31 10:43:44 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.13  2000/07/31 10:43:44  reinelt
+ *
+ * some changes to support kernel-2.4 (different layout of various files in /proc)
+ *
  * Revision 1.12  2000/05/21 06:20:35  reinelt
  *
  * added ppp throughput
@@ -108,11 +112,13 @@
  *   returns 0 if ok, -1 on error
  *
  * int Disk (int *r, int *w);
- *   sets number of read and write accesses to all disks 
+ *   sets number of blocks read and written from/to all disks 
  *   returns 0 if ok, -1 on error
  *
- * int Net (int *rx, int *tx);
- *   sets number of packets received and transmitted
+ * int Net (int *rx, int *tx, int *bytes);
+ *   sets number of packets or bytes received and transmitted
+ *   *bytes ist set to 0 if rx/tx are packets
+ *   *bytes ist set to 1 if rx/tx are bytes
  *   returns 0 if ok, -1 on error
  *
  * int PPP (int unit, int *rx, int *tx);
@@ -455,8 +461,6 @@ int Disk (int *r, int *w)
 {
   char buffer[4096], *p;
   static int fd=-2;
-  unsigned long r1, r2, r3, r4;
-  unsigned long w1, w2, w3, w4;
   
   *r=0;
   *w=0;
@@ -482,36 +486,59 @@ int Disk (int *r, int *w)
     fd=-1;
     return -1;
   }
-  p=strstr(buffer, "disk_rblk");
-  if (p==NULL) {
-    fprintf (stderr, "parse(/proc/stat) failed: no 'disk_rblk' line\n");
-    fd=-1;
-    return -1;
-  }
-  if (sscanf(p+9, "%lu %lu %lu %lu\n", &r1, &r2, &r3, &r4)<4) {
-    fprintf (stderr, "scanf(/proc/stat) failed\n");
-    fd=-1;
-    return -1;
-  }
-  p=strstr(buffer, "disk_wblk");
-  if (p==NULL) {
-    fprintf (stderr, "parse(/proc/stat) failed: no 'disk_wblk' line\n");
-    fd=-1;
-    return -1;
-  }
-  if (sscanf(p+9, "%lu %lu %lu %lu\n", &w1, &w2, &w3, &w4)<4) {
-    fprintf (stderr, "scanf(/proc/stat) failed\n");
-    fd=-1;
-    return -1;
+
+  p=strstr(buffer, "disk_io:");
+  if (p!=NULL) {
+    int n;
+    unsigned long rblk, wblk;
+    unsigned long rsum, wsum;
+    p+=8;
+    rsum=0;
+    wsum=0;
+    while (sscanf(p, " (%*u,%*u):(%*u,%lu,%*u,%lu)%n", &rblk, &wblk, &n)==2) {
+      rsum+=rblk;
+      wsum+=wblk;
+      p+=n;
+    }
+    // assume that we got the number of sectors and a sector size of 512 bytes
+    // to get te number in kilobytes/sec, we calculate as follows:
+    // kb=blocks*512/1024, which is blocks/2
+    *r=smooth ("disk_r", 500, rsum/2);
+    *w=smooth ("disk_w", 500, wsum/2);
+
+  } else {
+    unsigned long r1, r2, r3, r4;
+    unsigned long w1, w2, w3, w4;
+    p=strstr(buffer, "disk_rblk");
+    if (p==NULL) {
+      fprintf (stderr, "parse(/proc/stat) failed: no 'disk_rblk' line\n");
+      fd=-1;
+      return -1;
+    }
+    if (sscanf(p+9, "%lu %lu %lu %lu\n", &r1, &r2, &r3, &r4)<4) {
+      fprintf (stderr, "scanf(/proc/stat) failed\n");
+      fd=-1;
+      return -1;
+    }
+    p=strstr(buffer, "disk_wblk");
+    if (p==NULL) {
+      fprintf (stderr, "parse(/proc/stat) failed: no 'disk_wblk' line\n");
+      fd=-1;
+      return -1;
+    }
+    if (sscanf(p+9, "%lu %lu %lu %lu\n", &w1, &w2, &w3, &w4)<4) {
+      fprintf (stderr, "scanf(/proc/stat) failed\n");
+      fd=-1;
+      return -1;
+    }
+    *r=smooth ("disk_r", 500, r1+r2+r3+r4);
+    *w=smooth ("disk_w", 500, w1+w2+w3+w4);
   }
   
-  *r=smooth ("disk_r", 500, r1+r2+r3+r4);
-  *w=smooth ("disk_w", 500, w1+w2+w3+w4);
-
   return 0;
 }
 
-int Net (int *rx, int *tx)
+int Net (int *rx, int *tx, int *bytes)
 {
   char buffer[4096], *p, *s;
   static int fd=-2;
@@ -519,6 +546,7 @@ int Net (int *rx, int *tx)
   
   *rx=0;
   *tx=0;
+  *bytes=0;
 
   if (fd==-1) return -1;
   
@@ -548,15 +576,24 @@ int Net (int *rx, int *tx)
   p=buffer;
   while ((s=strsep(&p, "\n"))) {
     unsigned long r, t;
-    if (sscanf (s, " eth%*d:%*d: %ld %*d %*d %*d %*d %ld", &r, &t)==2 ||
-	sscanf (s, " eth%*d: %ld %*d %*d %*d %*d %ld", &r, &t)==2) {
+    
+    if (sscanf (s, " eth%*d:%ld %*d %*d %*d %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d %*d %*d", &r, &t)==2) {
       pkg_rx+=r;
       pkg_tx+=t;
-    }  
+      *bytes=1;
+    } else {
+      if (sscanf (s, " eth%*d:%*d: %ld %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d", &r, &t)==2 ||
+	  sscanf (s, " eth%*d:%ld %*d %*d %*d %*d %ld %*d %*d %*d %*d %*d",      &r, &t)==2) {
+	pkg_rx+=r;
+	pkg_tx+=t;
+	*bytes=0;
+      }
+    }
   }
+  
   *rx=smooth("net_rx", 500, pkg_rx);
   *tx=smooth("net_tx", 500, pkg_tx);
-
+  
   return 0;
 }
 

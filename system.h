@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.7 2000/05/21 06:20:35 reinelt Exp $
+/* $Id: system.h,v 1.8 2000/07/31 10:43:44 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.h,v $
+ * Revision 1.8  2000/07/31 10:43:44  reinelt
+ *
+ * some changes to support kernel-2.4 (different layout of various files in /proc)
+ *
  * Revision 1.7  2000/05/21 06:20:35  reinelt
  *
  * added ppp throughput
@@ -65,7 +69,7 @@ int    Ram (int *total, int *free, int *shared, int *buffered, int *cached);
 int    Load (double *load1, double *load2, double *load3);
 int    Busy (double *user, double *nice, double *system, double *idle);
 int    Disk (int *r, int *w);
-int    Net (int *rx, int *tx);
+int    Net (int *rx, int *tx, int *bytes);
 int    PPP (int unit, int *rx, int *tx);
 int    Sensor (int index, double *val, double *min, double *max);
 

@@ -18,6 +18,7 @@ AM_CONDITIONAL(WITH_X, test x$no_x = x)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(sys/io.h asm/io.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
@@ -25,7 +26,8 @@ AC_HEADER_TIME
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(gettimeofday strdup strerror strstr strtol uname)
+AC_CHECK_FUNCS(gettimeofday socket strdup strerror strstr strtol uname)
 
 AC_OUTPUT(Makefile)

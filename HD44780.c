@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.5 2000/07/31 06:46:35 reinelt Exp $
+/* $Id: HD44780.c,v 1.6 2000/07/31 10:43:44 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.6  2000/07/31 10:43:44  reinelt
+ *
+ * some changes to support kernel-2.4 (different layout of various files in /proc)
+ *
  * Revision 1.5  2000/07/31 06:46:35  reinelt
  *
  * eliminated some compiler warnings with glibc
@@ -68,7 +72,15 @@
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
+#ifdef HAVE_SYS_IO_H
 #include <sys/io.h>
+#else
+#ifdef HAVE_ASM_IO_H
+#include <asm/io.h>
+#else
+#error "neither sys/io.h nor asm/io.h found!"
+#endif
+#endif
 
 #include "debug.h"
 #include "cfg.h"

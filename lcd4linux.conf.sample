@@ -1,12 +1,15 @@
-Display LCD2041
-Port /dev/ttyS2
-Speed 19200
-Contrast 160
+#Display LCD2041
+#Port /dev/ttyS2
+#Speed 19200
+#Contrast 160
 
-#Display HD44780
-#Port 0x378
-#Size 16x2
-#Delay 300
+Display HD44780
+Port 0x378
+Size 16x2
+Delay 398
+
+Row1 "Disk%dm $R10dr+dw"
+Row2 "Net %nm $R10nr+nw"
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -44,15 +47,14 @@ Contrast 160
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
 #Row3 "Busy %cb%% $r10cs+cb"
-#Row4 "Load %l1%L$r10l1"
+#Row4 "Load%l1%L$r10l1"
 
-Row1 "Load %l1%L$r10cs+cb"
-Row2 "Disk %dm $R10dr+dw"
-Row3 "Net  %nm $R10nr+nw"
-#Row4 "ISDN %im $r10ii+io"
-Row5 "Temp %s2°$r10s1+s2"
-
-Row4 "DSL %tm $r10ti+to"
+#Row1 "Load%l1%L$r10cs+cb"
+#Row2 "Disk%dm $R10dr+dw"
+#Row3 "Net %nm $R10nr+nw"
+#Row4 "ISDN%im $r10ii+io"
+#Row4 "DSL %tm $r10ti+to"
+#Row5 "Temp%s2°$r10s1+s2"
 
 #Row1 "$u3l1$u3cb$u3cs $u3mu$u3ma$u3ms $u3dr$u3dw $u3nr$u3nw $u3ii$u3io"
 #Row2 " "

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.1 2000/04/15 16:56:52 reinelt Exp $
+/* $Id: udelay.c,v 1.2 2000/07/31 10:43:44 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.2  2000/07/31 10:43:44  reinelt
+ *
+ * some changes to support kernel-2.4 (different layout of various files in /proc)
+ *
  * Revision 1.1  2000/04/15 16:56:52  reinelt
  *
  * moved delay loops to udelay.c
@@ -80,7 +84,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLOCKS_PER_SEC);
+    udelay(1000000/CLK_TCK);
     if (clock()>tick)
       break;
   }
@@ -92,7 +96,7 @@ void udelay_calibrate (void)
     tick=clock();
     while (clock()==tick);
     tick=clock();
-    udelay(1000000/CLOCKS_PER_SEC);
+    udelay(1000000/CLK_TCK);
     if (clock()>tick)
       loops_per_usec&=~bit;
   }

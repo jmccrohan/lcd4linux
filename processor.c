@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.6 2000/05/21 06:20:35 reinelt Exp $
+/* $Id: processor.c,v 1.7 2000/07/31 10:43:44 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.7  2000/07/31 10:43:44  reinelt
+ *
+ * some changes to support kernel-2.4 (different layout of various files in /proc)
+ *
  * Revision 1.6  2000/05/21 06:20:35  reinelt
  *
  * added ppp throughput
@@ -87,7 +91,7 @@ struct { int total, used, free, shared, buffer, cache, avail; } ram;
 struct { double load1, load2, load3, overload; } load;
 struct { double user, nice, system, idle; } busy;
 struct { int read, write, total, max, peak; } disk;
-struct { int rx, tx, total, max, peak; } net;
+struct { int rx, tx, total, max, peak, bytes; } net;
 struct { int usage, in, out, total, max, peak; } isdn;
 struct { int rx, tx, total, max, peak; } ppp;
 struct { double val, min, max; } sensor[SENSORS];
@@ -292,13 +296,12 @@ static void print_token (int token, char **p)
   case T_SENSOR_8:
   case T_SENSOR_9:
     val=query(token);
-    if (val<10.0) {
-      *p+=sprintf (*p, "%4.2f", val);
-    } else if (val<100.0) {
-      *p+=sprintf (*p, "%4.1f", val);
-    } else {
-      *p+=sprintf (*p, "%4.0f", val);
-    }
+    if (val<10.0)
+      *p+=sprintf (*p, "%5.2f", val);
+    else if (val<100.0)
+      *p+=sprintf (*p, "%5.1f", val);
+    else
+      *p+=sprintf (*p, "%5.0f", val);
     break;
   case T_CPU_USER:
   case T_CPU_NICE:
@@ -307,23 +310,26 @@ static void print_token (int token, char **p)
   case T_CPU_IDLE:
     *p+=sprintf (*p, "%3.0f", 100.0*query(token));
     break;
+  case T_ETH_RX:
+  case T_ETH_TX:
+  case T_ETH_MAX:
+  case T_ETH_TOTAL:
+    val=query(token);
+    if (net.bytes)
+      val/=1024.0;
+    *p+=sprintf (*p, "%5.0f", val);
+    break;
   case T_ISDN_IN:
   case T_ISDN_OUT:
   case T_ISDN_MAX:
   case T_ISDN_TOTAL:
     if (isdn.usage)
-      *p+=sprintf (*p, "%4.0f", query(token));
+      *p+=sprintf (*p, "%5.0f", query(token));
     else
       *p+=sprintf (*p, "----");
     break;
-  case T_PPP_RX:
-  case T_PPP_TX:
-  case T_PPP_MAX:
-  case T_PPP_TOTAL:
-    *p+=sprintf (*p, "%5.0f", query(token));
-    break;
   default:
-      *p+=sprintf (*p, "%4.0f", query(token));
+      *p+=sprintf (*p, "%5.0f", query(token));
   }
 }
 
@@ -353,7 +359,7 @@ static void collect_data (void)
   }
   
   if (token_usage[C_ETH]) {
-    Net (&net.rx, &net.tx);
+    Net (&net.rx, &net.tx, &net.bytes);
     net.total=net.rx+net.tx;
     net.max=net.rx>net.tx?net.rx:net.tx;
     if (net.max>net.peak) net.peak=net.max;
