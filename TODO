@@ -46,3 +46,10 @@ will be done with the big config-rework
 // 2001-03-05 Leo Tötsch <lt@toetsch.at>
 // replace T_EXTENDED with a Flag similar to 'bar'
 // rejected, T_EXTENDED does a good job  -mr
+
+2001-03-07 Michael Reinelt <reinelt@eunet.at>
+use ppdev instead of ugly outb()
+
+2001-03-09 Michael Reinelt <reinelt@eunet.at>
+replace udelay() assembly loop with rdtsc (read time stamp counter)
+at least try to....
