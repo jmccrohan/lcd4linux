@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.1 2004/01/10 17:36:56 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.2 2004/01/27 05:06:10 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.2  2004/01/27 05:06:10  reinelt
+ * i2c update from Xavier
+ *
  * Revision 1.1  2004/01/10 17:36:56  reinelt
  *
  * I2C Sensors plugin from Xavier added
@@ -44,16 +47,13 @@
  * -- WARNING #2 --
  * This plugin should detect where your sensors are at startup.
  * If you can't get any token to work, ensure you don't get
- * an error message with "lcd4linux -F".
+ * an error message with "lcd4linux -Fvvv".
  *
  * If so, try to force the path to your sensors in the conf like this :
- *   i2c_sensors.path /sys/bus/i2c/devices/0-6000/
- *
- *   - replace 0-6000 with the appropriate dir
- *   - DON'T forget the trailing slash or it won't work !
+ *   i2c_sensors-path '/sys/bus/i2c/devices/0-6000/'
+ *   (replace 0-6000 with the appropriate dir)
  *
  */
-
 
 #include <stdlib.h>
 #include <string.h>
@@ -65,69 +65,86 @@
 #include "debug.h"
 #include "plugin.h"
 #include "cfg.h"
+#include "hash.h"
 
 static char *path=NULL;
+static HASH I2Csensors = { 0, };
 
-static void my_i2c_sensors (RESULT *result, RESULT *arg)
+static int parse_i2c_sensors(RESULT *arg)
 {
-  int fd=-2;
   double value;
+  char val[32];
   char buffer[32];
   char *key=R2S(arg);
-  char *file;
+  char file[64];
+  FILE *stream;
 
   // construct absolute path to the file to read
-  // Fixme: MR: free the path again??
-  file = strdup(path);
-  file = realloc(file, strlen(path)+strlen(key)+1);
-  file = strcat(file, key);
-  
-  // read of file to buffer
-  fd = open(file, O_RDONLY);
-  read (fd, &buffer, 31);
-  close(fd);
+  strcpy(file, path);
+  strcat(file, key);
 
-  if (!buffer) {
-    SetResult(&result, R_STRING, "??"); 
-    return;
+  // read of file to buffer
+  stream=fopen(file, "r");
+  if (stream==NULL) {
+    error ("fopen(%s) failed",file);
+    return -1;
   }
+  fgets (buffer, sizeof(buffer), stream);
+  fclose (stream);
   
-  // now the formating stuff, depending on the file wanted
+  if (!buffer) {
+    error ("%s empty ?!",file);	  
+    return -1;
+  }
+
+  // now the formating stuff, depending on the file :
+  // Some values must be divided by 1000, the others
+  // are parsed directly (we just remove the \n).
   if (!strncmp(key, "temp_", 5)  ||
       !strncmp(key, "curr_", 5)  ||
       !strncmp(key, "in_", 3)    ||
       !strncmp(key, "vid", 3)) {
     value = strtod(buffer, NULL);
+    // FIXME: any way to do this without converting to double ?		  
     value /= 1000.0;
-    if (value) {
-      SetResult(&result, R_NUMBER, &value); 
-      return;
-    }    
-
-  } else if (!strncmp(key, "fan_", 4) ||
-	     !strncmp(key, "pwn_", 4) ||
-	     !strncmp(key, "vrm", 5)) {
-    value = strtod(buffer, NULL);
-    if (value) {
-      SetResult(&result, R_NUMBER, &buffer);
-      return;
-    } 
- 
+    sprintf(val, "%f", value);   
+		  
   } else {
-    SetResult(&result, R_STRING, &buffer);
-    return; 
+    sprintf(val, "%s", buffer); 
+	// we supress this nasty \n at the end
+	val[strlen(val)-1]='\0';
   } 
   
-  // fallback is there's a problem  
-  SetResult(&result, R_STRING, "??");
-}
+  hash_set (&I2Csensors, key, val);
+  return 0; 
 
+}  
+
+void my_i2c_sensors (RESULT *result, RESULT *arg)
+{
+  int age;
+  char *val;
+  char *key=R2S(arg);  
+  
+  age=hash_age(&I2Csensors, key, &val);
+  // refresh every 100msec
+  if (age<0 || age>100)
+  {
+    parse_i2c_sensors(arg);
+    val=hash_get(&I2Csensors, key);
+  }
+  if (val) {
+    SetResult(&result, R_STRING, val); 
+  } else {
+    SetResult(&result, R_STRING, "??"); 
+  }
+}
 
 void my_i2c_sensors_path(void)
 {
   struct dirent *dir;
   struct dirent *file;
-  char *base="/sys/bus/i2c/devices/";
+  const char *base="/sys/bus/i2c/devices/";
   char dname[64];
   DIR *fd1;
   DIR *fd2;
@@ -150,8 +167,8 @@ void my_i2c_sensors_path(void)
     done = 0;
     while((file = readdir(fd2))) {
       if (!strcmp(file->d_name, "temp_input1")) { // FIXME : do all sensors have a temp_input1 ?
-	path = realloc(path, strlen(dname));
-	strcpy(path, dname);			  // we've got it ;)
+	path = realloc(path, strlen(dname)+1);
+	strcpy(path, dname);			  
 	done=1;
 	break;
       }
@@ -160,30 +177,43 @@ void my_i2c_sensors_path(void)
     if (done) break;
   }
   closedir(fd1);
-  
-  // fallback is path undefined
-  if (*path != '/') {	
-    error("[i2c_sensors] No i2c sensors found via the i2c interface !");
-    error("[i2c_sensors] Try to specify the path to the sensors !");
-  }
 }
-
 
 int plugin_init_i2c_sensors (void)
 {
-  //  char *path_cfg=cfg_get(NULL, "i", "");
-  //  printf("%s\n", path_cfg);
-  //  if (strncmp(path_cfg, "/", 1)) {
-  //    printf("%s\n", "Calling my_i2c_sensors_path()");
-  my_i2c_sensors_path();
-  //  } else {
-  //    path = realloc(path, strlen(path_cfg)+1);
-  //    strcpy(path, path_cfg);
-  //  }
-  
-  AddFunction ("i2c_sensors", 1, my_i2c_sensors);
+  char *path_cfg=cfg_get(NULL, "i2c_sensors-path", "");
 
-  printf("%s\n", path);
+  if (strncmp(path_cfg, "/", 1)) {
+    debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
+    my_i2c_sensors_path();
+	if (!path) {
+      error("[i2c_sensors] No i2c sensors found via the i2c interface !");
+      error("[i2c_sensors] Try to specify the path to the sensors !");
+    } else {
+      debug("Your i2c sensors are probably in %s", path);
+      debug("if i2c_sensors doesn't work, try to specify the path in your conf");
+    }
+	
+  } else {
+	if (path_cfg[strlen(path_cfg)-1] != '/') {
+      // the headless user forgot the trailing slash :/
+      debug("adding a trailing slash at the end of the path");
+      path_cfg = realloc(path_cfg, strlen(path_cfg)+2);
+      strcat(path_cfg, "/");
+    }
+    debug("Path to i2c sensors from the conf : %s", path_cfg);
+    debug("if i2c_sensors doesn't work, double check this value !");
+    path = realloc(path, strlen(path_cfg)+1);
+    strcpy(path, path_cfg);
+	free(path_cfg);
+  }
+
+  // we activate the function only if there's a possibly path found
+  if (!path) {
+  free(path);
+  } else {
+  AddFunction ("i2c_sensors", 1, my_i2c_sensors);
+  }
+ 
   return 0;
 }
-
