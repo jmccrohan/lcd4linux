@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.14 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: USBLCD.c,v 1.15 2003/09/09 11:47:47 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.15  2003/09/09 11:47:47  reinelt
+ * basic icon support for HD44780
+ *
  * Revision 1.14  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -338,13 +341,9 @@ int USBLCD_flush (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
-      } else {
-	c=icon_peek(row, col);
-	if (c!=-1) {
-	  FrameBuffer1[row*Lcd.cols+col]=(char)c;
-	}
       }
     }
     for (col=0; col<Lcd.cols; col++) {

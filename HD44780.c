@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.37 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: HD44780.c,v 1.38 2003/09/09 11:47:47 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.38  2003/09/09 11:47:47  reinelt
+ * basic icon support for HD44780
+ *
  * Revision 1.37  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -195,6 +198,7 @@
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "parport.h"
 #include "udelay.h"
 
@@ -216,6 +220,7 @@
 
 
 static LCD Lcd;
+static int Icons;
 static int Bits=0;
 static int GPO=0;
 static int Controllers = 0;
@@ -387,7 +392,10 @@ int HD_clear (int full)
 {
 
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
+
   GPO=0;
   
   if (full) {
@@ -491,7 +499,15 @@ int HD_init (LCD *Self)
   HD_command (0x03, 0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x03, 0x06, 40);   // curser moves to right, no shift
 
-  bar_init(rows, cols, XRES, YRES, CHARS);
+  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
+  if (Icons>0) {
+    info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, HD_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(rows, cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
   
@@ -535,6 +551,12 @@ int HD_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int HD_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int HD_gpo (int num, int val)
 {
   if (num>=Lcd.gpos) 
@@ -559,6 +581,7 @@ int HD_flush (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
@@ -613,11 +636,13 @@ LCD HD44780[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  HD_init,
     clear: HD_clear,
     put:   HD_put,
     bar:   HD_bar,
+    icon:  HD_icon,
     gpo:   HD_gpo,
     flush: HD_flush,
     quit:  HD_quit 
