@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.12 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.13 2000/04/07 05:42:20 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.13  2000/04/07 05:42:20  reinelt
+ *
+ * UUCP style lockfiles for the serial port
+ *
  * Revision 1.12  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -76,13 +80,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+#include <termios.h>
+#include <fcntl.h>
 
 #include "cfg.h"
+#include "lock.h"
 #include "display.h"
 
 #define SPEED 19200
@@ -122,8 +128,16 @@ static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 
 static int MO_open (void)
 {
   int fd;
+  pid_t pid;
   struct termios portset;
   
+  if ((pid=lock_port(Port))!=0) {
+    if (pid==-1)
+      fprintf (stderr, "MatrixOrbital: port %s could not be locked\n", Port);
+    else
+      fprintf (stderr, "MatrixOrbital: port %s is locked by process %d\n", Port, pid);
+    return -1;
+  }
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
     fprintf (stderr, "MatrixOrbital: open(%s) failed: %s\n", Port, strerror(errno));
@@ -349,6 +363,8 @@ int MO_clear (void)
   return 0;
 }
 
+static void MO_quit (int signal); //forward decvlaration
+
 int MO_init (LCD *Self)
 {
   char *port;
@@ -390,6 +406,10 @@ int MO_init (LCD *Self)
 
   Device=MO_open();
   if (Device==-1) return -1;
+
+  signal(SIGINT,  MO_quit);
+  signal(SIGQUIT, MO_quit);
+  signal(SIGTERM, MO_quit);
 
   MO_clear();
   MO_contrast();
@@ -522,6 +542,14 @@ int MO_flush (void)
   return 0;
 }
 
+static void MO_quit (int signal)
+{
+  MO_clear();
+  MO_flush();
+  close (Device);
+  unlock_port(Port);
+  exit (0);
+}
 
 LCD MatrixOrbital[] = {
   { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },

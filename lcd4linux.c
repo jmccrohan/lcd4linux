@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.17 2000/04/03 17:31:52 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.18 2000/04/07 05:42:20 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.18  2000/04/07 05:42:20  reinelt
+ *
+ * UUCP style lockfiles for the serial port
+ *
  * Revision 1.17  2000/04/03 17:31:52  reinelt
  *
  * suppress welcome message if display is smaller than 20x2
@@ -120,11 +124,35 @@ static void usage(void)
   printf ("usage: lcd4linux [-h] [-l] [-c key=value] [-f config-file] [-o output-file]\n");
 }
 
+static int hello (void)
+{
+  int x, y;
+  
+  lcd_query (&y, &x, NULL, NULL, NULL);
+  
+  if (x>=20) {
+    lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
+    lcd_put (2, 1, " (c) 2000 M.Reinelt");
+  } else if (x >=16) {
+    lcd_put (1, 1, "LCD4Linux " VERSION);
+    lcd_put (2, 1, "(c) M.Reinelt");
+  } else if (x >=9) {
+    lcd_put (1, 1, "LCD4Linux");
+  } else if (x>=7) {
+    lcd_put (1, 1, "L4Linux");
+  } else return 0;
+  
+  lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
+  lcd_put (2, 1, " (c) 2000 M.Reinelt");
+  lcd_flush();
+  return 1;
+}
+
 int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
-  int c, x, y, smooth;
+  int c, smooth;
   
   while ((c=getopt (argc, argv, "c:f:hlo:"))!=EOF) {
     switch (c) {
@@ -182,15 +210,11 @@ int main (int argc, char *argv[])
   process_init();
   lcd_clear();
 
-  lcd_query (&y, &x, NULL, NULL, NULL);
-  if (x>=20 && y>=2) {
-    lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
-    lcd_put (2, 1, " (c) 2000 M.Reinelt");
-    lcd_flush();
+  if (hello()) {
     sleep (3);
     lcd_clear();
   }
-
+  
   smooth=0;
   while (1) {
     process (smooth);
