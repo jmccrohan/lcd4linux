@@ -729,7 +729,7 @@ Layout testMySQL {
 }
 
 
-Display 'LCD-Linux'
+#Display 'LCD-Linux'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
@@ -744,7 +744,7 @@ Display 'LCD-Linux'
 #Display 'LCDTerm'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-#Display 'XWindow'
+Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'

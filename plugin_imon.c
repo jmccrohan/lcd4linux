@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.14 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.15 2005/04/01 05:16:04 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.15  2005/04/01 05:16:04  reinelt
+ * moved plugin init stuff to a seperate function called on first use
+ *
  * Revision 1.14  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -121,64 +124,58 @@ static int err=0;
  *  service_connect (host_name, port)       - connect to tcp-service
  *----------------------------------------------------------------------------
  */
-static int service_connect (const char * host_name, const int port){
-    struct sockaddr_in  addr;
-    struct hostent *    host_p;
-    int                 fd;
-    int                 opt = 1;
+static int service_connect (const char * host_name, const int port)
+{
+  struct sockaddr_in  addr;
+  struct hostent *    host_p;
+  int                 fd;
+  int                 opt = 1;
 
-    (void) memset ((char *) &addr, 0, sizeof (addr));
+  (void) memset ((char *) &addr, 0, sizeof (addr));
 
-    if ((addr.sin_addr.s_addr = inet_addr ((char *) host_name)) == INADDR_NONE)
-    {
-        host_p = gethostbyname (host_name);
-
-        if (! host_p)
-        {
-            error ("%s: host not found\n", host_name);
-            return (-1);
-        }
-
-        (void) memcpy ((char *) (&addr.sin_addr), host_p->h_addr,
-                        host_p->h_length);
+  if ((addr.sin_addr.s_addr = inet_addr ((char *) host_name)) == INADDR_NONE) {
+    host_p = gethostbyname (host_name);
+    if (!host_p) {
+      error ("%s: host not found\n", host_name);
+      return (-1);
     }
-
-    addr.sin_family  = AF_INET;
-    addr.sin_port    = htons ((unsigned short) port);
-
-    if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0)
-    {                                           /* open socket              */
-        perror ("socket");
-        return (-1);
-    }
+    (void) memcpy ((char *) (&addr.sin_addr), host_p->h_addr, host_p->h_length);
+  }
+  
+  addr.sin_family = AF_INET;
+  addr.sin_port   = htons ((unsigned short) port);
+  
+  /* open socket */
+  if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror ("socket");
+    return (-1);
+  }
     
-    (void) setsockopt (fd, IPPROTO_TCP, TCP_NODELAY,
-                       (char *) &opt, sizeof (opt));
-
-    if (connect (fd, (struct sockaddr *) &addr, sizeof (addr)) != 0)
-    {
-        (void) close (fd);
-        perror (host_name);
-        return (-1);
-    }
-
-    return (fd);
+  (void) setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, (char *) &opt, sizeof (opt));
+  
+  if (connect (fd, (struct sockaddr *) &addr, sizeof (addr)) != 0) {
+    (void) close (fd);
+    perror (host_name);
+    return (-1);
+  }
+  
+  return (fd);
 } /* service_connect (char * host_name, int port) */
+
 
 /*----------------------------------------------------------------------------
  *  send_command (int fd, char * str)       - send command to imond
  *----------------------------------------------------------------------------
  */
-static void
-send_command (const int fd, const char * str)
+static void send_command (const int fd, const char * str)
 {
-    char    buf[256];
-    int     len = strlen (str);
+  char buf[256];
+  int  len = strlen (str);
 
-    sprintf (buf, "%s\r\n", str);
-    write (fd, buf, len + 2);
+  sprintf (buf, "%s\r\n", str);
+  write (fd, buf, len + 2);
 
-    return;
+  return;
 } /* send_command (int fd, char * str) */
 
 
@@ -186,64 +183,58 @@ send_command (const int fd, const char * str)
  *  get_answer (int fd)                     - get answer from imond
  *----------------------------------------------------------------------------
  */
-static char *
-get_answer (const int fd)
+static char* get_answer (const int fd)
 {
-    static char buf[8192];
-    int         len;
+  static char buf[8192];
+  int         len;
 
-    len = read (fd, buf, 8192);
+  len = read (fd, buf, 8192);
 
-    if (len <= 0)
-    {
-        return ((char *) NULL);
-    }
+  if (len <= 0) {
+    return ((char *) NULL);
+  }
 
-    while (len > 1 && (buf[len - 1] == '\n' || buf[len - 1] == '\r'))
-    {
-        buf[len - 1] = '\0';
-        len--;
-    }
+  while (len > 1 && (buf[len - 1] == '\n' || buf[len - 1] == '\r')) {
+    buf[len - 1] = '\0';
+    len--;
+  }
 
-    if (! strncmp (buf, "OK ", 3))                      /* OK xxxx          */
-    {
-        return (buf + 3);
-    }
-    else if (len > 2 && ! strcmp (buf + len - 2, "OK"))
-    {
-        *(buf + len - 2) = '\0';
-        return (buf);
-    }
-    else if (len == 2 && ! strcmp (buf + len - 2, "OK"))
-    {
-        return (buf);
-    }
+  if (! strncmp (buf, "OK ", 3)) { /* OK xxxx */
+    return (buf + 3);
+  }
+  else if (len > 2 && ! strcmp (buf + len - 2, "OK")) {
+    *(buf + len - 2) = '\0';
+    return (buf);
+  }
+  else if (len == 2 && ! strcmp (buf + len - 2, "OK")) {
+    return (buf);
+  }
 
-    return ((char *) NULL);                             /* ERR xxxx         */
+  return ((char *) NULL); /* ERR xxxx */
 } /* get_answer (int fd) */
 
 /*----------------------------------------------------------------------------
  *  get_value (char * cmd)         - send command, get value
  *----------------------------------------------------------------------------
  */
-static char *
-get_value (const char * cmd)
+static char* get_value (const char * cmd)
 {
-    char *  answer;
-
-    send_command (fd, cmd);
-
-    answer = get_answer (fd);
-
-    if (answer)
-    {
-        return (answer);
-    }
-
-    return ("");
+  char *answer;
+  
+  send_command (fd, cmd);
+  
+  answer = get_answer (fd);
+  
+  if (answer) {
+    return (answer);
+  }
+  
+  return ("");
 } /* get_value (char * cmd, int arg) */
 
-static void phonebook(char *number){
+
+static void phonebook(char *number)
+{
   FILE *  fp;
   char line[256];
   
@@ -251,40 +242,41 @@ static void phonebook(char *number){
   
   if (! fp) return;
   
-  while (fgets (line, 128, fp)){
-  	if (*line == '#') continue;
-  	if (!strncmp(line,number,strlen(number))){
-  	  char *komma=strchr(line,',');
-  	  char *beginn=strchr(line,'=');
-  	  if (!beginn) return;
-  	  while (strrchr(line,'\r')) strrchr(line,'\r')[0]='\0';
-  	  while (strrchr(line,'\n')) strrchr(line,'\n')[0]='\0';
-  	  if (komma) komma[0]='\0';
-  	  strcpy(number,beginn+1);
-  	  break;
-  	}  	
+  while (fgets (line, 128, fp)) {
+    if (*line == '#') continue;
+    if (!strncmp(line,number,strlen(number))) {
+      char *komma=strchr(line,',');
+      char *beginn=strchr(line,'=');
+      if (!beginn) return;
+      while (strrchr(line,'\r')) strrchr(line,'\r')[0]='\0';
+      while (strrchr(line,'\n')) strrchr(line,'\n')[0]='\0';
+      if (komma) komma[0]='\0';
+      strcpy(number,beginn+1);
+      break;
+    }   
   }
   
   fclose(fp);
 }
 
 
-static int parse_telmon(){
- static int telmond_fd=-2;
- static char oldanswer[128];
- int age;
+static int parse_telmon()
+{
+  static int telmond_fd=-2;
+  static char oldanswer[128];
+  int age;
    
- /* reread every 1 sec only */
- age=hash_age(&TELMON, NULL);
- if (age>0 && age<=1000) return 0;
+  /* reread every 1 sec only */
+  age=hash_age(&TELMON, NULL);
+  if (age>0 && age<=1000) return 0;
 
- if (telmond_fd != -1){
-  char    telbuf[128];
+  if (telmond_fd != -1) {
+    char telbuf[128];
 
-  telmond_fd = service_connect (thost, tport);
-  if (telmond_fd >= 0){
-   int l = read (telmond_fd, telbuf, 127);
-   if ((l > 0) && (strcmp(telbuf,oldanswer))){
+    telmond_fd = service_connect (thost, tport);
+    if (telmond_fd >= 0) {
+      int l = read (telmond_fd, telbuf, 127);
+      if ((l > 0) && (strcmp(telbuf,oldanswer))){
 	char date[11]; 
 	char time[11];
 	char number[256];
@@ -301,195 +293,262 @@ static int parse_telmon(){
 	phonebook(msn);
 	hash_put (&TELMON, "name", number);
 	hash_put (&TELMON, "msnname", msn);
-   }
-   close (telmond_fd);
-   strcpy(oldanswer,telbuf);
+      }
+      close (telmond_fd);
+      strcpy(oldanswer,telbuf);
+    }
   }
- }
- return 0;
+  return 0;
 }
 
-static void my_telmon (RESULT *result, RESULT *arg1){
- char *val=NULL;
- if (parse_telmon()<0) {
-  SetResult(&result, R_STRING, ""); 
-  return;
- }
-  
- val=hash_get(&TELMON, R2S(arg1), NULL);
- if (val==NULL) val="";
- SetResult(&result, R_STRING, val); 
-}
 
-void init(){
- if (fd!=0) return;
- 
- fd=service_connect(ihost,iport);
+static int configure_telmon (void) 
+{
+  static int configured = 0;
 
- if (fd<0){
-  err++;
- } else if ((ipass!=NULL) && (*ipass!='\0')) { /* Passwort senden */
-  char buf[40];
-  qprintf(buf,sizeof(buf),"pass %s",ipass);
-  send_command(fd,buf);
-  get_answer(fd); 
- }
-}
-
-static int parse_imon(const char *cmd){
-  /* reread every half sec only */
- int age=hash_age(&IMON, cmd);
- if (age>0 && age<=500) return 0;
-
- init(); /* establish connection */
-
- if (err) return -1;
- 
- hash_put (&IMON, cmd , get_value(cmd));
- 
- return 0;
-}
-
-static void my_imon_version (RESULT *result){
- char *val;
- /* read only ones */
- int age=hash_age(&IMON, "version");
- if (age<0){
   char *s;
-  init();
-  if (err){
-   SetResult(&result, R_STRING, ""); 
-   return;
+  
+  if (configured != 0) return configured;
+  
+  hash_create(&TELMON);
+
+  s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
+  if (*s=='\0') {
+    error ("[Telmon] empty 'Host' entry in %s", cfg_source());
+    configured = -1;
+    return configured;
+  } 
+  strcpy(thost,s);
+  free(s);
+  
+  if (cfg_number("Plugin:Telmon", "Port", 5001, 1, 65536, &tport) < 0) {
+    error ("[Telmon] no valid port definition");
+    configured = -1;
+    return configured;
   }
-  s=get_value("version");
-  for (;;){ /* interne Versionsnummer killen */
-   if (s[0]==' '){
-    s=s+1;
-    break;
-   }
-   s=s+1;		
+ 
+  s = cfg_get ("Plugin:Telmon", "Phonebook", "/etc/phonebook");
+  strcpy(phoneb, s);
+  free(s);
+ 
+  configured = 1;
+  return configured;
+}
+
+
+static void my_telmon (RESULT *result, RESULT *arg1)
+{
+  char *val = NULL;
+  
+  if (configure_telmon() < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
   }
-  hash_put (&IMON, "version", s);
- }
-	
- val=hash_get(&IMON, "version", NULL);
- if (val==NULL) val="";
- SetResult(&result, R_STRING, val); 
-}
 
-static int parse_imon_rates(const char *channel){
- char buf[128],in[25],out[25];
- char *s;
- int age;
+  if (parse_telmon() < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
   
- qprintf(buf,sizeof(buf),"rate %s in",channel);
- 
- /* reread every half sec only */
- age=hash_age(&IMON, buf);
- if (age>0 && age<=500) return 0;
-
- init(); /* establish connection */
-
- if (err) return -1;
-
- qprintf(buf, sizeof(buf), "rate %s", channel);
- s=get_value(buf);
- 
- if (sscanf(s,"%s %s",in, out)!=2) return -1;
-
- qprintf(buf, sizeof(buf), "rate %s in", channel);
- hash_put (&IMON, buf , in);
- qprintf(buf, sizeof(buf), "rate %s out", channel);
- hash_put (&IMON, buf , out);
- 
- return 0;
+  val = hash_get(&TELMON, R2S(arg1), NULL);
+  if (val == NULL) val="";
+  SetResult(&result, R_STRING, val); 
 }
 
 
-static void my_imon_rates (RESULT *result, RESULT *arg1, RESULT *arg2){
- char *val;
- char buf[128];
- 
- if (parse_imon_rates(R2S(arg1))<0) {
-  SetResult(&result, R_STRING, ""); 
-  return;
- }
- 
- qprintf(buf,sizeof(buf),"rate %s %s",R2S(arg1),R2S(arg2));
-
- val=hash_get(&IMON, buf, NULL);
- if (val==NULL) val="";
- SetResult(&result, R_STRING, val); 
-}
-
-static void my_imon (RESULT *result, RESULT *arg1){
- char *val=NULL,*cmd=R2S(arg1);
- 
- if (parse_imon(cmd)<0) {
-  SetResult(&result, R_STRING, ""); 
-  return;
- }
+void init()
+{
+  if (fd != 0) return;
   
- val=hash_get(&IMON, cmd, NULL);
- if (val==NULL) val="";
- SetResult(&result, R_STRING, val); 
-}
-
-int plugin_init_imon (void){
- char telmon='\1',imon='\1';	
- char *s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
-
- hash_create(&TELMON);
- hash_create(&IMON);
-
- if (*s=='\0') {
-  error ("[Telmon] no 'Host' entry in %s", cfg_source());
-  telmon='\0';
- } 
- strcpy(thost,s);
- free(s);
+  fd = service_connect(ihost, iport);
   
- if ((telmon=='\01') && (cfg_number("Plugin:Telmon", "Port",5001,1,65536,&tport)<0)){
-  error ("[Telmon] no valid port definition");
-  telmon='\0';	
- }
- 
- s=cfg_get ("Plugin:Telmon", "Phonebook","/etc/phonebook");
- strcpy(phoneb,s);
- free(s);
- 
- s=cfg_get ("Plugin:Imon", "Host", "127.0.0.1");
- if (*s=='\0') {
-  error ("[Imon] no 'Host' entry in %s", cfg_source());
-  imon='\0';
- }
- strcpy(ihost,s); 
- free(s);
- 
- if ((imon=='\01') && (cfg_number("Plugin:Imon", "Port",5000,1,65536,&iport)<0)){
-  error ("[Imon] no valid port definition");
-  imon='\0';	
- }
- 
- s=cfg_get ("Plugin:Imon", "Pass", "");
- strcpy(ipass,s);
- free(s);
-	
- if (imon=='\1'){
-   AddFunction ("imon",          1, my_imon);
-   AddFunction ("imon::version", 0, my_imon_version);
-   AddFunction ("imon::rates",   2, my_imon_rates);
- }
-
- if (telmon=='\1') AddFunction ("imon::telmon", 1, my_telmon);
-
- return 0;
+  if (fd < 0){ 
+    err++; 
+  } else if ((ipass != NULL) && (*ipass != '\0')) { /* Passwort senden */
+    char buf[40];
+    qprintf(buf,sizeof(buf), "pass %s", ipass);
+    send_command(fd, buf);
+    get_answer(fd); 
+  }
 }
 
-void plugin_exit_imon(void){
-  if (fd>0){
-   send_command(fd,"quit");
-   close(fd);
+
+static int parse_imon(const char *cmd)
+{
+  /* reread every half sec only */
+  int age = hash_age(&IMON, cmd);
+  if (age > 0 && age <= 500) return 0;
+
+  init(); /* establish connection */
+
+  if (err) return -1;
+ 
+  hash_put (&IMON, cmd , get_value(cmd));
+ 
+  return 0;
+}
+
+
+static int configure_imon (void) 
+{
+  static int configured = 0;
+
+  char *s;
+  
+  if (configured != 0) return configured;
+  
+  hash_create(&IMON);
+
+  s=cfg_get ("Plugin:Imon", "Host", "127.0.0.1");
+  if (*s=='\0') {
+    error ("[Imon] empty 'Host' entry in %s", cfg_source());
+    configured = -1;
+    return configured;
+  }
+  strcpy(ihost,s); 
+  free(s);
+ 
+  if (cfg_number("Plugin:Imon", "Port", 5000, 1, 65536, &iport) < 0) {
+    error ("[Imon] no valid port definition");
+    configured = -1;
+    return configured;
+  }
+ 
+  s = cfg_get ("Plugin:Imon", "Pass", "");
+  strcpy(ipass, s);
+  free(s);
+
+  configured = 1;
+  return configured;
+}
+
+
+static void my_imon_version (RESULT *result)
+{
+  char *val;
+
+  if (configure_imon() < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+
+  /* read only once */
+  int age=hash_age(&IMON, "version");
+  if (age<0){
+    char *s;
+    init();
+    if (err){
+      SetResult(&result, R_STRING, ""); 
+      return;
+    }
+    s=get_value("version");
+    for (;;){ /* interne Versionsnummer killen */
+      if (s[0]==' '){
+	s=s+1;
+	break;
+      }
+      s=s+1;  
+    }
+    hash_put (&IMON, "version", s);
+  }
+ 
+  val=hash_get(&IMON, "version", NULL);
+  if (val==NULL) val="";
+  SetResult(&result, R_STRING, val); 
+}
+
+
+static int parse_imon_rates(const char *channel)
+{
+  char buf[128],in[25],out[25];
+  char *s;
+  int age;
+  
+  qprintf(buf,sizeof(buf),"rate %s in",channel);
+ 
+  /* reread every half sec only */
+  age=hash_age(&IMON, buf);
+  if (age>0 && age<=500) return 0;
+
+  init(); /* establish connection */
+
+  if (err) return -1;
+
+  qprintf(buf, sizeof(buf), "rate %s", channel);
+  s=get_value(buf);
+ 
+  if (sscanf(s,"%s %s",in, out)!=2) return -1;
+
+  qprintf(buf, sizeof(buf), "rate %s in", channel);
+  hash_put (&IMON, buf , in);
+  qprintf(buf, sizeof(buf), "rate %s out", channel);
+  hash_put (&IMON, buf , out);
+ 
+  return 0;
+}
+
+
+static void my_imon_rates (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  char *val;
+  char buf[128];
+ 
+  if (configure_imon() < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+
+  if (parse_imon_rates(R2S(arg1)) < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+ 
+  qprintf(buf,sizeof(buf),"rate %s %s",R2S(arg1),R2S(arg2));
+
+  val = hash_get(&IMON, buf, NULL);
+  if (val == NULL) val = "";
+  SetResult(&result, R_STRING, val); 
+}
+
+
+static void my_imon (RESULT *result, RESULT *arg1)
+{
+  char *val;
+  char *cmd;
+ 
+  if (configure_imon() < 0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+
+  cmd = R2S(arg1);
+  if (parse_imon(cmd)<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+  
+  val = hash_get(&IMON, cmd, NULL);
+  if (val == NULL) val = "";
+  SetResult(&result, R_STRING, val); 
+}
+
+
+int plugin_init_imon (void)
+{
+  AddFunction ("imon",          1, my_imon);
+  AddFunction ("imon::version", 0, my_imon_version);
+  AddFunction ("imon::rates",   2, my_imon_rates);
+  AddFunction ("imon::telmon",  1, my_telmon);
+  
+  return 0;
+}
+
+
+void plugin_exit_imon(void)
+{
+  if (fd > 0){
+    send_command(fd, "quit");
+    close(fd);
   }
   hash_destroy(&TELMON);
   hash_destroy(&IMON);

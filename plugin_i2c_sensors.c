@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.22 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.23 2005/04/01 05:16:04 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.23  2005/04/01 05:16:04  reinelt
+ * moved plugin init stuff to a seperate function called on first use
+ *
  * Revision 1.22  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -308,26 +311,8 @@ static int parse_i2c_sensors_procfs(const char *key)
 	* Common functions (path search and init) *
 	\*****************************************/
 
-void my_i2c_sensors(RESULT *result, RESULT *arg)
-{
-  int age;
-  char *val;
-  char *key=R2S(arg);  
-  
-  age=hash_age(&I2Csensors, key);
-  if (age<0 || age>250) {
-    parse_i2c_sensors(key);
-  }
-  val=hash_get(&I2Csensors, key, NULL);
-  if (val) {
-    SetResult(&result, R_STRING, val); 
-  } else {
-    SetResult(&result, R_STRING, "??"); 
-  }
-}
 
-
-void my_i2c_sensors_path(const char *method)
+static void my_i2c_sensors_path(const char *method)
 {
   struct dirent *dir;
   struct dirent *file;
@@ -382,11 +367,12 @@ void my_i2c_sensors_path(const char *method)
 }
 
 
-int plugin_init_i2c_sensors (void)
+static int configure_i2c_sensors (void)
 {
+  static int configured = 0;
   char *path_cfg;
 
-  hash_create(&I2Csensors);
+  if (configured != 0) return configured;
 
   path_cfg = cfg_get(NULL, "i2c_sensors-path", "");
   if (path_cfg == NULL || *path_cfg == '\0') {
@@ -397,9 +383,12 @@ int plugin_init_i2c_sensors (void)
     
     if (!path) {
       error("i2c_sensors: unable to autodetect i2c sensors!");
-    } else {
-      debug("using i2c sensors at %s (autodetected)", path);
-    }
+      configured = -1;
+      return configured;
+    } 
+
+    debug("using i2c sensors at %s (autodetected)", path);
+  
   } else {
     if (path_cfg[strlen(path_cfg)-1] != '/') {
       /* the headless user forgot the trailing slash :/ */
@@ -414,22 +403,54 @@ int plugin_init_i2c_sensors (void)
   if (path_cfg) free(path_cfg);
   
   /* we activate the function only if there's a possibly path found */
-  if (path!=NULL) {
-    if (strncmp(path, "/sys", 4)==0) {
-      parse_i2c_sensors = parse_i2c_sensors_sysfs;
-      AddFunction ("i2c_sensors", 1, my_i2c_sensors);
-    } else if (strncmp(path, "/proc", 5)==0) {
-      parse_i2c_sensors = parse_i2c_sensors_procfs;      
-      AddFunction ("i2c_sensors", 1, my_i2c_sensors);
-    } else {
-      error("i2c_sensors: unknown path %s, should start with /sys or /proc");
-    }
+  if (strncmp(path, "/sys", 4)==0) {
+    parse_i2c_sensors = parse_i2c_sensors_sysfs;
+  } else if (strncmp(path, "/proc", 5)==0) {
+    parse_i2c_sensors = parse_i2c_sensors_procfs;      
+  } else {
+    error("i2c_sensors: unknown path %s, should start with /sys or /proc");
+    configured = -1;
+    return configured;
   }
-
+  
   hash_create(&I2Csensors);
   
+  configured = 1;
+  return configured;
+}
+
+
+void my_i2c_sensors(RESULT *result, RESULT *arg)
+{
+  int age;
+  char *key;
+  char *val;
+  
+  if (configure_i2c_sensors() < 0) {
+    SetResult(&result, R_STRING, "??"); 
+    return;
+  }
+  
+  key=R2S(arg);  
+  age=hash_age(&I2Csensors, key);
+  if (age<0 || age>250) {
+    parse_i2c_sensors(key);
+  }
+  val=hash_get(&I2Csensors, key, NULL);
+  if (val) {
+    SetResult(&result, R_STRING, val); 
+  } else {
+    SetResult(&result, R_STRING, "??"); 
+  }
+}
+
+
+int plugin_init_i2c_sensors (void)
+{
+  AddFunction ("i2c_sensors", 1, my_i2c_sensors);
   return 0;
 }
+
 
 void plugin_exit_i2c_sensors(void) 
 {
