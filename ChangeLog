@@ -1,4 +1,44 @@
+2004-05-31  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Image.c, lcd4linux.conf.sample:
+	fixed symlink security issue with the image driver
+
+	* drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Cwlinux.c, drv_HD44780.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_USBLCD.c:
+	fixed possible bugs with user-defined chars (clear high bits)
+	thanks to Andy Baxter for debugging the MilfordInstruments driver!
+
+2004-05-31  andy-b  <andy-b@merlin.ethnet>
+
+	* drv_MilfordInstruments.c:
+
+	fixed bug in Milford Instruments driver which drew extra graphics chars in
+	odd places when drawing double bars. (the display doesn't like it if you put
+	the escape character 0xfe inside a define char sequence).
+
+2004-05-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Crystalfontz.c, lcd4linux.conf.sample:
+	Crystalfontz 631 driver finished
+
+2004-05-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Image.c:
+	fixed a compiler issue with drv_Image.c (thanks to Frank Stratmann)
+
+	* drv_M50530.c, lcd4linux.conf.sample, plugin_ppp.c:
+	M50530: reset parport signals on exit
+	plugin_ppp: ppp() has two parameters, not three
+	lcd4linux.conf.sample: diskstats() corrected
+
+	* lcd4linux.conf.sample, plugin_diskstats.c:
+	bug in plugin_diskstats fixed
+
+	* config.h.in, configure, lcd4linux.conf.sample, plugin.c, plugin_diskstats.c, plugins.m4, Makefile.am, Makefile.in:
+	added plugin_diskstats.c
+
 2004-05-28  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog, Status: Status and Changelog Update
 
 	* drv_BeckmannEgle.c:
 	added drv_BeckmannEgle.c (forgotten at first check in :-)
