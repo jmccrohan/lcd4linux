@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.4 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.5 2004/01/29 05:55:30 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.5  2004/01/29 05:55:30  reinelt
+ * check for /sys mounted
+ *
  * Revision 1.4  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -159,7 +162,11 @@ void my_i2c_sensors_path(void)
   int done;
   
   fd1 = opendir(base);
-  if (fd1==NULL) return;
+  if (!fd1) {
+    error("[i2c_sensors] Impossible to open %s! Is /sys mounted?", base);
+    return -1;
+  }
+  
   while((dir = readdir(fd1)))   {
     // Skip '.' and '..'
     if (strcmp(dir->d_name, "." )==0 ||
