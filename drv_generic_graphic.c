@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.5  2004/02/29 14:30:59  reinelt
+ * icon visibility fix for generic graphics from Xavier
+ *
  * Revision 1.4  2004/02/24 05:55:04  reinelt
  *
  * X11 driver ported
@@ -180,8 +183,13 @@ int drv_generic_graphic_icon_draw (WIDGET *W)
   for (y=0; y<YRES; y++) {
     int mask=1<<XRES;
     for (x=0; x<XRES; x++) {
-      mask>>=1;
-      drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = Icon->visible ? 0 : bitmap[y]&mask ? 1 : 0;
+      int i = (row+y)*LCOLS+col+x;
+      mask >>= 1;
+      if (Icon->visible) {
+	drv_generic_graphic_FB[i] = bitmap[y]&mask ? 1 : 0;
+      } else {
+	drv_generic_graphic_FB[i] = 0;
+      }
     }
   }
 
