@@ -1,6 +1,6 @@
 Template: lcd4linux/conf
 Type: note
-Description: Your must configure lcd4linux
+Description: You must configure lcd4linux
  By default, lcd4linux is not configured. You MUST configure it by editing
  the /etc/lcd4linux.conf file, which holds all configuration.
  .
