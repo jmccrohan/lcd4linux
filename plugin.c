@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.29 2004/05/20 07:47:51 reinelt Exp $
+/* $Id: plugin.c,v 1.30 2004/05/22 18:30:02 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.30  2004/05/22 18:30:02  reinelt
+ *
+ * added plugin 'uptime'
+ *
  * Revision 1.29  2004/05/20 07:47:51  reinelt
  * added plugin_time
  *
@@ -209,6 +213,8 @@ int  plugin_init_seti(void);
 void plugin_exit_seti(void);
 int  plugin_init_uname (void);
 void plugin_exit_uname (void);
+int  plugin_init_uptime (void);
+void plugin_exit_uptime (void);
 int  plugin_init_wireless(void);
 void plugin_exit_wireless(void);
 int  plugin_init_xmms (void);
@@ -270,6 +276,9 @@ int plugin_init (void)
 #ifdef PLUGIN_UNAME
   plugin_init_uname();
 #endif
+#ifdef PLUGIN_UPTIME
+  plugin_init_uptime();
+#endif
 #ifdef PLUGIN_WIRELESS
   plugin_init_wireless();
 #endif
@@ -329,6 +338,9 @@ void plugin_exit(void) {
 #endif
 #ifdef PLUGIN_UNAME
   plugin_exit_uname();
+#endif
+#ifdef PLUGIN_UPTIME
+  plugin_exit_uptime();
 #endif
 #ifdef PLUGIN_WIRELESS
   plugin_exit_wireless();

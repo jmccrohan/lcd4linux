@@ -88,6 +88,7 @@ plugin_ppp.c                \
 plugin_proc_stat.c          \
 plugin_seti.c               \
 plugin_uname.c              \
+plugin_uptime.c             \
 plugin_wireless.c           \
 plugin_xmms.c
 

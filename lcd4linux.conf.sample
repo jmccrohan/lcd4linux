@@ -247,6 +247,15 @@ Widget MySQLtest2 {
     update minute
 }
 
+Widget Uptime {
+    class 'Text'
+    expression uptime('%d days %H:%M:%S')
+    width 20
+    align 'R'
+    prefix 'Up '
+    update 1000
+}
+
 Widget Heartbeat {
     class 'Icon'
     speed 800
@@ -457,17 +466,17 @@ Layout testMySQL {
 
 
 #Display 'LK204'
-Display 'HD44780-20x4'
+#Display 'HD44780-20x4'
 #Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
-#Display 'USBLCD'
+Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'
 
-#Layout  'Default'
-Layout  'L16x2'
+Layout  'Default'
+#ayout  'L16x2'
 #Layout 'Test'
 
 

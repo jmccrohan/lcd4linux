@@ -46,6 +46,7 @@ for plugin in $plugins; do
          PLUGIN_PROC_STAT="yes"
          PLUGIN_SETI="yes"
          PLUGIN_UNAME="yes"
+         PLUGIN_UPTIME="yes"
          PLUGIN_WIRELESS="yes"
          PLUGIN_XMMS="yes"   
          ;;
@@ -96,6 +97,9 @@ for plugin in $plugins; do
          ;;
       uname)
          PLUGIN_UNAME=$val
+         ;;
+      uptime)
+         PLUGIN_UPTIME=$val
          ;;
       wireless)
          PLUGIN_WIRELESS=$val
@@ -198,6 +202,10 @@ fi
 if test "$PLUGIN_UNAME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uname.o"
    AC_DEFINE(PLUGIN_UNAME,1,[uname plugin])
+fi
+if test "$PLUGIN_UPTIME" = "yes"; then
+   PLUGINS="$PLUGINS plugin_uptime.o"
+   AC_DEFINE(PLUGIN_UPTIME,1,[uptime plugin])
 fi
 if test "$PLUGIN_WIRELESS" = "yes"; then
    PLUGINS="$PLUGINS plugin_wireless.o"

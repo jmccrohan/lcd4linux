@@ -278,6 +278,9 @@
 /* uname plugin */
 #undef PLUGIN_UNAME
 
+/* uptime plugin */
+#undef PLUGIN_UPTIME
+
 /* wireless plugin */
 #undef PLUGIN_WIRELESS
 
