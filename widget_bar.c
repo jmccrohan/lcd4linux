@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.9 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: widget_bar.c,v 1.10 2004/03/11 06:39:59 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,14 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.10  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.9  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -93,7 +101,7 @@ void widget_bar_update (void *Self)
 {
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_BAR *Bar = W->data;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
 
   double val1, val2;
   double min, max;
@@ -226,11 +234,20 @@ int widget_bar_init (WIDGET *Self)
 }
 
 
-int widget_bar_quit (WIDGET *Self) {
+int widget_bar_quit (WIDGET *Self) 
+{
   if (Self ) {
-	  if (Self->data) free(Self->data);
-      Self->data=NULL;
+    if (Self->data) {
+      WIDGET_BAR *Bar = Self->data;	
+      DelTree(Bar->tree1);
+      DelTree(Bar->tree2);
+      DelTree(Bar->tree_min);
+      DelTree(Bar->tree_max);
+      free(Self->data);
+    }
+    Self->data=NULL;
   }
+  
   
   return 0;
   

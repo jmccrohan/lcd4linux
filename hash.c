@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.16 2004/03/03 08:40:07 hejl Exp $
+/* $Id: hash.c,v 1.17 2004/03/11 06:39:59 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.17  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.16  2004/03/03 08:40:07  hejl
  * Fixed memory leak in hash_get_regex
  *
@@ -112,8 +120,11 @@
 #include <dmalloc.h>
 #endif
 
-
+// number of slots for delta processing
 #define DELTA_SLOTS 64
+
+// string buffer chunk size
+#define CHUNK_SIZE 16
 
 
 // bsearch compare function for hash entries
@@ -181,32 +192,44 @@ static HASH_ITEM* hash_lookup (HASH *Hash, char *key, int sortit)
 static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
 {
   HASH_ITEM *Item;
+  int len = strlen(val);
   
-  Item=hash_lookup (Hash, key, 0);
+  Item = hash_lookup (Hash, key, 0);
 
   // entry already exists?
-  if (Item!=NULL) {
-    if (Item->val) free (Item->val);
-    Item->val = strdup(val);
+  if (Item != NULL) {
+    if (len > Item->len) {
+      // buffer is either empty or too small
+      if (Item->val) free (Item->val);
+      // allocate memory in multiples of CHUNK_SIZE
+      // note that length does not count the trailing \0
+      Item->len = CHUNK_SIZE*(len/CHUNK_SIZE+1)-1;
+      Item->val = malloc(Item->len+1);
+    }
+    strcpy(Item->val, val);
     goto hash_got_string;
   }
 
   // add entry
-  Hash->sorted=0;
+  Hash->sorted = 0;
   Hash->nItems++;
-  Hash->Items=realloc(Hash->Items,Hash->nItems*sizeof(HASH_ITEM));
+  Hash->Items = realloc(Hash->Items, Hash->nItems*sizeof(HASH_ITEM));
 
-  Item=&(Hash->Items[Hash->nItems-1]);
+  Item = &(Hash->Items[Hash->nItems-1]);
   
   Item->key  = strdup(key);
-  Item->val  = strdup(val);
+
+  Item->len  = CHUNK_SIZE*(len/CHUNK_SIZE+1)-1;
+  Item->val  = malloc(Item->len+1);
+  strcpy(Item->val, val);
+  
   Item->root = 0;
   Item->Slot = NULL;
 
  hash_got_string:
   // set timestamps
   gettimeofday(&Hash->time, NULL);
-  Item->time=Hash->time;
+  Item->time = Hash->time;
 
   return Item;
 }
@@ -236,12 +259,7 @@ void hash_set_delta (HASH *Hash, char *key, char *val)
     memset(Item->Slot, 0, DELTA_SLOTS*sizeof(HASH_SLOT));
   }
   
-  // shift delta table
-  // <--- don't move 63 bytes just to insert one byte - this is _very_
-  // slow on my Elan SC520 or GEODE SC1100
-  //memmove (Item->Slot+1, Item->Slot, (DELTA_SLOTS-1)*sizeof(HASH_SLOT));
-
-  // move the pointer to the next free slot (wrapping around if necessary
+  // move the pointer to the next free slot, wrap around if necessary
   if (--Item->root < 0) Item->root = DELTA_SLOTS-1;
 
   // set first entry

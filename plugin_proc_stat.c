@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.17 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.18 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.18  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.17  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -112,6 +120,8 @@
 
 
 static HASH Stat = { 0, };
+static FILE *stream = NULL;
+
 
 static void hash_set1 (char *key1, char *val) 
 {
@@ -140,17 +150,18 @@ static void hash_set3 (char *key1, char *key2, char *key3, char *val)
 static int parse_proc_stat (void)
 {
   int age;
-  FILE *stream;
   
   // reread every 10 msec only
   age=hash_age(&Stat, NULL, NULL);
   if (age>0 && age<=10) return 0;
   
-  stream=fopen("/proc/stat", "r");
+  if (stream==NULL) stream=fopen("/proc/stat", "r");
   if (stream==NULL) {
     error ("fopen(/proc/stat) failed: %s", strerror(errno));
     return -1;
   }
+  
+  rewind(stream);
   
   while (!feof(stream)) {
     char buffer[1024];
@@ -175,7 +186,6 @@ static int parse_proc_stat (void)
 	beg=end?end+1:NULL;
       }
     } 
-    
     else if (strncmp(buffer, "page ", 5)==0) {
       char *key[]  = { "in", "out" }; 
       char delim[] = " \t\n";
@@ -220,8 +230,6 @@ static int parse_proc_stat (void)
 	beg=end?end+1:NULL;
       }
     } 
-    
-
     else if (strncmp(buffer, "disk_io:", 8)==0) {
       char *key[]  = { "io", "rio", "rblk", "wio", "wblk" }; 
       char delim[] = " ():,\t\n";
@@ -256,7 +264,6 @@ static int parse_proc_stat (void)
       hash_set1 (buffer, beg);
     } 
   }
-  fclose (stream);
   return 0;
 }
 
@@ -357,5 +364,9 @@ int plugin_init_proc_stat (void)
 
 void plugin_exit_proc_stat(void) 
 {
+  if (stream!=NULL) {
+    fclose (stream);
+    stream=NULL;
+  }
   hash_destroy(&Stat);
 }

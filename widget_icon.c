@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.10 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: widget_icon.c,v 1.11 2004/03/11 06:39:59 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,14 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.11  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.10  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -137,7 +145,7 @@ void widget_icon_update (void *Self)
 {
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_ICON *Icon = W->data;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
   
   // evaluate expressions
   Icon->speed = 100;
@@ -229,6 +237,8 @@ int widget_icon_quit (WIDGET *Self)
   if (Self) {
     if (Self->data) {
       WIDGET_ICON *Icon = Self->data;
+      DelTree(Icon->speed_tree);
+      DelTree(Icon->visible_tree);
       if (Icon->bitmap) free (Icon->bitmap); 
       free(Self->data);
       Self->data=NULL;

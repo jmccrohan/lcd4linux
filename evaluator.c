@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.17 2004/03/08 18:45:52 hejl Exp $
+/* $Id: evaluator.c,v 1.18 2004/03/11 06:39:58 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.18  2004/03/11 06:39:58  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.17  2004/03/08 18:45:52  hejl
  * fixed segfault when using string concatenation
  *
@@ -156,6 +164,8 @@
 #include <dmalloc.h>
 #endif
 
+// string buffer chunk size
+#define CHUNK_SIZE 16
 
 typedef enum {
   T_NAME, 
@@ -266,18 +276,19 @@ static int      nFunction = 0;
 
 void DelResult (RESULT *result)
 {
-  result->type=0;
-  result->number=0.0;
+  result->type   = 0;
+  result->number = 0.0;
+  result->length = -1;
   if (result->string) {
     free (result->string);
-    result->string=NULL;
+    result->string = NULL;
   }
 }
 
 
 static void FreeResult (RESULT *result)
 {
-  if (result!=NULL) {
+  if (result != NULL) {
     DelResult(result);
     free (result);
   }
@@ -287,13 +298,14 @@ static void FreeResult (RESULT *result)
 static RESULT* NewResult (void)
 {
   RESULT *result = malloc(sizeof(RESULT));
-  if (result==NULL) {
+  if (result == NULL) {
     error ("Evaluator: cannot allocate result: out of memory!");
     return NULL;
   }
-  result->type=0;
-  result->number=0.0;
-  result->string=NULL;
+  result->type   = 0;
+  result->number = 0.0;
+  result->length = -1;
+  result->string = NULL;
   
   return result;
 }
@@ -303,15 +315,19 @@ static RESULT* DupResult (RESULT *result)
 {
   RESULT *result2;
   
-  if ((result2=NewResult())==NULL) 
-    return NULL;
+  if ((result2 = NewResult()) == NULL) return NULL;
   
-  result2->type=result->type;
-  result2->number=result->number;
-  if (result->string!=NULL)
-    result2->string=strdup(result->string);
-  else    
-    result2->string=NULL;
+  result2->type   = result->type;
+  result2->number = result->number;
+
+  if (result->length >= 0) {
+    result2->length = result->length;
+    result2->string = malloc(result2->length);
+    strcpy(result2->string, result->string);
+  } else {
+    result2->length = -1;
+    result2->string = NULL;
+  }
   
   return result2;
 }
@@ -319,21 +335,31 @@ static RESULT* DupResult (RESULT *result)
 
 RESULT* SetResult (RESULT **result, int type, void *value)
 {
-  if (*result) {
+  if (*result == NULL) {
+    if ((*result = NewResult()) == NULL)  return NULL;
+  } else if (type == R_NUMBER) {
     DelResult(*result);
-  } else {
-    if ((*result = NewResult()) == NULL) 
-      return NULL;
   }
   
   if (type == R_NUMBER) {
     (*result)->type   = R_NUMBER;
     (*result)->number = *(double*)value;
+    (*result)->length = -1;
     (*result)->string = NULL;
-  } else if (type == R_STRING) {
+  } 
+  else if (type == R_STRING) {
+    int len = strlen((char*)value);
     (*result)->type   = R_STRING;
     (*result)->number = 0.0;
-    (*result)->string = strdup(value);
+    if (len > (*result)->length) {
+      // buffer is either empty or too small
+      if ((*result)->string) free((*result)->string);
+      // allocate memory in multiples of CHUNK_SIZE
+      // note that length does not count the trailing \0
+      (*result)->length = CHUNK_SIZE*(len/CHUNK_SIZE+1)-1;
+      (*result)->string = malloc((*result)->length+1);
+    }
+    strcpy((*result)->string, value);
   } else {
     error ("Evaluator: internal error: invalid result type %d", type); 
     return NULL;
@@ -345,7 +371,7 @@ RESULT* SetResult (RESULT **result, int type, void *value)
 
 double R2N (RESULT *result)
 {
-  if (result==NULL) {
+  if (result == NULL) {
     error ("Evaluator: internal error: NULL result");
     return 0.0;
   }
@@ -356,7 +382,7 @@ double R2N (RESULT *result)
   
   if (result->type & R_STRING) {
     result->type |= R_NUMBER;
-    result->number=atof(result->string);
+    result->number = atof(result->string);
     return result->number;
   }
   
@@ -367,8 +393,6 @@ double R2N (RESULT *result)
 
 char* R2S (RESULT *result)
 {
-  char buffer[16];
-  
   if (result==NULL) {
     error ("Evaluator: internal error: NULL result");
     return NULL;
@@ -379,10 +403,11 @@ char* R2S (RESULT *result)
   }
   
   if (result->type & R_NUMBER) {
-    sprintf(buffer, "%g", result->number);
     result->type |= R_STRING;
     if (result->string) free(result->string);
-    result->string=strdup(buffer);
+    result->length = CHUNK_SIZE-1;
+    result->string = malloc(CHUNK_SIZE);
+    snprintf(result->string, CHUNK_SIZE, "%g", result->number);
     return result->string;
   }
   
@@ -426,25 +451,23 @@ int SetVariable (char *name, RESULT *value)
 
 int SetVariableNumeric (char *name, double value)
 {
-  RESULT result;
+  RESULT result = {0, 0, 0, NULL};
+  RESULT *rp = &result;
   
-  result.type   = R_NUMBER;
-  result.number = value;
-  result.string = NULL;
-  
-  return SetVariable (name, &result);
+  SetResult (&rp, R_NUMBER, &value); 
+
+  return SetVariable (name, rp);
 }
 
 
 int SetVariableString (char *name, char *value)
 {
-  RESULT result;
+  RESULT result = {0, 0, 0, NULL};
+  RESULT *rp = &result;
   
-  result.type   =R_STRING;
-  result.number = 0.0;
-  result.string = strdup(value);
-  
-  return SetVariable (name, &result);
+  SetResult(&rp, R_STRING, value );
+
+  return SetVariable (name, rp);
 }
 
 
@@ -1184,20 +1207,27 @@ int Eval (void *tree, RESULT *result)
   NODE *Tree = (NODE*)tree;
 
   DelResult (result);
-
+  
   if (Tree==NULL) {
     SetResult (&result, R_STRING, "");
     return 0;
   }
-
+  
   ret = EvalTree(Tree);
-
+  
   result->type   = Tree->Result->type;
   result->number = Tree->Result->number;
-  if (Tree->Result->string != NULL) {
-    result->string = strdup(Tree->Result->string);
+  result->length = Tree->Result->length;
+  if (result->length >= 0) {
+    result->string = malloc(result->length);
+    if (Tree->Result->string != NULL)
+      strcpy(result->string, Tree->Result->string);
+    else
+      result->string[0]='\0';
+  } else {
+    result->string = NULL;
   }
-
+  
   return ret;
 }
 
@@ -1206,13 +1236,13 @@ void DelTree (void *tree)
 {
   int i;
   NODE *Tree = (NODE*)tree;
-  if (Tree==NULL) return;
+  
+  if (Tree == NULL) return;
 
   for (i=0; i<Tree->Children; i++) {
     DelTree (Tree->Child[i]);
   }
  
-  FreeResult (Tree->Result);
-  
-  free (Tree);
+  if (Tree->Result) FreeResult (Tree->Result);
+  free(Tree);
 }

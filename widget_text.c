@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.16 2004/03/08 16:26:26 reinelt Exp $
+/* $Id: widget_text.c,v 1.17 2004/03/11 06:39:59 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,14 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.17  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.16  2004/03/08 16:26:26  reinelt
  * re-introduced \nnn (octal) characters in strings
  * text widgets can have a 'update' speed of 0 which means 'never'
@@ -217,7 +225,7 @@ void widget_text_update (void *Self)
 {
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_TEXT *T = W->data;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
   char *preval, *postval, *value;
   int update;
   
@@ -411,13 +419,17 @@ int widget_text_quit (WIDGET *Self) {
   if (Self) {
     Text=Self->data;
     if (Self->data) {	  
-      if (Text->preval)      free(Text->preval);
-      if (Text->postval)     free(Text->postval);
-      if (Text->value)       free(Text->value);
-      if (Text->buffer)      free(Text->buffer);
+      DelTree(Text->pretree);
+      DelTree(Text->posttree);
+      DelTree(Text->tree);  	
+      if (Text->preval)  free(Text->preval);
+      if (Text->postval) free(Text->postval);
+      if (Text->value)   free(Text->value);
+      if (Text->buffer)  free(Text->buffer);
       free (Self->data);
       Self->data=NULL;
     }
+  
   }
   return 0;
   

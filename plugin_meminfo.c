@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.6 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.7 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.7  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.6  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -75,23 +83,23 @@
 
 
 static HASH MemInfo = { 0, };
-
+static FILE *stream = NULL;
 
 static int parse_meminfo (void)
 {
   int age;
-  FILE *stream;
   
   // reread every 10 msec only
   age=hash_age(&MemInfo, NULL, NULL);
   if (age>0 && age<=10) return 0;
   
-  stream=fopen("/proc/meminfo", "r");
+  if (stream==NULL) stream=fopen("/proc/meminfo", "r");
   if (stream==NULL) {
     error ("fopen(/proc/meminfo) failed: %s", strerror(errno));
     return -1;
   }
-    
+  
+  rewind(stream);
   while (!feof(stream)) {
     char buffer[256];
     char *c, *key, *val;
@@ -116,9 +124,8 @@ static int parse_meminfo (void)
       hash_set (&MemInfo, key, val);
     }
   }
-  fclose (stream);
   return 0;
-}  
+} 
 
 static void my_meminfo (RESULT *result, RESULT *arg1)
 {
@@ -146,5 +153,9 @@ int plugin_init_meminfo (void)
 
 void plugin_exit_meminfo(void) 
 {
-	hash_destroy(&MemInfo);
+  if (stream != NULL) {
+    fclose(stream);
+    stream=NULL;
+  }
+  hash_destroy(&MemInfo);
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.8 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.9 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.9  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.8  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -84,24 +92,22 @@
 
 
 static HASH CPUinfo = { 0, };
-
+static FILE *stream = NULL;
 
 static int parse_cpuinfo (void)
 {
   int age;
-  FILE *stream;
   
   // reread every second only
   age=hash_age(&CPUinfo, NULL, NULL);
   if (age>0 && age<=1000) return 0;
   
-    
-  stream=fopen("/proc/cpuinfo", "r");
-  if (stream==NULL) {
+  if (stream == NULL) stream=fopen("/proc/cpuinfo", "r");
+  if (stream == NULL) {
     error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
     return -1;
   }
-    
+  rewind(stream);
   while (!feof(stream)) {
     char buffer[256];
     char *c, *key, *val;
@@ -123,7 +129,6 @@ static int parse_cpuinfo (void)
     hash_set (&CPUinfo, key, val);
       
   }
-  fclose (stream);
   return 0;
 }
   
@@ -153,5 +158,9 @@ int plugin_init_cpuinfo (void)
 
 void plugin_exit_cpuinfo(void) 
 {
-	hash_destroy(&CPUinfo);
+  if (stream != NULL) {
+    fclose (stream);
+    stream = NULL;
+  }
+  hash_destroy(&CPUinfo);
 }

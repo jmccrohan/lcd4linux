@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.7 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.8 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.8  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.7  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -89,7 +97,7 @@ static void load_variables (void)
   char *list, *l, *p;
   char *expression;
   void *tree;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
   
   list=cfg_list(section);
   l=list;

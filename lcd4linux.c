@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.67 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.68 2004/03/11 06:39:59 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,14 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.68  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.67  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -576,7 +584,7 @@ int main (int argc, char *argv[])
   if (interactive) {
     char line[1024];
     void *tree;
-    RESULT result = {0, 0.0, NULL};
+    RESULT result = {0, 0, 0, NULL};
     
     printf("\neval> ");
     for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
@@ -590,7 +598,8 @@ int main (int argc, char *argv[])
 	    printf ("'%s'\n", R2S(&result));
 	  }
 	  DelResult (&result);
-	}
+        }
+	DelTree(tree);
       }
       printf("eval> ");
     }

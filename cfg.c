@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.38 2004/03/08 16:26:26 reinelt Exp $^
+/* $Id: cfg.c,v 1.39 2004/03/11 06:39:58 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.39  2004/03/11 06:39:58  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.38  2004/03/08 16:26:26  reinelt
  * re-introduced \nnn (octal) characters in strings
  * text widgets can have a 'update' speed of 0 which means 'never'
@@ -502,7 +510,7 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
   char *expression;
   char *retval;
   void *tree = NULL;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
   
   expression=cfg_lookup(section, key);
   
@@ -510,6 +518,7 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
     if (*expression=='\0') return "";
     if (Compile(expression, &tree)==0 && Eval(tree, &result)==0) {
       retval=strdup(R2S(&result));
+      DelTree(tree);
       DelResult(&result);	  
       return(retval);
     }
@@ -525,7 +534,7 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
 {
   char *expression;
   void *tree = NULL;
-  RESULT result = {0, 0.0, NULL};
+  RESULT result = {0, 0, 0, NULL};
    
   // start with default value
   // in case of an (uncatched) error, you have the
@@ -537,8 +546,12 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
     return 0;
   }
   
-  if (Compile(expression, &tree) != 0) return -1;
+  if (Compile(expression, &tree) != 0) {
+    DelTree(tree);
+    return -1;
+  }
   if (Eval(tree, &result) != 0) {
+    DelTree(tree);
     DelResult(&result);
     return -1;
   }

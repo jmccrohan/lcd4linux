@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.6 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.7 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.7  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.6  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -72,7 +80,7 @@
 
 
 static HASH NetDev = { 0, };
-
+static FILE *stream = NULL;
 
 static void hash_set3 (char *key1, char *key2, char *key3, char *val) 
 {
@@ -88,19 +96,20 @@ static int parse_netdev (void)
   int age;
   int line;
   int  RxTx=0; // position of Receive/Transmit switch
-  FILE *stream;
   
   // reread every 10 msec only
   age=hash_age(&NetDev, NULL, NULL);
   if (age>0 && age<=10) return 0;
   
-  stream=fopen("/proc/net/dev", "r");
+  if (stream==NULL) stream=fopen("/proc/net/dev", "r");
   if (stream==NULL) {
     error ("fopen(/proc/net/dev) failed: %s", strerror(errno));
     return -1;
   }
-    
+
+  rewind(stream);    
   line=0;
+  
   while (!feof(stream)) {
     char buffer[256];
     char header[256], *h, *t;
@@ -142,7 +151,7 @@ static int parse_netdev (void)
       }
     }
   }
-  fclose (stream);
+  
   return 0;
 }  
 
@@ -165,14 +174,38 @@ static void my_netdev (RESULT *result, RESULT *arg1, RESULT *arg2)
   SetResult(&result, R_NUMBER, &value); 
 }
 
+static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  char *key;
+  int delay;
+  double value;
+  
+  if (parse_netdev()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
+
+  key   = R2S(arg1);
+  delay = R2N(arg2);
+  
+  value  = hash_get_delta(&NetDev, key, delay);
+  
+  SetResult(&result, R_NUMBER, &value); 
+}
+
 
 int plugin_init_netdev (void)
 {
   AddFunction ("netdev", 2, my_netdev);
+  AddFunction ("netdev_fast", 2, my_netdev_fast);
   return 0;
 }
 
 void plugin_exit_netdev(void) 
 {
-	hash_destroy(&NetDev);
+  if(stream!=NULL) {
+    fclose (stream);
+    stream=NULL;
+  }
+  hash_destroy(&NetDev);
 }

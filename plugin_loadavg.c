@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.5 2004/03/08 18:46:21 hejl Exp $
+/* $Id: plugin_loadavg.c,v 1.6 2004/03/11 06:39:59 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.6  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.5  2004/03/08 18:46:21  hejl
  * Fixed bug introduced with "caching" the loadavg values
  *
@@ -76,20 +84,19 @@
 #include "plugin.h"
 
 #ifndef HAVE_GETLOADAVG
+static int fd = -2;
 
 int getloadavg (double loadavg[], int nelem)
 {
-  static int fd=-2;
   char buf[65], *p;
   ssize_t nread;
   int i;
       
-  if (fd==-2) fd = open ("/proc/loadavg", O_RDONLY);
+  if (fd == -2) fd = open ("/proc/loadavg", O_RDONLY);
   if (fd < 0) return -1;
 
   lseek(fd,0,SEEK_SET);
   nread = read (fd, buf, sizeof buf - 1);
-  //close (fd);
   
   if (nread < 0) return -1;
   buf[nread - 1] = '\0';
@@ -149,7 +156,6 @@ static void my_loadavg (RESULT *result, RESULT *arg1)
   
 }
 
-
 int plugin_init_loadavg (void)
 {
   AddFunction ("loadavg", 1, my_loadavg);
@@ -158,4 +164,8 @@ int plugin_init_loadavg (void)
 
 void plugin_exit_loadavg(void) 
 {
+#ifndef HAVE_GETLOADAVG   
+  if (fd>0) close(fd);
+  fd=-2;
+#endif
 }

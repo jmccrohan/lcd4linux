@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.15 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.16 2004/03/11 06:39:58 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,14 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.16  2004/03/11 06:39:58  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.15  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -625,10 +633,6 @@ static int drv_HD_start (char *section)
     drv_HD_command (allControllers, 0x28, T_EXEC);	    // 4 Bit mode, 1/16 duty cycle, 5x8 font
   }
 
-  drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
-  drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
-  drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
-  
   // maybe use busy-flag from now on 
   // (we can't use the busy flag during the init sequence)
   cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
@@ -649,6 +653,10 @@ static int drv_HD_start (char *section)
   
   info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
   free(strsize);
+
+  drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
+  drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
+  drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
 
   drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
   drv_HD_command (allControllers, 0x03, T_CLEAR); // return home

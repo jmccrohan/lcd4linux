@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.10 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: hash.h,v 1.11 2004/03/11 06:39:59 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.11  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.10  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -85,6 +93,7 @@ typedef struct {
 typedef struct {
   char      *key;
   char      *val;
+  int       len; 
   timeval   time;
   int       root;
   HASH_SLOT *Slot;

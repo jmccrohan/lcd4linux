@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.5 2004/03/06 20:31:16 reinelt Exp $
+/* $Id: evaluator.h,v 1.6 2004/03/11 06:39:59 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.6  2004/03/11 06:39:59  reinelt
+ * big patch from Martin:
+ * - reuse filehandles
+ * - memory leaks fixed
+ * - earlier busy-flag checking with HD44780
+ * - reuse memory for strings in RESULT and hash
+ * - netdev_fast to wavid time-consuming regex
+ *
  * Revision 1.5  2004/03/06 20:31:16  reinelt
  * Complete rewrite of the evaluator to get rid of the code
  * from mark Morley (because of license issues).
@@ -63,6 +71,7 @@
 typedef struct {
   int type;
   double number;
+  int    length;
   char  *string;
 } RESULT;
 
