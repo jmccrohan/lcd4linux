@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: layout.c,v 1.8 2004/02/01 18:08:50 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.8  2004/02/01 18:08:50  reinelt
+ * removed strtok() from layout processing (took me hours to find this bug)
+ * further strtok() removind should be done!
+ *
  * Revision 1.7  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -89,8 +93,7 @@ int layout_addItem (char *name, int row, int col)
 int layout_init (char *layout)
 {
   char *section;
-  char *list;
-  char *key;
+  char *list, *l;
   char *widget;
   int row, col;
   
@@ -101,22 +104,27 @@ int layout_init (char *layout)
   section=malloc(strlen(layout)+8);
   strcpy(section, "Layout:");
   strcat(section, layout);
-
+  
+  // get a list of all keys in this section
   list=cfg_list(section);
-  key=strtok(list, "|");
-  while (key!=NULL) {
+
+  // map to lower char for scanf()
+  for (l=list; *l!='\0'; l++) *l=tolower(*l);
+
+  while (list!=NULL) {
+    char *pipe;
     int i, n;
-    char *k;
-    // map to lower char for scanf()
-    for (k=key; *k!='\0'; k++) *k=tolower(*k);
-    i=sscanf (key, "row%d.col%d%n", &row, &col, &n);
-    if (i==2 && key[n]=='\0') {
-      widget=cfg_get(section, key, NULL);
+    // list is delimited by |
+    if ((pipe=strchr(list, '|'))!=NULL) *pipe='\0';
+    i=sscanf (list, "row%d.col%d%n", &row, &col, &n);
+    if (i==2 && list[n]=='\0') {
+      widget=cfg_get(section, list, NULL);
       if (widget!=NULL && *widget!='\0') {
 	layout_addItem (widget, row, col);
       }
     }
-    key=strtok(NULL, "|");
+    // next field
+    list=pipe?pipe+1:NULL;
   }
   free (list);
   

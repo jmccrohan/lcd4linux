@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.32 2004/01/30 20:57:55 reinelt Exp $^
+/* $Id: cfg.c,v 1.33 2004/02/01 18:08:50 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.33  2004/02/01 18:08:50  reinelt
+ * removed strtok() from layout processing (took me hours to find this bug)
+ * further strtok() removind should be done!
+ *
  * Revision 1.32  2004/01/30 20:57:55  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -393,7 +397,7 @@ char *l4l_cfg_list (char *section)
   for (i=0; i<nConfig; i++) {
     if (strncasecmp(Config[i].key, key, len)==0) {
       list=realloc(list, strlen(list)+strlen(Config[i].key)-len+2);
-      strcat (list, "|");
+      if (*list!='\0') strcat (list, "|");
       strcat (list, Config[i].key+len);
     }
   }
