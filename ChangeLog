@@ -1,4 +1,24 @@
+2003-09-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* BeckmannEgle.c, Crystalfontz.c, Cwlinux.c, MatrixOrbital.c, PalmPilot.c, SIN.c, Skeleton.c, T6963.c, Text.c:
+	icons for all remaining drivers
+
+	* HD44780.c, Makefile.am, Makefile.in, aclocal.m4, config.h.in, configure, configure.in:
+	HD44780 timings changed; deactivated libtool
+
+2003-09-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* config.sub, configure, configure.in:
+	missing files for autoconf/automake/libtool
+
+	* M50530.c, MatrixOrbital.c, USBLCD.c, icon.c, processor.c, HD44780.c:
+	minor cleanups
+
 2003-09-10  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.in, configure, configure.in, processor.c: minor cleanups
+
+	* ChangeLog: ChangeLog
 
 	* XWindow.c, icon.c, pixmap.c, pixmap.h, processor.c, Raster.c:
 	icons nearly finished\!
