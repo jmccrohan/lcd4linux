@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.12 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.13 2005/03/30 04:57:50 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.13  2005/03/30 04:57:50  reinelt
+ * Evaluator speedup: use bsearch for finding functions and variables
+ *
  * Revision 1.12  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -128,8 +131,8 @@ static void load_variables (void)
       if (expression!=NULL && *expression!='\0') {
 	tree = NULL;
         if (Compile(expression, &tree) == 0 && Eval(tree, &result)==0) {
-          debug ("Variable %s = '%s' (%f)", l, R2S(&result), R2N(&result));
           SetVariable (l, &result);
+          debug ("Variable %s = '%s' (%g)", l, R2S(&result), R2N(&result));
           DelResult (&result);
         } else {
           error ("error evaluating variable '%s' from %s", list, cfg_source());

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.76 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.77 2005/03/30 04:57:50 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.77  2005/03/30 04:57:50  reinelt
+ * Evaluator speedup: use bsearch for finding functions and variables
+ *
  * Revision 1.76  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -417,10 +420,14 @@ static void interactive_mode (void)
     if (strlen(line)>0) {
       if (Compile(line, &tree)!=-1) {
 	Eval (tree, &result);
-	if (result.type==R_NUMBER) {
+	if (result.type == R_NUMBER) {
 	  printf ("%g\n", R2N(&result));
-	} else if (result.type==R_STRING) {
+	} else if (result.type == R_STRING) {
 	  printf ("'%s'\n", R2S(&result));
+	} else if (result.type == (R_NUMBER|R_STRING)) {
+	  printf ("'%s' (%g)\n", R2S(&result), R2N(&result));
+	} else {
+	  printf ("internal error: unknown result type %d\n", result.type);
 	}
 	DelResult (&result);
       }

@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.23 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: evaluator.c,v 1.24 2005/03/30 04:57:50 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.24  2005/03/30 04:57:50  reinelt
+ * Evaluator speedup: use bsearch for finding functions and variables
+ *
  * Revision 1.23  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -441,16 +444,30 @@ char* R2S (RESULT *result)
   
 }
 
+
+/* bsearch compare function for variables */
+static int LookupVariable (const void *a, const void *b)
+{
+  char *key = (char*)a;
+  VARIABLE *var = (VARIABLE*)b;
+
+  return strcmp(key, var->name);
+}
+
+
+/* qsort compare function for variables */
+static int SortVariable (const void *a, const void *b)
+{
+  VARIABLE *va=(VARIABLE*)a;
+  VARIABLE *vb=(VARIABLE*)b;
+
+  return strcmp(va->name, vb->name);
+}
+
+
 static VARIABLE *FindVariable (const char *name)
 {
-  int i;
-
-  for (i=0; i<nVariable; i++) {
-    if (strcmp(name, Variable[i].name)==0) {
-      return &Variable[i];
-    }
-  }
-  return NULL;
+  return bsearch(name, Variable, nVariable, sizeof(VARIABLE), LookupVariable);
 }
 
 
@@ -461,7 +478,7 @@ int SetVariable (const char *name, RESULT *value)
   V = FindVariable(name);
   if (V != NULL) {
     FreeResult (V->value);
-    V->value = value;
+    V->value = DupResult(value);
     return 1;
   }
   
@@ -469,6 +486,8 @@ int SetVariable (const char *name, RESULT *value)
   Variable = realloc(Variable, nVariable*sizeof(VARIABLE));
   Variable[nVariable-1].name  = strdup(name);
   Variable[nVariable-1].value = DupResult(value);
+
+  qsort(Variable, nVariable, sizeof(VARIABLE), SortVariable);
 
   return 0;
 }
@@ -510,16 +529,29 @@ void DeleteVariables(void)
 }
 
 
+/* bsearch compare function for functions */
+static int LookupFunction (const void *a, const void *b)
+{
+  char *n = (char*)a;
+  FUNCTION *f = (FUNCTION*)b;
+
+  return strcmp(n, f->name);
+}
+
+
+/* qsort compare function for functions */
+static int SortFunction (const void *a, const void *b)
+{
+  FUNCTION *fa=(FUNCTION*)a;
+  FUNCTION *fb=(FUNCTION*)b;
+
+  return strcmp(fa->name, fb->name);
+}
+
+
 static FUNCTION* FindFunction (const char *name)
 {
-  int i;
-
-  for (i=0; i<nFunction; i++) {
-    if (strcmp(name, Function[i].name)==0) {
-      return &Function[i];
-    }
-  }
-  return NULL;
+  return bsearch(name, Function, nFunction, sizeof(FUNCTION), LookupFunction);
 }
 
 
@@ -530,6 +562,8 @@ int AddFunction (const char *name, const int argc, void (*func)())
   Function[nFunction-1].name = strdup(name);
   Function[nFunction-1].argc = argc;
   Function[nFunction-1].func = func;
+
+  qsort(Function, nFunction, sizeof(FUNCTION), SortFunction);
   
   return 0;
 }
