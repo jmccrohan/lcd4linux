@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.18 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.19 2004/05/30 08:25:50 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.19  2004/05/30 08:25:50  reinelt
+ *
+ * Crystalfontz 631 driver finished
+ *
  * Revision 1.18  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -128,6 +132,7 @@ static char Name[]="Crystalfontz";
 
 static int Model;
 static int Protocol;
+static int Payload;
 
 // ring buffer for bytes received from the display
 static unsigned char RingBuffer[256];
@@ -163,19 +168,20 @@ typedef struct {
   int cols;
   int gpos;
   int protocol;
+  int payload;
 } MODEL;
 
 // Fixme #1: number of gpo's should be verified
 // Fixme #2: protocol should be verified
 
 static MODEL Models[] = {
-  { 626, "626",      2, 16, 0, 1 },
-  { 631, "631",      2, 20, 0, 3 },
-  { 632, "632",      2, 16, 0, 1 },
-  { 633, "633",      2, 16, 0, 2 },
-  { 634, "634",      4, 20, 0, 1 },
-  { 636, "636",      2, 16, 0, 1 },
-  {  -1, "Unknown", -1, -1, 0, 0 }
+  { 626, "626",      2, 16, 0, 1,  0 },
+  { 631, "631",      2, 20, 0, 3, 22 },
+  { 632, "632",      2, 16, 0, 1,  0 },
+  { 633, "633",      2, 16, 0, 2, 18 },
+  { 634, "634",      4, 20, 0, 1,  0 },
+  { 636, "636",      2, 16, 0, 1,  0 },
+  {  -1, "Unknown", -1, -1, 0, 0,  0 }
 };
 
 
@@ -328,11 +334,11 @@ static void drv_CF_timer (void *notused)
 
 static void drv_CF_send (int cmd, int len, char *data)
 {
-  unsigned char buffer[16+2];
+  unsigned char buffer[22];
   unsigned short crc;
   
-  if (len>sizeof(buffer)-2) {
-    error ("%s: internal error: packet length %d exceeds buffer size %d", Name, len, sizeof(buffer)-2);
+  if (len > Payload) {
+    error ("%s: internal error: packet length %d exceeds payload size %d", Name, len, Payload);
     len=sizeof(buffer)-1;
   }
   
@@ -343,7 +349,9 @@ static void drv_CF_send (int cmd, int len, char *data)
   buffer[len+2] = LSB(crc);
   buffer[len+3] = MSB(crc);
   
-  if (0) debug ("Tx Packet %d len=%d", buffer[0], buffer[1]);
+#if 0
+  debug ("Tx Packet %d len=%d", buffer[0], buffer[1]);
+#endif
   
   drv_generic_serial_write (buffer, len+4);
   
@@ -384,7 +392,24 @@ static void drv_CF_write2 (int row, int col, unsigned char *data, int len)
 
 static void drv_CF_write3 (int row, int col, unsigned char *data, int len)
 {
-  debug ("write3(<%.*s>,%d)", len, data, len);
+  char cmd[23];
+
+  // limit length
+  if (col + len > 20) len = 20 - col;
+  if (len < 0) len = 0;
+
+  // sanity check
+  if (row >= 2 || col + len > 20) {
+    error ("%s: internal error: write outside display bounds!", Name);
+    return;
+  }
+
+  cmd[0] = col;
+  cmd[1] = row;
+  memcpy (cmd+2, data, len);
+
+  drv_CF_send (31, len+2, cmd);
+  
 }
 
 
@@ -402,10 +427,17 @@ static void drv_CF_defchar1 (int ascii, unsigned char *buffer)
 static void drv_CF_defchar23 (int ascii, unsigned char *matrix)
 {
   char buffer[9];
+  int i;
   
   // user-defineable chars start at 128, but are defined at 0
   buffer[0] = (char)(ascii-CHAR0); 
   memcpy(buffer+1, matrix, 8);
+
+  // clear bit 6 and 7 of the bitmap (blinking)
+  for (i = 0; i < 8; i++) {
+    buffer[1+i] &= 0x3f;
+  }
+  
   drv_CF_send (9, 9, buffer);
 }
 
@@ -437,8 +469,9 @@ static int drv_CF_contrast (int contrast)
     if (Contrast > 50) Contrast = 50;
     drv_CF_send (13, 1, &Contrast);
     break;
+
   case 3:
-    // contrast range 0 to 50
+    // contrast range 0 to 255
     drv_CF_send (13, 1, &Contrast);
     break;
   }
@@ -497,7 +530,6 @@ static int drv_CF_fan_pwm (int fan, int power)
   
   switch (Protocol) {
   case 2:
-  case 3:
     drv_CF_send (17, 4, PWM);
     break;
   }
@@ -636,21 +668,21 @@ static void drv_CF_start_2 (void)
   drv_CF_send ( 6, 0, NULL); 
 
   // Set LCD Cursor Style
-  buffer[0]=0;
+  buffer[0] = 0;
   drv_CF_send (12, 1, buffer);
 
   // enable Fan Reporting
-  buffer[0]=15;
+  buffer[0] = 15;
   drv_CF_send (16, 1, buffer);
   
   // Set Fan Power to 100%
-  buffer[0]=buffer[1]=buffer[2]=buffer[3]=100;
+  buffer[0] = buffer[1] = buffer[2] = buffer[3] = 100;
   drv_CF_send (17, 4, buffer);
   
   // Read DOW Device Information
-  mask=0;
-  for (i=0; i<32; i++) {
-    if (drv_CF_scan_DOW(i)==1) {
+  mask = 0;
+  for (i = 0; i < 32; i++) {
+    if (drv_CF_scan_DOW(i) == 1) {
       mask |= 1<<i;
     }
   }
@@ -661,6 +693,21 @@ static void drv_CF_start_2 (void)
   buffer[2] = (mask>>16) & 0xff;
   buffer[3] = (mask>>24) & 0xff;
   drv_CF_send (19, 4, buffer);
+}
+
+
+// init sequences for 631
+static void drv_CF_start_3 (void)
+{
+  char buffer[1];
+
+  // Clear Display
+  drv_CF_send ( 6, 0, NULL); 
+
+  // Set LCD Cursor Style
+  buffer[0] = 0;
+  drv_CF_send (12, 1, buffer);
+
 }
 
 
@@ -711,7 +758,8 @@ static int drv_CF_start (char *section)
   DCOLS    = Models[Model].cols;
   GPOS     = Models[Model].gpos;
   Protocol = Models[Model].protocol;
-
+  Payload  = Models[Model].payload;
+  
   // regularly process display answers
   // Fixme: make 100msec configurable
   timer_add (drv_CF_timer, NULL, 100, 0);
@@ -719,12 +767,12 @@ static int drv_CF_start (char *section)
   switch (Protocol) {
   case 1:
     drv_CF_start_1();
-      break;
+    break;
   case 2:
     drv_CF_start_2();
     break;
   case 3:
-    // Fixme: same as Protocol2?
+    drv_CF_start_3();
     break;
   }
   
@@ -872,7 +920,7 @@ int drv_CF_init (char *section)
     CHAR0 = 0; // ASCII of first user-defineable char
     // Fixme: 
     GOTO_COST = 3; // number of bytes a goto command requires
-    drv_generic_text_real_write   = drv_CF_write2;
+    drv_generic_text_real_write   = drv_CF_write3;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
   }
@@ -912,7 +960,9 @@ int drv_CF_init (char *section)
   // register plugins
   AddFunction ("LCD::contrast",  -1, plugin_contrast);
   AddFunction ("LCD::backlight", -1, plugin_backlight);
-  AddFunction ("LCD::fan_pwm",   -1, plugin_fan_pwm);
+  if (Protocol == 2) {
+    AddFunction ("LCD::fan_pwm",   -1, plugin_fan_pwm);
+  }
   
   return 0;
 }

@@ -19,7 +19,7 @@ Display MI240 {
 Display CF631 {
     Driver 'Crystalfontz'
     Model '631'
-    Port '/dev/usb/tts/0'
+    Port '/dev/tts/USB0'
     Speed 115200
     Contrast 95
     Backlight 100
@@ -470,6 +470,17 @@ Layout L16x2 {
 #   }
 }
 
+Layout L20x2 {
+    Row1 {
+	Col1  'Busy'
+	Col11 'BusyBar'
+    }
+    Row2 {
+	Col1 'Load'
+	Col11 'LoadBar'
+    }
+}
+
 Layout Test {
     Row01.Col1 'Test'
     Row02.Col1 'Test'
@@ -504,17 +515,18 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
-#Display 'CF631'
+Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
-Display 'Curses'
+#Display 'Curses'
 #Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'Image'
 
-Layout  'Default'
+#Layout  'Default'
 #Layout 'L16x2'
+Layout 'L20x2'
 #Layout 'Test'
 
 
