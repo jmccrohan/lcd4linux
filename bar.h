@@ -1,4 +1,4 @@
-/* $Id: bar.h,v 1.1 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: bar.h,v 1.2 2002/08/19 07:36:29 reinelt Exp $
  *
  * generic bar handling
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: bar.h,v $
+ * Revision 1.2  2002/08/19 07:36:29  reinelt
+ *
+ * finished bar.c, USBLCD is the first driver that uses the generic bar functions
+ *
  * Revision 1.1  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -41,5 +45,29 @@
 #define BAR_H (BAR_L | BAR_R)
 #define BAR_V (BAR_U | BAR_D | BAR_T)
 #define BAR_HV (BAR_H | BAR_V)
+
+
+typedef struct {
+  int len1;
+  int len2;
+  int type;
+  int segment;
+} BAR;
+
+typedef struct {
+  int len1;
+  int len2;
+  int type;
+  int used;
+  int ascii;
+} SEGMENT;
+
+
+int  bar_init (int rows, int cols, int xres, int yres, int chars);
+void bar_clear(void);
+void bar_add_segment(int len1, int len2, int type, int ascii);
+int  bar_draw (int type, int row, int col, int max, int len1, int len2);
+int  bar_process (int(*defchar)(int ascii, char *matrix));
+int  bar_peek (int row, int col);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.7 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.8 2002/08/19 07:36:29 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.8  2002/08/19 07:36:29  reinelt
+ *
+ * finished bar.c, USBLCD is the first driver that uses the generic bar functions
+ *
  * Revision 1.7  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -87,21 +91,6 @@ typedef struct {
   int rows;
   int type;
 } MODEL;
-
-typedef struct {
-  int len1;
-  int len2;
-  int type;
-  int segment;
-} BAR;
-
-typedef struct {
-  int len1;
-  int len2;
-  int type;
-  int used;
-  int ascii;
-} SEGMENT;
 
 static LCD Lcd;
 static char *Port=NULL;

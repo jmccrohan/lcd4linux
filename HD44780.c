@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.23 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: HD44780.c,v 1.24 2002/08/19 07:36:29 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.24  2002/08/19 07:36:29  reinelt
+ *
+ * finished bar.c, USBLCD is the first driver that uses the generic bar functions
+ *
  * Revision 1.23  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -178,21 +182,6 @@
 #define YRES 8
 #define CHARS 8
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
-
-typedef struct {
-  int len1;
-  int len2;
-  int type;
-  int segment;
-} BAR;
-
-typedef struct {
-  int len1;
-  int len2;
-  int type;
-  int used;
-  int ascii;
-} SEGMENT;
 
 static LCD Lcd;
 
