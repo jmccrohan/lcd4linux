@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.10 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.11 2004/06/19 08:20:19 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.11  2004/06/19 08:20:19  reinelt
+ *
+ * compiler warning in image driver fixed
+ * bar bug in USBLCD driver fixed
+ *
  * Revision 1.10  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -178,7 +183,7 @@ static void drv_UL_defchar (int ascii, unsigned char *matrix)
   drv_UL_command (0x40|8*ascii);
 
   for (i = 0; i < 8; i++) {
-    if(*matrix == 0) *BufPtr++ = 0;
+    if ((*matrix & 0x1f) == 0) *BufPtr++ = 0;
     *BufPtr++ = *matrix++ & 0x1f;
   }
 

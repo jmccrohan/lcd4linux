@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.5 2004/06/06 06:51:59 reinelt Exp $
+/* $Id: drv_Image.c,v 1.6 2004/06/19 08:20:19 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.6  2004/06/19 08:20:19  reinelt
+ *
+ * compiler warning in image driver fixed
+ * bar bug in USBLCD driver fixed
+ *
  * Revision 1.5  2004/06/06 06:51:59  reinelt
  *
  * do not display end splash screen if quiet=1
@@ -301,16 +306,16 @@ static int drv_IMG_flush_PNG (void)
 static void drv_IMG_flush (void)
 {
   switch (Format) {
-#ifdef WITH_PPM
   case PPM:
+#ifdef WITH_PPM
     drv_IMG_flush_PPM();
-    break;
 #endif
-#ifdef WITH_PNG
+    break;
   case PNG:
+#ifdef WITH_PNG
     drv_IMG_flush_PNG();
-    break;
 #endif
+    break;
   }
 }
 
