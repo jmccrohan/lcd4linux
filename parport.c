@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.8 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: parport.c,v 1.9 2003/10/03 03:53:12 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.9  2003/10/03 03:53:12  reinelt
+ * compile error in parport fixed (thanks to Andrew from FilmCan)
+ *
  * Revision 1.8  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -442,7 +445,14 @@ void parport_debug(void)
 {
   unsigned char control;
   
-  ioctl (PPfd, PPRCONTROL, &control);
+#ifdef WITH_PPDEV
+  if (PPdev) {
+    ioctl (PPfd, PPRCONTROL, &control);
+  } else 
+#endif
+    {
+      control=ctr;
+    }
   
   debug ("%cSTROBE %cAUTOFD %cINIT %cSELECT", 
 	 control & PARPORT_CONTROL_STROBE ? '-':'+',
