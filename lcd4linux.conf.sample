@@ -324,31 +324,42 @@ Widget Uptime {
 
 # debugging widgets 
 
-Widget OnOffTest1 {
-    class 'Text'
-    expression '....................'
-    width 20
-    visible onofftest('0')
-    align 'L'
-    update 2000
-}
-
 Widget BarTest {
     class 'Bar'
-    expression bartest(0,200,100,1)
-    expression2 100
+    # test::bar(barno,maxval,startval,delta) - move a test value between 0 and max.
+    # delta= step to change value by each time it's read.
+    # barno - ten different test bar values can be set up, with barno=0..9
+    # if delta=0, just returns the value of bar n instead of changing it.
+    expression test::bar(0,100,50,1)
+    expression2 test::bar(1,100,0,1)
     length 10
-    max 200
+    max 100
     direction 'E'
     update 200
 }
 
 Widget BarTestVal {
     class 'Text'
-    expression bartest(0,200,100,0)
+    expression test::bar(0,100,50,0)
     prefix 'Test '
     width 9
     update 200
+}
+
+Widget LightningTest {
+    class 'icon'
+    speed 500
+    visible test::onoff(0)
+    bitmap {
+        row1 '...***'
+        row2 '..***.'
+        row3 '.***..'
+        row4 '.****.'
+        row5 '..**..'
+        row6 '.**...'
+        row7 '**....'
+        row8 '*.....'
+    }
 }
 
 

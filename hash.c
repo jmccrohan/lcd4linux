@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.19 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: hash.c,v 1.20 2004/06/13 01:12:52 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.20  2004/06/13 01:12:52  reinelt
+ *
+ * debug widgets changed (thanks to Andy Baxter)
+ *
  * Revision 1.19  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -140,7 +144,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <regex.h>
-//#include <sys/types.h>
 
 #include "debug.h"
 #include "hash.h"

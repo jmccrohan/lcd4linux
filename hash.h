@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.12 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: hash.h,v 1.13 2004/06/13 01:12:52 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.13  2004/06/13 01:12:52  reinelt
+ *
+ * debug widgets changed (thanks to Andy Baxter)
+ *
  * Revision 1.12  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -84,9 +88,7 @@
 #define _HASH_H_
 
 
-// struct timeval
 #include <sys/time.h>
-
 typedef struct timeval timeval;
 
 typedef struct {
