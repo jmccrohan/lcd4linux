@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.28 2002/12/05 19:23:01 reinelt Exp $
+/* $Id: processor.c,v 1.29 2003/02/05 04:31:38 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.29  2003/02/05 04:31:38  reinelt
+ *
+ * T_EXEC: remove trailing CR/LF
+ * T_EXEC: deactivated maxlen calculation (for I don't understand what it is for :-)
+ *
  * Revision 1.28  2002/12/05 19:23:01  reinelt
  * fixed undefined operations found by gcc3
  *
@@ -487,8 +492,12 @@ static void print_token (int token, char **p, char *start, int maxlen)
   case T_EXEC:
     i = (token>>8)-'0';
     *p+=sprintf (*p, "%.*s",cols-(*p-start), exec[i].s);
+#if 0
+    // Fixme: this does not really work as it should...
+    // Remove param 'maxlen' sometimes..
     for (i=*p-start; i<cols && maxlen--; i++) /* clear right of text */
       *(*p)++=' ';
+#endif
     break;
     
   default:
@@ -582,11 +591,14 @@ static char *process_row (int r)
     if (*s=='%') {
       token = *(unsigned char*)++s;
       if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
+#if 0
+      // Fixme: I don't understand this one...
       if (!s[1]) 
 	len = cols - (s - row[r] - 1);
       else
         for (q = s+1, len=0; *q && isspace(*q); q++)
   	  len++;
+#endif
       print_token (token, &p, buffer, len);
 	
     } else if (*s=='$') {

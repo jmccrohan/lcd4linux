@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.7 2002/04/29 11:00:28 reinelt Exp $
+/* $Id: exec.c,v 1.8 2003/02/05 04:31:38 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.8  2003/02/05 04:31:38  reinelt
+ *
+ * T_EXEC: remove trailing CR/LF
+ * T_EXEC: deactivated maxlen calculation (for I don't understand what it is for :-)
+ *
  * Revision 1.7  2002/04/29 11:00:28  reinelt
  *
  * added Toshiba T6963 driver
@@ -100,7 +105,6 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
     else {
       sprintf(xn, "Delay_x%d", index);
       /* delay in Delay_x* sec ? */
-      debug ("%s=%s",xn,cfg_get(xn));
       if (time(NULL) <= now[index] + atoi(cfg_get(xn)?:"1")) {
         return 0;
       }
@@ -111,7 +115,6 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   
   sprintf(xn, "x%d", index);
   command = cfg_get(xn);
-  debug("%s:'%s'",xn,command);
 					    
   if (!command || !*command) {
     error("Empty command for 'x%d'", index);
@@ -139,11 +142,17 @@ int Exec(int index, char buff[EXEC_TXT_LEN], double *val)
   }
   pclose(pipe);
   buff[len] = '\0';
-  for (p = buff ; *p && isspace(*p); p++)
-    ;
-  if (isdigit(*p)) {
+
+  // remove trailing CR/LF
+  while (buff[len-1]=='\n' || buff[len-1]=='\r') {
+    buff[--len]='\0';
+  }
+
+  debug("%s: <%s> = '%s'",xn,command,buff);
+
+  if (isdigit(*buff)) {
     double max, min;
-    *val = atof(p);
+    *val = atof(buff);
     sprintf(xn, "Max_x%d", index);
     max = atof(cfg_get(xn)?:"100")?:100;
     sprintf(xn, "Min_x%d", index);
