@@ -868,8 +868,9 @@ Optional Packages:
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
-                          HD44780, LCDTerm, M50530, MatrixOrbital, MilfordInstruments,
-                          NULL, PNG, PPM, RouterBoard, T6963, USBLCD, X11
+                          HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,
+                          MilfordInstruments, NULL, PNG, PPM, RouterBoard,
+                          T6963, USBLCD, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -3398,7 +3399,7 @@ echo "${ECHO_T}Please note that some screen refreshs may fail" >&6
 echo $ECHO_N "checking for ncurses version... $ECHO_C" >&6
 	ncurses_version=unknown
 cat > conftest.$ac_ext <<EOF
-#line 3401 "configure"
+#line 3402 "configure"
 #include "confdefs.h"
 #ifdef RENAMED_NCURSES
 #include <curses.h>
@@ -5406,7 +5407,8 @@ for driver in $drivers; do
          CURSES="yes"
          CWLINUX="yes"
          HD44780="yes"
-         LCDTerm="yes"
+	 LCDLINUX="yes"
+         LCDTERM="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
@@ -5436,8 +5438,11 @@ for driver in $drivers; do
       HD44780)
          HD44780=$val
 	 ;;
+      LCDLINUX)
+         LCDLINUX=$val
+	 ;;
       LCDTerm)
-         LCDTerm=$val
+         LCDTERM=$val
 	 ;;
       M50530)
          M50530=$val
@@ -5562,7 +5567,17 @@ _ACEOF
 
 fi
 
-if test "$LCDTerm" = "yes"; then
+if test "$LCDLINUX" = "yes"; then
+   TEXT="yes"
+   DRIVERS="$DRIVERS drv_LCDLinux.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_LCDLINUX 1
+_ACEOF
+
+fi
+
+if test "$LCDTERM" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_LCDTerm.o"

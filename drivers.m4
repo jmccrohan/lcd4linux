@@ -29,8 +29,9 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
-  [                        HD44780, LCDTerm, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        NULL, PNG, PPM, RouterBoard, T6963, USBLCD, X11],
+  [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
+  [                        MilfordInstruments, NULL, PNG, PPM, RouterBoard,]
+  [                        T6963, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -57,7 +58,8 @@ for driver in $drivers; do
          CURSES="yes"
          CWLINUX="yes"
          HD44780="yes"
-         LCDTerm="yes"
+	 LCDLINUX="yes"
+         LCDTERM="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
@@ -87,8 +89,11 @@ for driver in $drivers; do
       HD44780)
          HD44780=$val
 	 ;;
+      LCDLINUX)
+         LCDLINUX=$val
+	 ;;
       LCDTerm)
-         LCDTerm=$val
+         LCDTERM=$val
 	 ;;
       M50530)
          M50530=$val
@@ -184,7 +189,13 @@ if test "$HD44780" = "yes"; then
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
 fi
 
-if test "$LCDTerm" = "yes"; then
+if test "$LCDLINUX" = "yes"; then
+   TEXT="yes"
+   DRIVERS="$DRIVERS drv_LCDLinux.o"
+   AC_DEFINE(WITH_LCDLINUX,1,[LCD-Linux driver])
+fi
+
+if test "$LCDTERM" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_LCDTerm.o"

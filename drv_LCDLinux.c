@@ -1,7 +1,7 @@
-/* $Id: drv_LCDTerm.c,v 1.3 2005/01/22 22:57:57 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.1 2005/01/22 22:57:57 reinelt Exp $
  *
- * driver for the LCDTerm serial-to-HD44780 adapter boards
- * http://www.bobblick.com/techref/projects/lcdterm/lcdterm.html
+ * driver for the LCD-Linux HD44780 kernel driver
+ * http://lcd-linux.sourceforge.net
  *
  * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -23,15 +23,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: drv_LCDTerm.c,v $
- * Revision 1.3  2005/01/22 22:57:57  reinelt
+ * $Log: drv_LCDLinux.c,v $
+ * Revision 1.1  2005/01/22 22:57:57  reinelt
  * LCD-Linux driver added
- *
- * Revision 1.2  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.1  2005/01/15 13:13:57  reinelt
- * LCDTerm driver added, take 2
  *
  */
 
@@ -39,13 +33,16 @@
  *
  * exported fuctions:
  *
- * struct DRIVER drv_LCDTerm
+ * struct DRIVER drv_LCDLinux
  *
  */
 
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include <unistd.h>
 
 #include "debug.h"
@@ -58,47 +55,49 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
-#include "drv_generic_serial.h"
 
-#define LCD_CLEAR 0x03    
-#define LCD_CMD   0x12
-#define LCD_DATA  0x14
-
-static char Name[]="LCDTerm";
+static char Name[]="LCD-Linux";
 
 
 /****************************************/
 /***  hardware dependant functions    ***/
 /****************************************/
 
-static void drv_LT_clear (void)
+static void drv_LL_clear (void)
 {
   char cmd[1];
   
+  /* Fixme */
+#if 0
   cmd[0] = LCD_CLEAR; /* clear display */
   drv_generic_serial_write (cmd, 1);  /* clear screen */
+#endif
+
 }
 
 
-static int drv_LT_send (const char request, const char value)
+static int drv_LL_send (const char request, const char value)
 {
   char buf[2];
 
   buf[0] = request;
   buf[1] = value;
-  drv_generic_serial_write (buf, 2);
+
+  // Fixme
+  // drv_generic_serial_write (buf, 2);
   
   return 0;
 }
 
 
-static void drv_LT_command (const char cmd)
+static void drv_LL_command (const char cmd)
 {
-  drv_LT_send (LCD_CMD, cmd);
+  // Fixme
+  // drv_LL_send (LCD_CMD, cmd);
 }
 
 
-static void drv_LT_write (const int row, const int col, const char *data, int len)
+static void drv_LL_write (const int row, const int col, const char *data, int len)
 {
   int pos;
   
@@ -109,31 +108,33 @@ static void drv_LT_write (const int row, const int col, const char *data, int le
     pos = (row%2)*64+(row/2)*20+col;
   }
 
-  drv_LT_command (0x80|pos);
+  drv_LL_command (0x80|pos);
   
   while (len--) {
-    drv_LT_send (LCD_DATA, *data++);
+    // Fixme
+    // drv_LL_send (LCD_DATA, *data++);
   }
 }
 
-static void drv_LT_defchar (const int ascii, const unsigned char *matrix)
+static void drv_LL_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   
-  drv_LT_command (0x40|8*ascii);
+  drv_LL_command (0x40|8*ascii);
 
   for (i = 0; i < 8; i++) {
-    drv_LT_send (LCD_DATA, *matrix++ & 0x1f);
+    // Fixme
+    // drv_LL_send (LCD_DATA, *matrix++ & 0x1f);
   }
 }
 
 
-static int drv_LT_start (const char *section, const int quiet)
+static int drv_LL_start (const char *section, const int quiet)
 {
   int rows=-1, cols=-1;
   char *s;
 
-  if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
+  /* Fixme: open device */
 
   s=cfg_get(section, "Size", NULL);
   if (s==NULL || *s=='\0') {
@@ -150,19 +151,19 @@ static int drv_LT_start (const char *section, const int quiet)
   DCOLS = cols;
   
   /* initialize display */
-  drv_LT_command (0x29); /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
-  drv_LT_command (0x08); /* Display off, cursor off, blink off */
-  drv_LT_command (0x0c); /* Display on, cursor off, blink off */
-  drv_LT_command (0x06); /* curser moves to right, no shift */
+  drv_LL_command (0x29); /* 8 Bit mode, 1/16 duty cycle, 5x8 font */
+  drv_LL_command (0x08); /* Display off, cursor off, blink off */
+  drv_LL_command (0x0c); /* Display on, cursor off, blink off */
+  drv_LL_command (0x06); /* curser moves to right, no shift */
 
-  drv_LT_clear();        /* clear display */
+  drv_LL_clear();        /* clear display */
   
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
     if (drv_generic_text_greet (buffer, "www.bwct.de")) {
       sleep (3);
-      drv_LT_clear();
+      drv_LL_clear();
     }
   }
   
@@ -193,7 +194,7 @@ static int drv_LT_start (const char *section, const int quiet)
 
 
 /* list models */
-int drv_LT_list (void)
+int drv_LL_list (void)
 {
   printf ("generic");
   return 0;
@@ -201,7 +202,7 @@ int drv_LT_list (void)
 
 
 /* initialize driver & display */
-int drv_LT_init (const char *section, const int quiet)
+int drv_LL_init (const char *section, const int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
@@ -217,12 +218,12 @@ int drv_LT_init (const char *section, const int quiet)
   GOTO_COST = 2;  /* number of bytes a goto command requires */
   
   /* real worker functions */
-  drv_generic_text_real_write   = drv_LT_write;
-  drv_generic_text_real_defchar = drv_LT_defchar;
+  drv_generic_text_real_write   = drv_LL_write;
+  drv_generic_text_real_defchar = drv_LL_defchar;
 
 
   /* start display */
-  if ((ret=drv_LT_start (section, quiet))!=0)
+  if ((ret=drv_LL_start (section, quiet))!=0)
     return ret;
   
   /* initialize generic text driver */
@@ -269,7 +270,7 @@ int drv_LT_init (const char *section, const int quiet)
 
 
 /* close driver & display */
-int drv_LT_quit (const int quiet)
+int drv_LL_quit (const int quiet)
 {
 
   info("%s: shutting down.", Name);
@@ -277,24 +278,24 @@ int drv_LT_quit (const int quiet)
   drv_generic_text_quit();
   
   /* clear display */
-  drv_LT_clear();
+  drv_LL_clear();
   
   /* say goodbye... */
   if (!quiet) {
     drv_generic_text_greet ("goodbye!", NULL);
   }
   
-  drv_generic_serial_close();
+  // Fixme: close device
   
   return (0);
 }
 
 
-DRIVER drv_LCDTerm = {
+DRIVER drv_LCDLinux = {
   name: Name,
-  list: drv_LT_list,
-  init: drv_LT_init,
-  quit: drv_LT_quit, 
+  list: drv_LL_list,
+  init: drv_LL_init,
+  quit: drv_LL_quit, 
 };
 
 

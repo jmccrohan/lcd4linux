@@ -332,6 +332,9 @@
 /* HD44780 driver */
 #undef WITH_HD44780
 
+/* LCD-Linux driver */
+#undef WITH_LCDLINUX
+
 /* LCDTerm driver */
 #undef WITH_LCDTERM
 

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.25 2005/01/18 06:30:22 reinelt Exp $
+/* $Id: drv.c,v 1.26 2005/01/22 22:57:57 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.26  2005/01/22 22:57:57  reinelt
+ * LCD-Linux driver added
+ *
  * Revision 1.25  2005/01/18 06:30:22  reinelt
  * added (C) to all copyright statements
  *
@@ -183,6 +186,7 @@ extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
+extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
@@ -220,6 +224,9 @@ DRIVER *Driver[] = {
 #endif
 #if defined (WITH_PNG) || defined(WITH_PPM)
   &drv_Image,
+#endif
+#ifdef WITH_LCDLinux
+  &drv_LCDLinux,
 #endif
 #ifdef WITH_LCDTERM
   &drv_LCDTerm,

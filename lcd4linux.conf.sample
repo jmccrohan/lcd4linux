@@ -63,14 +63,14 @@ Display Curses {
 Display HD44780-generic {
     Driver 'HD44780'
     Model 'generic'
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
     Size '20x4'
     Wire {
 	RW      'GND'
 	RS      'AUTOFD'
 	ENABLE  'STROBE'
 	ENABLE2 'GND'
-	GPO     'GND'
+	GPO     'INIT'
     }
 }
 
@@ -79,7 +79,7 @@ Display HD44780-winamp {
     Driver 'HD44780'
     Model 'generic'
     UseBusy 1
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
     Size '20x4'
     Wire {
 	RW      'AUTOFD'
@@ -95,7 +95,7 @@ Display HD44780-kernelconcepts {
     Driver 'HD44780'
     Model 'HD66712'
     UseBusy 1
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
     Size '20x4'
     Wire {
 	RW      'AUTOFD'
@@ -108,7 +108,7 @@ Display HD44780-kernelconcepts {
 
 Display SC1602D {
     Driver 'HD44780'
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
     Bits '8'
     Size '16x2'
     asc255bug 0
@@ -126,7 +126,7 @@ Display LCM-162 {
     Driver 'HD44780'
     Model 'LCM-162'
 #   Bus 'parport'
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
     Size '16x2'
     UseBusy 1
     asc255bug 0
@@ -206,7 +206,7 @@ Display BWCT {
 
 Display T6963-240x64 {
     Driver 'T6963'
-    Port '/dev/parports/0'
+    Port '/dev/parport0'
     Size '240x64'
     Wire.CE 'STROBE'
     Wire.CD 'SELECT'
@@ -721,14 +721,14 @@ Layout testMySQL {
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
-#Display 'HD44780-20x4'
+Display 'HD44780-generic'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-Display 'M50530-24x8'
+#Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
