@@ -29,6 +29,7 @@ Skeleton.c \
 MatrixOrbital.c \
 BeckmannEgle.c \
 HD44780.c \
+PalmPilot.c \
 Raster.c \
 XWindow.c
 

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.16 2000/04/28 05:19:55 reinelt Exp $
+/* $Id: display.c,v 1.17 2000/05/02 06:05:00 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.17  2000/05/02 06:05:00  reinelt
+ *
+ * driver for 3Com Palm Pilot added
+ *
  * Revision 1.16  2000/04/28 05:19:55  reinelt
  *
  * first release of the Beckmann+Egle driver
@@ -129,6 +133,7 @@ extern LCD Skeleton[];
 extern LCD MatrixOrbital[];
 extern LCD BeckmannEgle[];
 extern LCD HD44780[];
+extern LCD PalmPilot[];
 extern LCD Raster[];
 extern LCD XWindow[];
 
@@ -137,6 +142,7 @@ FAMILY Driver[] = {
   { "Matrix Orbital",  MatrixOrbital },
   { "Beckmann+Egle",   BeckmannEgle },
   { "HD 44780 based",  HD44780 },
+  { "3Com Palm Pilot", PalmPilot },
   { "Raster",          Raster },
 #ifndef X_DISPLAY_MISSING
   { "X Window System", XWindow },
