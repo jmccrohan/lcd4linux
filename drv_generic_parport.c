@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.4 2004/03/03 04:44:16 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.5 2004/04/12 05:14:42 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.5  2004/04/12 05:14:42  reinelt
+ * another BIG FAT WARNING on the use of raw ports instead of ppdev
+ *
  * Revision 1.4  2004/03/03 04:44:16  reinelt
  * changes (cosmetics?) to the big patch from Martin
  * hash patch un-applied
@@ -121,19 +124,27 @@ int drv_generic_parport_open (char *section, char *driver)
   
   udelay_init();
   
+#ifndef WITH_PPDEV
+  error ("The files include/linux/parport.h and/or include/linux/ppdev.h");
+  error ("were missing at compile time. Even if your system supports");
+  error ("ppdev, it will not be used.");
+  error ("You *really* should install these files and recompile LCD4linux!");
+#endif
+  
   s=cfg_get (Section, "Port", NULL);
   if (s==NULL || *s=='\0') {
     error ("%s: no '%s.Port' entry from %s", Driver, Section, cfg_source());
     return -1;
   }
+
   PPdev=NULL;
   if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
 #ifdef WITH_PPDEV
     Port=0;
     PPdev=s;
 #else
-    free(s);
     error ("%s: bad %s.Port '%s' from %s", Driver, Section, s, cfg_source());
+    free(s);
     return -1;
 #endif
   }
@@ -142,7 +153,7 @@ int drv_generic_parport_open (char *section, char *driver)
 #ifdef WITH_PPDEV
   
   if (PPdev) {
-    debug ("using ppdev %s", PPdev);
+    info ("using ppdev %s", PPdev);
     PPfd=open(PPdev, O_RDWR);
     if (PPfd==-1) {
       error ("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
@@ -167,7 +178,8 @@ int drv_generic_parport_open (char *section, char *driver)
 #endif
     
     {
-      debug ("using raw port 0x%x", Port);
+      error ("using raw port 0x%x (deprecated!)", Port);
+      error ("You *really* should change your setup and use ppdev!");
       if ((Port+3)<=0x3ff) {
 	if (ioperm(Port, 3, 1)!=0) {
 	  error ("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));

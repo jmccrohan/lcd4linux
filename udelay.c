@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.15 2004/04/12 04:56:00 reinelt Exp $
+/* $Id: udelay.c,v 1.16 2004/04/12 05:14:42 reinelt Exp $
  *
  * short delays
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.16  2004/04/12 05:14:42  reinelt
+ * another BIG FAT WARNING on the use of raw ports instead of ppdev
+ *
  * Revision 1.15  2004/04/12 04:56:00  reinelt
  * emitted a BIG FAT WARNING if msr.h could not be found (and therefore
  * the gettimeofday() delay loop would be used)
@@ -250,9 +253,9 @@ void udelay_init (void)
     info ("using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
   } else
 #else
-    error ("/usr/include/asm/msr.h was missing at compile time.");
-    error ("Even if your CPU supports TSC, it will not be used.");
-    error ("You *really* should recompile LCD4linux with msr.h.");
+    error ("The file 'include/asm/msr.h' was missing at compile time.");
+    error ("Even if your CPU supports TSC, it will not be used!");
+    error ("You *really* should install msr.h and recompile LCD4linux!");
 #endif
 
  {
