@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.2 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: Raster.c,v 1.3 2000/03/25 05:50:43 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.3  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.2  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -65,14 +70,16 @@ static int background=0;
 int Raster_flush (void)
 {
   int xsize, ysize, row, col;
-  unsigned char *buffer;
   unsigned char R[3], G[3], B[3];
+  static unsigned char *buffer=NULL;
   
   xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*(pixel+pgap);
   ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*(pixel+pgap);
   
-  if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
-    return -1;
+  if (buffer==NULL) {
+    if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
+      return -1;
+  }
 
   memset (buffer, 0, xsize*ysize*sizeof(*buffer));
   
@@ -107,7 +114,6 @@ int Raster_flush (void)
       printf("%c%c%c", R[i], G[i], B[i]);
     }
   }
-
   return 0;
 }
 
@@ -179,5 +185,5 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 
 DISPLAY Raster[] = {
   { "PPM", 0, 0, 0, 0, BARS, Raster_init, Raster_clear, Raster_put, Raster_bar, Raster_flush },
-  { "" }
+  { NULL }
 };

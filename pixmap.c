@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.3 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: pixmap.c,v 1.4 2000/03/25 05:50:43 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.4  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.3  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -107,7 +112,7 @@ int pix_put (int row, int col, char *text)
   col*=XRES;
   
   while (*text && col<COLS) {
-    c=*text;
+    c=*(unsigned char*)text;
     for (y=0; y<YRES; y++) {
       mask=1<<XRES;
       for (x=0; x<XRES; x++) {

@@ -1,4 +1,4 @@
-/* $Id: fontmap.c,v 1.2 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: fontmap.c,v 1.3 2000/03/25 05:50:43 reinelt Exp $
  *
  * 5x8 font
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: fontmap.c,v $
+ * Revision 1.3  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.2  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -838,6 +843,14 @@ unsigned char Fontmap[256][8]={
 	   b_OOOOO,
 	   b__O___,
 	   b___O__,
+	   b______,
+	   b______ },
+  [0xb0] { b__OOO_,
+	   b__O_O_,
+	   b__OOO_,
+	   b______,
+	   b______,
+	   b______,
 	   b______,
 	   b______ },
 };

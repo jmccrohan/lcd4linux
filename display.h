@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.8 2000/03/22 15:36:21 reinelt Exp $
+/* $Id: display.h,v 1.9 2000/03/25 05:50:43 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.9  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.8  2000/03/22 15:36:21  reinelt
  *
  * added '-l' switch (list drivers)
@@ -69,7 +74,7 @@
 #define BAR_HV (BAR_H | BAR_V)
 
 typedef struct DISPLAY {
-  char name[16];
+  char *name;
   int rows;
   int cols;
   int xres;
@@ -83,7 +88,7 @@ typedef struct DISPLAY {
 } DISPLAY;
 
 typedef struct {
-  char name[16];
+  char *name;
   DISPLAY *Display;
 } FAMILY;
 

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.3 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: XWindow.c,v 1.4 2000/03/25 05:50:43 reinelt Exp $
  *
  * driver for X11
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.4  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.3  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -186,5 +191,5 @@ int X_bar (int type, int row, int col, int max, int len1, int len2)
 
 DISPLAY XWindow[] = {
   { "X11", 0, 0, 0, 0, BARS, X_init, X_clear, X_put, X_bar, X_flush },
-  { "" }
+  { NULL }
 };

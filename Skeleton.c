@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.2 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: Skeleton.c,v 1.3 2000/03/25 05:50:43 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.3  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.2  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -82,5 +87,5 @@ int Skel_flush (void)
 
 DISPLAY Skeleton[] = {
   { "Skeleton", 4, 20, 5, 8, BAR_L | BAR_R, Skel_init, Skel_clear, Skel_put, Skel_bar, Skel_flush },
-  { "" }
+  { NULL }
 };

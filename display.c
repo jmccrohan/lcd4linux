@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: display.c,v 1.11 2000/03/25 05:50:43 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.11  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.10  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -108,7 +113,7 @@ FAMILY Driver[] = {
   { "Matrix Orbital",  MatrixOrbital },
   { "Raster", Raster },
   { "X Window System", XWindow },
-  { "" }
+  { NULL }
 };
 
 
@@ -120,9 +125,9 @@ int lcd_list (void)
 
   printf ("available display drivers:");
   
-  for (i=0; Driver[i].name[0]; i++) {
+  for (i=0; Driver[i].name; i++) {
     printf ("\n   %-16s:", Driver[i].name);
-    for (j=0; Driver[i].Display[j].name[0]; j++) {
+    for (j=0; Driver[i].Display[j].name; j++) {
       printf (" %s", Driver[i].Display[j].name);
     }
   }
@@ -133,8 +138,8 @@ int lcd_list (void)
 int lcd_init (char *display)
 {
   int i, j;
-  for (i=0; Driver[i].name[0]; i++) {
-    for (j=0; Driver[i].Display[j].name[0]; j++) {
+  for (i=0; Driver[i].name; i++) {
+    for (j=0; Driver[i].Display[j].name; j++) {
       if (strcmp (Driver[i].Display[j].name, display)==0) {
 	Display=&Driver[i].Display[j];
 	return Display->init(Display);

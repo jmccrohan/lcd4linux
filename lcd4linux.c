@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.11 2000/03/24 11:36:56 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.12 2000/03/25 05:50:43 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.12  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.11  2000/03/24 11:36:56  reinelt
  *
  * new syntax for raster configuration
@@ -144,13 +149,17 @@ void main (int argc, char *argv[])
 
   process_init();
 
+  // FIXME: just debugging
+  lcd_clear();
+  lcd_put (1, 1, "so what!");
+  lcd_bar (BAR_R|BAR_H2, 2,1,50,19,46);
+  lcd_flush();
+  exit (0);
+
   lcd_clear();
   lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
   lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
-
-  // FIXME: just debugging
-  exit (0);
 
   sleep (3);
   lcd_clear();

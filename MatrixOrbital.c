@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.10 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.11 2000/03/25 05:50:43 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.11  2000/03/25 05:50:43  reinelt
+ *
+ * memory leak in Raster_flush closed
+ * driver family logic changed
+ *
  * Revision 1.10  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -519,5 +524,5 @@ DISPLAY MatrixOrbital[] = {
   { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
   { "LCD2041", 4, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
   { "LCD4021", 2, 40, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush }, 
-  { "" }
+  { NULL }
 };
