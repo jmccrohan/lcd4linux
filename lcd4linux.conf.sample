@@ -7,7 +7,7 @@
 #size 20x4
 #font 5x8
 #pixel 3+0
-#gap 3x3
+#gap -1x-1
 #border 10
 #foreground \#102000
 #halfground \#70c000
@@ -17,7 +17,7 @@ Display X11
 size 20x5
 font 5x8
 pixel 1+0
-gap 1x1
+gap -1x-1
 border 1
 foreground \#102000
 halfground \#90c000

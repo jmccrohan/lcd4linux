@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.5 2000/03/28 07:22:15 reinelt Exp $
+/* $Id: cfg.c,v 1.6 2000/04/03 04:46:38 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.6  2000/04/03 04:46:38  reinelt
+ *
+ * added '-c key=val' option
+ *
  * Revision 1.5  2000/03/28 07:22:15  reinelt
  *
  * version 0.95 released
@@ -55,6 +59,13 @@
 /* 
  * exported functions:
  *
+ * cfg_cmd (arg)
+ *   allows us to overwrite entries in the 
+ *   config-file from the command line.
+ *   arg is 'key=value'
+ *   cfg_cmd can be called _before_ cfg_read()
+ *   returns 0 if ok, -1 if arg cannot be parsed
+ *
  * cfg_set (key, value)
  *   pre-set key's value
  *   should be called before cfg_read()
@@ -85,6 +96,7 @@
 typedef struct {
   char *key;
   char *val;
+  int lock;
 } ENTRY;
 
 static char  *Config_File=NULL;
@@ -92,7 +104,7 @@ static ENTRY *Config=NULL;
 static int   nConfig=0;
 
 
-static char *strip (char *s)
+static char *strip (char *s, int strip_comments)
 {
   char *p;
   
@@ -100,7 +112,7 @@ static char *strip (char *s)
   for (p=s; *p; p++) {
     if (*p=='"') do p++; while (*p && *p!='\n' && *p!='"');
     if (*p=='\'') do p++; while (*p && *p!='\n' && *p!='\'');
-    if (*p=='\n' || (*p=='#' && (p==s || *(p-1)!='\\'))) {
+    if (*p=='\n' || (strip_comments && *p=='#' && (p==s || *(p-1)!='\\'))) {
       *p='\0';
       break;
     }
@@ -125,12 +137,13 @@ static char *dequote (char *string)
   return string;
 }
 
-void cfg_set (char *key, char *val)
+static void cfg_add (char *key, char *val, int lock)
 {
   int i;
   
   for (i=0; i<nConfig; i++) {
     if (strcasecmp(Config[i].key, key)==0) {
+      if (Config[i].lock>lock) return;
       if (Config[i].val) free (Config[i].val);
       Config[i].val=dequote(strdup(val));
       return;
@@ -140,6 +153,30 @@ void cfg_set (char *key, char *val)
   Config=realloc(Config, nConfig*sizeof(ENTRY));
   Config[i].key=strdup(key);
   Config[i].val=dequote(strdup(val));
+  Config[i].lock=lock;
+}
+
+int cfg_cmd (char *arg)
+{
+  char *key, *val;
+  char buffer[256];
+  
+  strncpy (buffer, arg, sizeof(buffer));
+  key=strip(buffer, 0);
+  for (val=key; *val; val++) {
+    if (*val=='=') {
+      *val++='\0';
+      break;
+    }
+  }
+  if (*key=='\0' || *val=='\0') return -1;
+  cfg_add (key, val, 1);
+  return 0;
+}
+
+void cfg_set (char *key, char *val)
+{
+  cfg_add (key, val, 0);
 }
 
 char *cfg_get (char *key)
@@ -170,14 +207,14 @@ int cfg_read (char *file)
   Config_File=strdup(file);
     
   while ((line=fgets(buffer,256,stream))!=NULL) {
-    if (*(line=strip(line))=='\0') continue;
+    if (*(line=strip(line, 1))=='\0') continue;
     for (p=line; *p; p++) {
       if (isblank(*p)) {
 	*p++='\0';
 	break;
       }
     }
-    p=strip(p);
+    p=strip(p, 1);
     if (*p) for (s=p; *(s+1); s++);
     else s=p;
     if (*p=='"' && *s=='"') {

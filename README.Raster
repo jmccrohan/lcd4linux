@@ -1,5 +1,5 @@
 #
-# $Id: README.Raster,v 1.1 2000/03/26 20:00:44 reinelt Exp $
+# $Id: README.Raster,v 1.2 2000/04/03 04:46:38 reinelt Exp $
 #
 
 This is the README file for the Raster display driver for lcd4linux
@@ -38,7 +38,9 @@ pixelsize*pixelsize pixels. If you want to, you can emulate the gap
 between this lcd cells by specifying a pixelgap greater than zero.
 Sometimes there's a gap between characters, too. You can specify this 
 gap (in pixels again) horizontally and vertically. Usually this gap
-is the same size as a cell (which is pixelsize+pixelgap). 
+is the same size as a cell (which is pixelsize+pixelgap). If you specify
+either the row gap or the column gap as -1, this cell size will be used
+instead.
 
 If you use a font of 5x8, some characters may use the first and the last 
 pixel. So you should specify a column gap, otherwise the caracters may 

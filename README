@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.2 2000/03/26 19:03:52 reinelt Exp $
+# $Id: README,v 1.3 2000/04/03 04:46:38 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -12,6 +12,21 @@ lcd4linux is a small program that reads various information from the kernel
 
 It supports displaying text values and different types of bars: Horizontal and
 vertical bars, logarithmic bars, split bars (two independent bars in one row).
+
+
+USAGE
+
+lcd4linux -h  
+print version number and a small help text, then exit
+
+lcd4linux -l 
+list available drivers
+
+lcd4linux [-c key=val] [-f config-file] [-o output]
+run lcd4linux 
+use configuration from 'config-file' instead of /etc/lcd4linux.conf
+write picture to 'output' (raster driver only)
+overwrite entries from the config-file with '-c'
 
 
 SUPPORTED DISPLAYS

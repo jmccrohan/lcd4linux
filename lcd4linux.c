@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.15 2000/04/01 22:40:42 herp Exp $
+/* $Id: lcd4linux.c,v 1.16 2000/04/03 04:46:38 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.16  2000/04/03 04:46:38  reinelt
+ *
+ * added '-c key=val' option
+ *
  * Revision 1.15  2000/04/01 22:40:42  herp
  * geometric correction (too many pixelgaps)
  * lcd4linux main should return int, not void
@@ -108,7 +112,7 @@ int tick, tack;
 static void usage(void)
 {
   printf ("%s\n", release);
-  printf ("usage: lcd4linux [-h] [-l] [-f config-file] [-o output-file]\n");
+  printf ("usage: lcd4linux [-h] [-l] [-c key=value] [-f config-file] [-o output-file]\n");
 }
 
 int main (int argc, char *argv[])
@@ -117,8 +121,14 @@ int main (int argc, char *argv[])
   char *driver;
   int c, smooth;
 
-  while ((c=getopt (argc, argv, "hlf:o:"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:f:hlo:"))!=EOF) {
     switch (c) {
+    case 'c':
+      if (cfg_cmd (optarg)<0) {
+	fprintf (stderr, "%s: illegal argument -c %s\n", argv[0], optarg);
+	exit(2);
+      }
+      break;
     case 'h':
       usage();
       exit(0);
