@@ -245,15 +245,15 @@ Layout L16x2 {
 	Col1  'Busy'
 	Col11 'BusyBar'
     }
-    Row2 {
-	Col1 'Heartbeat'
-	Col2 'EKG'
-	Col3 'Karo'
-	Col4 'Heart'
-	Col5 'Blob'
-	Col6 'Wave'
-	Col7 'Squirrel'
-    }
+#    Row2 {
+#	Col1 'Heartbeat'
+#	Col2 'EKG'
+#	Col3 'Karo'
+#	Col4 'Heart'
+#	Col5 'Blob'
+#	Col6 'Wave'
+#	Col7 'Squirrel'
+#    }
 }
 
 #Display 'LK204'

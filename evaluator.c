@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: evaluator.c,v 1.12 2004/02/05 07:10:23 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,10 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.12  2004/02/05 07:10:23  reinelt
+ * evaluator function names are no longer case-sensitive
+ * Crystalfontz Fan PWM control, Fan RPM monitoring, temperature monitoring
+ *
  * Revision 1.11  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -430,7 +434,7 @@ static int f_lookup (const void *a, const void *b)
 {
   char *name=(char*)a;
   FUNCTION *f=(FUNCTION*)b;
-  return strcmp(name, f->name);
+  return strcasecmp(name, f->name);
 }
 
 
@@ -439,7 +443,7 @@ static int f_sort (const void *a, const void *b)
 {
   FUNCTION *va=(FUNCTION*)a;
   FUNCTION *vb=(FUNCTION*)b;
-  return strcmp(va->name, vb->name);
+  return strcasecmp(va->name, vb->name);
 }
 
 

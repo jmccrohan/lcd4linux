@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.9 2004/02/04 19:10:51 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.10 2004/02/05 07:10:23 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.10  2004/02/05 07:10:23  reinelt
+ * evaluator function names are no longer case-sensitive
+ * Crystalfontz Fan PWM control, Fan RPM monitoring, temperature monitoring
+ *
  * Revision 1.9  2004/02/04 19:10:51  reinelt
  * Crystalfontz driver nearly finished
  *
@@ -105,6 +109,13 @@ struct {
 // Line Buffer for 633 displays
 static char Line[2*16];
 
+// Fan RPM
+static double Fan_RPM[4] = {0.0,};
+
+// Temperature sensors
+static double Temperature[32] = {0.0,};
+
+
 // Fixme:
 // static int GPO[8];
 static int GPOS;
@@ -173,9 +184,43 @@ static unsigned char byte (int pos)
 
 static void drv_CF_process_packet (void)
 {
-  // debugging only
-  if (0) debug ("Packet: type=%d (%d) len=%d data=<%s>", 
-	 Packet.type, Packet.type & 0x3f, Packet.size, Packet.data);
+
+  switch (Packet.type) {
+    
+  case 0x80: // Key Activity
+    debug ("Key Activity: %d", Packet.data[0]);
+    break;
+    
+  case 0x81: // Fan Speed Report
+    if (Packet.data[1] == 0xff) {
+      Fan_RPM[Packet.data[0]] = -1.0;
+    } else if (Packet.data[1] < 4) {
+      Fan_RPM[Packet.data[0]] = 0.0;
+    } else {
+      Fan_RPM[Packet.data[0]] = (double) 27692308L * (Packet.data[1]-3) / (Packet.data[2]+256*Packet.data[3]);
+    }
+    break;
+
+  case 0x82: // Temperature Sensor Report
+    switch (Packet.data[3]) {
+    case 0:
+      error ("%s: 1-Wire device #%d: CRC error", Name, Packet.data[0]);
+      break;
+    case 1:
+    case 2:
+      Temperature[Packet.data[0]] = (Packet.data[1] + 256*Packet.data[2])/16.0;
+      break;
+    default:
+      error ("%s: 1-Wire device #%d: unknown CRC status %d", Name, Packet.data[0], Packet.data[3]);
+      break;
+    }
+    break;
+
+  default:
+    // just ignore packet
+    break;
+  }
+  
 }
 
 
@@ -200,7 +245,7 @@ static int drv_CF_poll (void)
   while (1) {
     // packet size
     num=RingWPos-RingRPos;
-    if (num < 0) num+=10;
+    if (num < 0) num+=sizeof(RingBuffer);
     // minimum packet size=4
     if (num < 4) return 0;
     // valid response types: 01xxxxx 10.. 11..
@@ -345,55 +390,92 @@ static void drv_CF_defchar23 (int ascii, char *matrix)
 
 static int drv_CF_contrast (int contrast)
 {
+  static unsigned char Contrast=0;
   char buffer[2];
 
-  if (contrast<0  ) contrast=0;
-  if (contrast>100) contrast=100;
+  // -1 is used to query the current contrast
+  if (contrast == -1) return Contrast;
+  
+  if (contrast < 0  ) contrast = 0;
+  if (contrast > 100) contrast = 100;
+  Contrast=contrast;
 
   switch (Protocol) {
 
   case 1:
     buffer[0] = 15; // Set LCD Contrast
-    buffer[1] = contrast;
+    buffer[1] = Contrast;
     drv_CF_write1 (buffer, 2);
     break;
 
   case 2:
   case 3:
-    // contrast goes from 0 to 50 only
-    if (contrast>50) contrast=50;
-    buffer[0] = contrast;
-    drv_CF_send (13, 1, buffer);
+    // Contrast goes from 0 to 50 only
+    if (Contrast>50) Contrast=50;
+    drv_CF_send (13, 1, &Contrast);
     break;
   }
-
-  return contrast;
+  
+  return Contrast;
 }
 
 
 static int drv_CF_backlight (int backlight)
 {
-  char buffer[3];
+  static unsigned char Backlight=0;
+  char buffer[2];
 
+  // -1 is used to query the current backlight
+  if (backlight == -1) return Backlight;
+  
   if (backlight<0  ) backlight=0;
   if (backlight>100) backlight=100;
+  Backlight=backlight;
   
   switch (Protocol) {
     
   case 1:
-    buffer[0] = 14; // Set LCD backlight
-    buffer[1] = backlight;
+    buffer[0] = 14; // Set LCD Backlight
+    buffer[1] = Backlight;
     drv_CF_write1 (buffer, 2);
     break;
 
   case 2:
   case 3:
-    buffer[0] = backlight;
-    drv_CF_send (14, 1, buffer);
+    buffer[0] = Backlight;
+    drv_CF_send (14, 1, &Backlight);
     break;
   }
   
-  return backlight;
+  return Backlight;
+}
+
+
+static int drv_CF_fan_pwm (int fan, int power)
+{
+  static unsigned char PWM[4] = {100,};
+  
+  // sanity check
+  if (fan<1 || fan>4) return -1;
+  
+  // fan ranges from 1 to 4
+  fan--;
+  
+  // -1 is used to query the current power
+  if (power == -1) return PWM[fan];
+  
+  if (power<0  ) power=0;
+  if (power>100) power=100;
+  PWM[fan]=power;
+  
+  switch (Protocol) {
+  case 2:
+  case 3:
+    drv_CF_send (17, 4, PWM);
+    break;
+  }
+  
+  return PWM[fan];
 }
 
 
@@ -444,13 +526,121 @@ static int drv_CF_autodetect (void)
   // not reached
   return -1;
 }
+
+
+static char* drv_CF_print_ROM (void)
+{
+  static char buffer[17];
+
+  snprintf(buffer, sizeof(buffer), "0x%02x%02x%02x%02x%02x%02x%02x%02x",
+	   Packet.data[1], Packet.data[2], Packet.data[3], Packet.data[4], 
+	   Packet.data[5], Packet.data[6], Packet.data[7], Packet.data[8]);
+
+  return buffer;
+}
+
+
+static int drv_CF_scan_DOW (unsigned char index)
+{
+  int i;
   
+  // Read DOW Device Information
+  drv_CF_send (18, 1, &index);
+  
+  i=0;
+  while (1) {
+    // wait 10 msec
+    usleep(10*1000);
+    // packet available?
+    if (drv_CF_poll()) {
+      // DOW Device Info
+      if (Packet.type==0x52) {
+	switch (Packet.data[1]) {
+	case 0x00:
+	  // no device found
+	  return 0;
+	case 0x22:
+	  info ("%s: 1-Wire device #%d: DS1822 temperature sensor found at %s", 
+		Name, Packet.data[0], drv_CF_print_ROM()); 
+	  return 1;
+	case 0x28:
+	  info ("%s: 1-Wire device #%d: DS18B20 temperature sensor found at %s", 
+		Name, Packet.data[0], drv_CF_print_ROM()); 
+	  return 1;
+	default:
+	  info ("%s: 1-Wire device #%d: unknown device found at %s", 
+		Name, Packet.data[0], drv_CF_print_ROM()); 
+	  return 0;
+	}
+      } else {
+	drv_CF_process_packet();
+      }
+    }
+    // wait no longer than 300 msec
+    if (++i > 30) {
+      error ("%s: 1-Wire device #%d detection timed out", Name, index);
+      return -1;
+    }
+  }
+  
+  // not reached
+  return -1;
+}
+
+
+// init sequences for 626, 632, 634, 636 
+static void drv_CF_start_1 (void)
+{
+  drv_CF_write1 ("\014", 1);  // Form Feed (Clear Display)
+  drv_CF_write1 ("\004", 1);  // hide cursor
+  drv_CF_write1 ("\024", 1);  // scroll off
+  drv_CF_write1 ("\030", 1);  // wrap off
+}
+
+
+// init sequences for 633
+static void drv_CF_start_2 (void)
+{
+  int i;
+  unsigned long mask;
+  char buffer[4];
+
+  // Clear Display
+  drv_CF_send ( 6, 0, NULL); 
+
+  // Set LCD Cursor Style
+  buffer[0]=0;
+  drv_CF_send (12, 1, buffer);
+
+  // enable Fan Reporting
+  buffer[0]=15;
+  drv_CF_send (16, 1, buffer);
+  
+  // Set Fan Power to 100%
+  buffer[0]=buffer[1]=buffer[2]=buffer[3]=100;
+  drv_CF_send (17, 4, buffer);
+  
+  // Read DOW Device Information
+  mask=0;
+  for (i=0; i<32; i++) {
+    if (drv_CF_scan_DOW(i)==1) {
+      mask |= 1<<i;
+    }
+  }
+  
+  // enable Temperature Reporting
+  buffer[0] =  mask      & 0xff;
+  buffer[1] = (mask>>8)  & 0xff;
+  buffer[2] = (mask>>16) & 0xff;
+  buffer[3] = (mask>>24) & 0xff;
+  drv_CF_send (19, 4, buffer);
+}
+
 
 static int drv_CF_start (char *section)
 {
   int i;  
   char *model;
-  char buffer;
   
   model=cfg_get(section, "Model", NULL);
   if (model!=NULL && *model!='\0') {
@@ -501,16 +691,13 @@ static int drv_CF_start (char *section)
 
   switch (Protocol) {
   case 1:
-    drv_CF_write1 ("\014", 1);  // Form Feed (Clear Display)
-    drv_CF_write1 ("\004", 1);  // hide cursor
-    drv_CF_write1 ("\024", 1);  // scroll off
-    drv_CF_write1 ("\030", 1);  // wrap off
-    break;
+    drv_CF_start_1();
+      break;
   case 2:
+    drv_CF_start_2();
+    break;
   case 3:
-    drv_CF_send ( 6, 0, NULL);    // Clear Display
-    buffer=0;
-    drv_CF_send (12, 1, &buffer); // Set LCD Cursor Style
+    // Fixme: same as Protocol2?
     break;
   }
   
@@ -536,21 +723,63 @@ static int drv_CF_start (char *section)
 // ****************************************
 
 
-static void plugin_contrast (RESULT *result, RESULT *arg1)
+static void plugin_contrast (RESULT *result, int argc, RESULT *argv[])
 {
   double contrast;
   
-  contrast=drv_CF_contrast(R2N(arg1));
-  SetResult(&result, R_NUMBER, &contrast); 
+  switch (argc) {
+  case 0:
+    contrast = drv_CF_contrast(-1);
+    SetResult(&result, R_NUMBER, &contrast); 
+    break;
+  case 1:
+    contrast = drv_CF_contrast(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &contrast); 
+    break;
+  default:
+    error ("%s.contrast(): wrong number of parameters", Name);
+    SetResult(&result, R_STRING, ""); 
+  }
 }
 
 
-static void plugin_backlight (RESULT *result, RESULT *arg1)
+static void plugin_backlight (RESULT *result, int argc, RESULT *argv[])
 {
   double backlight;
   
-  backlight=drv_CF_backlight(R2N(arg1));
-  SetResult(&result, R_NUMBER, &backlight); 
+  switch (argc) {
+  case 0:
+    backlight = drv_CF_backlight(-1);
+    SetResult(&result, R_NUMBER, &backlight); 
+    break;
+  case 1:
+    backlight = drv_CF_backlight(R2N(argv[0]));
+    SetResult(&result, R_NUMBER, &backlight); 
+    break;
+  default:
+    error ("%s.backlight(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
+}
+
+
+static void plugin_fan_pwm (RESULT *result, int argc, RESULT *argv[])
+{
+  double pwm;
+  
+  switch (argc) {
+  case 1:
+    pwm = drv_CF_fan_pwm(R2N(argv[0]), -1);
+    SetResult(&result, R_NUMBER, &pwm); 
+    break;
+  case 2:
+    pwm = drv_CF_fan_pwm(R2N(argv[0]), R2N(argv[1]));
+    SetResult(&result, R_NUMBER, &pwm); 
+    break;
+  default:
+    error ("%s.pwm(): wrong number of parameters");
+    SetResult(&result, R_STRING, ""); 
+  }
 }
 
 // Fixme: other plugins for Fans, Temmperature sensors, ...
@@ -597,24 +826,27 @@ int drv_CF_init (char *section)
   XRES  = 6;      // pixel width of one char 
   YRES  = 8;      // pixel height of one char 
   CHARS = 8;      // number of user-defineable characters
-  GOTO_COST = 3;  // number of bytes a goto command requires
 
   // real worker functions
   switch (Protocol) {
   case 1:
-    CHAR0 = 128; // ASCII of first user-defineable char
+    CHAR0 = 128;   // ASCII of first user-defineable char
+    GOTO_COST = 3; // number of bytes a goto command requires
     drv_generic_text_real_goto    = drv_CF_goto1;
     drv_generic_text_real_write   = drv_CF_write1;
     drv_generic_text_real_defchar = drv_CF_defchar1;
     break;
   case 2:
     CHAR0 = 0; // ASCII of first user-defineable char
+    GOTO_COST = 20; // there is no goto on 633
     drv_generic_text_real_goto    = drv_CF_goto23;
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
   case 3:
     CHAR0 = 0; // ASCII of first user-defineable char
+    // Fixme: 
+    GOTO_COST = 3; // number of bytes a goto command requires
     drv_generic_text_real_goto    = drv_CF_goto23;
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
@@ -654,8 +886,9 @@ int drv_CF_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("contrast",  1, plugin_contrast);
-  AddFunction ("backlight", 1, plugin_backlight);
+  AddFunction ("contrast",  -1, plugin_contrast);
+  AddFunction ("backlight", -1, plugin_backlight);
+  AddFunction ("fan_pwm",   -1, plugin_fan_pwm);
   
   return 0;
 }
