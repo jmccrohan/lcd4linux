@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.24 2002/08/19 07:36:29 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.25 2002/08/19 09:30:18 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.25  2002/08/19 09:30:18  reinelt
+ * MatrixOrbital uses generic bar funnctions
+ *
  * Revision 1.24  2002/08/19 07:36:29  reinelt
  *
  * finished bar.c, USBLCD is the first driver that uses the generic bar functions
@@ -151,7 +154,6 @@
 #define XRES 5
 #define YRES 8
 #define CHARS 8
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 static LCD Lcd;
 static char *Port=NULL;
@@ -159,12 +161,7 @@ static speed_t Speed;
 static int Device=-1;
 
 static char Txt[4][40];
-static BAR  Bar[4][40];
 static int  GPO;
-
-static int nSegment=2;
-static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
-			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
 
 static int MO_open (void)
@@ -201,6 +198,7 @@ static int MO_open (void)
   return fd;
 }
 
+
 static void MO_write (char *string, int len)
 {
   if (Device==-1) return;
@@ -213,6 +211,7 @@ static void MO_write (char *string, int len)
   }
 }
 
+
 static int MO_contrast (void)
 {
   char buffer[4];
@@ -224,172 +223,16 @@ static int MO_contrast (void)
   return 0;
 }
 
-static void MO_process_bars (void)
+
+static void MO_define_char (int ascii, char *buffer)
 {
-  int row, col;
-  int i, j;
-  
-  for (i=2; i<nSegment && Segment[i].used; i++);
-  for (j=i+1; j<nSegment; j++) {
-    if (Segment[j].used)
-      Segment[i++]=Segment[j];
-  }
-  nSegment=i;
-  
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      if (Bar[row][col].type==0) continue;
-      for (i=0; i<nSegment; i++) {
-	if (Segment[i].type & Bar[row][col].type &&
-	    Segment[i].len1== Bar[row][col].len1 &&
-	    Segment[i].len2== Bar[row][col].len2) break;
-      }
-      if (i==nSegment) {
-	nSegment++;
-	Segment[i].len1=Bar[row][col].len1;
-	Segment[i].len2=Bar[row][col].len2;
-	Segment[i].type=Bar[row][col].type;
-	Segment[i].used=0;
-	Segment[i].ascii=-1;
-      }
-      Bar[row][col].segment=i;
-    }
-  }
+  char cmd[3]="\376N";
+
+  cmd[2]=(char)ascii;
+  MO_write (cmd, 3);
+  MO_write (buffer, 8);
 }
 
-static int MO_segment_diff (int i, int j)
-{
-  int RES;
-  int i1, i2, j1, j2;
-  
-  if (i==j) return 65535;
-  if (!(Segment[i].type & Segment[j].type)) return 65535;
-  if (Segment[i].len1==0 && Segment[j].len1!=0) return 65535;
-  if (Segment[i].len2==0 && Segment[j].len2!=0) return 65535;
-  RES=Segment[i].type & BAR_H ? XRES:YRES;
-  if (Segment[i].len1>=RES && Segment[j].len1<RES) return 65535;
-  if (Segment[i].len2>=RES && Segment[j].len2<RES) return 65535;
-  if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) return 65535;
-
-  i1=Segment[i].len1; if (i1>RES) i1=RES;
-  i2=Segment[i].len2; if (i2>RES) i2=RES;
-  j1=Segment[j].len1; if (j1>RES) i1=RES;
-  j2=Segment[j].len2; if (j2>RES) i2=RES;
-  
-  return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
-}
-
-static void MO_compact_bars (void)
-{
-  int i, j, r, c, min;
-  int pack_i, pack_j;
-  int pass1=1;
-  int deviation[nSegment][nSegment];
-  
-  if (nSegment>CHARS+2) {
-
-    for (i=2; i<nSegment; i++) {
-      for (j=0; j<nSegment; j++) {
-	deviation[i][j]=MO_segment_diff(i,j);
-      }
-    }
-    
-    while (nSegment>CHARS+2) {
-      min=65535;
-      pack_i=-1;
-      pack_j=-1;
-      for (i=2; i<nSegment; i++) {
-	if (pass1 && Segment[i].used) continue;
-	for (j=0; j<nSegment; j++) {
-	  if (deviation[i][j]<min) {
-	    min=deviation[i][j];
-	    pack_i=i;
-	    pack_j=j;
-	  }
-	}
-      }
-      if (pack_i==-1) {
-	if (pass1) {
-	  pass1=0;
-	  continue;
-	} else {
-	  error ("MatrixOrbital: unable to compact bar characters");
-	  nSegment=CHARS;
-	  break;
-	}
-      } 
-      
-      nSegment--;
-      Segment[pack_i]=Segment[nSegment];
-      
-      for (i=0; i<nSegment; i++) {
-	deviation[pack_i][i]=deviation[nSegment][i];
-	deviation[i][pack_i]=deviation[i][nSegment];
-      }
-      
-      for (r=0; r<Lcd.rows; r++) {
-	for (c=0; c<Lcd.cols; c++) {
-	  if (Bar[r][c].segment==pack_i)
-	    Bar[r][c].segment=pack_j;
-	  if (Bar[r][c].segment==nSegment)
-	    Bar[r][c].segment=pack_i;
-	}
-      }
-    }
-  }
-}
-
-static void MO_define_chars (void)
-{
-  int c, i, j;
-  char buffer[12]="\376N";
-
-  for (i=2; i<nSegment; i++) {
-    if (Segment[i].used) continue;
-    if (Segment[i].ascii!=-1) continue;
-    for (c=0; c<CHARS; c++) {
-      for (j=2; j<nSegment; j++) {
-	if (Segment[j].ascii==c) break;
-      }
-      if (j==nSegment) break;
-    }
-    Segment[i].ascii=c;
-    buffer[2]=c;
-    switch (Segment[i].type) {
-    case BAR_L:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_R:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_U:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[10-j]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[10-j]=0;
-      }
-      break;
-    case BAR_D:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[j+3]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[j+3]=0;
-      }
-      break;
-    }
-    MO_write (buffer, 11);
-  }
-}
 
 int MO_clear (void)
 {
@@ -398,17 +241,17 @@ int MO_clear (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       Txt[row][col]='\t';
-      Bar[row][col].len1=-1;
-      Bar[row][col].len2=-1;
-      Bar[row][col].type=0;
-      Bar[row][col].segment=-1;
     }
   }
+
+  bar_clear();
+
   MO_write ("\014",  1);  // Clear Screen
   MO_write ("\376V", 2);  // GPO off
   GPO=0;
   return 0;
 }
+
 
 int MO_init (LCD *Self)
 {
@@ -454,6 +297,10 @@ int MO_init (LCD *Self)
   Device=MO_open();
   if (Device==-1) return -1;
 
+  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+  bar_add_segment(255,255,255,255); // ASCII 255 = block
+
   MO_clear();
   MO_contrast();
 
@@ -466,6 +313,7 @@ int MO_init (LCD *Self)
   return 0;
 }
 
+
 int MO_put (int row, int col, char *text)
 {
   char *p=&Txt[row][col];
@@ -477,76 +325,12 @@ int MO_put (int row, int col, char *text)
   return 0;
 }
 
+
 int MO_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  int rev=0;
-  
-  if (len1<1) len1=1;
-  else if (len1>max) len1=max;
-  
-  if (len2<1) len2=1;
-  else if (len2>max) len2=max;
-  
-  switch (type) {
-  case BAR_L:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_R:
-    while (max>0 && col<=Lcd.cols) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=XRES) {
-	Bar[row][col].len1=rev?0:XRES;
-	len1-=XRES;
-      } else {
-	Bar[row][col].len1=rev?XRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=XRES) {
-	Bar[row][col].len2=rev?0:XRES;
-	len2-=XRES;
-      } else {
-	Bar[row][col].len2=rev?XRES-len2:len2;
-	len2=0;
-      }
-      max-=XRES;
-      col++;
-    }
-    break;
-
-  case BAR_U:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_D:
-    while (max>0 && row<=Lcd.rows) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=YRES) {
-	Bar[row][col].len1=rev?0:YRES;
-	len1-=YRES;
-      } else {
-	Bar[row][col].len1=rev?YRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=YRES) {
-	Bar[row][col].len2=rev?0:YRES;
-	len2-=YRES;
-      } else {
-	Bar[row][col].len2=rev?YRES-len2:len2;
-	len2=0;
-      }
-      max-=YRES;
-      row++;
-    }
-    break;
-
-  }
-  return 0;
+  return bar_draw (type, row, col, max, len1, len2);
 }
+
 
 int MO_gpo (int num, int val)
 {
@@ -561,27 +345,21 @@ int MO_gpo (int num, int val)
   return 0;
 }
 
+
 int MO_flush (void)
 {
   char buffer[256]="\376G";
   char *p;
-  int s, row, col;
+  int c, row, col;
   
-  MO_process_bars();
-  MO_compact_bars();
-  MO_define_chars();
+  bar_process(MO_define_char);
   
-  for (s=0; s<nSegment; s++) {
-    Segment[s].used=0;
-  }
-
   for (row=0; row<Lcd.rows; row++) {
     buffer[3]=row+1;
     for (col=0; col<Lcd.cols; col++) {
-      s=Bar[row][col].segment;
-      if (s!=-1) {
-	Segment[s].used=1;
-	Txt[row][col]=Segment[s].ascii;
+      c=bar_peek(row, col);
+      if (c!=-1) {
+	Txt[row][col]=(char)c;
       }
     }
     for (col=0; col<Lcd.cols; col++) {
@@ -604,6 +382,7 @@ int MO_flush (void)
   return 0;
 }
 
+
 int MO_quit (void)
 {
   debug ("closing port %s", Port);
@@ -612,11 +391,82 @@ int MO_quit (void)
   return (0);
 }
 
+
 LCD MatrixOrbital[] = {
-  { "LCD0821",2, 8,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD1621",2,16,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD2021",2,20,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD2041",4,20,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD4021",2,40,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { name: "LCD0821",
+    rows:  2, 
+    cols:  8,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  1,
+    init:  MO_init,
+    clear: MO_clear,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush,
+    quit:  MO_quit 
+  },
+  { name: "LCD1621",
+    rows:  2,
+    cols:  16,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  1,
+    init:  MO_init,
+    clear: MO_clear,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush,
+    quit:  MO_quit 
+  },
+  { name: "LCD2021",
+    rows:  2,
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  1,
+    init:  MO_init,
+    clear: MO_clear,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush,
+    quit:  MO_quit 
+  },
+  { name: "LCD2041",
+    rows:  4,
+    cols:  20,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  1,
+    init:  MO_init,
+    clear: MO_clear,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush,
+    quit:  MO_quit 
+  },
+  { name: "LCD4021",
+    rows:  2,
+    cols:  40,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  1,
+    init:  MO_init,
+    clear: MO_clear,
+    put:   MO_put,
+    bar:   MO_bar,
+    gpo:   MO_gpo,
+    flush: MO_flush,
+    quit:  MO_quit 
+  },
   { NULL }
 };
