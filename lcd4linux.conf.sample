@@ -3,10 +3,14 @@
 #Speed 19200
 #Contrast 160
 
-Display HD44780
-Port 0x378
-Size 16x2
-Delay 300
+#Display HD44780
+#Port 0x378
+#Size 16x2
+#Delay 300
+
+Display BLC100x
+Port /dev/ttyS2
+Type 20x4
 
 #Display PPM
 #size 20x4

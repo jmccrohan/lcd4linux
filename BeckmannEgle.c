@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.1 2000/04/28 05:19:55 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.2 2000/04/30 06:40:42 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.2  2000/04/30 06:40:42  reinelt
+ *
+ * bars for Beckmann+Egle driver
+ *
  * Revision 1.1  2000/04/28 05:19:55  reinelt
  *
  * first release of the Beckmann+Egle driver
@@ -264,8 +268,10 @@ static void BE_compact_bars (void)
 static void BE_define_chars (void)
 {
   int c, i, j;
-  char buffer[12]="\376N";
-
+  char buffer[8];
+  char cmd[32];
+  char *p;
+  
   for (i=2; i<nSegment; i++) {
     if (Segment[i].used) continue;
     if (Segment[i].ascii!=-1) continue;
@@ -276,40 +282,50 @@ static void BE_define_chars (void)
       if (j==nSegment) break;
     }
     Segment[i].ascii=c;
-    buffer[2]=c;
     switch (Segment[i].type) {
     case BAR_L:
       for (j=0; j<4; j++) {
 	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
+	buffer[j]=Pixel[Segment[i].len1];
+	buffer[j+4]=Pixel[Segment[i].len2];
       }
       break;
     case BAR_R:
       for (j=0; j<4; j++) {
 	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
-	buffer[j+3]=Pixel[Segment[i].len1];
-	buffer[j+7]=Pixel[Segment[i].len2];
+	buffer[j]=Pixel[Segment[i].len1];
+	buffer[j+4]=Pixel[Segment[i].len2];
       }
       break;
     case BAR_U:
       for (j=0; j<Segment[i].len1; j++) {
-	buffer[10-j]=31;
+	buffer[7-j]=31;
       }
       for (; j<YRES; j++) {
-	buffer[10-j]=0;
+	buffer[7-j]=0;
       }
       break;
     case BAR_D:
       for (j=0; j<Segment[i].len1; j++) {
-	buffer[j+3]=31;
+	buffer[j]=31;
       }
       for (; j<YRES; j++) {
-	buffer[j+3]=0;
+	buffer[j]=0;
       }
       break;
     }
-    BE_write (buffer, 11);
+    p=cmd;
+    *p++='\033';
+    *p++='&';
+    *p++='T';          // enter transparent mode
+    *p++='\0';         // write cmd
+    *p++=0x40|8*c;     // write CGRAM
+    for (i=0; i<YRES; i++) {
+      *p++='\1';       // write data
+      *p++=buffer[i];  // character bitmap
+    }
+    *p++='\377';       // leave transparent mode
+    BE_write (cmd, p-cmd);
   }
 }
 
