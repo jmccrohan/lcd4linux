@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.39 2004/10/17 09:24:31 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.40 2004/11/30 05:01:25 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.40  2004/11/30 05:01:25  reinelt
+ * removed compiler warnings for deactivated i2c bus
+ *
  * Revision 1.39  2004/10/17 09:24:31  reinelt
  * I2C support for HD44780 displays by Luis (does not work by now)
  *
@@ -217,7 +220,7 @@
 #include <sys/time.h>
 #include <sys/ioctl.h>
 
-// I2C support does not compile
+/* Fixme: I2C support does not compile */
 #if 0
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
@@ -714,10 +717,11 @@ static void drv_HD_PP_stop (void)
 /***  i2c dependant functions         ***/
 /****************************************/
 
-
-static void drv_HD_I2C_nibble (const unsigned char controller, const unsigned char nibble)
+/* Fixme: remove the __attribute__((unused)) as soon as the i2c driver works */
+static void drv_HD_I2C_nibble (const __attribute__((unused)) unsigned char controller, 
+			       const __attribute__((unused)) unsigned char nibble)
 {
-// I2C support does not compile
+/* Fixme: I2C support does not compile */
 #if 0
   /* clear ENABLE */
   /* put data on DB1..DB4 */
@@ -798,7 +802,7 @@ static int drv_HD_I2C_load (const char *section)
   }
   
   info("%s: initializing I2C slave device 0x%x",Name,dev);
-// I2C support does not compile
+/* Fixme: I2C support does not compile */
 #if 0
   if (ioctl(i2c_device,I2C_SLAVE, (dev>>1) ) < 0) {
     error("%s: error initializing device 0x%x\n",Name,dev);
@@ -808,7 +812,7 @@ static int drv_HD_I2C_load (const char *section)
 #endif
 
   info("%s: detecting I2C device 0x%x on bus %s ",Name,dev,bus);
-// I2C support does not compile
+/* Fixme: I2C support does not compile */
 #if 0
   if (i2c_smbus_write_quick(i2c_device,I2C_SMBUS_WRITE) < 0) {
     error("%s: i2c slave-device 0x%x not found!\n",Name,dev);
