@@ -1,4 +1,4 @@
-/* $Id: qprintf.c,v 1.1 2004/02/27 07:06:26 reinelt Exp $
+/* $Id: qprintf.c,v 1.2 2004/04/08 10:48:25 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: qprintf.c,v $
+ * Revision 1.2  2004/04/08 10:48:25  reinelt
+ * finished plugin_exec
+ * modified thread handling
+ * added '%x' format to qprintf (hexadecimal)
+ *
  * Revision 1.1  2004/02/27 07:06:26  reinelt
  * new function 'qprintf()' (simple but quick snprintf() replacement)
  *
@@ -79,6 +84,30 @@ static char *itoa(char* buffer, size_t size, int value)
 } 
 
 
+static char *itox(char* buffer, size_t size, unsigned int value)
+{
+  char *p;
+  int digit;
+ 
+  // sanity checks
+  if (buffer==NULL || size<2) return (NULL);
+  
+  // p points to last char
+  p = buffer+size-1;
+  
+  // set terminating zero
+  *p='\0';
+  
+  do {
+    digit = value%16;
+    value = value/16;
+    *--p = (digit < 10 ? '0' : 'a'-10) + digit;
+  } while (value!=0 && p>buffer);
+  
+  return p;
+} 
+
+
 int qprintf(char *str, size_t size, const char *format, ...) {
 
   va_list ap;
@@ -100,6 +129,7 @@ int qprintf(char *str, size_t size, const char *format, ...) {
     if (*src=='%') {
       char buf[12], *s;
       int d;
+      unsigned int u;
       switch (*++src) {
       case 's':
 	src++;
@@ -113,6 +143,15 @@ int qprintf(char *str, size_t size, const char *format, ...) {
 	src++;
 	d = va_arg(ap, int);
 	s = itoa (buf, sizeof(buf), d);
+	while (len < size && *s != '\0') {
+	  len++;
+	  *dst++ = *s++;
+	}
+	break;
+      case 'x':
+	src++;
+	u = va_arg(ap, unsigned int);
+	s = itox (buf, sizeof(buf), u);
 	while (len < size && *s != '\0') {
 	  len++;
 	  *dst++ = *s++;

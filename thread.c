@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.2 2004/03/20 07:31:33 reinelt Exp $
+/* $Id: thread.c,v 1.3 2004/04/08 10:48:25 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.3  2004/04/08 10:48:25  reinelt
+ * finished plugin_exec
+ * modified thread handling
+ * added '%x' format to qprintf (hexadecimal)
+ *
  * Revision 1.2  2004/03/20 07:31:33  reinelt
  * support for HD66712 (which has a different RAM layout)
  * further threading development
@@ -140,13 +145,14 @@ int shm_create (void **buffer, int size)
 }
 
 
-void shm_destroy (int shmid) 
+void shm_destroy (int shmid, void *buffer) 
 {
+  shmdt (buffer);
   shmctl(shmid, IPC_RMID, NULL);
 }
 
 
-int thread_create (char *name, void (*thread)(char *name))
+int thread_create (char *name, void (*thread)(void *data), void *data)
 {
   pid_t pid, ppid;
 
@@ -158,7 +164,7 @@ int thread_create (char *name, void (*thread)(char *name))
     return -1;
   case 0:
     info ("thread %s starting...", name);
-    thread(name);
+    thread(data);
     info ("thread %s ended.", name);
     exit (0);
   default:

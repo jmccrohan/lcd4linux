@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.2 2004/03/20 07:31:33 reinelt Exp $
+/* $Id: thread.h,v 1.3 2004/04/08 10:48:25 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.3  2004/04/08 10:48:25  reinelt
+ * finished plugin_exec
+ * modified thread handling
+ * added '%x' format to qprintf (hexadecimal)
+ *
  * Revision 1.2  2004/03/20 07:31:33  reinelt
  * support for HD66712 (which has a different RAM layout)
  * further threading development
@@ -44,8 +49,8 @@ void mutex_unlock  (int semid);
 void mutex_destroy (int semid);
 
 int  shm_create    (void **buffer, int size);
-void shm_destroy   (int shmid);
+void shm_destroy   (int shmid, void *buffer) ;
 
-int thread_create (char *name, void (*thread)(char *name));
+int thread_create (char *name, void (*thread)(void *data), void *data);
 
 #endif
