@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.15 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.16 2003/11/30 16:18:36 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.16  2003/11/30 16:18:36  reinelt
+ * Cwlinux: invalidate Framebuffer in case a char got redefined
+ *
  * Revision 1.15  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -203,7 +206,7 @@ static void CW12232_define_char (int ascii, char *buffer)
     cmd[3+i]=0;
     for (j=0; j<8;j++) {
       if (buffer[j] & (1<<(5-i))) {
-	cmd[3+i]|=(1<<(7-j));
+	cmd[3+i]|=(1<<j);
       }
     }
   }
@@ -406,8 +409,15 @@ int CW_flush(void)
       c=bar_peek(row, col);
       if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
-	if (c!=32) c++; //blank
+	if (c!=32) c++; // blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
+	// invalidate FrameBuffer:
+	// Cwlinux does not update the display of a user-defined char
+	// if it is redefined only. We have to definitely write it
+	// to the display! We force this by invalidating the DoubleBuffer.
+	// Fixme: This is bad: we should try to remember which chars
+	// got redefined, and invalidate only those...
+	FrameBuffer2[row*Lcd.cols+col]=0;
       }
     }
     for (col = 0; col < Lcd.cols; col++) {
@@ -416,8 +426,8 @@ int CW_flush(void)
       for (pos1=col++, pos2=pos1, equal=0; col<Lcd.cols; col++) {
 	if (FrameBuffer1[row*Lcd.cols+col]==FrameBuffer2[row*Lcd.cols+col]) {
 	  // If we find just one equal byte, we don't break, because this 
-	  // would require a goto, which takes one byte, too.
-	  if (++equal>6) break;
+	  // would require a goto, which takes five bytes, too.
+	  if (++equal>5) break;
 	} else {
 	  pos2=col;
 	  equal=0;
