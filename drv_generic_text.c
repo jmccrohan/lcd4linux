@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.18 2004/06/20 10:09:55 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.19 2004/06/26 06:12:15 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.19  2004/06/26 06:12:15  reinelt
+ *
+ * support for Beckmann+Egle Compact Terminals
+ * some mostly cosmetic changes in the MatrixOrbital and USBLCD driver
+ * added debugging to the generic serial driver
+ * fixed a bug in the generic text driver where icons could be drawn outside
+ * the display bounds
+ *
  * Revision 1.18  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -486,11 +494,11 @@ int drv_generic_text_icon_draw (WIDGET *W)
   LayoutFB[row*LCOLS+col]=ascii;
 
   // maybe send icon to the display
-  if (DisplayFB[row*DCOLS+col]!=ascii) {
+  if (row < DROWS && col < DCOLS && DisplayFB[row*DCOLS+col] != ascii) {
     DisplayFB[row*DCOLS+col]=ascii;
     drv_generic_text_real_write (row, col, DisplayFB+row*DCOLS+col, 1);
   }
-
+  
   return 0;
   
 }

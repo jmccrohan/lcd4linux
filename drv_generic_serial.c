@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.12 2004/06/20 10:09:55 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.13 2004/06/26 06:12:15 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.13  2004/06/26 06:12:15  reinelt
+ *
+ * support for Beckmann+Egle Compact Terminals
+ * some mostly cosmetic changes in the MatrixOrbital and USBLCD driver
+ * added debugging to the generic serial driver
+ * fixed a bug in the generic text driver where icons could be drawn outside
+ * the display bounds
+ *
  * Revision 1.12  2004/06/20 10:09:55  reinelt
  *
  * 'const'ified the whole source
@@ -336,7 +344,7 @@ int drv_generic_serial_poll (unsigned char *string, const int len)
 {
   int ret;
   if (Device == -1) return -1;
-  ret=read (Device, string, len);
+  ret = read (Device, string, len);
   if (ret < 0 && errno != EAGAIN) {
     error("%s: read(%s) failed: %s", Driver, Port, strerror(errno));
   }
@@ -346,16 +354,18 @@ int drv_generic_serial_poll (unsigned char *string, const int len)
 
 int drv_generic_serial_read (unsigned char *string, const int len)
 {
-  int run, ret;
+  int count, run, ret;
+  
+  count = len < 0 ? -len : len;
   
   for (run = 0; run < 10; run ++) {
-    ret = drv_generic_serial_poll(string, len);
+    ret = drv_generic_serial_poll(string, count);
     if (ret >= 0 || errno != EAGAIN) break;
     info ("%s: read(%s): EAGAIN", Driver, Port);
     usleep(1000);
   }
   
-  if (ret > 0 && ret != len) {
+  if (ret > 0 && ret != count && len > 0) {
     error ("%s: partial read(%s): len=%d ret=%d", Driver, Port, len, ret);
   }
   
@@ -366,6 +376,14 @@ int drv_generic_serial_read (unsigned char *string, const int len)
 void drv_generic_serial_write (const unsigned char *string, const int len)
 {
   int run, ret;
+  
+#if 0
+  int i;
+  for (i = 0; i < len; i++) {
+    int c = string[i];
+    debug ("serial_write: %03d %03o 0x%02x %c", c, c, c, iscntrl(c) ? '*' : c);
+  }
+#endif
   
   if (Device == -1) return;
   for (run = 0; run < 10; run++) {

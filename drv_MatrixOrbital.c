@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.33 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.34 2004/06/26 06:12:15 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.34  2004/06/26 06:12:15  reinelt
+ *
+ * support for Beckmann+Egle Compact Terminals
+ * some mostly cosmetic changes in the MatrixOrbital and USBLCD driver
+ * added debugging to the generic serial driver
+ * fixed a bug in the generic text driver where icons could be drawn outside
+ * the display bounds
+ *
  * Revision 1.33  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -286,17 +294,18 @@ static void drv_MO_defchar (const int ascii, const unsigned char *matrix)
 static int drv_MO_contrast (int contrast)
 {
   static unsigned char Contrast=0;
-  char buffer[4];
-
+  char cmd[3] = "\376Pn";
+  
   // -1 is used to query the current contrast
   if (contrast == -1) return Contrast;
-
+  
   if (contrast < 0  ) contrast = 0;
   if (contrast > 255) contrast = 255;
   Contrast = contrast;
+  
+  cmd[2] = Contrast;
 
-  snprintf (buffer, 4, "\376P%c", Contrast);
-  drv_generic_serial_write (buffer, 3);
+  drv_generic_serial_write (cmd, 3);
   
   return Contrast;
 }
@@ -305,7 +314,7 @@ static int drv_MO_contrast (int contrast)
 static int drv_MO_backlight (int backlight)
 {
   static unsigned char Backlight=0;
-  char buffer[4];
+  char cmd[3] = "\376Bn";
 
   // -1 is used to query the current backlight
   if (backlight == -1) return Backlight;
@@ -314,14 +323,13 @@ static int drv_MO_backlight (int backlight)
   if (backlight > 255) backlight = 255;
   Backlight = backlight;
 
-  if (backlight<0) {
+  if (backlight < 0) {
     // backlight off
-    snprintf (buffer, 3, "\376F");
-    drv_generic_serial_write (buffer, 2);
+    drv_generic_serial_write ("\376F", 2);
   } else {
     // backlight on for n minutes
-    snprintf (buffer, 4, "\376B%c", (int)backlight);
-    drv_generic_serial_write (buffer, 3);
+    cmd[2] = Backlight;
+    drv_generic_serial_write (cmd, 3);
   }
 
   return Backlight;
@@ -565,7 +573,7 @@ static void plugin_backlight (RESULT *result, const int argc, RESULT *argv[])
     SetResult(&result, R_NUMBER, &backlight); 
     break;
   default:
-    error ("%s::backlight(): wrong number of parameters");
+    error ("%s::backlight(): wrong number of parameters", Name);
     SetResult(&result, R_STRING, ""); 
   }
 }
@@ -585,7 +593,7 @@ static void plugin_gpo (RESULT *result, const int argc, RESULT *argv[])
     SetResult(&result, R_NUMBER, &gpo); 
     break;
   default:
-    error ("%s:gpo(): wrong number of parameters");
+    error ("%s:gpo(): wrong number of parameters", Name);
     SetResult(&result, R_STRING, ""); 
   }
 }
@@ -605,7 +613,7 @@ static void plugin_pwm (RESULT *result, const int argc, RESULT *argv[])
     SetResult(&result, R_NUMBER, &pwm); 
     break;
   default:
-    error ("%s:pwm(): wrong number of parameters");
+    error ("%s:pwm(): wrong number of parameters", Name);
     SetResult(&result, R_STRING, ""); 
   }
 }

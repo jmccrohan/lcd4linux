@@ -89,6 +89,17 @@ Display M50530-24x8 {
 }
 
 
+Display CT20x4 {
+    Driver 'Beckmann+Egle'
+    Model 'CT20x4'
+    Port '/dev/tts/0'
+#    Size '16x2'
+#    Contrast 7
+#    Backlight 1
+    Icons 1
+}
+
+
 Display USBLCD {
     Driver 'USBLCD'
     Port '/dev/usb/lcd'
@@ -514,7 +525,7 @@ Layout Default {
     }
     Row3 {
 	Col1  'Busy'
-	Col10 'Rain'
+#	Col10 'Rain'
 	Col11 'BusyBar'
     }
     Row4 {
@@ -605,14 +616,15 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-20x4'
-#Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
-Display 'Curses'
-#Display 'USBLCD'
+#Display 'Curses'
+#Display 'M50530-24x8'
+Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
+#Display 'USBLCD'
 #Display 'Image'
 
 Layout  'Default'

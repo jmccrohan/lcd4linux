@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.12 2004/06/20 10:09:54 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.13 2004/06/26 06:12:15 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,14 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.13  2004/06/26 06:12:15  reinelt
+ *
+ * support for Beckmann+Egle Compact Terminals
+ * some mostly cosmetic changes in the MatrixOrbital and USBLCD driver
+ * added debugging to the generic serial driver
+ * fixed a bug in the generic text driver where icons could be drawn outside
+ * the display bounds
+ *
  * Revision 1.12  2004/06/20 10:09:54  reinelt
  *
  * 'const'ified the whole source
@@ -210,11 +218,12 @@ static int drv_UL_start (const char *section, const int quiet)
     error ("%s: no '%s.Port' entry from %s", Name, section, cfg_source());
     return -1;
   }
-  if (port[0]=='/') {
-    Port=strdup(port);
+  if (port[0] == '/') {
+    Port = strdup(port);
   } else {
-    Port=malloc(5+strlen(port)+1);
-    sprintf(Port,"/dev/%s",port);
+    int len = 5+strlen(port)+1;
+    Port = malloc(len);
+    qprintf(Port, len, "/dev/%s", port);
   }
 
   debug ("using device %s ", Port);
@@ -225,7 +234,8 @@ static int drv_UL_start (const char *section, const int quiet)
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    error ("%s: bad size '%s'", Name, s);
+    error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
+    free (s);
     return -1;
   }
   
