@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.12 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.13 2000/03/26 12:55:03 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.13  2000/03/26 12:55:03  reinelt
+ *
+ * enhancements to the PPM driver
+ *
  * Revision 1.12  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -89,12 +93,13 @@
 #include "processor.h"
 
 char *release="LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
+char *output=NULL;
 int tick, tack;
 
 static void usage(void)
 {
   printf ("%s\n", release);
-  printf ("usage: lcd4linux [-h] [-l] [-f config-file]\n");
+  printf ("usage: lcd4linux [-h] [-l] [-f config-file] [-o output-file]\n");
 }
 
 void main (int argc, char *argv[])
@@ -103,7 +108,7 @@ void main (int argc, char *argv[])
   char *display;
   int c, smooth;
 
-  while ((c=getopt (argc, argv, "hlf:"))!=EOF) {
+  while ((c=getopt (argc, argv, "hlf:o:"))!=EOF) {
     switch (c) {
     case 'h':
       usage();
@@ -114,6 +119,9 @@ void main (int argc, char *argv[])
       exit(0);
     case 'f':
       cfg=optarg;
+      break;
+    case 'o':
+      output=optarg;
       break;
     default:
       exit(2);
@@ -148,13 +156,6 @@ void main (int argc, char *argv[])
   tack=atoi(cfg_get("tack")?:"500");
 
   process_init();
-
-  // FIXME: just debugging
-  lcd_clear();
-  lcd_put (1, 1, "so what!");
-  lcd_bar (BAR_R|BAR_H2, 2,1,50,19,46);
-  lcd_flush();
-  exit (0);
 
   lcd_clear();
   lcd_put (1, 1, "* LCD4Linux V" VERSION " *");

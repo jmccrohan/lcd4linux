@@ -5,7 +5,7 @@
 
 #Display X11
 DISPLAY PPM
-size 10x2
+size 20x4
 font 5x8
 pixel 3+1
 gap 4x4

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.3 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: Raster.c,v 1.4 2000/03/26 12:55:03 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.4  2000/03/26 12:55:03  reinelt
+ *
+ * enhancements to the PPM driver
+ *
  * Revision 1.3  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -48,6 +52,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 #include "cfg.h"
 #include "display.h"
@@ -67,21 +76,37 @@ static int foreground=0;
 static int halfground=0;
 static int background=0;
 
+extern char* output;
+
+
 int Raster_flush (void)
 {
+  static int seq=0;
+  static unsigned char *bitbuf=NULL;
+  static unsigned char *rowbuf=NULL;
   int xsize, ysize, row, col;
   unsigned char R[3], G[3], B[3];
-  static unsigned char *buffer=NULL;
-  
-  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*(pixel+pgap);
-  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*(pixel+pgap);
-  
-  if (buffer==NULL) {
-    if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
-      return -1;
-  }
+  char path[256], tmp[256], buffer[256];
+  int fd;
 
-  memset (buffer, 0, xsize*ysize*sizeof(*buffer));
+  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*pixel+(Display.cols*Display.xres-1)*pgap;
+  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*pixel+(Display.rows*Display.yres-1)*pgap;
+  
+  if (bitbuf==NULL) {
+    if ((bitbuf=malloc(xsize*ysize*sizeof(*bitbuf)))==NULL) {
+      fprintf (stderr, "Raster: malloc(%d) failed: %s\n", xsize*ysize*sizeof(*bitbuf), strerror(errno));
+      return -1;
+    }
+  }
+  
+  if (rowbuf==NULL) {
+    if ((rowbuf=malloc(3*xsize*sizeof(*rowbuf)))==NULL) {
+      fprintf (stderr, "Raster: malloc(%d) failed: %s\n", 3*xsize*sizeof(*rowbuf), strerror(errno));
+      return -1;
+    }
+  }
+  
+  memset (bitbuf, 0, xsize*ysize*sizeof(*bitbuf));
   
   for (row=0; row<Display.rows*Display.yres; row++) {
     int y=border+(row/Display.yres)*rgap+row*(pixel+pgap);
@@ -90,30 +115,59 @@ int Raster_flush (void)
       int a, b;
       for (a=0; a<pixel; a++)
 	for (b=0; b<pixel; b++)
-	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
+	  bitbuf[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
     }
   }
   
-  printf ("P6\n%d %d\n255\n", xsize, ysize);
+  snprintf (path, sizeof(path), output, seq++);
+  snprintf (tmp, sizeof(tmp), "%s.tmp", path);
+  
+  if ((fd=open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644))<0) {
+    fprintf (stderr, "Raster: open(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  
+  snprintf (buffer, sizeof(buffer), "P6\n%d %d\n255\n", xsize, ysize);
+  if (write (fd, buffer, strlen(buffer))<0) {
+    fprintf (stderr, "Raster: write(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
   
   R[0]=0xff&background>>16;
   G[0]=0xff&background>>8;
   B[0]=0xff&background;
-
+  
   R[1]=0xff&halfground>>16;
   G[1]=0xff&halfground>>8;
   B[1]=0xff&halfground;
-
+  
   R[2]=0xff&foreground>>16;
   G[2]=0xff&foreground>>8;
   B[2]=0xff&foreground;
 
   for (row=0; row<ysize; row++) {
+    int c=0;
     for (col=0; col<xsize; col++) {
-      int i=buffer[row*xsize+col];
-      printf("%c%c%c", R[i], G[i], B[i]);
+      int i=bitbuf[row*xsize+col];
+      rowbuf[c++]=R[i];
+      rowbuf[c++]=G[i];
+      rowbuf[c++]=B[i];
+    }
+    if (write (fd, rowbuf, c)<0) {
+      fprintf (stderr, "Raster: write(%s) failed: %s\n", tmp, strerror(errno));
+      return -1;
     }
   }
+  
+  if (close (fd)<0) {
+    fprintf (stderr, "Raster: close(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  if (rename (tmp, path)<0) {
+    fprintf (stderr, "Raster: close(%s) failed: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+  
   return 0;
 }
 
@@ -131,6 +185,11 @@ int Raster_init (DISPLAY *Self)
   int rows=-1, cols=-1;
   int xres=1, yres=-1;
   
+  if (output==NULL || *output=='\0') {
+    fprintf (stderr, "Raster: no output file specified (use -o switch)\n");
+    return -1;
+  }
+    
   if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     fprintf (stderr, "Raster: bad size '%s'\n", s);
     return -1;
