@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.2  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.1  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -71,10 +74,8 @@ static char *Driver=NULL;
 int DROWS, DCOLS; // display size (pixels!)
 int LROWS, LCOLS; // layout size  (pixels!)
 int XRES,  YRES;  // pixels of one char cell
-int GOTO_COST;    // number of bytes a goto command requires
 
-static unsigned char *LayoutFB  = NULL;
-static unsigned char *DisplayFB = NULL;
+unsigned char *drv_generic_graphic_FB = NULL;
 
 
 // ****************************************
@@ -99,24 +100,18 @@ static void drv_generic_graphic_resizeFB (int rows, int cols)
   memset (newFB, 0, rows*cols*sizeof(char));
   
   // transfer contents
-  if (LayoutFB!=NULL) {
+  if (drv_generic_graphic_FB!=NULL) {
     for (row=0; row<LROWS; row++) {
       for (col=0; col<LCOLS; col++) {
-	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
+	newFB[row*cols+col]=drv_generic_graphic_FB[row*LCOLS+col];
       }
     }
-    free (LayoutFB);
+    free (drv_generic_graphic_FB);
   }
-  LayoutFB = newFB;
+  drv_generic_graphic_FB = newFB;
   
   LCOLS    = cols;
   LROWS    = rows;
-}
-
-
-static void drv_generic_graphic_flush (int row0, int col0, int rows, int cols)
-{
-  debug ("flushing from (%d, %d) size (%d, %d)", row0, col0, rows, cols);
 }
 
 
@@ -142,7 +137,7 @@ int drv_generic_graphic_draw (WIDGET *W)
       int mask=1<<XRES;
       for (x=0; x<XRES; x++) {
 	mask>>=1;
-	LayoutFB[(row+y)*LCOLS+col+x] = Font_6x8[c][y]&mask ? 1:0;
+	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = Font_6x8[c][y]&mask ? 1:0;
       }
     }
     col+=XRES;
@@ -150,7 +145,7 @@ int drv_generic_graphic_draw (WIDGET *W)
   }
   
   // flush area
-  drv_generic_graphic_flush (row, col, YRES, XRES*len);
+  drv_generic_graphic_real_blit (YRES*W->row, XRES*W->col, YRES, XRES*len);
   
   return 0;
 }
@@ -178,12 +173,12 @@ int drv_generic_graphic_icon_draw (WIDGET *W)
     int mask=1<<XRES;
     for (x=0; x<XRES; x++) {
       mask>>=1;
-      DisplayFB[(row+y)*LCOLS+col+x] = Icon->visible ? 0 : bitmap[y]&mask ? 1 : 0;
+      drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = Icon->visible ? 0 : bitmap[y]&mask ? 1 : 0;
     }
   }
 
   // flush area
-  drv_generic_graphic_flush (row, col, YRES, XRES);
+  drv_generic_graphic_real_blit (row, col, YRES, XRES);
 
   return 0;
   
@@ -236,7 +231,7 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
     for (y=0; y<YRES; y++) {
       len=y<YRES/2 ? val1 : val2;
       for (x=0; x<max; x++) {
-	LayoutFB[(row+y)*LCOLS+col+x] = x<len ? !rev : rev;
+	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = x<len ? !rev : rev;
       }
     }
     break;
@@ -250,7 +245,7 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
     for (y=0; y<max; y++) {
       for (x=0; x<XRES; x++) {
 	len=x<XRES/2 ? val1 : val2;
-  	LayoutFB[(row+y)*LCOLS+col+x] = y<len ? !rev : rev;
+  	drv_generic_graphic_FB[(row+y)*LCOLS+col+x] = y<len ? !rev : rev;
       }
     }
     break;
@@ -258,9 +253,9 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
   
   // flush area
   if (dir & (DIR_EAST|DIR_WEST)) {
-    drv_generic_graphic_flush (row, col, YRES, XRES*len);
+    drv_generic_graphic_real_blit (row, col, YRES, XRES*len);
   } else {
-    drv_generic_graphic_flush (row, col, YRES*len, XRES);
+    drv_generic_graphic_real_blit (row, col, YRES*len, XRES);
   }
 
   return 0;
@@ -273,21 +268,32 @@ int drv_generic_graphic_bar_draw (WIDGET *W)
 
 int drv_generic_graphic_init (char *section, char *driver)
 {
+  char *font;
+  
   Section=section;
   Driver=driver;
-
-  // init display framebuffer
-  DisplayFB = malloc(DCOLS*DROWS*sizeof(char));
-  memset (DisplayFB, 0, DROWS*DCOLS*sizeof(char));
   
+  font=cfg_get(section, "Font", "6x8");
+  if (font==NULL || *font=='\0') {
+    error ("%s: no '%s.Font' entry from %s", Driver, section, cfg_source());
+    return -1;
+  }
+
+  XRES = -1;
+  YRES = -1;
+  if (sscanf(font, "%dx%d", &XRES, &YRES)!=2 || XRES<1 || YRES<1) {
+    error ("%s: bad Font '%s' from %s", Driver, font, cfg_source());
+    return -1;
+  }
+
   // init layout framebuffer
   LROWS = 0;
   LCOLS = 0;
-  LayoutFB=NULL;
+  drv_generic_graphic_FB=NULL;
   drv_generic_graphic_resizeFB (DROWS, DCOLS);
   
   // sanity check
-  if (LayoutFB==NULL || DisplayFB==NULL) {
+  if (drv_generic_graphic_FB==NULL) {
     error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
     return -1;
   }
@@ -298,15 +304,9 @@ int drv_generic_graphic_init (char *section, char *driver)
 
 int drv_generic_graphic_quit (void) 
 {
-  
-  if (LayoutFB) {
-    free(LayoutFB);
-    LayoutFB=NULL;
-  }
-  
-  if (DisplayFB) {
-    free(DisplayFB);
-    DisplayFB=NULL;
+  if (drv_generic_graphic_FB) {
+    free(drv_generic_graphic_FB);
+    drv_generic_graphic_FB=NULL;
   }
   
   return (0);

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.1 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.2 2004/02/18 06:39:20 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.2  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.1  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -50,13 +53,14 @@
 extern int DROWS, DCOLS; // display size
 extern int LROWS, LCOLS; // layout size
 extern int XRES,  YRES;  // pixel width/height of one char 
-extern int GOTO_COST;    // number of bytes a goto command requires
+
+// framebuffer
+extern unsigned char *drv_generic_graphic_FB;
 
 // these functions must be implemented by the real driver
-// Fixme:
-void (*drv_generic_graphic_real_memcpy)(void);
+void (*drv_generic_graphic_real_blit)(int row, int col, int height, int width);
 
-
+// generic functions and widget callbacks
 int  drv_generic_graphic_init            (char *section, char *driver);
 int  drv_generic_graphic_draw            (WIDGET *W);
 int  drv_generic_graphic_icon_draw       (WIDGET *W);

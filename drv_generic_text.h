@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.6 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.7 2004/02/18 06:39:20 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.7  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.6  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -77,7 +80,7 @@ void (*drv_generic_text_real_goto)(int row, int col);
 void (*drv_generic_text_real_write)(unsigned char *buffer, int len);
 void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
 
-
+// generic functions and widget callbacks
 int  drv_generic_text_init            (char *section, char *driver);
 int  drv_generic_text_draw            (WIDGET *W);
 int  drv_generic_text_icon_init       (void);

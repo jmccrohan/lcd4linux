@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.33 2004/02/01 18:08:50 reinelt Exp $^
+/* $Id: cfg.c,v 1.34 2004/02/18 06:39:20 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.34  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.33  2004/02/01 18:08:50  reinelt
  * removed strtok() from layout processing (took me hours to find this bug)
  * further strtok() removind should be done!
@@ -464,7 +467,7 @@ char *l4l_cfg_get (char *section, char *key, char *defval)
       return R2S(&result);
     }
   }
-  return defval;
+  return strdup(defval);
 }
 
 

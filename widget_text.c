@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.12 2004/02/09 19:49:38 nicowallmeier Exp $
+/* $Id: widget_text.c,v 1.13 2004/02/18 06:39:20 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.13  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.12  2004/02/09 19:49:38  nicowallmeier
  * Minor bugfix
  *
@@ -303,7 +306,7 @@ int widget_text_init (WIDGET *Self)
 {
   char *section; char *c;
   WIDGET_TEXT *Text;
-  
+
   // prepare config section
   // strlen("Widget:")=7
   section=malloc(strlen(Self->name)+8);

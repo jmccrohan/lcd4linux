@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: widget.c,v 1.12 2004/02/18 06:39:20 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.12  2004/02/18 06:39:20  reinelt
+ * T6963 driver for graphic displays finished
+ *
  * Revision 1.11  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -141,7 +144,7 @@ int widget_add (char *name, int row, int col)
   section=malloc(strlen(name)+8);
   strcpy(section, "Widget:");
   strcat(section, name);
-  
+
   // get widget class
   class=cfg_get(section, "class", NULL);
   if (class==NULL || *class=='\0') {

@@ -252,6 +252,13 @@ Widget Squirrel {
     }
 }
 
+Widget Test {
+    class 'Text'
+    expression '1234567890123456789012345678901234567890'
+    #expression '|'
+    width 40
+}
+
 
 Layout Default {
     Row1 {
@@ -296,6 +303,25 @@ Layout L16x2 {
 #    }
 }
 
+Layout Test {
+    Row01.Col1 'Test'
+    Row02.Col1 'Test'
+    Row03.Col1 'Test'
+    Row04.Col1 'Test'
+    Row05.Col1 'Test'
+    Row06.Col1 'Test'
+    Row07.Col1 'Test'
+    Row08.Col1 'Test'
+    Row09.Col1 'Test'
+    Row10.Col1 'Test'
+    Row11.Col1 'Test'
+    Row12.Col1 'Test'
+    Row13.Col1 'Test'
+    Row14.Col1 'Test'
+    Row15.Col1 'Test'
+    Row16.Col1 'Test'
+}
+
 #Display 'LK204'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
@@ -305,8 +331,10 @@ Layout L16x2 {
 #Display 'USBLCD'
 Display 'T6963-240x64'
 
-Layout  'Default'
+#Layout  'Default'
 #Layout  'L16x2'
+Layout 'Test'
+
 
 Variables {
    tick 500
