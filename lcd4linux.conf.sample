@@ -13,6 +13,10 @@ Size 24x2
 #Port /dev/ttyS2
 #Type 20x4
 
+#Display USBLCD
+#Port /dev/usb/usblcd
+#Size 20x4
+
 #Display PalmPilot
 #Port /dev/ttyS2
 #Speed 4800

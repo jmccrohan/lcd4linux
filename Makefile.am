@@ -36,6 +36,9 @@ acconfig.h \
 BeckmannEgle.c \
 Crystalfontz.c Crystalfontz.h \
 HD44780.c \
+M50530.c \
+T6963.c \
+USBLCD.c \
 MatrixOrbital.c \
 PalmPilot.c \
 Raster.c \

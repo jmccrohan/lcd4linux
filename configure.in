@@ -30,7 +30,7 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, HD44780, M50530, T6963]
-  [                        MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
+  [                        USBLCD, MatrixOrbital, PalmPilot, PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
 )
@@ -56,6 +56,7 @@ for driver in $drivers; do
          HD44780="yes"
          M50530="yes"
          T6963="yes"
+         USBLCD="yes"
          MATRIXORBITAL="yes"
          PALMPILOT="yes"
          PNG="yes"
@@ -77,6 +78,9 @@ for driver in $drivers; do
          ;;
       T6963)
          T6963=$val
+         ;;
+      USBLCD)
+         USBLCD=$val
          ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
@@ -135,6 +139,11 @@ fi
 if test "$T6963" = "yes"; then
    DRIVERS="$DRIVERS T6963.o"
    AC_DEFINE(WITH_T6963)
+fi
+
+if test "$USBLCD" = "yes"; then
+   DRIVERS="$DRIVERS USBLCD.o"
+   AC_DEFINE(WITH_USBLCD)
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then

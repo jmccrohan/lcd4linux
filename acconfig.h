@@ -13,6 +13,9 @@
 /* Define if you want the T6963 driver compiled */
 #undef WITH_T6963
 
+/* Define if you want the USBLCD driver compiled */
+#undef WITH_USBLCD
+
 /* Define if you want the Matrix Orbital driver compiled */
 #undef WITH_MATRIXORBITAL
 
