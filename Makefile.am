@@ -54,7 +54,8 @@ plugin_exec.c               \
 plugin_xmms.c               \
 plugin_mysql.c              \
 plugin_wireless.c           \
-plugin_seti.c
+plugin_seti.c               \
+plugin_pop3.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9

@@ -109,6 +109,14 @@ Plugin MySQL {
     database 'lcd4linux'	# MUST be specified
 }
 
+Plugin Pop3 {
+   server1 'localhost'
+   port1 110
+   user1 'michael'
+   password1 'secret'
+}
+
+
 Widget OS {
     class 'Text'
     expression '*** '.uname('sysname').' '.uname('release').' ***'
