@@ -170,7 +170,7 @@ fi
 if test "$PNG" = "yes"; then
    RASTER="yes"
    AC_DEFINE(WITH_PNG)
-   DRVLIBS="$DRVLIBS -lgd -lpng -lz"
+   DRVLIBS="$DRVLIBS -lgd"
 fi
 
 if test "$PPM" = "yes"; then

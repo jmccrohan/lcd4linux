@@ -37,11 +37,29 @@ Carsten Nau <info@cnau.de>
   HD44780 GPO support & documentation
   %ic ISDN online support
 
+Udo Altmann <ua@altnet.de>
+  donated several cool displays
+
+Dirk Schumacher <dirk.schumacher@cosi-tronic.de>
+  donated several cool displays
+
 Helmut A. Bender <hab@arcanum.inka.de>
   T6963C support
 
 Simon Wood <Simon.Wood@pace.co.uk>
   ideas and bugfixes
+
+Harald Schäfer <harald.schaefer@gmx.de>
+  information about M50530
+
+Robin Adams <info@usblcd.de>
+  USBLCD driver
+
+Andrew Ip <aip@cwlinux.com>
+  CwLinux driver
+
+Petri Damsten <petri.damsten@raketti.net>
+  sensors factor and offset patch
 
 
 last but not least: the guys at SourceForge!
