@@ -35,8 +35,7 @@ Crystalfontz.c Crystalfontz.h \
 HD44780.c \
 MatrixOrbital.c \
 PalmPilot.c \
-PNG.c \
-PPM.c \
+Raster.c \
 SIN.c \
 Skeleton.c \
 XWindow.c \
@@ -50,13 +49,16 @@ lcd4linux.xpm \
 lcd4linux.lsm \
 CREDITS \
 FAQ \
+NEWS \
 TODO \
 README.Drivers \
 README.MatrixOrbital \
 README.HD44780 \
+README.HD44780.GPO \
 README.Crystalfontz \
 README.X11 \
 README.KDE \
 README.Raster \
-README.Png
-
+README.Png \
+README.Webinterface \
+README.Text
