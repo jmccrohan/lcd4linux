@@ -1,4 +1,5 @@
-/*
+/* $Id: Crystalfontz.c,v 1.3 2000/06/04 21:43:50 herp Exp $
+ *
  * driver for display modules from Crystalfontz
  *
  * Copyright 2000 by Herbert Rosmanith (herp@wildsau.idv.uni-linz.ac.at)
@@ -16,6 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * $Log: Crystalfontz.c,v $
+ * Revision 1.3  2000/06/04 21:43:50  herp
+ * minor bugfix (zero length)
+ *
  *
  */
 
@@ -220,6 +226,7 @@ static unsigned char p2[] = { 0x00,0x20,0x30,0x38,0x3c,0x3e,0x3f };
 
 static void blacken(int bitfrom,int len,int pos,int startbyte,int endbyte) {
 
+	if (len<1) return;
 	if (startbyte==endbyte)
 		Barbuf[pos] |=
 			(p1[bitfrom%XRES] & p2[1+((bitfrom+len-1)%XRES)]);
@@ -229,12 +236,12 @@ static void blacken(int bitfrom,int len,int pos,int startbyte,int endbyte) {
 		n=endbyte-startbyte-1;
 		if (n>0) memset(Barbuf+pos+1,0x3f,n);
 		Barbuf[pos+n+1] |= p2[1+((bitfrom+len-1)%XRES)];
-
 	}
 }
 
 static void whiten(int bitfrom,int len,int pos,int startbyte,int endbyte) {
 
+	if (len<1) return;
 	if (startbyte==endbyte)
 		Barbuf[pos] &=
 			(p2[bitfrom%XRES] | p1[1+((bitfrom+len-1)%XRES)]);
