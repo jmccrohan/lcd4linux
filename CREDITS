@@ -1,0 +1,41 @@
+Herbert Rosmanith <herp@wildsau.idv-edu.uni-linz.ac.at>
+  X11 driver
+  CrystalFontz driver
+  lots of ideas and bugfixes
+
+Michael Mueller <m.mueller@netsystec.de>
+  support for Beckmann & Egle driver
+
+Michael Renzmann <renzmann@gmx.de>
+  testing various displays with HD44780 driver
+
+Thomas Skyt Jessen <thskyt@foni.net>
+  support and tests for the HD44780 driver
+
+Gregor Szaktilla <support@pingnet.de>
+  translation tables (not yet done)
+
+Paul Anderson <paul-anderson@paul-anderson.com>
+  support for Java LCD display simulator (not yet done)
+
+J Robert Ray <jrray@home.com>
+  support for PalmOrb driver
+
+Ghassan Matar <gmatar@hexapods.com>
+  lots of ideas
+
+Axel Ehnert <Axel@Ehnert.net>
+  email counter and seti@home support
+
+Carsten Nau <info@cnau.de>
+  HD44780 GPO support & documentation
+  %ic ISDN online support
+
+Helmut A. Bender <hab@arcanum.inka.de>
+  T6963C support
+
+Simon Wood <Simon.Wood@pace.co.uk>
+  ideas and bugfixes
+
+
+last but not least: the guys at SourceForge!

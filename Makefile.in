@@ -76,7 +76,7 @@ lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h Skeleton.c MatrixOrbital.c BeckmannEgle.c HD44780.c Crystalfontz.c Crystalfontz.h SIN.c PalmPilot.c Raster.c XWindow.c
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
