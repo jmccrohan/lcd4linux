@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.35 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: XWindow.c,v 1.36 2003/10/22 04:32:25 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.36  2003/10/22 04:32:25  reinelt
+ * fixed icon bug found by Rob van Nieuwkerk
+ *
  * Revision 1.35  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -464,7 +467,9 @@ int xlcdinit(LCD *Self)
 
 int xlcdclear(int full) 
 {
-  return pix_clear();
+  icon_clear();
+  pix_clear();
+  return 0;
 }
 
 

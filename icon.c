@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.10 2003/10/22 04:19:16 reinelt Exp $
+/* $Id: icon.c,v 1.11 2003/10/22 04:32:25 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.11  2003/10/22 04:32:25  reinelt
+ * fixed icon bug found by Rob van Nieuwkerk
+ *
  * Revision 1.10  2003/10/22 04:19:16  reinelt
  * Makefile.in for imon.c/.h, some MatrixOrbital clients
  *
@@ -170,7 +173,7 @@ int icon_init (int rows, int cols, int xres, int yres, int chars, int icons,
 
   for (n=0; n<icons; n++) {
     Bitmap[n].nData=1;
-    Bitmap[n].lData=0;
+    Bitmap[n].lData=-1;
     Bitmap[n].Data=malloc(YRES*sizeof(char));
     memset (Bitmap[n].Data, 0, YRES*sizeof(char));
     icon_read_bitmap(n);
@@ -186,8 +189,14 @@ void icon_clear(void)
 {
   int n;
 
+  // reset screen buffer
   for (n=0; n<ROWS*COLS; n++) {
     Screen[n]=-1;
+  }
+
+  // reset last bitmap pointer
+  for (n=0; n<ICONS; n++) {
+    Bitmap[n].lData=-1;
   }
 
 }
