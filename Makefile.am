@@ -5,7 +5,7 @@ CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
 
-AM_CFLAGS = $(X_CFLAGS) -Wall
+AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
 if WITH_X
 lcd4linux_LDADD = -lX11

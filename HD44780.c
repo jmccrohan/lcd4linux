@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.4 2000/04/15 16:56:52 reinelt Exp $
+/* $Id: HD44780.c,v 1.5 2000/07/31 06:46:35 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.5  2000/07/31 06:46:35  reinelt
+ *
+ * eliminated some compiler warnings with glibc
+ *
  * Revision 1.4  2000/04/15 16:56:52  reinelt
  *
  * moved delay loops to udelay.c
@@ -59,11 +63,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <sys/io.h>
 
 #include "debug.h"
 #include "cfg.h"

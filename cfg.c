@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.7 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: cfg.c,v 1.8 2000/07/31 06:46:35 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.8  2000/07/31 06:46:35  reinelt
+ *
+ * eliminated some compiler warnings with glibc
+ *
  * Revision 1.7  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -91,6 +95,7 @@
  *   returns the file the configuration was read from
  * 
  */
+
 
 #include <stdlib.h>
 #include <stdio.h>
