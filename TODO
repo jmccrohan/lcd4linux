@@ -1,0 +1,11 @@
+ToDo-List / Wishlist for lcd4linux
+
+2000-04-04 reinelt
+implement some sort of 'graphs', similar to bars, but with a time axis
+can be filled (made up of bars) or not (needs raster graphics)
+
+2000-04-04 reinelt
+write a driver for PNG. This should be the first step towards a WWW-driver.
+
+
+$Id: TODO,v 1.1 2000/04/05 04:12:00 reinelt Exp $
