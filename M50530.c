@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.4 2002/08/19 07:36:29 reinelt Exp $
+/* $Id: M50530.c,v 1.5 2002/08/19 10:51:06 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.5  2002/08/19 10:51:06  reinelt
+ * M50530 driver using new generic bar functions
+ *
  * Revision 1.4  2002/08/19 07:36:29  reinelt
  *
  * finished bar.c, USBLCD is the first driver that uses the generic bar functions
@@ -74,7 +77,6 @@
 #define XRES 5
 #define YRES 8
 #define CHARS 8
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 static LCD Lcd;
 
@@ -83,11 +85,8 @@ static char *PPdev=NULL;
 static int   PPfd=-1;
 
 static char Txt[8][40];
-static BAR  Bar[8][40];
 static int  GPO=0;
 
-static int nSegment=1;
-static SEGMENT Segment[128] = {{ len1:0, len2:0, type:255, used:0, ascii:32 }};
 
 static void M5_command (unsigned int cmd, int delay)
 {
@@ -119,7 +118,8 @@ static void M5_command (unsigned int cmd, int delay)
   ioctl (PPfd, PPFCONTROL, &frob);
     
   // EX signal pulse width
-  ndelay(200);
+  // Fixme: why 500 ns? Datasheet says 200ns
+  ndelay(500);
 
   // lower EX (Strobe, inverted)
   frob.mask=PARPORT_CONTROL_STROBE;
@@ -131,6 +131,7 @@ static void M5_command (unsigned int cmd, int delay)
 
 }
 
+
 static void M5_write (unsigned char *string, int len)
 {
   unsigned int cmd;
@@ -140,6 +141,7 @@ static void M5_write (unsigned char *string, int len)
     M5_command (0x100|cmd, 20);
   }
 }
+
 
 static void M5_setGPO (int bits)
 {
@@ -165,6 +167,7 @@ static void M5_setGPO (int bits)
     ioctl (PPfd, PPFCONTROL, &frob);
   }
 }
+
 
 static int M5_open (void)
 {
@@ -198,172 +201,13 @@ static int M5_open (void)
   return 0;
 }
 
-static void M5_process_bars (void)
+
+static void M5_define_char (int ascii, char *buffer)
 {
-  int row, col;
-  int i, j;
-  
-  for (i=1; i<nSegment && Segment[i].used; i++);
-  for (j=i+1; j<nSegment; j++) {
-    if (Segment[j].used)
-      Segment[i++]=Segment[j];
-  }
-  nSegment=i;
-  
-  for (row=0; row<Lcd.rows; row++) {
-    for (col=0; col<Lcd.cols; col++) {
-      if (Bar[row][col].type==0) continue;
-      for (i=0; i<nSegment; i++) {
-	if (Segment[i].type & Bar[row][col].type &&
-	    Segment[i].len1== Bar[row][col].len1 &&
-	    Segment[i].len2== Bar[row][col].len2) break;
-      }
-      if (i==nSegment) {
-	nSegment++;
-	Segment[i].len1=Bar[row][col].len1;
-	Segment[i].len2=Bar[row][col].len2;
-	Segment[i].type=Bar[row][col].type;
-	Segment[i].used=0;
-	Segment[i].ascii=-1;
-      }
-      Bar[row][col].segment=i;
-    }
-  }
+  M5_command (0x300+192+8*ascii, 20);
+  M5_write (buffer, 8);
 }
 
-static int M5_segment_diff (int i, int j)
-{
-  int RES;
-  int i1, i2, j1, j2;
-  
-  if (i==j) return 65535;
-  if (!(Segment[i].type & Segment[j].type)) return 65535;
-  if (Segment[i].len1==0 && Segment[j].len1!=0) return 65535;
-  if (Segment[i].len2==0 && Segment[j].len2!=0) return 65535;
-  RES=Segment[i].type & BAR_H ? XRES:YRES;
-  if (Segment[i].len1>=RES && Segment[j].len1<RES) return 65535;
-  if (Segment[i].len2>=RES && Segment[j].len2<RES) return 65535;
-  if (Segment[i].len1==Segment[i].len2 && Segment[j].len1!=Segment[j].len2) return 65535;
-
-  i1=Segment[i].len1; if (i1>RES) i1=RES;
-  i2=Segment[i].len2; if (i2>RES) i2=RES;
-  j1=Segment[j].len1; if (j1>RES) i1=RES;
-  j2=Segment[j].len2; if (j2>RES) i2=RES;
-  
-  return (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2);
-}
-
-static void M5_compact_bars (void)
-{
-  int i, j, r, c, min;
-  int pack_i, pack_j;
-  int pass1=1;
-  int deviation[nSegment][nSegment];
-  
-  if (nSegment>CHARS+1) {
-
-    for (i=1; i<nSegment; i++) {
-      for (j=0; j<nSegment; j++) {
-	deviation[i][j]=M5_segment_diff(i,j);
-      }
-    }
-    
-    while (nSegment>CHARS+1) {
-      min=65535;
-      pack_i=-1;
-      pack_j=-1;
-      for (i=2; i<nSegment; i++) {
-	if (pass1 && Segment[i].used) continue;
-	for (j=0; j<nSegment; j++) {
-	  if (deviation[i][j]<min) {
-	    min=deviation[i][j];
-	    pack_i=i;
-	    pack_j=j;
-	  }
-	}
-      }
-      if (pack_i==-1) {
-	if (pass1) {
-	  pass1=0;
-	  continue;
-	} else {
-	  error ("M50530: unable to compact bar characters");
-	  nSegment=CHARS;
-	  break;
-	}
-      } 
-      
-      nSegment--;
-      Segment[pack_i]=Segment[nSegment];
-      
-      for (i=0; i<nSegment; i++) {
-	deviation[pack_i][i]=deviation[nSegment][i];
-	deviation[i][pack_i]=deviation[i][nSegment];
-      }
-      
-      for (r=0; r<Lcd.rows; r++) {
-	for (c=0; c<Lcd.cols; c++) {
-	  if (Bar[r][c].segment==pack_i)
-	    Bar[r][c].segment=pack_j;
-	  if (Bar[r][c].segment==nSegment)
-	    Bar[r][c].segment=pack_i;
-	}
-      }
-    }
-  }
-}
-
-static void M5_define_chars (void)
-{
-  int c, i, j;
-  char buffer[8];
-
-  for (i=1; i<nSegment; i++) {
-    if (Segment[i].used) continue;
-    if (Segment[i].ascii!=-1) continue;
-    for (c=0; c<CHARS; c++) {
-      for (j=1; j<nSegment; j++) {
-	if (Segment[j].ascii==248+c) break;
-      }
-      if (j==nSegment) break;
-    }
-    Segment[i].ascii=248+c;
-    switch (Segment[i].type) {
-    case BAR_L:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 1, 3, 7, 15, 31 };
-	buffer[j]=Pixel[Segment[i].len1];
-	buffer[j+4]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_R:
-      for (j=0; j<4; j++) {
-	char Pixel[] = { 0, 16, 24, 28, 30, 31 };
-	buffer[j]=Pixel[Segment[i].len1];
-	buffer[j+4]=Pixel[Segment[i].len2];
-      }
-      break;
-    case BAR_U:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[7-j]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[7-j]=0;
-      }
-      break;
-    case BAR_D:
-      for (j=0; j<Segment[i].len1; j++) {
-	buffer[j]=31;
-      }
-      for (; j<YRES; j++) {
-	buffer[j]=0;
-      }
-      break;
-    }
-    M5_command (0x300+192+8*c, 20);
-    M5_write (buffer, 8);
-  }
-}
 
 int M5_clear (void)
 {
@@ -372,17 +216,18 @@ int M5_clear (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       Txt[row][col]='\t';
-      Bar[row][col].len1=-1;
-      Bar[row][col].len2=-1;
-      Bar[row][col].type=0;
-      Bar[row][col].segment=-1;
     }
   }
+
+  bar_clear();
+
   GPO=0;
   M5_setGPO (GPO);           // All GPO's off
+
   M5_command (0x0001, 1250); // clear display
   return 0;
 }
+
 
 int M5_init (LCD *Self)
 {
@@ -414,11 +259,13 @@ int M5_init (LCD *Self)
   s=cfg_get ("GPOs");
   if (s==NULL) {
     gpos=0;
+  } else {
+    gpos=strtol(s, &e, 0);
+    if (*e!='\0' || gpos<0 || gpos>8) {
+      error ("M50530: bad GPOs '%s' in %s", s, cfg_file());
+      return -1;
+    }    
   }
-  else if ((gpos=strtol(s, &e, 0))==0 || *e!='\0' || gpos<0 || gpos>8) {
-    error ("M50530: bad GPOs '%s' in %s", s, cfg_file());
-    return -1;
-  }    
   
   Self->rows=rows;
   Self->cols=cols;
@@ -430,10 +277,14 @@ int M5_init (LCD *Self)
   if (M5_open()!=0)
     return -1;
   
+  bar_init(rows, cols, XRES, YRES, CHARS);
+  bar_add_segment(0,0,255,32); // ASCII 32 = blank
+
   M5_clear();
   
   return 0;
 }
+
 
 void M5_goto (int row, int col)
 {
@@ -443,6 +294,7 @@ void M5_goto (int row, int col)
   if (row>3) pos-=168;
   M5_command (0x300|pos, 20);
 }
+
 
 int M5_put (int row, int col, char *text)
 {
@@ -455,76 +307,12 @@ int M5_put (int row, int col, char *text)
   return 0;
 }
 
+
 int M5_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  int rev=0;
-  
-  if (len1<1) len1=1;
-  else if (len1>max) len1=max;
-  
-  if (len2<1) len2=1;
-  else if (len2>max) len2=max;
-  
-  switch (type) {
-  case BAR_L:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_R:
-    while (max>0 && col<=Lcd.cols) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=XRES) {
-	Bar[row][col].len1=rev?0:XRES;
-	len1-=XRES;
-      } else {
-	Bar[row][col].len1=rev?XRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=XRES) {
-	Bar[row][col].len2=rev?0:XRES;
-	len2-=XRES;
-      } else {
-	Bar[row][col].len2=rev?XRES-len2:len2;
-	len2=0;
-      }
-      max-=XRES;
-      col++;
-    }
-    break;
-
-  case BAR_U:
-    len1=max-len1;
-    len2=max-len2;
-    rev=1;
-    
-  case BAR_D:
-    while (max>0 && row<=Lcd.rows) {
-      Bar[row][col].type=type;
-      Bar[row][col].segment=-1;
-      if (len1>=YRES) {
-	Bar[row][col].len1=rev?0:YRES;
-	len1-=YRES;
-      } else {
-	Bar[row][col].len1=rev?YRES-len1:len1;
-	len1=0;
-      }
-      if (len2>=YRES) {
-	Bar[row][col].len2=rev?0:YRES;
-	len2-=YRES;
-      } else {
-	Bar[row][col].len2=rev?YRES-len2:len2;
-	len2=0;
-      }
-      max-=YRES;
-      row++;
-    }
-    break;
-
-  }
-  return 0;
+  return bar_draw (type, row, col, max, len1, len2);
 }
+
 
 int M5_gpo (int num, int val)
 {
@@ -539,26 +327,21 @@ int M5_gpo (int num, int val)
   return 0;
 }
 
+
 int M5_flush (void)
 {
   unsigned char buffer[256];
   unsigned char *p;
-  int s, row, col;
+  int c, row, col;
   
-  M5_process_bars();
-  M5_compact_bars();
-  M5_define_chars();
-  
-  for (s=0; s<nSegment; s++) {
-    Segment[s].used=0;
-  }
+  bar_process(M5_define_char);
 
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
-      s=Bar[row][col].segment;
-      if (s!=-1) {
-	Segment[s].used=1;
-	Txt[row][col]=Segment[s].ascii;
+      c=bar_peek(row, col);
+      if (c!=-1) {
+	if (c!=32) c+=248; //blank
+	Txt[row][col]=(char)(c);
       }
     }
     for (col=0; col<Lcd.cols; col++) {
@@ -577,6 +360,7 @@ int M5_flush (void)
   return 0;
 }
 
+
 int M5_quit (void)
 {
   debug ("closing ppdev %s", PPdev);
@@ -590,7 +374,22 @@ int M5_quit (void)
   return 0;
 }
 
+
 LCD M50530[] = {
-  { "M50530",0,0,XRES,YRES,BARS,0,M5_init,M5_clear,M5_put,M5_bar,M5_gpo,M5_flush,M5_quit },
+  { name: "M50530",
+    rows:  0,
+    cols:  0,
+    xres:  XRES,
+    yres:  YRES,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    gpos:  0,
+    init:  M5_init,
+    clear: M5_clear,
+    put:   M5_put,
+    bar:   M5_bar,
+    gpo:   M5_gpo,
+    flush: M5_flush,
+    quit:  M5_quit 
+  },
   { NULL }
 };

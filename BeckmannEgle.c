@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.9 2002/08/19 09:43:43 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.10 2002/08/19 10:51:06 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.10  2002/08/19 10:51:06  reinelt
+ * M50530 driver using new generic bar functions
+ *
  * Revision 1.9  2002/08/19 09:43:43  reinelt
  * BeckmannEgle using new generic bar functions
  *
@@ -87,7 +90,6 @@
 #define XRES 5
 #define YRES 8
 #define CHARS 8
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
 typedef struct {
   int cols;
@@ -335,7 +337,7 @@ LCD BeckmannEgle[] = {
     cols:  0,
     xres:  XRES,
     yres:  YRES,
-    bars:  BARS,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
     gpos:  0,
     init:  BE_init,
     clear: BE_clear,
