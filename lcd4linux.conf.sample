@@ -16,6 +16,16 @@ Display MI240 {
 }
 
 
+Display CW12232 {
+    Driver 'Cwlinux'
+    Model 'CW12232'
+    Port '/dev/usb/tts/0'
+    Speed 19200
+    Brightness 2
+    Icons 1
+}
+
+
 Display CF631 {
     Driver 'Crystalfontz'
     Model '631'
@@ -513,6 +523,7 @@ Layout testMySQL {
 
 #Display 'LK204'
 #Display 'MI240'
+#Display 'CW12232'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
 #Display 'CF631'

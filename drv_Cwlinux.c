@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.9 2004/05/31 16:39:06 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.10 2004/05/31 21:05:13 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.10  2004/05/31 21:05:13  reinelt
+ *
+ * fixed lots of bugs in the Cwlinux driver
+ * do not emit EAGAIN error on the first retry
+ * made plugin_i2c_sensors a bit less 'chatty'
+ * moved init and exit functions to the bottom of plugin_pop3
+ *
  * Revision 1.9  2004/05/31 16:39:06  reinelt
  *
  * added NULL display driver (for debugging/profiling purposes)
@@ -141,7 +148,7 @@ static void drv_CW1602_defchar (int ascii, unsigned char *buffer)
   int i;
   char cmd[12]="\376Nn12345678\375";
 
-  cmd[2]=(char)(ascii+1);
+  cmd[2]=(char)ascii;
 
   for (i=0; i<8; i++) {
     cmd[3+i] = buffer[i] & 0x1f;
@@ -156,7 +163,7 @@ static void drv_CW12232_defchar (int ascii, unsigned char *buffer)
   int i, j;
   char cmd[10]="\376Nn123456\375";
   
-  cmd[2]=(char)(ascii+1);
+  cmd[2]=(char)ascii;
   
   // The CW12232 uses a vertical bitmap layout,
   // so we have to 'rotate' the bitmap.
@@ -227,7 +234,7 @@ static int drv_CW_start (char *section)
   }
   
   // open serial port
-  if (drv_generic_serial_open(section, Name, 0)<0) return -1;
+  if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
 
   // this does not work as I'd expect it...
 #if 0
@@ -337,10 +344,14 @@ int drv_CW_init (char *section)
   // display preferences
   XRES  = 6;      // pixel width of one char 
   YRES  = 8;      // pixel height of one char 
-  CHARS = 8;      // number of user-defineable characters
-  CHAR0 = 128;    // ASCII of first user-defineable char
+  CHARS = 16;     // number of user-defineable characters
+  CHAR0 = 1;      // ASCII of first user-defineable char
   GOTO_COST = 3;  // number of bytes a goto command requires
 
+  // start display
+  if ((ret=drv_CW_start (section))!=0)
+    return ret;
+  
   // real worker functions
   drv_generic_text_real_write = drv_CW_write;
 
@@ -352,10 +363,6 @@ int drv_CW_init (char *section)
       drv_generic_text_real_defchar = drv_CW12232_defchar;
       break;
   }
-  
-  // start display
-  if ((ret=drv_CW_start (section))!=0)
-    return ret;
   
   // initialize generic text driver
   if ((ret=drv_generic_text_init(section, Name))!=0)

@@ -1,4 +1,4 @@
-/* $Id: plugin_pop3.c,v 1.3 2004/05/20 07:14:46 reinelt Exp $
+/* $Id: plugin_pop3.c,v 1.4 2004/05/31 21:05:13 reinelt Exp $
  *
  * Plugin to check POP3 mail accounts
  *
@@ -27,6 +27,13 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.4  2004/05/31 21:05:13  reinelt
+ *
+ * fixed lots of bugs in the Cwlinux driver
+ * do not emit EAGAIN error on the first retry
+ * made plugin_i2c_sensors a bit less 'chatty'
+ * moved init and exit functions to the bottom of plugin_pop3
+ *
  * Revision 1.3  2004/05/20 07:14:46  reinelt
  * made all local functions static
  *
@@ -171,24 +178,6 @@ static int getConfig (void)
 		}
  	}
 	return(n);
-}
-
-int plugin_init_pop3(void)
-{
-	
-	int n = getConfig();
-	// by now, head should point to a list of all our accounts
-	if (head)
-	{
-		info("[POP3] %d POP3 accounts have been succesfully defined",n);
-		AddFunction ("POP3check",  1, my_POP3check);
-	}
-	return 0;
-}
-
-void plugin_exit_pop3(void) 
-{
-	check_destroy(&head);
 }
 
 // ************************ LIST  ***********************************
@@ -341,3 +330,23 @@ static int tcp_connect(struct check *hi)
 
 	return(sockfd);
 }
+
+
+int plugin_init_pop3(void)
+{
+	
+	int n = getConfig();
+	// by now, head should point to a list of all our accounts
+	if (head)
+	{
+		info("[POP3] %d POP3 accounts have been succesfully defined",n);
+		AddFunction ("POP3check",  1, my_POP3check);
+	}
+	return 0;
+}
+
+void plugin_exit_pop3(void) 
+{
+	check_destroy(&head);
+}
+

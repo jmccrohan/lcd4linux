@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.14 2004/05/09 05:41:42 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.15 2004/05/31 21:05:13 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.15  2004/05/31 21:05:13  reinelt
+ *
+ * fixed lots of bugs in the Cwlinux driver
+ * do not emit EAGAIN error on the first retry
+ * made plugin_i2c_sensors a bit less 'chatty'
+ * moved init and exit functions to the bottom of plugin_pop3
+ *
  * Revision 1.14  2004/05/09 05:41:42  reinelt
  *
  * i2c fix for kernel 2.6.5 (temp_input1 vs. temp1_input) from Xavier
@@ -122,6 +129,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
 
@@ -163,14 +171,14 @@ static int parse_i2c_sensors_sysfs(char *key)
 
   stream=fopen(file, "r");
   if (stream==NULL) {
-    error ("fopen(%s) failed",file);
+    error ("i2c_sensors: fopen(%s) failed: %s", file, strerror(errno));
     return -1;
   }
   fgets (buffer, sizeof(buffer), stream);
   fclose (stream);
   
   if (!buffer) {
-    error ("%s empty ?!",file);	  
+    error ("i2c_sensors: %s empty ?!", file);	  
     return -1;
   }
 
@@ -215,7 +223,7 @@ static int parse_i2c_sensors_procfs(char *key)
   char final_key[32];
   char *number = &key[strlen(key)-1];
   int tokens_index;
-  //debug("%s  ->  %s", key, number);
+  // debug("%s  ->  %s", key, number);
   strcpy(file, path);
 
   if (!strncmp(key, "temp_", 5)) {
@@ -240,27 +248,27 @@ static int parse_i2c_sensors_procfs(char *key)
 
   stream=fopen(file, "r");
   if (stream==NULL) {
-    error ("fopen(%s) failed",file);
+    error ("i2c_sensors: fopen(%s) failed: %s", file, strerror(errno));
     return -1;
   }
   fgets (buffer, sizeof(buffer), stream);
   fclose (stream);
   
   if (!buffer) {
-    error ("%s empty ?!",file);	  
+    error ("i2c_sensors: %s empty ?!",file);	  
     return -1;
   }
 
   running=strdupa(buffer);
   while(1) {
     value = strsep (&running, delim);
-    debug("%s pos %i -> %s", file, pos , value);
+    // debug("%s pos %i -> %s", file, pos , value);
     if (!value || !strcmp(value, "")) {
-      debug("%s pos %i -> BREAK", file, pos);
+      // debug("%s pos %i -> BREAK", file, pos);
       break;
     } else {
       sprintf (final_key, "%s%s", procfs_tokens[tokens_index][pos], number);
-      debug ("%s -> %s", final_key, value);
+      // debug ("%s -> %s", final_key, value);
       hash_set (&I2Csensors, final_key, value);
       pos++;
     }
@@ -312,11 +320,6 @@ void my_i2c_sensors_path(char *method)
   
   fd1 = opendir(base);
   if (!fd1) {
-    if (!strcmp(method, "sysfs")) {
-      error("[i2c_sensors] Impossible to open %s! Is /sys mounted?", base);
-    } else if (!strcmp(method, "procfs")) {
-      error("[i2c_sensors] Impossible to open %s! Is i2c_proc loaded ?", base);
-    }
     return;
   }
   
@@ -336,7 +339,8 @@ void my_i2c_sensors_path(char *method)
     fd2 = opendir(dname);
     done = 0;
     while((file = readdir(fd2))) {
-      if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input") || !strcmp(file->d_name, "temp1")) { // FIXME : do all sensors have a temp_input1 ?
+      // FIXME : do all sensors have a temp_input1 ?
+      if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input") || !strcmp(file->d_name, "temp1")) {
 	path = realloc(path, strlen(dname)+1);
 	strcpy(path, dname);			  
 	done=1;
@@ -352,47 +356,42 @@ void my_i2c_sensors_path(char *method)
 
 int plugin_init_i2c_sensors (void)
 {
-  char *path_cfg=cfg_get(NULL, "i2c_sensors-path", "");
+  char *path_cfg = cfg_get(NULL, "i2c_sensors-path", "");
 
-  if (strncmp(path_cfg, "/", 1)) {
-    //debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
+  if (path_cfg == NULL || *path_cfg == '\0') {
+    // debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
     my_i2c_sensors_path("sysfs");
     if (!path)
       my_i2c_sensors_path("procfs");
-
+    
     if (!path) {
-      error("[i2c_sensors] No i2c sensors found via the i2c interface !");
-      error("[i2c_sensors] Try to specify the path to the sensors !");
+      error("i2c_sensors: unable to autodetect i2c sensors!");
     } else {
-      debug("Your i2c sensors are probably in %s", path);
-      debug("if i2c_sensors doesn't work, try to specify the path in your conf");
+      debug("using i2c sensors at %s (autodetected)", path);
     }
-	
   } else {
     if (path_cfg[strlen(path_cfg)-1] != '/') {
       // the headless user forgot the trailing slash :/
-      debug("adding a trailing slash at the end of the path");
+      error("i2c_sensors: please add a trailing slash to %s from %s", path_cfg, cfg_source());
       path_cfg = realloc(path_cfg, strlen(path_cfg)+2);
       strcat(path_cfg, "/");
     }
-    debug("Path to i2c sensors from the conf : %s", path_cfg);
-    debug("if i2c_sensors doesn't work, double check this value !");
+    debug("using i2c sensors at %s (from %s)", path, cfg_source());
     path = realloc(path, strlen(path_cfg)+1);
     strcpy(path, path_cfg);
-    
   }
-  free(path_cfg);
-
+  if (path_cfg) free(path_cfg);
+  
   // we activate the function only if there's a possibly path found
   if (path!=NULL) {
     if (strncmp(path, "/sys", 4)==0) {
-      parse_i2c_sensors=parse_i2c_sensors_sysfs;
+      parse_i2c_sensors = parse_i2c_sensors_sysfs;
       AddFunction ("i2c_sensors", 1, my_i2c_sensors);
     } else if (strncmp(path, "/proc", 5)==0) {
-      parse_i2c_sensors=parse_i2c_sensors_procfs;      
+      parse_i2c_sensors = parse_i2c_sensors_procfs;      
       AddFunction ("i2c_sensors", 1, my_i2c_sensors);
     } else {
-      error("[i2c_sensors] unknown path %s, should start with /sys or /proc");
+      error("i2c_sensors: unknown path %s, should start with /sys or /proc");
     }
   }
   
@@ -401,5 +400,5 @@ int plugin_init_i2c_sensors (void)
 
 void plugin_exit_i2c_sensors(void) 
 {
-	hash_destroy(&I2Csensors);
+  hash_destroy(&I2Csensors);
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.9 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.10 2004/05/31 21:05:13 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,13 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.10  2004/05/31 21:05:13  reinelt
+ *
+ * fixed lots of bugs in the Cwlinux driver
+ * do not emit EAGAIN error on the first retry
+ * made plugin_i2c_sensors a bit less 'chatty'
+ * moved init and exit functions to the bottom of plugin_pop3
+ *
  * Revision 1.9  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -301,6 +308,7 @@ int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
 
   cfmakeraw(&portset);
   portset.c_cflag |= flags;
+  cfsetispeed(&portset, Speed);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
     error ("%s: tcsetattr(%s) failed: %s", Driver, Port, strerror(errno));
@@ -316,9 +324,9 @@ int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
 int drv_generic_serial_poll (unsigned char *string, int len)
 {
   int ret;
-  if (Device==-1) return -1;
+  if (Device == -1) return -1;
   ret=read (Device, string, len);
-  if (ret<0 && errno!=EAGAIN) {
+  if (ret < 0 && errno != EAGAIN) {
     error("%s: read(%s) failed: %s", Driver, Port, strerror(errno));
   }
   return ret;
@@ -329,14 +337,14 @@ int drv_generic_serial_read (unsigned char *string, int len)
 {
   int run, ret;
   
-  for (run=0; run<10; run++) {
-    ret=drv_generic_serial_poll(string, len);
-    if (ret>=0 || errno!=EAGAIN) break;
+  for (run = 0; run < 10; run ++) {
+    ret = drv_generic_serial_poll(string, len);
+    if (ret >= 0 || errno != EAGAIN) break;
     info ("%s: read(%s): EAGAIN", Driver, Port);
     usleep(1000);
   }
   
-  if (ret>0 && ret!=len) {
+  if (ret > 0 && ret != len) {
     error ("%s: partial read(%s): len=%d ret=%d", Driver, Port, len, ret);
   }
   
@@ -348,17 +356,17 @@ void drv_generic_serial_write (unsigned char *string, int len)
 {
   int run, ret;
   
-  if (Device==-1) return;
-  for (run=0; run<10; run++) {
-    ret=write (Device, string, len);
-    if (ret>=0 || errno!=EAGAIN) break;
-    info ("%s: write(%s): EAGAIN", Driver, Port);
+  if (Device == -1) return;
+  for (run = 0; run < 10; run++) {
+    ret = write (Device, string, len);
+    if (ret >= 0 || errno != EAGAIN) break;
+    if (run > 0) info ("%s: write(%s): EAGAIN #%d", Driver, Port, run);
     usleep(1000);
   }
   
-  if (ret<0) {
+  if (ret < 0) {
     error ("%s: write(%s) failed: %s", Driver, Port, strerror(errno));
-  } else if (ret!=len) {
+  } else if (ret != len) {
     error ("%s: partial write(%s): len=%d ret=%d", Driver, Port, len, ret);
   }
   
