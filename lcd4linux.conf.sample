@@ -137,6 +137,15 @@ Display USBLCD {
 }
 
 
+Display BWCT {
+    Driver 'BWCT'
+    Size '16x2'
+    Contrast 30
+    asc255bug 1
+    Icons 1
+}
+
+
 Display T6963-240x64 {
     Driver 'T6963'
     Port '/dev/parports/0'
@@ -655,8 +664,8 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-20x4'
-#Display  'SC1602D'
-Display 'LCM-162'
+#Display 'SC1602D'
+#Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
@@ -666,6 +675,7 @@ Display 'LCM-162'
 #Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
+Display 'BWCT'
 #Display 'Image'
 
 #Layout  'Default'

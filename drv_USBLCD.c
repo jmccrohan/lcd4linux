@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.15 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.16 2004/09/24 21:41:00 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.16  2004/09/24 21:41:00  reinelt
+ * new driver for the BWCT USB LCD interface board.
+ *
  * Revision 1.15  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -187,7 +190,15 @@ static void drv_UL_clear (void)
 
 static void drv_UL_write (const int row, const int col, const char *data, int len)
 {
-  int pos = (row%2)*64 + (row/2)*20 + col;
+  int pos;
+  
+  /* 16x4 Displays use a slightly different layout */
+  if (DCOLS==16 && DROWS==4) {
+    pos = (row%2)*64+(row/2)*16+col;
+  } else {  
+    pos = (row%2)*64+(row/2)*20+col;
+  }
+
   drv_UL_command (0x80|pos);
 
   while (len--) {

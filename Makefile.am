@@ -58,6 +58,7 @@ drv_generic_serial.h        \
 drv_generic_parport.c       \
 drv_generic_parport.h       \
 drv_BeckmannEgle.c          \
+drv_BWCT.c                  \
 drv_Crystalfontz.c          \
 drv_Curses.c                \
 drv_Cwlinux.c               \

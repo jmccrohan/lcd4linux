@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.22 2004/08/29 13:03:41 reinelt Exp $
+/* $Id: drv.c,v 1.23 2004/09/24 21:41:00 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.23  2004/09/24 21:41:00  reinelt
+ * new driver for the BWCT USB LCD interface board.
+ *
  * Revision 1.22  2004/08/29 13:03:41  reinelt
  *
  * added RouterBoard driver
@@ -168,6 +171,7 @@
 #include "drv.h"
 
 extern DRIVER drv_BeckmannEgle;
+extern DRIVER drv_BWCT;
 extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
@@ -191,6 +195,9 @@ char *output=NULL;
 DRIVER *Driver[] = {
 #ifdef WITH_BECKMANNEGLE
   &drv_BeckmannEgle,
+#endif
+#ifdef WITH_BWCT
+  &drv_BWCT,
 #endif
 #ifdef WITH_CRYSTALFONTZ
   &drv_Crystalfontz,

@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.6 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.7 2004/09/24 21:41:00 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.7  2004/09/24 21:41:00  reinelt
+ * new driver for the BWCT USB LCD interface board.
+ *
  * Revision 1.6  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -81,7 +84,7 @@
 
 
 #define NUM_THREADS 16
-#define SHM_SIZE 256
+#define SHM_SIZE 4096
 
 typedef struct {
   int   delay;

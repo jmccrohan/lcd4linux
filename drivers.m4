@@ -9,9 +9,9 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]	
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
-  [                        BeckmannEgle, CrystalFontz, Curses, Cwlinux, HD44780,]
-  [                        M50530, MatrixOrbital, MilfordInstruments, NULL]
-  [                        PNG, PPM, RouterBoard, T6963, USBLCD, X11],
+  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
+  [                        HD44780, M50530, MatrixOrbital, MilfordInstruments,]
+  [                        NULL, PNG, PPM, RouterBoard, T6963, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -33,6 +33,7 @@ for driver in $drivers; do
    case "$driver" in
       all)
          BECKMANNEGLE="yes"
+         BWCT="yes"
          CRYSTALFONTZ="yes"
          CURSES="yes"
          CWLINUX="yes"
@@ -50,6 +51,9 @@ for driver in $drivers; do
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
+         ;;
+      BWCT)
+         BWCT=$val
          ;;
       CrystalFontz)
          CRYSTALFONTZ=$val
@@ -108,8 +112,21 @@ GRAPHIC="no"
 IMAGE="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
    DRIVERS="$DRIVERS drv_BeckmannEgle.o"
    AC_DEFINE(WITH_BECKMANNEGLE,1,[Beckmann&Egle driver])
+fi
+
+if test "$BWCT" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      DRIVERS="$DRIVERS drv_BWCT.o"
+      AC_DEFINE(WITH_BWCT,1,[BWCT driver])
+      DRVLIBS="$DRVLIBS -lusb"
+   else
+      AC_MSG_WARN(usb.h not found: BWCT driver disabled)
+   fi
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then

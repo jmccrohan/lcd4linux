@@ -184,6 +184,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the <usb.h> header file. */
+#undef HAVE_USB_H
+
 /* Define to 1 if you have the `vfork' function. */
 #undef HAVE_VFORK
 
@@ -310,6 +313,9 @@
 
 /* Beckmann&Egle driver */
 #undef WITH_BECKMANNEGLE
+
+/* BWCT driver */
+#undef WITH_BWCT
 
 /* Crystalfontz driver */
 #undef WITH_CRYSTALFONTZ

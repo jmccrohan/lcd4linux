@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.74 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.75 2004/09/24 21:41:00 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.75  2004/09/24 21:41:00  reinelt
+ * new driver for the BWCT USB LCD interface board.
+ *
  * Revision 1.74  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -384,10 +387,9 @@
 static char *release   = "LCD4Linux " VERSION;
 static char *copyright = "Copyright 1999-2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
-static int got_signal=0;
-
-int tick, tack;
 extern char* output;
+
+int got_signal=0;
 
 
 static void usage(void)
