@@ -50,6 +50,7 @@ M50530.c \
 T6963.c \
 USBLCD.c \
 MatrixOrbital.c \
+MilfordInstruments.c \
 PalmPilot.c \
 Raster.c \
 SIN.c \

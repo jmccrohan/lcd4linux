@@ -249,6 +249,9 @@
 #undef WITH_MATRIXORBITAL
 
 /* junk */
+#undef WITH_MILINST
+
+/* junk */
 #undef WITH_PALMPILOT
 
 /* junk */

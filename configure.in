@@ -43,8 +43,8 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, CrystalFontz, Cwlinux, HD44780,]
-  [                        M50530, T6963, USBLCD, MatrixOrbital, PalmPilot]
-  [                        PNG, PPM, X11, Text],
+  [                        M50530, T6963, USBLCD, MatrixOrbital,]
+  [                        MilfordInstruments, PalmPilot, PNG, PPM, X11, Text],
   drivers=$withval, 
   drivers=all
 )
@@ -73,6 +73,7 @@ for driver in $drivers; do
          T6963="yes"
          USBLCD="yes"
          MATRIXORBITAL="yes"
+         MILINST="yes"
          PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
@@ -102,6 +103,9 @@ for driver in $drivers; do
          ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
+         ;;
+      MilfordInstruments)
+         MILINST=$val
          ;;
       PalmPilot)
          PALMPILOT=$val
@@ -176,6 +180,11 @@ fi
 if test "$MATRIXORBITAL" = "yes"; then
    DRIVERS="$DRIVERS MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[junk])
+fi
+
+if test "$MILINST" = "yes"; then
+   DRIVERS="$DRIVERS MilfordInstruments.o"
+   AC_DEFINE(WITH_MILINST,1,[junk])
 fi
 
 if test "$PALMPILOT" = "yes"; then

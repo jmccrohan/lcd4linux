@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.42 2003/09/10 03:48:23 reinelt Exp $
+/* $Id: display.c,v 1.43 2003/09/29 06:58:37 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.43  2003/09/29 06:58:37  reinelt
+ * new driver for Milford Instruments MI420 by Andy Baxter
+ *
  * Revision 1.42  2003/09/10 03:48:23  reinelt
  * Icons for M50530, new processing scheme (Ticks.Text...)
  *
@@ -238,6 +241,7 @@ extern LCD M50530[];
 extern LCD T6963[];
 extern LCD USBLCD[];
 extern LCD MatrixOrbital[];
+extern LCD MilfordInstruments[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
 extern LCD SIN[];
@@ -275,6 +279,9 @@ FAMILY Driver[] = {
 #ifdef WITH_MATRIXORBITAL
   { "Matrix Orbital", MatrixOrbital },
 #endif
+#ifdef WITH_MILINST
+  { "Milford Instruments", MilfordInstruments },
+#endif
 #ifdef WITH_PALMPILOT
   { "3Com Palm Pilot", PalmPilot },
 #endif
@@ -307,7 +314,7 @@ int lcd_list (void)
   printf ("available display drivers:");
   
   for (i=0; Driver[i].name; i++) {
-    printf ("\n   %-16s:", Driver[i].name);
+    printf ("\n   %-20s:", Driver[i].name);
     for (j=0; Driver[i].Model[j].name; j++) {
       printf (" %s", Driver[i].Model[j].name);
     }

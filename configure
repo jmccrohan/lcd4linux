@@ -873,8 +873,8 @@ Optional Packages:
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
                           BeckmannEgle, CrystalFontz, Cwlinux, HD44780,
-                          M50530, T6963, USBLCD, MatrixOrbital, PalmPilot
-                          PNG, PPM, X11, Text
+                          M50530, T6963, USBLCD, MatrixOrbital,
+                          MilfordInstruments, PalmPilot, PNG, PPM, X11, Text
 
 Some influential environment variables:
   CC          C compiler command
@@ -5334,6 +5334,7 @@ for driver in $drivers; do
          T6963="yes"
          USBLCD="yes"
          MATRIXORBITAL="yes"
+         MILINST="yes"
          PALMPILOT="yes"
          PNG="yes"
          PPM="yes"
@@ -5363,6 +5364,9 @@ for driver in $drivers; do
          ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
+         ;;
+      MilfordInstruments)
+         MILINST=$val
          ;;
       PalmPilot)
          PALMPILOT=$val
@@ -5470,6 +5474,15 @@ if test "$MATRIXORBITAL" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MATRIXORBITAL 1
+_ACEOF
+
+fi
+
+if test "$MILINST" = "yes"; then
+   DRIVERS="$DRIVERS MilfordInstruments.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_MILINST 1
 _ACEOF
 
 fi
