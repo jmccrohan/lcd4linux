@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.5 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: widget_text.c,v 1.6 2004/01/15 07:47:02 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,11 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.6  2004/01/15 07:47:02  reinelt
+ * debian/ postinst and watch added (did CVS forget about them?)
+ * evaluator: conditional expressions (a?b:c) added
+ * text widget nearly finished
+ *
  * Revision 1.5  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -75,43 +80,55 @@ void widget_text_scroll (void *Self)
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_TEXT *T = W->data;
   
-  int num, len, pad;
+  int num, len, width, pad;
   char *src, *dst;
 
-  src=T->value;
-  dst=T->buffer;
-  num=0;
-  len=strlen(T->value);
-
+  num   = 0;
+  len   = strlen(T->value);
+  width = T->width-strlen(T->preval)-strlen(T->postval);
+  if (width<0) width=0;
+  
   switch (T->align) {
   case ALIGN_LEFT:
     pad=0;
     break;
   case ALIGN_CENTER:
-    pad=(T->width - len)/2;  
+    pad=(width - len)/2;  
     if (pad<0) pad=0;
     break;
   case ALIGN_RIGHT:
-    pad=T->width - len; 
+    pad=width - len; 
     if (pad<0) pad=0;
     break;
   case ALIGN_MARQUEE:
-    pad=T->width - T->scroll;
+    pad=width - T->scroll;
     T->scroll++;
-    if (T->scroll >= T->width+len) T->scroll=0;
+    if (T->scroll >= width+len) T->scroll=0;
     break;
   default: // not reached 
     pad=0;
   }
   
+  dst=T->buffer;
+
+  // process prefix
+  src=T->preval;
+  while (num < T->width) {
+    if (*src=='\0') break;
+    *(dst++)=*(src++);
+    num++;
+  }
+  
+  src=T->value;
+
   // pad blanks on the beginning
-  while (pad>0) {
+  while (pad > 0 && num < T->width) {
     *(dst++)=' ';
     num++;
     pad--;
   }
   
-  // overread src (marquee)
+  // skip src chars (marquee)
   while (pad<0) {
     src++;
     pad++;
@@ -125,42 +142,52 @@ void widget_text_scroll (void *Self)
   }
   
   // pad blanks on the end
-  while (num < T->width) {
+  src=T->postval;
+  len=strlen(src);
+  while (num < T->width-len) {
     *(dst++)=' ';
     num++;
   }
+  
+  // process postfix
+  while (num < T->width) {
+    if (*src=='\0') break;
+    *(dst++)=*(src++);
+    num++;
+  }
+  
   *dst='\0';
   
   // finally, draw it!
   if (W->class->draw)
     W->class->draw(W);
 }
-  
+
 
 void widget_text_update (void *Self)
 {
   WIDGET      *W = (WIDGET*)Self;
   WIDGET_TEXT *T = W->data;
   RESULT result = {0, 0.0, NULL};
-  char *prefix, *postfix, *value;
+  char *preval, *postval, *value;
+  int update;
   
   // evaluate prefix
   if (T->prefix!=NULL && strlen(T->prefix)>0) {
     Eval(T->prefix, &result);
-    prefix=strdup(R2S(&result));
+    preval=strdup(R2S(&result));
     DelResult (&result);
   } else {
-    prefix=strdup("");
+    preval=strdup("");
   }
   
   // evaluate postfix
   if (T->postfix!=NULL && *(T->postfix)!='\0') {
-    debug ("Eval_postfix(%s)", T->postfix);
     Eval(T->postfix, &result);
-    postfix=strdup(R2S(&result));
+    postval=strdup(R2S(&result));
     DelResult (&result);
   } else {
-    postfix=strdup("");
+    postval=strdup("");
   }
   
   // evaluate expression
@@ -171,7 +198,8 @@ void widget_text_update (void *Self)
     value=strdup(R2S(&result));
   } else {
     double number=R2N(&result);
-    int width=T->width;
+    int width=T->width-strlen(preval)-strlen(postval);
+    if (width<0) width=0;
     int precision=T->precision;
     // print zero bytes so we can specify NULL as target 
     // and get the length of the resulting string
@@ -187,7 +215,6 @@ void widget_text_update (void *Self)
     }
     // number still doesn't fit: display '*****' 
     if (size>width) {
-      debug ("overflow");
       value=malloc(width+1);
       memset (value, '*', width);
       *(value+width)='\0';
@@ -196,25 +223,49 @@ void widget_text_update (void *Self)
       snprintf (value, size+1, "%.*f", precision, number);
     }
   }
-
+  
   DelResult (&result);
   
-  // has value changed?
+  update=0;
+  
+  // prefix changed?
+  if (T->preval == NULL || strcmp(T->preval, preval)!=0) {
+    update=1;
+    if (T->preval) free (T->preval); 
+    T->preval=preval;   
+    T->scroll=0; // reset marquee counter
+  } else {              
+    free (preval);      
+  }
+  
+  // postfix changed?
+  if (T->postval == NULL || strcmp(T->postval, postval)!=0) {
+    update=1;
+    if (T->postval) free (T->postval);
+    T->postval=postval;
+    T->scroll=0; // reset marquee counter
+  } else {
+    free (postval);
+  }
+  
+  // value changed?
   if (T->value == NULL || strcmp(T->value, value)!=0) {
-    // free old value
+    update=1;
     if (T->value) free (T->value);
     T->value=value;
-    // reset marquee counter
-    T->scroll=0;
+    T->scroll=0; // reset marquee counter
+  } else {
+    free (value);
+  }
+
+  // something has changed and should be updated
+  if (update) {
     // if there's a marquee scroller active, it has its own
     // update callback timer, so we do nothing here; otherwise
     // we simply call this scroll callback directly
     if (T->align!=ALIGN_MARQUEE) {
       widget_text_scroll (Self);
     }
-  } else {
-    // value is the same, so free our buffer
-    free (value);
   }
 
 }
@@ -235,8 +286,8 @@ int widget_text_init (WIDGET *Self)
   memset (T, 0, sizeof(WIDGET_TEXT));
 
   // get raw pre- and postfix (we evaluate it ourselves)
-  T->prefix  = cfg_get_raw (section, "prefix", NULL);
-  T->postfix = cfg_get_raw (section, "prefix", NULL);
+  T->prefix  = cfg_get_raw (section, "prefix",  NULL);
+  T->postfix = cfg_get_raw (section, "postfix", NULL);
 
   // get raw expression (we evaluate it ourselves)
   T->expression = cfg_get_raw (section, "expression",  "''");

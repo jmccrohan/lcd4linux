@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.7 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.8 2004/01/15 07:47:02 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.8  2004/01/15 07:47:02  reinelt
+ * debian/ postinst and watch added (did CVS forget about them?)
+ * evaluator: conditional expressions (a?b:c) added
+ * text widget nearly finished
+ *
  * Revision 1.7  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -443,12 +448,15 @@ static int drv_MO_start (char *section)
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
   
-  
-  // Fixme: get rid of this function
-  // drv_MO_clear(1);
-  // Fixme: where to init contrast?
-  drv_MO_contrast(160);
 
+  // Fixme: where to init contrast?
+  drv_MO_contrast(128);
+
+  if (PROTOCOL==2) 
+    drv_MO_write ("\376\130", 2);  // Clear Screen
+  else 
+    drv_MO_write ("\014", 1);  // Clear Screen
+  
   drv_MO_write ("\376B", 3);  // backlight on
   drv_MO_write ("\376K", 2);  // cursor off
   drv_MO_write ("\376T", 2);  // blink off

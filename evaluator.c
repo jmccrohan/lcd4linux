@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.8 2004/01/12 03:51:01 reinelt Exp $
+/* $Id: evaluator.c,v 1.9 2004/01/15 07:47:02 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,11 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.9  2004/01/15 07:47:02  reinelt
+ * debian/ postinst and watch added (did CVS forget about them?)
+ * evaluator: conditional expressions (a?b:c) added
+ * text widget nearly finished
+ *
  * Revision 1.8  2004/01/12 03:51:01  reinelt
  * evaluating the 'Variables' section in the config file
  *
@@ -133,7 +138,7 @@
 #define is_blank(c)  (c==' ' || c=='\t')
 #define is_number(c) (isdigit(c) || c=='.')
 #define is_name(c)   (isalnum(c) || c=='_')
-#define is_delim(c)  (strchr("+-*/%^().,;=<>!&|", c)!=NULL)
+#define is_delim(c)  (strchr("+-*/%^().,;:=<>?!&|", c)!=NULL)
 
 
 typedef struct {
@@ -469,6 +474,7 @@ static void Level08 (RESULT *result);
 static void Level09 (RESULT *result);
 static void Level10 (RESULT *result);
 static void Level11 (RESULT *result);
+static void Level12 (RESULT *result);
 
 
 
@@ -534,9 +540,9 @@ static void Parse (void)
 static void Level01 (RESULT *result)
 {
   do {
-    while (*Token==';') Parse();
+    while (Type==T_DELIMITER && *Token==';') Parse();
     Level02(result);
-  } while (*Token==';');
+  } while (Type==T_DELIMITER && *Token==';');
 }
 
 
@@ -550,7 +556,7 @@ static void Level02 (RESULT *result)
       name=strdup(Token);
       Parse();
       Parse();
-      if (*Token && *Token!=';') {
+      if (*Token && (Type!=T_DELIMITER || *Token!=';')) {
 	Level03(result);
 	SetVariable(name, result);
       } else {
@@ -564,17 +570,47 @@ static void Level02 (RESULT *result)
 }
 
 
-// logical 'or'
+// conditional expression a?b:c
 static void Level03 (RESULT *result)
 {
-  RESULT operand;
-  double value;
+  RESULT r_then = {0, 0.0, NULL};
+  RESULT r_else = {0, 0.0, NULL};
   
   Level04(result);
   
-  while(*Token=='|') {
+  while(Type==T_DELIMITER && *Token=='?') {
     Parse();
-    Level04 (&operand);
+    Level01 (&r_then);
+    if (Type==T_DELIMITER && *Token==':') {
+      Parse();
+      Level01 (&r_else);
+    } else {
+      ERROR(E_SYNTAX);
+    }
+    if (R2N(result)!=0.0) {
+      DelResult(result);
+      DelResult(&r_else);
+      *result=r_then;
+    } else {
+      DelResult(result);
+      DelResult(&r_then);
+      *result=r_else;
+    }
+  }
+}
+
+
+// logical 'or'
+static void Level04 (RESULT *result)
+{
+  RESULT operand = {0, 0.0, NULL};
+  double value;
+  
+  Level05(result);
+  
+  while(Type==T_DELIMITER && *Token=='|') {
+    Parse();
+    Level05 (&operand);
     value = (R2N(result)!=0.0) || (R2N(&operand)!=0.0);
     SetResult(&result, R_NUMBER, &value); 
   }
@@ -582,16 +618,16 @@ static void Level03 (RESULT *result)
 
 
 // logical 'and'
-static void Level04 (RESULT *result)
+static void Level05 (RESULT *result)
 {
   RESULT operand;
   double value;
   
-  Level05(result);
+  Level06(result);
   
-  while(*Token=='&') {
+  while(Type==T_DELIMITER && *Token=='&') {
     Parse();
-    Level05 (&operand);
+    Level06 (&operand);
     value = (R2N(result)!=0.0) && (R2N(&operand)!=0.0);
     SetResult(&result, R_NUMBER, &value); 
   }
@@ -599,17 +635,17 @@ static void Level04 (RESULT *result)
 
 
 // equal, not equal
-static void Level05 (RESULT *result)
+static void Level06 (RESULT *result)
 {
   char operator;
   RESULT operand = {0, 0.0, NULL};
   double value;
   
-  Level06 (result);
+  Level07 (result);
   
-  if (((operator=Token[0])=='=' || operator=='!') && Token[1]=='=') {
+  if (Type==T_DELIMITER && ((operator=Token[0])=='=' || operator=='!') && Token[1]=='=') {
     Parse();
-    Level06 (&operand);
+    Level07 (&operand);
     if (operator=='=')
       value = (R2N(result) == R2N(&operand));
     else
@@ -620,19 +656,19 @@ static void Level05 (RESULT *result)
 
 
 // relational operators
-static void Level06 (RESULT *result)
+static void Level07 (RESULT *result)
 {
   char operator[2];
   RESULT operand = {0, 0.0, NULL};
   double value;
   
-  Level07 (result);
+  Level08 (result);
   
-  if (*Token=='<' || *Token=='>') {
+  if (Type==T_DELIMITER && (*Token=='<' || *Token=='>')) {
     operator[0]=Token[0];
     operator[1]=Token[1];
     Parse();
-    Level07 (&operand);
+    Level08 (&operand);
     if (operator[0]=='<')
       if (operator[1]=='=')
 	value = (R2N(result) <= R2N(&operand));
@@ -649,17 +685,17 @@ static void Level06 (RESULT *result)
 
 
 // addition, subtraction, concatenation
-static void Level07 (RESULT *result)
+static void Level08 (RESULT *result)
 {
   char operator;
   RESULT operand = {0, 0.0, NULL};
   double value;
   
-  Level08(result);
+  Level09(result);
   
-  while((operator=*Token)=='+' || operator=='-' || operator=='.') {
+  while(Type==T_DELIMITER && ((operator=*Token)=='+' || operator=='-' || operator=='.')) {
     Parse();
-    Level08 (&operand);
+    Level09 (&operand);
     if (operator=='+') {
       value = (R2N(result) + R2N(&operand));
       SetResult(&result, R_NUMBER, &value); 
@@ -680,17 +716,17 @@ static void Level07 (RESULT *result)
 
 
 // multiplication, division, modulo
-static void Level08 (RESULT *result)
+static void Level09 (RESULT *result)
 {
   char operator;
   RESULT operand = {0, 0.0, NULL};
   double value;
   
-  Level09 (result);
+  Level10 (result);
   
-  while((operator=*Token)=='*' || operator=='/' || operator=='%') {
+  while(Type==T_DELIMITER && ((operator=*Token)=='*' || operator=='/' || operator=='%')) {
     Parse();
-    Level09(&operand);
+    Level10(&operand);
     if (operator == '*') {
       value = (R2N(result) * R2N(&operand));
     } else if (operator == '/') {
@@ -706,16 +742,16 @@ static void Level08 (RESULT *result)
 
 
 // x^y
-static void Level09 (RESULT *result)
+static void Level10 (RESULT *result)
 {
   RESULT exponent = {0, 0.0, NULL};
   double value;
 
-  Level10 (result);
+  Level11 (result);
   
-  if (*Token == '^') {
+  if (Type==T_DELIMITER && *Token == '^') {
     Parse();
-    Level10 (&exponent);
+    Level11 (&exponent);
     value = pow(R2N(result), R2N(&exponent));
     SetResult(&result, R_NUMBER, &value); 
   }
@@ -723,17 +759,17 @@ static void Level09 (RESULT *result)
 
 
 // unary + or - signs or logical 'not'
-static void Level10 (RESULT *result)
+static void Level11 (RESULT *result)
 {
   char sign=0;
   double value;
   
-  if (*Token=='+' || *Token=='-' || *Token=='!') {
+  if (Type==T_DELIMITER && (*Token=='+' || *Token=='-' || *Token=='!')) {
     sign=*Token;
     Parse();
   }
 
-  Level11 (result);
+  Level12 (result);
   
   if (sign == '-') {
     value = -R2N(result);
@@ -747,7 +783,7 @@ static void Level10 (RESULT *result)
 
 
 // literal numbers, variables, functions
-static void Level11 (RESULT *result)
+static void Level12 (RESULT *result)
 {
   RESULT *param[10];
   

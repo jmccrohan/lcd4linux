@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.1 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: widget_text.h,v 1.2 2004/01/15 07:47:03 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.2  2004/01/15 07:47:03  reinelt
+ * debian/ postinst and watch added (did CVS forget about them?)
+ * evaluator: conditional expressions (a?b:c) added
+ * text widget nearly finished
+ *
  * Revision 1.1  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -38,8 +43,10 @@
 typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } ALIGN;
 
 typedef struct WIDGET_TEXT {
-  char *prefix;      // label on the left side
-  char *postfix;     // label on the right side
+  char *prefix;      // expression for label on the left side
+  char *preval;      // value for label on the left side
+  char *postfix;     // expression for label on the right side
+  char *postval;     // value for label on the right side
   char *expression;  // expression that delivers the value
   char *value;       // evaluated value from expression
   char *buffer;      // string with 'width+1' bytes allocated 
