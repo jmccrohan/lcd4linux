@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.1 2004/01/09 17:03:07 reinelt Exp $
+/* $Id: drv.c,v 1.2 2004/01/10 10:20:22 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.2  2004/01/10 10:20:22  reinelt
+ * new MatrixOrbital changes
+ *
  * Revision 1.1  2004/01/09 17:03:07  reinelt
  * initiated transfer to new driver architecture
  * new file 'drv.c' will someday replace 'display.c'
@@ -144,7 +147,7 @@ DRIVER *Driver[] = {
 };
 
 
-static DRIVER *Lcd = NULL;
+static DRIVER *Drv = NULL;
 
 
 int drv_list (void)
@@ -167,9 +170,9 @@ int drv_init (char *section, char *driver)
   int i;
   for (i=0; Driver[i]; i++) {
     if (strcmp (Driver[i]->name, driver)==0) {
-      Lcd=Driver[i];
-      if (Lcd->init==NULL) return 0;
-      return Lcd->init(Lcd);
+      Drv=Driver[i];
+      if (Drv->init==NULL) return 0;
+      return Drv->init(section);
     }
   }
   error ("drv_init(%s) failed: no such driver", driver);
@@ -179,6 +182,6 @@ int drv_init (char *section, char *driver)
 
 int drv_quit (void)
 {
-  if (Lcd->quit==NULL) return 0;
-  return Lcd->quit();
+  if (Drv->quit==NULL) return 0;
+  return Drv->quit();
 }
