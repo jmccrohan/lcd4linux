@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.44 2005/01/29 09:30:56 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.45 2005/03/25 15:44:43 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.45  2005/03/25 15:44:43  reinelt
+ * HD44780 Backlight fixed (thanks to geronet)
+ *
  * Revision 1.44  2005/01/29 09:30:56  reinelt
  * minor HD44780 cleanups
  *
@@ -951,7 +954,7 @@ static int drv_HD_backlight (int backlight)
   if (backlight < 0) backlight = 0;
   if (backlight > 1) backlight = 1;
 
-  drv_generic_parport_control (SIGNAL_BACKLIGHT, backlight);
+  drv_generic_parport_control (SIGNAL_BACKLIGHT, backlight ? SIGNAL_BACKLIGHT : 0);
 
   return backlight;
 }
