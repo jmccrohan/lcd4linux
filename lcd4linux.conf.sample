@@ -8,6 +8,14 @@ Display LK204 {
 }
 
 
+Display MI240 {
+    Driver 'MilfordInstruments'
+    Model 'MI240'
+    Port '/dev/tts/0'
+    Speed 19200
+}
+
+
 Display CF631 {
     Driver 'Crystalfontz'
     Model '631'
@@ -482,6 +490,7 @@ Layout testMySQL {
 
 
 #Display 'LK204'
+Display 'MI240'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
 #Display 'CF631'
@@ -490,10 +499,10 @@ Layout testMySQL {
 #Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'
-Display 'Image'
+#Display 'Image'
 
 Layout  'Default'
-#ayout  'L16x2'
+#Layout 'L16x2'
 #Layout 'Test'
 
 

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.11 2004/05/25 19:54:15 reinelt Exp $
+/* $Id: drv.c,v 1.12 2004/05/26 05:03:27 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.12  2004/05/26 05:03:27  reinelt
+ *
+ * MilfordInstruments driver ported
+ *
  * Revision 1.11  2004/05/25 19:54:15  reinelt
  *
  * 'make distcheck' bugs fixed
@@ -137,9 +141,6 @@ extern DRIVER drv_Text;
 char *output=NULL;
 
 DRIVER *Driver[] = {
-#ifdef WITH_MATRIXORBITAL
-  &drv_MatrixOrbital,
-#endif
   /* Fixme
      #ifdef WITH_BECKMANNEGLE
      &BeckmannEgle,
@@ -160,17 +161,18 @@ DRIVER *Driver[] = {
 #ifdef WITH_M50530
   &drv_M50530,
 #endif
+#ifdef WITH_MATRIXORBITAL
+  &drv_MatrixOrbital,
+#endif
+#ifdef WITH_MILINST
+  &drv_MilfordInstruments,
+#endif
 #ifdef WITH_T6963
   &drv_T6963,
 #endif
 #ifdef WITH_USBLCD
   &drv_USBLCD,
 #endif
-  /* Fixme
-     #ifdef WITH_MILINST
-     &MilfordInstruments,
-     #endif
-  */
 #ifdef WITH_X11
   &drv_X11,
 #endif

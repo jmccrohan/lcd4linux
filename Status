@@ -7,6 +7,7 @@ Lcd4Linux NextGeneration porting status
              HD44780 -> Ported (Text,Bar,Icon) + soft brightness,'busy flag',gpo [soft contrast]
               M50530 -> Ported (Text,Bar,Icon) + gpo
        MatrixOrbital -> Ported (Text,Bar,Icon) + blacklight,contrast,gpo,pwm,rpm
+  MilfordInstruments -> Ported (Text,Bar,Icon)
               T6963* -> Ported (Text,Bar,Icon)
               USBLCD -> Ported (Text,Bar,Icon)
             XWindow* -> Ported (Text,Bar,Icon) [gnome applet ?]
@@ -14,7 +15,6 @@ Lcd4Linux NextGeneration porting status
 
         BeckmannEgle ->     
               Curses ->    
-  MilfordInstruments ->
 
            PalmPilot -> Obsolete
                  SIN -> Obsolete

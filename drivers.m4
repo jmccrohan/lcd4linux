@@ -150,22 +150,6 @@ if test "$M50530" = "yes"; then
    AC_DEFINE(WITH_M50530,1,[M50530 driver])
 fi
 
-if test "$T6963" = "yes"; then
-   GRAPHIC="yes"
-   PARPORT="yes"
-#  DRIVERS="$DRIVERS drv_T6963.lo"
-   DRIVERS="$DRIVERS drv_T6963.o"
-   AC_DEFINE(WITH_T6963,1,[T6963 driver])
-fi
-
-if test "$USBLCD" = "yes"; then
-   TEXT="yes"
-   SERIAL="yes"
-#  DRIVERS="$DRIVERS drv_USBLCD.lo"
-   DRIVERS="$DRIVERS drv_USBLCD.o"
-   AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
-fi
-
 if test "$MATRIXORBITAL" = "yes"; then
    SERIAL="yes"
 #  DRIVERS="$DRIVERS drv_MatrixOrbital.lo"
@@ -174,8 +158,8 @@ if test "$MATRIXORBITAL" = "yes"; then
 fi
 
 if test "$MILINST" = "yes"; then
-#  DRIVERS="$DRIVERS MilfordInstruments.lo"
-#  DRIVERS="$DRIVERS MilfordInstruments.o"
+#  DRIVERS="$DRIVERS drv_MilfordInstruments.lo"
+   DRIVERS="$DRIVERS drv_MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
 fi
 
@@ -199,6 +183,22 @@ fi
 if test "$IMAGE" = "yes"; then
 #  DRIVERS="$DRIVERS drv_Image.lo"
    DRIVERS="$DRIVERS drv_Image.o"
+fi
+
+if test "$T6963" = "yes"; then
+   GRAPHIC="yes"
+   PARPORT="yes"
+#  DRIVERS="$DRIVERS drv_T6963.lo"
+   DRIVERS="$DRIVERS drv_T6963.o"
+   AC_DEFINE(WITH_T6963,1,[T6963 driver])
+fi
+
+if test "$USBLCD" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+#  DRIVERS="$DRIVERS drv_USBLCD.lo"
+   DRIVERS="$DRIVERS drv_USBLCD.o"
+   AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
 fi
 
 if test "$X11" = "yes"; then
