@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.7 2004/05/27 03:39:47 reinelt Exp $
+/* $Id: plugin_imon.c,v 1.8 2004/05/27 06:29:29 nicowallmeier Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.8  2004/05/27 06:29:29  nicowallmeier
+ * Moved variables to Plugin:imon / Plugin:telmon
+ *
  * Revision 1.7  2004/05/27 03:39:47  reinelt
  *
  * changed function naming scheme to plugin::function
@@ -411,7 +414,7 @@ static void my_imon (RESULT *result, RESULT *arg1){
 int plugin_init_imon (void){
  char telmon='\1',imon='\1';	
 
- char *s=cfg_get ("Telmon", "Host","127.0.0.1");
+ char *s=cfg_get ("Plugin:Telmon", "Host","127.0.0.1");
  if (*s=='\0') {
   error ("[Telmon] no 'Host' entry in %s", cfg_source());
   telmon='\0';
@@ -419,16 +422,16 @@ int plugin_init_imon (void){
  strcpy(thost,s);
  free(s);
   
- if ((telmon=='\01') && (cfg_number("Telmon", "Port",5001,1,65536,&tport)<0)){
+ if ((telmon=='\01') && (cfg_number("Plugin:Telmon", "Port",5001,1,65536,&tport)<0)){
   error ("[Telmon] no valid port definition");
   telmon='\0';	
  }
  
- s=cfg_get ("Telmon", "Phonebook","/etc/phonebook");
+ s=cfg_get ("Plugin:Telmon", "Phonebook","/etc/phonebook");
  strcpy(phoneb,s);
  free(s);
  
- s=cfg_get ("Imon", "Host", "127.0.0.1");
+ s=cfg_get ("Plugin:Imon", "Host", "127.0.0.1");
  if (*s=='\0') {
   error ("[Imon] no 'Host' entry in %s", cfg_source());
   imon='\0';
@@ -436,12 +439,12 @@ int plugin_init_imon (void){
  strcpy(ihost,s); 
  free(s);
  
- if ((imon=='\01') && (cfg_number("Imon", "Port",5000,1,65536,&iport)<0)){
+ if ((imon=='\01') && (cfg_number("Plugin:Imon", "Port",5000,1,65536,&iport)<0)){
   error ("[Imon] no valid port definition");
   imon='\0';	
  }
  
- s=cfg_get ("Imon", "Pass", "");
+ s=cfg_get ("Plugin:Imon", "Pass", "");
  strcpy(ipass,s);
  free(s);
 	
