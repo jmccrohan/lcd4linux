@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.13 2000/03/26 12:55:03 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.14 2000/03/26 18:46:28 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.14  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.13  2000/03/26 12:55:03  reinelt
  *
  * enhancements to the PPM driver
@@ -105,7 +110,7 @@ static void usage(void)
 void main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
-  char *display;
+  char *driver;
   int c, smooth;
 
   while ((c=getopt (argc, argv, "hlf:o:"))!=EOF) {
@@ -143,12 +148,12 @@ void main (int argc, char *argv[])
   if (cfg_read (cfg)==-1)
     exit (1);
   
-  display=cfg_get("display");
-  if (display==NULL || *display=='\0') {
+  driver=cfg_get("display");
+  if (driver==NULL || *driver=='\0') {
     fprintf (stderr, "%s: missing 'display' entry!\n", cfg_file());
     exit (1);
   }
-  if (lcd_init(display)==-1) {
+  if (lcd_init(driver)==-1) {
     exit (1);
   }
 

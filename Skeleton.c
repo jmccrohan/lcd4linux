@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.3 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: Skeleton.c,v 1.4 2000/03/26 18:46:28 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.4  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.3  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -41,7 +46,7 @@
  *
  * exported fuctions:
  *
- * struct DISPLAY Skeleton[]
+ * struct LCD Skeleton[]
  *
  */
 
@@ -51,16 +56,16 @@
 #include "cfg.h"
 #include "display.h"
 
-static DISPLAY Display;
+static LCD Lcd;
 
 int Skel_clear (void)
 {
   return 0;
 }
 
-int Skel_init (DISPLAY *Self)
+int Skel_init (LCD *Self)
 {
-  Display=*Self;
+  Lcd=*Self;
 
   fprintf (stderr, "Skeleton: This driver does not drive anything!");
   return -1;
@@ -85,7 +90,7 @@ int Skel_flush (void)
 }
 
 
-DISPLAY Skeleton[] = {
+LCD Skeleton[] = {
   { "Skeleton", 4, 20, 5, 8, BAR_L | BAR_R, Skel_init, Skel_clear, Skel_put, Skel_bar, Skel_flush },
   { NULL }
 };

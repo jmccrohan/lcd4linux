@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.11 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.12 2000/03/26 18:46:28 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.12  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.11  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -65,7 +70,7 @@
  *
  * exported fuctions:
  *
- * struct DISPLAY MatrixOrbital[]
+ * struct LCD MatrixOrbital[]
  *
  */
 
@@ -86,7 +91,7 @@
 #define CHARS 8
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 )
 
-static DISPLAY Display;
+static LCD Lcd;
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
@@ -172,8 +177,8 @@ static void MO_process_bars (void)
   }
   nSegment=i;
   
-  for (row=0; row<Display.rows; row++) {
-    for (col=0; col<Display.cols; col++) {
+  for (row=0; row<Lcd.rows; row++) {
+    for (col=0; col<Lcd.cols; col++) {
       if (Bar[row][col].type==0) continue;
       for (i=0; i<nSegment; i++) {
 	if (Segment[i].type & Bar[row][col].type &&
@@ -263,8 +268,8 @@ static void MO_compact_bars (void)
 	error[i][pack_i]=error[i][nSegment];
       }
       
-      for (r=0; r<Display.rows; r++) {
-	for (c=0; c<Display.cols; c++) {
+      for (r=0; r<Lcd.rows; r++) {
+	for (c=0; c<Lcd.cols; c++) {
 	  if (Bar[r][c].segment==pack_i)
 	    Bar[r][c].segment=pack_j;
 	  if (Bar[r][c].segment==nSegment)
@@ -331,8 +336,8 @@ int MO_clear (void)
 {
   int row, col;
 
-  for (row=0; row<Display.rows; row++) {
-    for (col=0; col<Display.cols; col++) {
+  for (row=0; row<Lcd.rows; row++) {
+    for (col=0; col<Lcd.cols; col++) {
       Txt[row][col]='\t';
       Bar[row][col].len1=-1;
       Bar[row][col].len2=-1;
@@ -344,12 +349,12 @@ int MO_clear (void)
   return 0;
 }
 
-int MO_init (DISPLAY *Self)
+int MO_init (LCD *Self)
 {
   char *port;
   char *speed;
 
-  Display=*Self;
+  Lcd=*Self;
 
   if (Port) {
     free (Port);
@@ -404,7 +409,7 @@ int MO_put (int row, int col, char *text)
   char *p=&Txt[row][col];
   char *t=text;
   
-  while (*t && col++<=Display.cols) {
+  while (*t && col++<=Lcd.cols) {
     *p++=*t++;
   }
   return 0;
@@ -427,7 +432,7 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
     rev=1;
     
   case BAR_R:
-    while (max>0 && col<=Display.cols) {
+    while (max>0 && col<=Lcd.cols) {
       Bar[row][col].type=type;
       Bar[row][col].segment=-1;
       if (len1>=XRES) {
@@ -455,7 +460,7 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
     rev=1;
     
   case BAR_D:
-    while (max>0 && row<=Display.rows) {
+    while (max>0 && row<=Lcd.rows) {
       Bar[row][col].type=type;
       Bar[row][col].segment=-1;
       if (len1>=YRES) {
@@ -495,19 +500,19 @@ int MO_flush (void)
     Segment[s].used=0;
   }
 
-  for (row=0; row<Display.rows; row++) {
+  for (row=0; row<Lcd.rows; row++) {
     buffer[3]=row+1;
-    for (col=0; col<Display.cols; col++) {
+    for (col=0; col<Lcd.cols; col++) {
       s=Bar[row][col].segment;
       if (s!=-1) {
 	Segment[s].used=1;
 	Txt[row][col]=Segment[s].ascii;
       }
     }
-    for (col=0; col<Display.cols; col++) {
+    for (col=0; col<Lcd.cols; col++) {
       if (Txt[row][col]=='\t') continue;
       buffer[2]=col+1;
-      for (p=buffer+4; col<Display.cols; col++, p++) {
+      for (p=buffer+4; col<Lcd.cols; col++, p++) {
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];
       }
@@ -518,7 +523,7 @@ int MO_flush (void)
 }
 
 
-DISPLAY MatrixOrbital[] = {
+LCD MatrixOrbital[] = {
   { "LCD0821", 2,  8, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
   { "LCD1621", 2, 16, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },
   { "LCD2021", 2, 20, XRES, YRES, BARS, MO_init, MO_clear, MO_put, MO_bar, MO_flush },

@@ -1,5 +1,5 @@
 #
-# $Id: README.Drivers,v 1.1 2000/03/19 08:41:28 reinelt Exp $
+# $Id: README.Drivers,v 1.2 2000/03/26 18:46:28 reinelt Exp $
 #
 
 How to write new display drivers for lcd4linux
@@ -16,18 +16,18 @@ this guidelines:
 * create one (or more) unique display names (your driver will be selected by
   this name in the 'Display'-line of lcd4linux.conf).
 
-* include "display.h" in your driver, to get the DISPLAY structure and various 
+* include "display.h" in your driver, to get the LCD structure and various 
   BAR_ definitions
 
 * include "cfg.h" if you need to access settings in the config file.
 
-* create a DISPLAY table at the bottom of your driver, and fill it with the
+* create a LCD table at the bottom of your driver, and fill it with the
   appropriate values. Take care that you specify the correct bar capabilities
   of your display or driver!
 
-* edit display.c and create a reference to your DISPLAY table:
+* edit display.c and create a reference to your LCD table:
 
-     external DISPLAY YourDriver[];
+     external LCD YourDriver[];
 
 * extend the FAMILY table in display.c with your driver:
 

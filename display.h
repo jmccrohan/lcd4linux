@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.9 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: display.h,v 1.10 2000/03/26 18:46:28 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.10  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.9  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -73,27 +78,27 @@
 #define BAR_V (BAR_U | BAR_D)
 #define BAR_HV (BAR_H | BAR_V)
 
-typedef struct DISPLAY {
+typedef struct LCD {
   char *name;
   int rows;
   int cols;
   int xres;
   int yres;
   int bars;
-  int (*init) (struct DISPLAY *Self);
+  int (*init) (struct LCD *Self);
   int (*clear) (void);
   int (*put) (int x, int y, char *text);
   int (*bar) (int type, int x, int y, int max, int len1, int len2);
   int (*flush) (void);
-} DISPLAY;
+} LCD;
 
 typedef struct {
   char *name;
-  DISPLAY *Display;
+  LCD *Model;
 } FAMILY;
 
 int lcd_list (void);
-int lcd_init (char *display);
+int lcd_init (char *driver);
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars);
 int lcd_clear (void);
 int lcd_put (int row, int col, char *text);

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.4 2000/03/26 12:55:03 reinelt Exp $
+/* $Id: Raster.c,v 1.5 2000/03/26 18:46:28 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.5  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.4  2000/03/26 12:55:03  reinelt
  *
  * enhancements to the PPM driver
@@ -45,7 +50,7 @@
  *
  * exported fuctions:
  *
- * struct DISPLAY Raster[]
+ * struct LCD Raster[]
  *
  */
 
@@ -64,7 +69,7 @@
 
 #define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
 
-static DISPLAY Display;
+static LCD Lcd;
 
 static int pixel=-1;
 static int pgap=0;
@@ -89,8 +94,8 @@ int Raster_flush (void)
   char path[256], tmp[256], buffer[256];
   int fd;
 
-  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*pixel+(Display.cols*Display.xres-1)*pgap;
-  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*pixel+(Display.rows*Display.yres-1)*pgap;
+  xsize=2*border+(Lcd.cols-1)*cgap+Lcd.cols*Lcd.xres*pixel+(Lcd.cols*Lcd.xres-1)*pgap;
+  ysize=2*border+(Lcd.rows-1)*rgap+Lcd.rows*Lcd.yres*pixel+(Lcd.rows*Lcd.yres-1)*pgap;
   
   if (bitbuf==NULL) {
     if ((bitbuf=malloc(xsize*ysize*sizeof(*bitbuf)))==NULL) {
@@ -108,14 +113,14 @@ int Raster_flush (void)
   
   memset (bitbuf, 0, xsize*ysize*sizeof(*bitbuf));
   
-  for (row=0; row<Display.rows*Display.yres; row++) {
-    int y=border+(row/Display.yres)*rgap+row*(pixel+pgap);
-    for (col=0; col<Display.cols*Display.xres; col++) {
-      int x=border+(col/Display.xres)*cgap+col*(pixel+pgap);
+  for (row=0; row<Lcd.rows*Lcd.yres; row++) {
+    int y=border+(row/Lcd.yres)*rgap+row*(pixel+pgap);
+    for (col=0; col<Lcd.cols*Lcd.xres; col++) {
+      int x=border+(col/Lcd.xres)*cgap+col*(pixel+pgap);
       int a, b;
       for (a=0; a<pixel; a++)
 	for (b=0; b<pixel; b++)
-	  bitbuf[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
+	  bitbuf[y*xsize+x+a*xsize+b]=Pixmap[row*Lcd.cols*Lcd.xres+col]+1;
     }
   }
   
@@ -179,7 +184,7 @@ int Raster_clear (void)
   return 0;
 }
 
-int Raster_init (DISPLAY *Self)
+int Raster_init (LCD *Self)
 {
   char *s;
   int rows=-1, cols=-1;
@@ -225,7 +230,7 @@ int Raster_init (DISPLAY *Self)
   Self->cols=cols;
   Self->xres=xres;
   Self->yres=yres;
-  Display=*Self;
+  Lcd=*Self;
 
   pix_clear();
   return 0;
@@ -242,7 +247,7 @@ int Raster_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
-DISPLAY Raster[] = {
+LCD Raster[] = {
   { "PPM", 0, 0, 0, 0, BARS, Raster_init, Raster_clear, Raster_put, Raster_bar, Raster_flush },
   { NULL }
 };

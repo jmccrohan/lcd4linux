@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.4 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: pixmap.c,v 1.5 2000/03/26 18:46:28 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.5  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.4  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -72,14 +77,14 @@ static int COLS=0;
 static int XRES=0;
 static int YRES=0;
 
-unsigned char *Pixmap=NULL;
+unsigned char *LCDpixmap=NULL;
 
 int pix_clear(void)
 {
   int i;
 
   for (i=0; i<ROWS*COLS; i++) {
-    Pixmap[i]=0;
+    LCDpixmap[i]=0;
   }
 
   return 0;
@@ -90,15 +95,15 @@ int pix_init (int rows, int cols, int xres, int yres)
   if (rows<1 || cols<1 || xres<1 || yres<1) 
     return -1;
   
-  if (Pixmap) 
-    free (Pixmap);
+  if (LCDpixmap) 
+    free (LCDpixmap);
 
   XRES=xres;
   YRES=yres;
   ROWS=rows*yres;
   COLS=cols*xres;
 
-  if ((Pixmap=malloc (ROWS*COLS*sizeof(unsigned char)))==NULL)
+  if ((LCDpixmap=malloc (ROWS*COLS*sizeof(unsigned char)))==NULL)
     return -1;
     
   return pix_clear();
@@ -113,11 +118,13 @@ int pix_put (int row, int col, char *text)
   
   while (*text && col<COLS) {
     c=*(unsigned char*)text;
-    for (y=0; y<YRES; y++) {
-      mask=1<<XRES;
-      for (x=0; x<XRES; x++) {
-	mask>>=1;
-	Pixmap[(row+y)*COLS+col+x]=Fontmap[c][y]&mask?1:0;
+    if (c!='\t') {
+      for (y=0; y<YRES; y++) {
+	mask=1<<XRES;
+	for (x=0; x<XRES; x++) {
+	  mask>>=1;
+	  LCDpixmap[(row+y)*COLS+col+x]=Fontmap[c][y]&mask?1:0;
+	}
       }
     }
     col+=XRES;
@@ -159,7 +166,7 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     for (y=0; y<YRES; y++) {
       len=y<YRES/2?len1:len2;
       for (x=0; x<max; x++) {
-	Pixmap[(row+y)*COLS+col+x]=x<len?!rev:rev;
+	LCDpixmap[(row+y)*COLS+col+x]=x<len?!rev:rev;
       }
     }
     break;
@@ -173,7 +180,7 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     for (y=0; y<max; y++) {
       for (x=0; x<XRES; x++) {
 	len=x<XRES/2?len1:len2;
-  	Pixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
+  	LCDpixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
       }
     }
     break;

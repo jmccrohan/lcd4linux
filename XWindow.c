@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.4 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: XWindow.c,v 1.5 2000/03/26 18:46:28 reinelt Exp $
  *
  * driver for X11
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.5  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.4  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -47,7 +52,7 @@
  *
  * exported fuctions:
  *
- * struct DISPLAY XWindow[]
+ * struct LCD XWindow[]
  *
  */
 
@@ -71,7 +76,7 @@ static int foreground=0;
 static int halfground=0;
 static int background=0;
 
-static DISPLAY Display;
+static LCD Lcd;
 
 int X_flush (void)
 {
@@ -79,22 +84,22 @@ int X_flush (void)
   unsigned char *buffer;
   unsigned char R[3], G[3], B[3];
   
-  xsize=2*border+(Display.cols-1)*cgap+Display.cols*Display.xres*(pixel+pgap);
-  ysize=2*border+(Display.rows-1)*rgap+Display.rows*Display.yres*(pixel+pgap);
+  xsize=2*border+(Lcd.cols-1)*cgap+Lcd.cols*Lcd.xres*(pixel+pgap);
+  ysize=2*border+(Lcd.rows-1)*rgap+Lcd.rows*Lcd.yres*(pixel+pgap);
   
   if ((buffer=malloc(xsize*ysize*sizeof(*buffer)))==NULL)
     return -1;
 
   memset (buffer, 0, xsize*ysize*sizeof(*buffer));
   
-  for (row=0; row<Display.rows*Display.yres; row++) {
-    int y=border+(row/Display.yres)*rgap+row*(pixel+pgap);
-    for (col=0; col<Display.cols*Display.xres; col++) {
-      int x=border+(col/Display.xres)*cgap+col*(pixel+pgap);
+  for (row=0; row<Lcd.rows*Lcd.yres; row++) {
+    int y=border+(row/Lcd.yres)*rgap+row*(pixel+pgap);
+    for (col=0; col<Lcd.cols*Lcd.xres; col++) {
+      int x=border+(col/Lcd.xres)*cgap+col*(pixel+pgap);
       int a, b;
       for (a=0; a<pixel; a++)
 	for (b=0; b<pixel; b++)
-	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Display.cols*Display.xres+col]+1;
+	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Lcd.cols*Lcd.xres+col]+1;
     }
   }
   
@@ -131,7 +136,7 @@ int X_clear (void)
   return 0;
 }
 
-int X_init (DISPLAY *Self)
+int X_init (LCD *Self)
 {
   char *s;
   int rows=-1, cols=-1;
@@ -172,7 +177,7 @@ int X_init (DISPLAY *Self)
   Self->cols=cols;
   Self->xres=xres;
   Self->yres=yres;
-  Display=*Self;
+  Lcd=*Self;
 
   pix_clear();
   return 0;
@@ -189,7 +194,7 @@ int X_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
-DISPLAY XWindow[] = {
+LCD XWindow[] = {
   { "X11", 0, 0, 0, 0, BARS, X_init, X_clear, X_put, X_bar, X_flush },
   { NULL }
 };

@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.11 2000/03/25 05:50:43 reinelt Exp $
+/* $Id: display.c,v 1.12 2000/03/26 18:46:28 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.12  2000/03/26 18:46:28  reinelt
+ *
+ * bug in pixmap.c that leaded to empty bars fixed
+ * name conflicts with X11 resolved
+ *
  * Revision 1.11  2000/03/25 05:50:43  reinelt
  *
  * memory leak in Raster_flush closed
@@ -76,7 +81,7 @@
  * lcd_list (void)
  *   lists all available drivers to stdout
  *
- * lcd_init (char *display)
+ * lcd_init (char *driver)
  *    initializes the named driver
  *
  * lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
@@ -103,21 +108,21 @@
 #include "cfg.h"
 #include "display.h"
 
-extern DISPLAY Skeleton[];
-extern DISPLAY MatrixOrbital[];
-extern DISPLAY Raster[];
-extern DISPLAY XWindow[];
+extern LCD Skeleton[];
+extern LCD MatrixOrbital[];
+extern LCD Raster[];
+extern LCD XWindow[];
 
 FAMILY Driver[] = {
   { "Skeleton",        Skeleton },
   { "Matrix Orbital",  MatrixOrbital },
-  { "Raster", Raster },
+  { "Raster",          Raster },
   { "X Window System", XWindow },
   { NULL }
 };
 
 
-static DISPLAY *Display = NULL;
+static LCD *Lcd = NULL;
 
 int lcd_list (void)
 {
@@ -127,68 +132,68 @@ int lcd_list (void)
   
   for (i=0; Driver[i].name; i++) {
     printf ("\n   %-16s:", Driver[i].name);
-    for (j=0; Driver[i].Display[j].name; j++) {
-      printf (" %s", Driver[i].Display[j].name);
+    for (j=0; Driver[i].Model[j].name; j++) {
+      printf (" %s", Driver[i].Model[j].name);
     }
   }
   printf ("\n");
   return 0;
 }
 
-int lcd_init (char *display)
+int lcd_init (char *driver)
 {
   int i, j;
   for (i=0; Driver[i].name; i++) {
-    for (j=0; Driver[i].Display[j].name; j++) {
-      if (strcmp (Driver[i].Display[j].name, display)==0) {
-	Display=&Driver[i].Display[j];
-	return Display->init(Display);
+    for (j=0; Driver[i].Model[j].name; j++) {
+      if (strcmp (Driver[i].Model[j].name, driver)==0) {
+	Lcd=&Driver[i].Model[j];
+	return Lcd->init(Lcd);
       }
     }
   }
-  fprintf (stderr, "lcd_init(%s) failed: no such display\n", display);
+  fprintf (stderr, "lcd_init(%s) failed: no such display\n", driver);
   return -1;
 }
 
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
 {
-  if (Display==NULL)
+  if (Lcd==NULL)
     return -1;
   
-  *rows=Display->rows;
-  *cols=Display->cols;
-  *xres=Display->xres;
-  *yres=Display->yres;
-  *bars=Display->bars;
+  *rows=Lcd->rows;
+  *cols=Lcd->cols;
+  *xres=Lcd->xres;
+  *yres=Lcd->yres;
+  *bars=Lcd->bars;
 
   return 0;
 }
 
 int lcd_clear (void)
 {
-  return Display->clear();
+  return Lcd->clear();
 }
 
 int lcd_put (int row, int col, char *text)
 {
-  if (row<1 || row>Display->rows) return -1;
-  if (col<1 || col>Display->cols) return -1;
-  return Display->put(row-1, col-1, text);
+  if (row<1 || row>Lcd->rows) return -1;
+  if (col<1 || col>Lcd->cols) return -1;
+  return Lcd->put(row-1, col-1, text);
 }
 
 int lcd_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  if (row<1 || row>Display->rows) return -1;
-  if (col<1 || col>Display->cols) return -1;
+  if (row<1 || row>Lcd->rows) return -1;
+  if (col<1 || col>Lcd->cols) return -1;
   if (!(type & (BAR_H2 | BAR_V2))) len2=len1;
   if (type & BAR_LOG) {
     len1=(double)max*log(len1+1)/log(max); 
     len2=(double)max*log(len2+1)/log(max); 
   }
-  return Display->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
+  return Lcd->bar (type & BAR_HV, row-1, col-1, max, len1, len2);
 }
 
 int lcd_flush (void)
 {
-  return Display->flush();
+  return Lcd->flush();
 }
