@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.9 2004/01/21 14:29:03 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.10 2004/01/22 08:55:30 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.10  2004/01/22 08:55:30  reinelt
+ * fixed unhandled kernel-2.6 entries in /prco/stat
+ *
  * Revision 1.9  2004/01/21 14:29:03  reinelt
  * new helper 'hash_get_regex' which delivers the sum over regex matched items
  * new function 'disk()' which uses this regex matching
@@ -164,21 +167,10 @@ static int parse_proc_stat (void)
 	dev=strtok(NULL, " \t\n:()");
       }
     } 
-    else if (strncmp(buffer, "ctxt ", 5)==0) {
-      strtok(buffer, " \t\n");
-      hash_set2 ("ctxt", NULL, strtok(NULL, " \t\n"));
-    } 
-    else if (strncmp(buffer, "btime ", 6)==0) {
-      strtok(buffer, " \t\n");
-      hash_set2 ("btime", NULL, strtok(NULL, " \t\n"));
-    } 
-    else if (strncmp(buffer, "processes ", 10)==0) {
-      strtok(buffer, " \t\n");
-      hash_set1 ("processes", strtok(NULL, " \t\n"));
-    } 
     else {
-      error ("internal error: unhandled entry '%s' from /proc/stat", strtok(buffer, " \t\n"));
-    }
+      char *key=strtok(buffer, " \t\n");
+      hash_set2 (key, NULL, strtok(NULL, " \t\n"));
+    } 
   }
   fclose (stream);
   return 0;
