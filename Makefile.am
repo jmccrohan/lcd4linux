@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
@@ -33,7 +33,6 @@ mail2.c \
 socket.c socket.h
 
 EXTRA_lcd4linux_SOURCES= \
-acconfig.h \
 BeckmannEgle.c \
 Crystalfontz.c Crystalfontz.h \
 Cwlinux.c \
@@ -55,6 +54,7 @@ lcd4kde.conf \
 lcd4linux.kdelnk \
 lcd4linux.xpm \
 lcd4linux.lsm \
+AUTHORS \
 CREDITS \
 FAQ \
 NEWS \

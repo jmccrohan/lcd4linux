@@ -1,5 +1,4 @@
 dnl Curses detection: Munged from Midnight Commander's configure.in
-dnl                   stolen from pinfo/macros
 dnl
 dnl What it does:
 dnl =============
@@ -7,16 +6,16 @@ dnl
 dnl - Determine which version of curses is installed on your system
 dnl   and set the -I/-L/-l compiler entries and add a few preprocessor
 dnl   symbols 
-dnl - Do an AC_SUBST on the CURSES_INCLUDES and CURSES_LIBS so that
-dnl   @CURSES_INCLUDES@ and @CURSES_LIBS@ will be available in
+dnl - Do an AC_SUBST on the CURSES_INCLUDEDIR and CURSES_LIBS so that
+dnl   @CURSES_INCLUDEDIR@ and @CURSES_LIBS@ will be available in
 dnl   Makefile.in's
 dnl - Modify the following configure variables (these are the only
 dnl   curses.m4 variables you can access from within configure.in)
-dnl   CURSES_INCLUDES - contains -I's and possibly -DRENAMED_CURSES if
+dnl   CURSES_INCLUDEDIR - contains -I's and possibly -DRENAMED_CURSES if
 dnl                       an ncurses.h that's been renamed to curses.h
 dnl                       is found.
 dnl   CURSES_LIBS       - sets -L and -l's appropriately
-dnl   CPPFLAGS            - if --with-sco, add -D_SVID3 
+dnl   CFLAGS            - if --with-sco, add -D_SVID3 
 dnl   has_curses        - exports result of tests to rest of configure
 dnl
 dnl Usage:
@@ -32,7 +31,7 @@ dnl    #else
 dnl    #include <curses.h>
 dnl    #endif
 dnl
-dnl 4) Make sure to add @CURSES_INCLUDES@ to your preprocessor flags
+dnl 4) Make sure to add @CURSES_INCLUDEDIR@ to your preprocessor flags
 dnl 5) Make sure to add @CURSES_LIBS@ to your linker flags or LIBS
 dnl
 dnl Notes with automake:
@@ -40,7 +39,7 @@ dnl - call AM_CONDITIONAL(HAS_CURSES, test "$has_curses" = true) from
 dnl   configure.in
 dnl - your Makefile.am can look something like this
 dnl   -----------------------------------------------
-dnl   INCLUDES= blah blah blah $(CURSES_INCLUDES) 
+dnl   INCLUDES= blah blah blah $(CURSES_INCLUDEDIR) 
 dnl   if HAS_CURSES
 dnl   CURSES_TARGETS=name_of_curses_prog
 dnl   endif
@@ -87,7 +86,7 @@ dnl /*=== End new stuff for acconfig.h ===*/
 dnl 
 
 
-AC_DEFUN(AC_CHECK_CURSES,[
+AC_DEFUN([AC_CHECK_CURSES],[
 	search_ncurses=true
 	screen_manager=""
 	has_curses=false
@@ -95,13 +94,13 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	CFLAGS=${CFLAGS--O}
 
 	AC_SUBST(CURSES_LIBS)
-	AC_SUBST(CURSES_INCLUDES)
+	AC_SUBST(CURSES_INCLUDEDIR)
 
 	AC_ARG_WITH(sco,
 	  [  --with-sco              Use this to turn on SCO-specific code],[
 	  if test x$withval = xyes; then
-		AC_DEFINE(SCO_FLAVOR)
-		CPPFLAGS="$CPPFLAGS -D_SVID3"
+		AC_DEFINE(SCO_FLAVOR,1,[Define if you want to turn on SCO-specific code])
+		CFLAGS="$CFLAGS -D_SVID3"
 	  fi
 	])
 
@@ -122,7 +121,7 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	AC_ARG_WITH(vcurses,
 	  [  --with-vcurses[=incdir] Used to force SysV curses],
 	  if test x$withval != xyes; then
-		CURSES_INCLUDES="-I$withval"
+		CURSES_INCLUDEDIR="-I$withval"
 	  fi
 	  AC_USE_SYSV_CURSES
 	)
@@ -133,13 +132,12 @@ AC_DEFUN(AC_CHECK_CURSES,[
 		search_ncurses=false
 	  elif test x$withval != xyes ; then
 		CURSES_LIBS="$LIBS -L$withval/lib -lncurses"
-		CURSES_INCLUDES="-I$withval/include"
+		CURSES_INCLUDEDIR="-I$withval/include"
 		search_ncurses=false
 		screen_manager="ncurses"
-		AC_DEFINE(USE_NCURSES)
-		AC_DEFINE(HAS_CURSES)
+		AC_DEFINE(USE_NCURSES,1,[Use Ncurses?])
+		AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
 		has_curses=true
-		use_ncurses=true
 	  fi
 	)
 
@@ -147,40 +145,41 @@ AC_DEFUN(AC_CHECK_CURSES,[
 	then
 		AC_SEARCH_NCURSES()
 	fi
-	
+
+
 ])
 
 
-AC_DEFUN(AC_USE_SUNOS_CURSES, [
+AC_DEFUN([AC_USE_SUNOS_CURSES], [
 	search_ncurses=false
 	screen_manager="SunOS 4.x /usr/5include curses"
 	AC_MSG_RESULT(Using SunOS 4.x /usr/5include curses)
-	AC_DEFINE(USE_SUNOS_CURSES)
-	AC_DEFINE(HAS_CURSES)
+	AC_DEFINE(USE_SUNOS_CURSES,1,[Use SunOS SysV curses?])
+	AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
 	has_curses=true
-	AC_DEFINE(NO_COLOR_CURSES)
-	AC_DEFINE(USE_SYSV_CURSES)
-	CURSES_INCLUDES="-I/usr/5include"
+	AC_DEFINE(NO_COLOR_CURSES,1,[If you Curses does not have color define this one])
+	AC_DEFINE(USE_SYSV_CURSES,1,[Use SystemV curses?])
+	CURSES_INCLUDEDIR="-I/usr/5include"
 	CURSES_LIBS="/usr/5lib/libcurses.a /usr/5lib/libtermcap.a"
 	AC_MSG_RESULT(Please note that some screen refreshs may fail)
 ])
 
-AC_DEFUN(AC_USE_OSF1_CURSES, [
+AC_DEFUN([AC_USE_OSF1_CURSES], [
        AC_MSG_RESULT(Using OSF1 curses)
        search_ncurses=false
        screen_manager="OSF1 curses"
-       AC_DEFINE(HAS_CURSES)
+       AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
        has_curses=true
-       AC_DEFINE(NO_COLOR_CURSES)
-       AC_DEFINE(USE_SYSV_CURSES)
+       AC_DEFINE(NO_COLOR_CURSES,1,[If you Curses does not have color define this one])
+       AC_DEFINE(USE_SYSV_CURSES,1,[Use SystemV curses?])
        CURSES_LIBS="-lcurses"
 ])
 
-AC_DEFUN(AC_USE_SYSV_CURSES, [
+AC_DEFUN([AC_USE_SYSV_CURSES], [
 	AC_MSG_RESULT(Using SysV curses)
-	AC_DEFINE(HAS_CURSES)
+	AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
 	has_curses=true
-	AC_DEFINE(USE_SYSV_CURSES)
+	AC_DEFINE(USE_SYSV_CURSES,1,[Use SystemV curses?])
 	search_ncurses=false
 	screen_manager="SysV/curses"
 	CURSES_LIBS="-lcurses"
@@ -198,38 +197,37 @@ dnl	    THIS_CURSES=curses
 dnl	fi
 dnl
 dnl	CURSES_LIBS="-l$THIS_CURSES -ltermcap"
-dnl	AC_DEFINE(HAS_CURSES)
+dnl	AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
 dnl	has_curses=true
-dnl	AC_DEFINE(USE_BSD_CURSES)
+dnl	AC_DEFINE(USE_BSD_CURSES,1,[Use old BSD curses - not used right now])
 dnl	AC_MSG_RESULT(Please note that some screen refreshs may fail)
-dnl	AC_WARN(Use of the bsdcurses extension has some)
-dnl	AC_WARN(display/input problems.)
-dnl	AC_WARN(Reconsider using xcurses)
+dnl	AC_MSG_WARN(Use of the bsdcurses extension has some)
+dnl	AC_MSG_WARN(display/input problems.)
+dnl	AC_MSG_WARN(Reconsider using xcurses)
 dnl)
 
 	
 dnl
-dnl Parameters: directory filename cureses_LIBS curses_INCLUDES nicename
+dnl Parameters: directory filename cureses_LIBS curses_INCLUDEDIR nicename
 dnl
-AC_DEFUN(AC_NCURSES, [
+AC_DEFUN([AC_NCURSES], [
     if $search_ncurses
     then
         if test -f $1/$2
 	then
 	    AC_MSG_RESULT(Found ncurses on $1/$2)
  	    CURSES_LIBS="$3"
-	    CURSES_INCLUDES="$4"
+	    CURSES_INCLUDEDIR="$4"
 	    search_ncurses=false
 	    screen_manager=$5
-            AC_DEFINE(HAS_CURSES)
+            AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
             has_curses=true
-	    AC_DEFINE(USE_NCURSES)
-	    use_ncurses=true
+	    AC_DEFINE(USE_NCURSES,1,[Use Ncurses?])
 	fi
     fi
 ])
 
-AC_DEFUN(AC_SEARCH_NCURSES, [
+AC_DEFUN([AC_SEARCH_NCURSES], [
     AC_CHECKING("location of ncurses.h file")
 
     AC_NCURSES(/usr/include, ncurses.h, -lncurses,, "ncurses on /usr/include")
@@ -255,11 +253,10 @@ AC_DEFUN(AC_SEARCH_NCURSES, [
 USE_NCURSES
 #endif
 ],[
-	CURSES_INCLUDES="$CURSES_INCLUDES -DRENAMED_NCURSES"
-        AC_DEFINE(HAS_CURSES)
+	CURSES_INCLUDEDIR="$CURSES_INCLUDEDIR -DRENAMED_NCURSES"
+        AC_DEFINE(HAS_CURSES,1,[Found some version of curses that we're going to use])
 	has_curses=true
-        AC_DEFINE(USE_NCURSES)
-	use_ncurses=true
+        AC_DEFINE(USE_NCURSES,1,[Use Ncurses?])
         search_ncurses=false
         screen_manager="ncurses installed as curses"
 ])
@@ -291,7 +288,7 @@ cat > conftest.$ac_ext <<EOF
 #undef VERSION
 VERSION:NCURSES_VERSION
 EOF
-        if (eval "$ac_cpp $CURSES_INCLUDES conftest.$ac_ext") 2>&AC_FD_CC |
+        if (eval "$ac_cpp conftest.$ac_ext") 2>&AC_FD_CC |
   egrep "VERSION:" >conftest.out 2>&1; then
 changequote(,)dnl
             ncurses_version=`cat conftest.out|sed -e 's/^[^"]*"//' -e 's/".*//'`
@@ -303,15 +300,19 @@ changequote([,])dnl
 changequote(,)dnl
 	4.[01])
 changequote([,])dnl
-            AC_DEFINE(NCURSES_970530,2)
+            AC_DEFINE(NCURSES_970530,2,[Set to reflect version of ncurses])
             ;;
 	1.9.9g)
-            AC_DEFINE(NCURSES_970530,1)
+            AC_DEFINE(NCURSES_970530,1,[Set to reflect version of ncurses])
             ;;
 	1*)
-            AC_DEFINE(NCURSES_970530,0)
+            AC_DEFINE(NCURSES_970530,0,[Set to reflect version of ncurses])
             ;;
 	esac
     fi
 ])
+
+
+
+
 

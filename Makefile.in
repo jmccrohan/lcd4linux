@@ -59,7 +59,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 AWK = @AWK@
 CC = @CC@
-CURSES_INCLUDES = @CURSES_INCLUDES@
+CURSES_INCLUDEDIR = @CURSES_INCLUDEDIR@
 CURSES_LIBS = @CURSES_LIBS@
 DRIVERS = @DRIVERS@
 DRVLIBS = @DRVLIBS@
@@ -68,7 +68,7 @@ MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 
 bin_PROGRAMS = lcd4linux
@@ -81,10 +81,10 @@ lcd4linux_DEPENDENCIES = @DRIVERS@
 lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h battery.c battery.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h bar.c bar.h fontmap.c fontmap.h exec.c exec.h mail2.c socket.c socket.h
 
 
-EXTRA_lcd4linux_SOURCES =  acconfig.h BeckmannEgle.c Crystalfontz.c Crystalfontz.h Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
+EXTRA_lcd4linux_SOURCES =  BeckmannEgle.c Crystalfontz.c Crystalfontz.h Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ NEWS TODO README README.Drivers README.MatrixOrbital README.HD44780 README.HD44780.GPO README.Crystalfontz README.X11 README.KDE README.Raster README.Png README.Webinterface README.Text
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm AUTHORS CREDITS FAQ NEWS TODO README README.Drivers README.MatrixOrbital README.HD44780 README.HD44780.GPO README.Crystalfontz README.X11 README.KDE README.Raster README.Png README.Webinterface README.Text
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -108,8 +108,8 @@ CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  README ./stamp-h.in COPYING INSTALL Makefile.am \
-Makefile.in NEWS TODO acconfig.h aclocal.m4 config.h.in configure \
+DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
+Makefile.am Makefile.in NEWS TODO aclocal.m4 config.h.in configure \
 configure.in install-sh missing mkinstalldirs
 
 
@@ -133,7 +133,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -162,7 +162,7 @@ $(srcdir)/config.h.in: $(srcdir)/stamp-h.in
 		rm -f $(srcdir)/stamp-h.in; \
 		$(MAKE) $(srcdir)/stamp-h.in; \
 	else :; fi
-$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOHEADER)
 	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
 
@@ -291,7 +291,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

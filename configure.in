@@ -1,26 +1,26 @@
-dnl Process this file with autoconf to produce a configure script.
-AC_INIT
+# Process this file with autoconf to produce a configure script.
+AC_INIT([LCD4Linux],[0.99],[reinelt@eunet.at])
 AC_CONFIG_SRCDIR([lcd4linux.c])
-AM_INIT_AUTOMAKE(lcd4linux, 0.99)
+AM_INIT_AUTOMAKE(lcd4linux,0.99)
 AM_CONFIG_HEADER(config.h)
 
-dnl Checks for programs.
+# Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
-dnl Checks for libraries.
+# Checks for libraries.
 AC_CHECK_LIB(m, log)
 
-dnl curses
+# curses
 sinclude(curses.m4)
 AC_CHECK_CURSES
 
-dnl Checks for X11
+# Checks for X11
 AC_PATH_XTRA
 
-dnl drivers
+# drivers
 AC_MSG_CHECKING([which drivers to compile])
 AC_ARG_WITH(
   drivers, 
@@ -124,68 +124,68 @@ RASTER="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    DRIVERS="$DRIVERS BeckmannEgle.o"
-   AC_DEFINE(WITH_BECKMANNEGLE)
+   AC_DEFINE(WITH_BECKMANNEGLE,1,[junk])
 fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
    DRIVERS="$DRIVERS Crystalfontz.o"
-   AC_DEFINE(WITH_CRYSTALFONTZ)
+   AC_DEFINE(WITH_CRYSTALFONTZ,1,[junk])
 fi
 
 if test "$CWLINUX" = "yes"; then
    DRIVERS="$DRIVERS Cwlinux.o"
-   AC_DEFINE(WITH_CWLINUX)
+   AC_DEFINE(WITH_CWLINUX,1,[junk])
 fi
 
 if test "$HD44780" = "yes"; then
    DRIVERS="$DRIVERS HD44780.o"
-   AC_DEFINE(WITH_HD44780)
+   AC_DEFINE(WITH_HD44780,1,[junk])
 fi
 
 if test "$M50530" = "yes"; then
    DRIVERS="$DRIVERS M50530.o"
-   AC_DEFINE(WITH_M50530)
+   AC_DEFINE(WITH_M50530,1,[junk])
 fi
 
 if test "$T6963" = "yes"; then
    DRIVERS="$DRIVERS T6963.o"
-   AC_DEFINE(WITH_T6963)
+   AC_DEFINE(WITH_T6963,1,[junk])
 fi
 
 if test "$USBLCD" = "yes"; then
    DRIVERS="$DRIVERS USBLCD.o"
-   AC_DEFINE(WITH_USBLCD)
+   AC_DEFINE(WITH_USBLCD,1,[junk])
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
    DRIVERS="$DRIVERS MatrixOrbital.o"
-   AC_DEFINE(WITH_MATRIXORBITAL)
+   AC_DEFINE(WITH_MATRIXORBITAL,1,[junk])
 fi
 
 if test "$PALMPILOT" = "yes"; then
    DRIVERS="$DRIVERS PalmPilot.o"
-   AC_DEFINE(WITH_PALMPILOT)
+   AC_DEFINE(WITH_PALMPILOT,1,[junk])
 fi
 
 if test "$PNG" = "yes"; then
    RASTER="yes"
-   AC_DEFINE(WITH_PNG)
+   AC_DEFINE(WITH_PNG,1,[junk])
    DRVLIBS="$DRVLIBS -lgd"
 fi
 
 if test "$PPM" = "yes"; then
    RASTER="yes"
-   AC_DEFINE(WITH_PPM)
+   AC_DEFINE(WITH_PPM,1,[junk])
 fi
 
 if test "$SIN" = "yes"; then
    DRIVERS="$DRIVERS SIN.o"
-   AC_DEFINE(WITH_SIN)
+   AC_DEFINE(WITH_SIN,1,[junk])
 fi
 
 if test "$SKELETON" = "yes"; then
    DRIVERS="$DRIVERS Skeleton.o"
-   AC_DEFINE(WITH_SKELETON)
+   AC_DEFINE(WITH_SKELETON,1,[junk])
 fi
 
 if test "$TEXT" = "yes"; then
@@ -193,7 +193,7 @@ if test "$TEXT" = "yes"; then
       DRIVERS="$DRIVERS Text.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
-      AC_DEFINE(WITH_TEXT)
+      AC_DEFINE(WITH_TEXT,1,[junk])
    else
       AC_MSG_WARN(curses not found: Text driver disabled)
    fi   
@@ -205,11 +205,11 @@ if test "$X11" = "yes"; then
    else
       DRIVERS="$DRIVERS XWindow.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
-      AC_DEFINE(WITH_X11)
+      AC_DEFINE(WITH_X11,1,[junk])
    fi
 fi
 
-dnl Raster.o depends on PPM or PNG
+# Raster.o depends on PPM or PNG
 if test "$RASTER" = "yes"; then
    DRIVERS="$DRIVERS Raster.o"
 fi
@@ -222,7 +222,7 @@ fi
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)
 
-dnl Checks for header files.
+# Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
@@ -233,7 +233,7 @@ AC_CHECK_HEADERS(gd/gd.h gd.h)
 AC_CHECK_HEADERS(net/if_ppp.h)
 AC_CHECK_HEADERS(asm/msr.h)
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+# Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_PID_T
@@ -242,7 +242,7 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 AC_TYPE_UID_T
 
-dnl Checks for library functions.
+# Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
