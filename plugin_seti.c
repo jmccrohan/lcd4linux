@@ -1,4 +1,4 @@
-/* $Id: plugin_seti.c,v 1.1 2004/03/13 06:49:20 reinelt Exp $
+/* $Id: plugin_seti.c,v 1.2 2004/03/13 19:06:01 reinelt Exp $
  *
  * plugin for seti@home status reporting
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_seti.c,v $
+ * Revision 1.2  2004/03/13 19:06:01  reinelt
+ * ChangeLog and Status update; small glitch in plugin_seti fixed.
+ *
  * Revision 1.1  2004/03/13 06:49:20  reinelt
  * seti@home plugin ported to NextGeneration
  *
@@ -60,8 +63,6 @@
 
 static HASH SETI = { 0, };
 static int fatal = 0;
-static char *dir = NULL;
-
 
 static int parse_seti (void)
 {

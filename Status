@@ -9,6 +9,7 @@ Lcd4Linux NextGeneration porting status
        MatrixOrbital -> Ported (Text,Bar,Icon) + blacklight,contrast,gpo,pwm,rpm [?]
               T6963* -> Ported (Text,Bar,Icon) [?]
               USBLCD -> Ported (Text,Bar,Icon) [?]
+            XWindow* -> Ported (Text,Bar,Icon) [gnome applet ?]
 
         BeckmannEgle ->     
               Curses ->    
@@ -16,7 +17,7 @@ Lcd4Linux NextGeneration porting status
            PalmPilot ->
              Raster* ->
                 SIN* ->
-            XWindow* -> 
+
 
 * graphic displays
 
@@ -28,6 +29,7 @@ Lcd4Linux NextGeneration porting status
          plugin_imon -> Finished (imon, version, rates) [hazardous function names]
       plugin_loadavg -> Finished (loadavg) {L l1 l2 l3}
       plugin_meminfo -> Finished (meminfo) {ma mb mc mf ms mt mu r}
+        plugin_mysql -> In progress (mySQLquery, mySQLstatus) NEW
        plugin_netdev -> Finished (netdev) {nm nr nt nw}
           plugin_ppp -> Finished (ppp) {ti tm to tt}
     plugin_proc_stat -> Finished (proc_stat, cpu, disk) {cb ci cn cs cu dm dr dt dw}
@@ -51,7 +53,7 @@ wifi {ws wl wn}
 * namespace support for plugins (with ::) {Michael}
 - support visible attribute for widgets other than icons
 - time-based bars for graphic displays
-- dynamic loading of plugins/displays/input
+- dynamic loading of plugins/displays/input (after 0.10.0)
 - add support for input (display keypads, gamepads, socket, ...)
 * finish debian package {Xavier, Luk, Samuel}
 

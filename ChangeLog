@@ -1,4 +1,92 @@
+2004-03-13  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* plugin_imon.c:
+	Added clean termination of imond-connection (now correctly)
+
+	* plugin_imon.c: Added clean termination of imond-connection
+
+2004-03-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* imon.h: (unnecessary) imon.h removed
+
+	* Makefile.am, Makefile.in, lcd4linux.conf.sample, plugin.c, plugin_seti.c, seti.c, seti.h:
+	seti@home plugin ported to NextGeneration
+
+2004-03-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* imon.c: removed imon.c (has been replaced by plugin_imon.c)
+
+2004-03-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* evaluator.h, hash.c, hash.h, lcd4linux.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_loadavg.c, plugin_meminfo.c, plugin_netdev.c, plugin_proc_stat.c, widget_bar.c, widget_icon.c, widget_text.c, cfg.c, drv_HD44780.c, evaluator.c:
+	big patch from Martin:
+	- reuse filehandles
+	- memory leaks fixed
+	- earlier busy-flag checking with HD44780
+	- reuse memory for strings in RESULT and hash
+	- netdev_fast to wavid time-consuming regex
+
+2004-03-10  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, configure.in, plugin.c, plugin_mysql.c:
+	MySQL plugin from Javier added
+
+2004-03-08  hejl  <hejl@merlin.ethnet>
+
+	* plugin_loadavg.c:
+	Fixed bug introduced with "caching" the loadavg values
+
+	* evaluator.c: fixed segfault when using string concatenation
+
+2004-03-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, cfg.c, lcd4linux.conf.sample, widget_text.c:
+	re-introduced \nnn (octal) characters in strings
+	text widgets can have a 'update' speed of 0 which means 'never'
+	(may be used for static content)
+
+	* evaluator.c: string concatenation fixed
+
+2004-03-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* cfg.c, evaluator.c, evaluator.h, lcd4linux.c, plugin_cfg.c, plugin_math.c, widget_bar.c, widget_bar.h, widget_icon.c, widget_icon.h, widget_text.c, widget_text.h:
+	Complete rewrite of the evaluator to get rid of the code
+	from mark Morley (because of license issues).
+	The new Evaluator does a pre-compile of expressions, and
+	stores them in trees. Therefore it should be reasonable faster...
+
+2004-03-03  hejl  <hejl@merlin.ethnet>
+
+	* hash.c: Fixed memory leak in hash_get_regex
+
+2004-03-03  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_generic_parport.c, drv_generic_serial.c, hash.c, hash.h, lcd4linux.c, pid.c, plugin_imon.c, plugin_netdev.c, plugin_ppp.c, plugin_proc_stat.c, qprintf.h, timer.c, widget_icon.c:
+	changes (cosmetics?) to the big patch from Martin
+	hash patch un-applied
+
+	* Raster.c, Text.c, cfg.c, drv_HD44780.c, drv_generic_graphic.c, drv_generic_parport.c, drv_generic_serial.c, drv_generic_text.c, evaluator.c, evaluator.h, exec.c, hash.c, hash.h, imon.c, layout.c, lcd4linux.c, lock.c, mail.c, mail2.c, pid.c, plugin.c, plugin.h, plugin_cfg.c, plugin_cpuinfo.c, plugin_dvb.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_loadavg.c, plugin_math.c, plugin_meminfo.c, plugin_netdev.c, plugin_ppp.c, plugin_proc_stat.c, plugin_sample.c, plugin_string.c, plugin_uname.c, plugin_xmms.c, seti.c, timer.c, timer.h, widget.c, widget.h, widget_bar.c, widget_icon.c, widget_text.c, wifi.c:
+	big patch from Martin Hejl:
+	- use qprintf() where appropriate
+	- save CPU cycles on gettimeofday()
+	- add quit() functions to free allocated memory
+	- fixed lots of memory leaks
+
+	* drv_Crystalfontz.c: Crystalfontz Contrast issue fixed
+
+2004-03-01  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* cfg.c, drv_Crystalfontz.c, drv_HD44780.c, lcd4linux.conf.sample:
+	cfg_number() returns -1 on error, 0 if value not found (but default val used),
+	 and 1 if value was used from the configuration.
+	HD44780 driver adopted to new cfg_number()
+	Crystalfontz 631 driver nearly finished
+
 2004-02-29  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* libtool, ChangeLog, configure, configure.in, lcd4linux.conf.sample:
+	ChangeLog updated
+	Version number bumped to 0.10.0
 
 	* drv_generic_graphic.c:
 	icon visibility fix for generic graphics from Xavier
