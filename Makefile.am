@@ -21,6 +21,7 @@ processor.c processor.h \
 system.c system.h \
 isdn.c isdn.h \
 filter.c filter.h \
+udelay.c udelay.h \
 display.c display.h \
 pixmap.c pixmap.h \
 fontmap.c fontmap.h \

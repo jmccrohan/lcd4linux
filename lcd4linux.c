@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.21 2000/04/15 11:56:35 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.22 2000/04/15 16:56:52 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.22  2000/04/15 16:56:52  reinelt
+ *
+ * moved delay loops to udelay.c
+ * renamed -d (debugging) switch to -v (verbose)
+ * new switch -d to calibrate delay loop
+ * 'Delay' entry for HD44780 back again
+ * delay loops will not calibrate automatically, because this will fail with hich CPU load
+ *
  * Revision 1.21  2000/04/15 11:56:35  reinelt
  *
  * more debug messages
@@ -125,12 +133,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "debug.h"
 #include "cfg.h"
+#include "debug.h"
+#include "udelay.h"
 #include "display.h"
 #include "processor.h"
 
-char *release="LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
+char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
 char *output=NULL;
 int debugging=0;
 int tick, tack;
@@ -140,7 +149,8 @@ static void usage(void)
   printf ("%s\n", release);
   printf ("usage: lcd4linux [-h]\n");
   printf ("       lcd4linux [-l]\n");
-  printf ("       lcd4linux [-c key=value] [-d] [-f config-file] [-o output-file] [-q]\n");
+  printf ("       lcd4linux [-d]\n");
+  printf ("       lcd4linux [-c key=value] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
 int lcd_hello (void)
@@ -186,7 +196,7 @@ int main (int argc, char *argv[])
   int c, smooth;
   int quiet=0;
 
-  while ((c=getopt (argc, argv, "c:df:hlo:q"))!=EOF) {
+  while ((c=getopt (argc, argv, "c:df:hlo:qv"))!=EOF) {
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
@@ -195,8 +205,10 @@ int main (int argc, char *argv[])
       }
       break;
     case 'd':
-      debugging++;
-      break;
+      printf ("%s\n", release);
+      udelay_calibrate();
+      printf ("calibrating delay loop: Delay=%ld\n", loops_per_usec);
+      exit(0);
     case 'h':
       usage();
       exit(0);
@@ -212,6 +224,9 @@ int main (int argc, char *argv[])
       break;
     case 'q':
       quiet++;
+      break;
+    case 'v':
+      debugging++;
       break;
     default:
       exit(2);

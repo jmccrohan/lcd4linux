@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.5 2000/04/15 11:13:54 reinelt Exp $
+# $Id: README,v 1.6 2000/04/15 16:56:52 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -22,9 +22,12 @@ print version number and a small help text, then exit
 lcd4linux -l 
 list available drivers
 
-lcd4linux [-c key=val] [-d] [-f config-file] [-o output] [-q]
+lcd4linux -d
+calibrate delay loop (necessary for some drivers)
+
+lcd4linux [-c key=val] [-f config-file] [-o output] [-q] [-v]
 run lcd4linux 
-generate debugging messages with '-d'	
+generate debugging messages with '-v'	
 use configuration from 'config-file' instead of /etc/lcd4linux.conf
 write picture to 'output' (raster driver only)
 overwrite entries from the config-file with '-c'

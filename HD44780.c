@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.3 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: HD44780.c,v 1.4 2000/04/15 16:56:52 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,14 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.4  2000/04/15 16:56:52  reinelt
+ *
+ * moved delay loops to udelay.c
+ * renamed -d (debugging) switch to -v (verbose)
+ * new switch -d to calibrate delay loop
+ * 'Delay' entry for HD44780 back again
+ * delay loops will not calibrate automatically, because this will fail with hich CPU load
+ *
  * Revision 1.3  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -60,6 +68,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "display.h"
+#include "udelay.h"
 
 #define XRES 5
 #define YRES 8
@@ -83,7 +92,6 @@ typedef struct {
 
 static LCD Lcd;
 static unsigned short Port=0;
-static unsigned long  loops_per_usec;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -92,49 +100,13 @@ static int nSegment=2;
 static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
-static void HD_delay (unsigned long usec)
-{
-  unsigned long i=usec*loops_per_usec;
-  while (i--);
-}
-
-static void HD_calibrate_delay (void)
-{
-  clock_t tick;
-  unsigned long bit;
-
-  loops_per_usec=1;
-  while (loops_per_usec<<=1) {
-    tick=clock();
-    while (clock()==tick);
-    tick=clock();
-    HD_delay(1000000/CLOCKS_PER_SEC);
-    if (clock()>tick)
-      break;
-  }
-  
-  loops_per_usec>>=1;
-  bit=loops_per_usec;
-  while (bit>>=1) {
-    loops_per_usec|=bit;
-    tick=clock();
-    while (clock()==tick);
-    tick=clock();
-    HD_delay(1000000/CLOCKS_PER_SEC);
-    if (clock()>tick)
-      loops_per_usec&=~bit;
-  }
- 
-  debug ("calibrating delay: %ld loops/usec\n", loops_per_usec);
-}
-
 static void HD_command (unsigned char cmd, int delay)
 {
   outb (cmd, Port);    // put data on DB1..DB8
   outb (0x02, Port+2); // set Enable = bit 0 invertet
-  HD_delay(1);
+  udelay (1);
   outb (0x03, Port+2); // clear Enable
-  HD_delay(delay);
+  udelay (delay);
 }
 
 static void HD_write (char *string, int len, int delay)
@@ -142,9 +114,9 @@ static void HD_write (char *string, int len, int delay)
   while (len--) {
     outb (*string++, Port); // put data on DB1..DB8
     outb (0x00, Port+2); // set Enable = bit 0 invertet
-    HD_delay(1);
+    udelay (1);
     outb (0x01, Port+2); // clear Enable
-    HD_delay(delay);
+    udelay (delay);
   }
 }
 
@@ -368,6 +340,16 @@ int HD_init (LCD *Self)
     return -1;
   }    
 
+  s=cfg_get ("Delay");
+  if (s==NULL || *s=='\0') {
+    fprintf (stderr, "HD44780: no 'Delay' entry in %s\n", cfg_file());
+    return -1;
+  }
+  if ((loops_per_usec=strtol(s, &e, 0))==0 || *e!='\0') {
+    fprintf (stderr, "HD44780: bad delay '%s' in %s\n", s, cfg_file());
+    return -1;
+  }    
+  
   s=cfg_get("Size");
   if (s==NULL || *s=='\0') {
     fprintf (stderr, "HD44780: no 'Size' entry in %s\n", cfg_file());
@@ -381,8 +363,6 @@ int HD_init (LCD *Self)
   Self->rows=rows;
   Self->cols=cols;
   Lcd=*Self;
-
-  HD_calibrate_delay();
 
   if (HD_open()!=0)
     return -1;
