@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.8 2000/03/28 07:22:15 reinelt Exp $
+/* $Id: Raster.c,v 1.9 2000/04/03 04:01:31 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.9  2000/04/03 04:01:31  reinelt
+ *
+ * if 'gap' is specified as -1, a gap of (pixelsize+pixelgap) is selected automatically
+ *
  * Revision 1.8  2000/03/28 07:22:15  reinelt
  *
  * version 0.95 released
@@ -226,10 +230,12 @@ int Raster_init (LCD *Self)
     return -1;
   }
 
-  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &cgap, &rgap)!=2 || cgap<0 || rgap<0) {
+  if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
     fprintf (stderr, "Raster: bad gap '%s'\n", s);
     return -1;
   }
+  if (rgap<0) rgap=pixel+pgap;
+  if (cgap<0) cgap=pixel+pgap;
 
   border=atoi(cfg_get("border")?:"0");
 

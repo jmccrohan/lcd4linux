@@ -14,11 +14,11 @@
 #background \#80d000
 
 Display X11
-size 20x6
+size 20x5
 font 5x8
-pixel 5+1
-gap 6x6
-border 3
+pixel 1+0
+gap 1x1
+border 1
 foreground \#102000
 halfground \#90c000
 background \#a0d000

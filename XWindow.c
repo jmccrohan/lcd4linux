@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.14 2000/04/02 22:07:10 herp Exp $
+/* $Id: XWindow.c,v 1.15 2000/04/03 04:01:31 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.15  2000/04/03 04:01:31  reinelt
+ *
+ * if 'gap' is specified as -1, a gap of (pixelsize+pixelgap) is selected automatically
+ *
  * Revision 1.14  2000/04/02 22:07:10  herp
  * fixded a bug that occasionally caused Xlib errors
  *
@@ -303,10 +307,12 @@ char *s;
 		return -1;
 	}
 	if (sscanf(s=cfg_get("gap")?:"3x3","%dx%d",&cgap,&rgap)!=2
-		|| cgap<0 || rgap<0) {
+		|| cgap<-1 || rgap<-1) {
 		fprintf(stderr,"X11: bad gap '%s'\n",s);
 		return -1;
 	}
+	if (rgap<0) rgap=pixel+pgap;
+	if (cgap<0) cgap=pixel+pgap;
 	border=atoi(cfg_get("border")?:"0");
 	rgbfg=cfg_get("foreground")?:"#000000";
         rgbbg=cfg_get("background")?:"#80d000";
