@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.6 2004/01/23 07:04:23 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.7 2004/01/29 04:40:02 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.7  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.6  2004/01/23 07:04:23  reinelt
  * icons finished!
  *
@@ -54,6 +57,8 @@
  * Fixme: document me!
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.6 2004/01/21 11:31:23 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.7 2004/01/29 04:40:02 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.7  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.6  2004/01/21 11:31:23  reinelt
  * two bugs with hash_age() ixed
  *
@@ -70,6 +73,8 @@
  * These arguments are case-sensitive
  */
 
+
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

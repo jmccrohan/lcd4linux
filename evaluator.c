@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.9 2004/01/15 07:47:02 reinelt Exp $
+/* $Id: evaluator.c,v 1.10 2004/01/29 04:40:02 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,9 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.10  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.9  2004/01/15 07:47:02  reinelt
  * debian/ postinst and watch added (did CVS forget about them?)
  * evaluator: conditional expressions (a?b:c) added
@@ -116,6 +119,8 @@
  */
 
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

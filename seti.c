@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.12 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: seti.c,v 1.13 2004/01/29 04:40:03 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.13  2004/01/29 04:40:03  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.12  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -80,6 +83,8 @@
 
 
 #define STATEFILE "state.sah"
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

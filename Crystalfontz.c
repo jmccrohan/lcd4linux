@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.18 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.19 2004/01/29 04:40:02 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -21,6 +21,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.19  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.18  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -80,6 +83,8 @@
  * minor bugfix (zero length)
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

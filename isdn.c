@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.12 2003/11/24 11:34:54 reinelt Exp $
+/* $Id: isdn.c,v 1.13 2004/01/29 04:40:02 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.13  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.12  2003/11/24 11:34:54  reinelt
  *
  * 'Fixed' Rows which do not scroll by Lars Kempe
@@ -81,6 +84,8 @@
  *   sets received/transmitted bytes in *rx, *tx
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

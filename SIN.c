@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.14 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: SIN.c,v 1.15 2004/01/29 04:40:02 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.15  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.14  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -82,6 +85,8 @@
  *
  * struct LCD SIN[] *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

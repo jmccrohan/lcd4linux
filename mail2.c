@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.10 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: mail2.c,v 1.11 2004/01/29 04:40:02 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.11  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.10  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -59,6 +62,8 @@
  *     returns -1 on error, 0 on success
  *
  */
+
+#include "config.h"
 
 #include <string.h>
 #include <stdlib.h>

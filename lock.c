@@ -1,4 +1,4 @@
-/* $Id: lock.c,v 1.5 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: lock.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * UUCP style locking
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: lock.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -61,6 +64,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

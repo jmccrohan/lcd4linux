@@ -1,4 +1,4 @@
-/* $Id: socket.c,v 1.6 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: socket.c,v 1.7 2004/01/29 04:40:03 reinelt Exp $
  *
  * simple socket functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: socket.c,v $
+ * Revision 1.7  2004/01/29 04:40:03  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.6  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -76,6 +79,8 @@
  * with debuglevel 3, traffic on socket is logged
  * 
  */
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

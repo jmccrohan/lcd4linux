@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.5 2004/01/23 07:04:17 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2004/01/23 07:04:17  reinelt
  * icons finished!
  *
@@ -57,6 +60,8 @@
  * struct DRIVER drv_HD44780
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.15 2004/01/27 08:13:39 reinelt Exp $
+/* $Id: plugin.c,v 1.16 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.16  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.15  2004/01/27 08:13:39  reinelt
  * ported PPP token to plugin_ppp
  *
@@ -111,6 +114,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.12 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: pixmap.c,v 1.13 2004/01/29 04:40:02 reinelt Exp $
  *
  * generic pixmap driver
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.13  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.12  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -97,6 +100,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -247,9 +247,9 @@ Layout L16x2 {
 }
 
 #Display 'LK204'
-#Display 'HD44780-20x4'
+Display 'HD44780-20x4'
 #Display 'CF632'
-Display 'CF631'
+#Display 'CF631'
 
 #Layout  'Default'
 Layout  'L16x2'

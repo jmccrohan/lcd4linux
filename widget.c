@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.9 2004/01/23 04:53:57 reinelt Exp $
+/* $Id: widget.c,v 1.10 2004/01/29 04:40:03 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.10  2004/01/29 04:40:03  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.9  2004/01/23 04:53:57  reinelt
  * icon widget added (not finished yet!)
  *
@@ -65,6 +68,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

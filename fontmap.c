@@ -1,4 +1,4 @@
-/* $Id: fontmap.c,v 1.5 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: fontmap.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * 5x8 font
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: fontmap.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -48,6 +51,8 @@
  * X11 Framework done
  *
  */
+
+#include "config.h"
 
 #include "pixmap.h"
 #include "fontmap.h"

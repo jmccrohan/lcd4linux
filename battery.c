@@ -1,4 +1,4 @@
-/* $Id: battery.c,v 1.5 2004/01/06 22:33:14 reinelt Exp $
+/* $Id: battery.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * APM and ACPI specific functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: battery.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2004/01/06 22:33:14  reinelt
  * Copyright statements cleaned up
  *
@@ -47,6 +50,8 @@
  *     lasting ... seconds, how long battery will last
  * 
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

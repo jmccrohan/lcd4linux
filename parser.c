@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.24 2004/01/05 11:57:38 reinelt Exp $
+/* $Id: parser.c,v 1.25 2004/01/29 04:40:02 reinelt Exp $
  *
  * row definition parser
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.25  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.24  2004/01/05 11:57:38  reinelt
  * added %y tokens to make the Evaluator useable
  *
@@ -132,6 +135,8 @@
  *    sets the array usage[token] to usage count
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

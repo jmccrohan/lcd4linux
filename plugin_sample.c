@@ -1,4 +1,4 @@
-/* $Id: plugin_sample.c,v 1.2 2004/01/13 10:03:01 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.3 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin template
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.3  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.2  2004/01/13 10:03:01  reinelt
  * new util 'hash' for associative arrays
  * new plugin 'cpuinfo'
@@ -44,6 +47,8 @@
 
 
 // define the include files you need
+#include "config.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

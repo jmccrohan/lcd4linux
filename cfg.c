@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.30 2004/01/22 07:57:45 reinelt Exp $^
+/* $Id: cfg.c,v 1.31 2004/01/29 04:40:02 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.31  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.30  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -200,6 +203,8 @@
  * 
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

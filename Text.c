@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.13 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: Text.c,v 1.14 2004/01/29 04:40:02 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.14  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.13  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -73,6 +76,8 @@
  * struct LCD Text[]
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

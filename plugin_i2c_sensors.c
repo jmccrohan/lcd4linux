@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.3 2004/01/27 08:13:39 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.4 2004/01/29 04:40:02 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.4  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.3  2004/01/27 08:13:39  reinelt
  * ported PPP token to plugin_ppp
  *
@@ -57,6 +60,8 @@
  *   (replace 0-6000 with the appropriate dir)
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.2 2004/01/11 18:26:02 reinelt Exp $
+/* $Id: plugin_string.c,v 1.3 2004/01/29 04:40:02 reinelt Exp $
  *
  * string plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.3  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.2  2004/01/11 18:26:02  reinelt
  * further widget and layout processing
  *
@@ -39,6 +42,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

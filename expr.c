@@ -1,4 +1,4 @@
-/* $Id: expr.c,v 1.5 2004/01/18 06:54:08 reinelt Exp $
+/* $Id: expr.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * expr ('y*') functions
  * This is only a workaround to make the Evaluator usable until
@@ -24,6 +24,9 @@
  *
  *
  * $Log: expr.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2004/01/18 06:54:08  reinelt
  * bug in expr.c fixed (thanks to Xavier)
  * some progress with /proc/stat parsing
@@ -43,6 +46,8 @@
  * added %y tokens to make the Evaluator useable
  *
  */
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

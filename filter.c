@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.10 2004/01/16 05:04:53 reinelt Exp $
+/* $Id: filter.c,v 1.11 2004/01/29 04:40:02 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.11  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.10  2004/01/16 05:04:53  reinelt
  * started plugin proc_stat which should parse /proc/stat
  * which again is a paint in the a**
@@ -71,6 +74,8 @@
  *   damps a value with exp(-t/tau) 
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.2 2004/01/18 09:01:45 reinelt Exp $
+/* $Id: timer.c,v 1.3 2004/01/29 04:40:03 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.3  2004/01/29 04:40:03  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.2  2004/01/18 09:01:45  reinelt
  * /proc/stat parsing finished
  *
@@ -38,6 +41,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

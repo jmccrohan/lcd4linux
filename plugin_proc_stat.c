@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.12 2004/01/27 08:13:39 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.13 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.13  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.12  2004/01/27 08:13:39  reinelt
  * ported PPP token to plugin_ppp
  *
@@ -76,6 +79,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.50 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.51 2004/01/29 04:40:02 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.51  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.50  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -222,6 +225,8 @@
  * struct LCD MatrixOrbital[]
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

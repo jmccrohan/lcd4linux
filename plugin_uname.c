@@ -1,4 +1,4 @@
-/* $Id: plugin_uname.c,v 1.1 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: plugin_uname.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin for uname() syscall
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_uname.c,v $
+ * Revision 1.2  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.1  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -38,6 +41,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.18 2004/01/23 07:04:22 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.19 2004/01/29 04:40:02 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.19  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.18  2004/01/23 07:04:22  reinelt
  * icons finished!
  *
@@ -104,6 +107,8 @@
  * struct DRIVER drv_MatrixOrbital
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: exec.c,v 1.11 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: exec.c,v 1.12 2004/01/29 04:40:02 reinelt Exp $
  *
  * exec ('x*') functions
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: exec.c,v $
+ * Revision 1.12  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.11  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -70,6 +73,8 @@
  *   Max_x1 .. 9   max for scaling bars (100)
  *   Min_x1 .. 9   min for scaling bars (0)
  */
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.53 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: processor.c,v 1.54 2004/01/29 04:40:02 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.54  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.53  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -232,6 +235,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

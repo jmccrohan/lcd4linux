@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.4 2004/01/25 05:30:09 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.5 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.5  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.4  2004/01/25 05:30:09  reinelt
  * plugin_netdev for parsing /proc/net/dev added
  *
@@ -49,6 +52,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

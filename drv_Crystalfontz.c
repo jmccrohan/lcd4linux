@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.5 2004/01/25 05:30:09 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.6  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2004/01/25 05:30:09  reinelt
  * plugin_netdev for parsing /proc/net/dev added
  *
@@ -48,6 +51,8 @@
  * struct DRIVER drv_Crystalfontz
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id: plugin_math.c,v 1.1 2003/12/19 05:50:34 reinelt Exp $
+/* $Id: plugin_math.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
  *
  * math plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_math.c,v $
+ * Revision 1.2  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.1  2003/12/19 05:50:34  reinelt
  * added plugin_math.c and plugin_string.c
  *
@@ -35,6 +38,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

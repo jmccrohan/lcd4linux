@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.1 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.2 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.2  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.1  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -39,6 +42,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

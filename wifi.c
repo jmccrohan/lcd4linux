@@ -1,4 +1,4 @@
-/* $Id: wifi.c,v 1.5 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: wifi.c,v 1.6 2004/01/29 04:40:03 reinelt Exp $
  *
  * WIFI specific functions
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.6  2004/01/29 04:40:03  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.5  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -56,6 +59,8 @@
  *   sets *noise to noise level (reverse of link quality)
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

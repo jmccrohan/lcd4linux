@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.9 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: bar.c,v 1.10 2004/01/29 04:40:02 reinelt Exp $
  *
  * generic bar handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.10  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.9  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -69,6 +72,8 @@
  * int bar_peek (int row, int col)
  *
  */
+
+#include "config.h"
 
 #include <stdlib.h>
 

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.38 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: XWindow.c,v 1.39 2004/01/29 04:40:02 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.39  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.38  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -163,6 +166,8 @@
  * Tue Mar 21 22:22:03 MET 2000 initial coding
  *
  */
+
+#include "config.h"
 
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>

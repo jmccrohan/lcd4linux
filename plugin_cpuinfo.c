@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.6 2004/01/21 10:48:17 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.7 2004/01/29 04:40:02 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.7  2004/01/29 04:40:02  reinelt
+ * every .c file includes "config.h" now
+ *
  * Revision 1.6  2004/01/21 10:48:17  reinelt
  * hash_age function added
  *
@@ -59,6 +62,8 @@
  *
  */
 
+
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
