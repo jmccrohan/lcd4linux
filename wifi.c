@@ -1,11 +1,11 @@
-/* $Id: wifi.c,v 1.3 2003/12/01 07:08:51 reinelt Exp $
+/* $Id: wifi.c,v 1.4 2004/01/06 22:33:14 reinelt Exp $
  *
  * WIFI specific functions
  *
  * Copyright 2003 Xavier Vello <xavier66@free.fr>
  * 
  * based on lcd4linux/isdn.c which is
- * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.4  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.3  2003/12/01 07:08:51  reinelt
  *
  * Patches from Xavier:

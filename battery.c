@@ -1,8 +1,8 @@
-/* $Id: battery.c,v 1.4 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: battery.c,v 1.5 2004/01/06 22:33:14 reinelt Exp $
  *
  * APM and ACPI specific functions
  *
- * Copyright 2001 Leo Tötsch <lt@toetsch.at>
+ * Copyright 2001 Leopold Tötsch <lt@toetsch.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: battery.c,v $
+ * Revision 1.5  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.4  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *

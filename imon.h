@@ -1,6 +1,8 @@
-/* $Id: imon.h,v 1.1 2003/10/12 06:08:28 nicowallmeier Exp $
+/* $Id: imon.h,v 1.2 2004/01/06 22:33:14 reinelt Exp $
  *
  * imond/telmond data processing
+ *
+ * Copyright 2003 Nico Wallmeier <nico.wallmeier@post.rwth-aachen.de>
  *
  * This file is part of LCD4Linux.
  *
@@ -20,6 +22,9 @@
  *
  *
  * $Log: imon.h,v $
+ * Revision 1.2  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.1  2003/10/12 06:08:28  nicowallmeier
  * imond/telmond support
  *

@@ -1,8 +1,8 @@
-/* $Id: seti.c,v 1.10 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: seti.c,v 1.11 2004/01/06 22:33:14 reinelt Exp $
  *
  * seti@home specific functions
  *
- * Copyright 2001 Axel Ehnert <Axel@Ehnert.net>
+ * Copyright 2001 Axel Ehnert <axel@ehnert.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.11  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.10  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *

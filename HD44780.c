@@ -1,17 +1,16 @@
-/* $Id: HD44780.c,v 1.47 2003/11/12 05:42:35 reinelt Exp $
+/* $Id: HD44780.c,v 1.48 2004/01/06 22:33:13 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
- * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
- *
- * This file is part of LCD4Linux.
+ * Copyright 1999-2004 Michael Reinelt <reinelt@eunet.at>
  *
  * Modification for 4-Bit mode
- * 2003 Martin Hejl (martin@hejl.de)
+ * Copyright 2003 Martin Hejl (martin@hejl.de)
  *
  * Modification for 2nd controller support
- * 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
+ * Copyright 2003 Jesse Brook Kovach <jkovach@wam.umd.edu>
  *
+ * This file is part of LCD4Linux.
  *
  * LCD4Linux is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +28,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.48  2004/01/06 22:33:13  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.47  2003/11/12 05:42:35  reinelt
  * small changes to the 16x4 handling
  *

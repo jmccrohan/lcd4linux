@@ -1,11 +1,12 @@
-/* $Id: MilfordInstruments.c,v 1.3 2003/10/08 13:39:53 andy-b Exp $
+/* $Id: MilfordInstruments.c,v 1.4 2004/01/06 22:33:13 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
  *
- * Written 2003 by Andy Baxter <andy@earthsong.free-online.co.uk>
+ * Copyright 2003 Andy Baxter <andy@earthsong.free-online.co.uk>
  *
- * based on the MatrixOrbital driver by M. Reinelt 
+ * based on the MatrixOrbital driver which is
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,9 @@
  *
  *
  * $Log: MilfordInstruments.c,v $
+ * Revision 1.4  2004/01/06 22:33:13  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.3  2003/10/08 13:39:53  andy-b
  * Cleaned up code in MilfordInstruments.c, and added descriptions for other display sizes (untested)
  *

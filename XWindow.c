@@ -1,8 +1,8 @@
-/* $Id: XWindow.c,v 1.36 2003/10/22 04:32:25 reinelt Exp $
+/* $Id: XWindow.c,v 1.37 2004/01/06 22:33:14 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
- * Copyright 2000 Herbert Rosmanith <herp@widsau.idv.uni-linz.ac.at>
+ * Copyright 2000 Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.37  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.36  2003/10/22 04:32:25  reinelt
  * fixed icon bug found by Rob van Nieuwkerk
  *

@@ -1,7 +1,7 @@
-/* $Id: plugin_xmms.c,v 1.1 2003/12/19 06:27:33 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.2 2004/01/06 22:33:14 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
- * written by Markus Keil <markus_keil@t-online.de>
+ * Copyright 2003 Markus Keil <markus_keil@t-online.de>
  *
  * This file is part of LCD4Linux.
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.2  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.1  2003/12/19 06:27:33  reinelt
  * added XMMS plugin from Markus Keil
  *

@@ -1,11 +1,11 @@
-/* $Id: USBLCD.c,v 1.18 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: USBLCD.c,v 1.19 2004/01/06 22:33:14 reinelt Exp $
  *
  * Driver for USBLCD (see http://www.usblcd.de)
  *
  * Copyright 2002 Robin Adams, Adams IT Services <info@usblcd.de>
  *
  * This driver is based on HD44780.c, which is
- * Copyright 1999, 2000 by Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
  *
  * This file is part of LCD4Linux.
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.19  2004/01/06 22:33:14  reinelt
+ * Copyright statements cleaned up
+ *
  * Revision 1.18  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
