@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.8 2004/02/01 08:05:12 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.9 2004/02/01 11:51:22 hejl Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.9  2004/02/01 11:51:22  hejl
+ * Fixes for busy flag
+ *
  * Revision 1.8  2004/02/01 08:05:12  reinelt
  * Crystalfontz 633 extensions (CRC checking and stuff)
  * Models table for HD44780
@@ -315,7 +318,9 @@ static void drv_HD_byte (unsigned char controller, unsigned char data, unsigned 
 static void drv_HD_command (unsigned char controller, unsigned char cmd, int delay)
 {
   unsigned char enable;
-   
+
+  if (UseBusy) wait_for_busy_flag(controller);
+
   if (Bits==8) {
     
     // enable signal: 'controller' is a bitmask
@@ -356,8 +361,6 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
 
   // sanity check
   if (len<=0) return;
-
-  if (UseBusy) wait_for_busy_flag(controller);
 
   if (Bits==8) {
 
@@ -599,13 +602,13 @@ static int drv_HD_start (char *section)
   cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
   
   // make sure we don't use the busy flag with RW wired to GND
-  if (UseBusy && SIGNAL_RW)   {
+  if (UseBusy && !SIGNAL_RW)   {
     error("%s: Busyflag is to be used, but RW is wired to GND", Name);
     UseBusy=0;
   }
 
-  // make shure the display supports busy-flag checking in 4-Bit-Mode
-  // at the moment this is inly possible with martin Hejl's gpio driver,
+  // make sure the display supports busy-flag checking in 4-Bit-Mode
+  // at the moment this is inly possible with Martin Hejl's gpio driver,
   // which allows to use 4 bits as input and 4 bits as output
   if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
     error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
