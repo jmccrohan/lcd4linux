@@ -1,4 +1,4 @@
-/* $Id: battery.c,v 1.2 2001/03/02 11:04:08 reinelt Exp $
+/* $Id: battery.c,v 1.3 2001/08/05 17:13:29 reinelt Exp $
  *
  * APM and ACPI specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: battery.c,v $
+ * Revision 1.3  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.2  2001/03/02 11:04:08  reinelt
  *
  * cosmetic cleanups (comment headers)
@@ -43,7 +47,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.4 2001/03/08 09:02:04 reinelt Exp $
+/* $Id: seti.c,v 1.5 2001/08/05 17:13:29 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.5  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.4  2001/03/08 09:02:04  reinelt
  *
  * seti client cleanup
@@ -57,9 +61,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/time.h>
 
 #include "cfg.h"
 #include "debug.h"

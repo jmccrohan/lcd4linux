@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.23 2001/03/13 08:34:15 reinelt Exp $
+/* $Id: system.c,v 1.24 2001/08/05 17:13:29 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.24  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.23  2001/03/13 08:34:15  reinelt
  *
  * corrected a off-by-one bug with sensors
@@ -188,7 +192,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>

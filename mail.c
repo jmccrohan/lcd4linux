@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.8 2001/03/15 15:49:23 ltoetsch Exp $
+/* $Id: mail.c,v 1.9 2001/08/05 17:13:29 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.9  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.8  2001/03/15 15:49:23  ltoetsch
  * fixed compile HD44780.c, cosmetics
  *
@@ -69,9 +73,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 
 #include "cfg.h"

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.25 2001/03/16 16:40:17 ltoetsch Exp $
+/* $Id: XWindow.c,v 1.26 2001/08/05 17:13:29 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.26  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.25  2001/03/16 16:40:17  ltoetsch
  * implemented time bar
  *
@@ -546,4 +550,3 @@ LCD XWindow[] = {
 	{ "X11",0,0,0,0,BARS,0,xlcdinit,xlcdclear,xlcdput,xlcdbar,NULL,xlcdflush,xlcdquit },
 	{ NULL }
 };
-

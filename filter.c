@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.4 2000/03/23 07:24:48 reinelt Exp $
+/* $Id: filter.c,v 1.5 2001/08/05 17:13:29 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.5  2001/08/05 17:13:29  reinelt
+ *
+ * cleaned up inlude of sys/time.h and time.h
+ *
  * Revision 1.4  2000/03/23 07:24:48  reinelt
  *
  * PPM driver up and running (but slow!)
@@ -52,6 +56,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include <sys/time.h>
 
 #include "cfg.h"
