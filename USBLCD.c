@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.5 2002/08/19 07:36:29 reinelt Exp $
+/* $Id: USBLCD.c,v 1.6 2002/08/19 07:52:19 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.6  2002/08/19 07:52:19  reinelt
+ * corrected type declaration of (*defchar)()
+ *
  * Revision 1.5  2002/08/19 07:36:29  reinelt
  *
  * finished bar.c, USBLCD is the first driver that uses the generic bar functions
@@ -172,7 +175,7 @@ static int USBLCD_open (void)
   return 0;
 }
 
-static void USBLCD_define_char (int ascii, char *buffer)
+void USBLCD_define_char (int ascii, char *buffer)
 {
   USBLCD_command (0x40|8*ascii);
   USBLCD_write (buffer, 8);
