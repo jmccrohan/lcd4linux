@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.4 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.5 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.5  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.4  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -66,7 +69,7 @@
 #include "display.h"
 #include "pixmap.h"
 
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
+#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T)
 
 static LCD Lcd;
 static char *Port=NULL;

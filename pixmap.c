@@ -1,4 +1,4 @@
-/* $Id: pixmap.c,v 1.5 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: pixmap.c,v 1.6 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * generic pixmap driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: pixmap.c,v $
+ * Revision 1.6  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.5  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -67,10 +70,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "display.h"
 #include "pixmap.h"
 #include "fontmap.h"
+#include "debug.h"
 
 static int ROWS=0;
 static int COLS=0;
@@ -136,6 +141,10 @@ int pix_put (int row, int col, char *text)
 int pix_bar (int type, int row, int col, int max, int len1, int len2)
 {
   int x, y, len, rev;
+  static int *valbuf = NULL;
+  static int init = 0;
+  static time_t old;
+  time_t now;
   
   row*=YRES;
   col*=XRES;
@@ -150,9 +159,24 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
   
   if (len1<1) len1=1;
   else if (len1>max) len1=max;
-  
-  if (len2<1) len2=1;
-  else if (len2>max) len2=max;
+
+  if (type == BAR_T) {
+    if (init == 0 && valbuf == 0) {
+      valbuf = calloc(len2, sizeof(int));
+      if (valbuf == NULL) {
+	error("Couldn't allocte valbuf");
+	init = -1;
+        return -1;
+      }
+      init = 1;
+      debug("valbuf ok, len2=%d", len2);
+      time(&old);
+    }
+  }
+  else {
+    if (len2<1) len2=1;
+    else if (len2>max) len2=max;
+  }
   
   rev=0;
   
@@ -180,6 +204,28 @@ int pix_bar (int type, int row, int col, int max, int len1, int len2)
     for (y=0; y<max; y++) {
       for (x=0; x<XRES; x++) {
 	len=x<XRES/2?len1:len2;
+  	LCDpixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
+      }
+    }
+    break;
+
+  case BAR_T:
+    len1=max-len1;
+    rev=1;
+    time(&now);
+    if (now == old) {
+      valbuf[len2-1] += len1;
+      valbuf[len2-1] /= 2;
+    }
+    else {  
+      for (; old < now; old++)
+        for (x=1; x<len2; x++)
+          valbuf[x-1]=valbuf[x];
+      valbuf[len2-1] = len1;
+    }
+    for (x=0; x<len2; x++) {
+      len = valbuf[x];
+      for (y=0; y<max; y++) {
   	LCDpixmap[(row+y)*COLS+col+x]=y<len?!rev:rev;
       }
     }

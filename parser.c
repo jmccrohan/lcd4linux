@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.15 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: parser.c,v 1.16 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.16  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.15  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -181,6 +184,8 @@ static int bar_type (char tag)
     return BAR_U;
   case 'd':
     return BAR_D;
+  case 't':
+    return BAR_T;
   default:
     return 0;
   }
@@ -272,6 +277,8 @@ char *parse_row (char *string, int supported_bars, int usage[])
 	  break;
 	}
       }
+      else if (*s == ',' && (type & BAR_T))
+        token2=strtol(++s, &s, 10); /* get horizontal length */
       *p++='$';
       *p++=type;
       *p++=len;
@@ -279,7 +286,7 @@ char *parse_row (char *string, int supported_bars, int usage[])
       if (token>256) *p++=token>>8;
       if (token2!=-1) {
 	*p++=token2&255;
-	if (token>256) *p++=token2>>8;
+	if (token>256 && !(type & BAR_T)) *p++=token2>>8;
       }
       break;
       

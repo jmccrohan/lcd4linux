@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.17 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: Raster.c,v 1.18 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.18  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.17  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -131,7 +134,7 @@
 #include "display.h"
 #include "pixmap.h"
 
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
+#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T )
 
 static LCD Lcd;
 

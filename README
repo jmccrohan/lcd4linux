@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.19 2001/03/15 14:25:05 ltoetsch Exp $
+# $Id: README,v 1.20 2001/03/16 16:40:17 ltoetsch Exp $
 #
 
 This is the README file for lcd4linux
@@ -207,6 +207,11 @@ Display options:
   (down). If you specify the direction in upper case, a logarithmic bar will
   be created. note that the space occupied by a bar always grows from left
   to right or from top to bottom, regardless of the direction!
+  
+  '$t<height><token>,<width> will create a time series bar. The data are 
+  displayed like '$u', but are shifted every second 1 pixel to the 
+  left. Currently only displays based on the pixel-driver support this 
+  bar type.
 
 Tokens:
 

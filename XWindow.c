@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.24 2001/03/01 11:08:16 reinelt Exp $
+/* $Id: XWindow.c,v 1.25 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.25  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.24  2001/03/01 11:08:16  reinelt
  *
  * reworked configure to allow selection of drivers
@@ -148,7 +151,7 @@ union semun {
 };
 #endif
 
-#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 )
+#define BARS ( BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T)
 
 static LCD Lcd;
 static Display *dp;

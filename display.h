@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.13 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: display.h,v 1.14 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.14  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.13  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -88,9 +91,10 @@
 #define BAR_H2  (1<<4)
 #define BAR_V2  (1<<5)
 #define BAR_LOG (1<<6)
+#define BAR_T   (1<<7)
 
 #define BAR_H (BAR_L | BAR_R)
-#define BAR_V (BAR_U | BAR_D)
+#define BAR_V (BAR_U | BAR_D | BAR_T)
 #define BAR_HV (BAR_H | BAR_V)
 
 typedef struct LCD {

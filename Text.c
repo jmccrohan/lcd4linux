@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.3 2001/03/16 09:28:08 ltoetsch Exp $
+/* $Id: Text.c,v 1.4 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.4  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.3  2001/03/16 09:28:08  ltoetsch
  * bugfixes
  *
@@ -77,7 +80,7 @@ extern int foreground;
 static LCD Lcd;
 static WINDOW *w;
 WINDOW *err_win;
-#define BARS ( BAR_R | BAR_H2 )
+#define BARS ( BAR_R | BAR_H2 | BAR_T )
 int err_rows;
 
 int Text_clear (void)

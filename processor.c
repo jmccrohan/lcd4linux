@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.23 2001/03/16 09:28:08 ltoetsch Exp $
+/* $Id: processor.c,v 1.24 2001/03/16 16:40:17 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.24  2001/03/16 16:40:17  ltoetsch
+ * implemented time bar
+ *
  * Revision 1.23  2001/03/16 09:28:08  ltoetsch
  * bugfixes
  *
@@ -585,8 +588,12 @@ static char *process_row (int r)
 	if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
 	val2=query_bar(token);
       }
+      else if (type & BAR_T)
+	val2 = *(unsigned char*)++s; /* width */
       if (type & BAR_H)
 	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*xres, val2*len*xres);
+      else if (type & BAR_T)
+	lcd_bar (type, r, p-buffer+1, len*xres, val1*len*yres, val2*xres);
       else
 	lcd_bar (type, r, p-buffer+1, len*yres, val1*len*yres, val2*len*yres);
       
