@@ -1,4 +1,4 @@
-/* $Id: expression.c,v 1.2 2003/10/06 05:47:27 reinelt Exp $
+/* $Id: expression.c,v 1.3 2003/10/06 05:51:15 reinelt Exp $
  *
  * expression handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: expression.c,v $
+ * Revision 1.3  2003/10/06 05:51:15  reinelt
+ * functions: min(), max()
+ *
  * Revision 1.2  2003/10/06 05:47:27  reinelt
  * operators: ==, \!=, <=, >=
  *
@@ -95,6 +98,23 @@ static void my_tan (RESULT *result, RESULT *arg1)
 }
 
 
+static void my_min (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  double a1=R2N(arg1);
+  double a2=R2N(arg2);
+  double value=a1<a2?a1:a2;
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+static void my_max (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  double a1=R2N(arg1);
+  double a2=R2N(arg2);
+  double value=a1>a2?a1:a2;
+  SetResult(&result, R_NUMBER, &value); 
+}
+
+
 static void my_strlen (RESULT *result, RESULT *arg1)
 {
   double value=strlen(R2S(arg1));
@@ -124,6 +144,10 @@ int EX_init (void)
   AddFunction ("cos",  1, my_cos);
   AddFunction ("tan",  1, my_tan);
   
+  // min, max
+  AddFunction ("min",  2, my_min);
+  AddFunction ("max",  2, my_max);
+
   // register some basic string functions
   AddFunction ("strlen", 1, my_strlen);
 
