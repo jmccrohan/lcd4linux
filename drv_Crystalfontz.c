@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.11 2004/02/14 11:56:17 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.12 2004/03/01 04:29:51 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.12  2004/03/01 04:29:51  reinelt
+ * cfg_number() returns -1 on error, 0 if value not found (but default val used),
+ *  and 1 if value was used from the configuration.
+ * HD44780 driver adopted to new cfg_number()
+ * Crystalfontz 631 driver nearly finished
+ *
  * Revision 1.11  2004/02/14 11:56:17  reinelt
  * M50530 driver ported
  * changed lots of 'char' to 'unsigned char'
@@ -329,13 +335,13 @@ static void drv_CF_write2 (unsigned char *string, int len)
 {
   // limit length
   if (Col+len>16) len=16-Col;
+  if (len<0) len=0;
   
   // sanity check
   if (Row>=2 || Col+len>16) {
     error ("%s: internal error: write outside linebuffer bounds!", Name);
     return;
   }
-  
   memcpy (Line+16*Row+Col, string, len);
   drv_CF_send (7+Row, 16, Line+16*Row);
 }
@@ -344,6 +350,8 @@ static void drv_CF_write2 (unsigned char *string, int len)
 static void drv_CF_write3 (unsigned char *string, int len)
 {
   debug ("write3(<%.*s>,%d)", len, string, len);
+
+  
 }
 
 
@@ -401,25 +409,31 @@ static int drv_CF_contrast (int contrast)
   if (contrast == -1) return Contrast;
   
   if (contrast < 0  ) contrast = 0;
-  if (contrast > 100) contrast = 100;
   Contrast=contrast;
 
   switch (Protocol) {
 
   case 1:
+    // contrast range 0 to 100
+    if (contrast > 100) contrast = 100;
     buffer[0] = 15; // Set LCD Contrast
-    buffer[1] = Contrast;
+    buffer[1] = contrast;
     drv_CF_write1 (buffer, 2);
     break;
 
   case 2:
+    // contrast range 0 to 50
+    if (contrast > 50) contrast = 50;
+    drv_CF_send (13, 1, &contrast);
+    break;
   case 3:
-    // Contrast goes from 0 to 50 only
-    if (Contrast>50) Contrast=50;
-    drv_CF_send (13, 1, &Contrast);
+    // contrast range 0 to 50
+    if (contrast > 255) contrast = 255;
+    drv_CF_send (13, 1, &contrast);
     break;
   }
   
+  Contrast=contrast;
   return Contrast;
 }
 
@@ -501,13 +515,13 @@ static int drv_CF_autodetect (void)
     if (drv_CF_poll()) {
       // display type
       if (Packet.type==0x41) {
-	char t[7]; float h, v;
+	char t[7], c; float h, v;
 	info ("%s: display identifies itself as '%s'", Name, Packet.data); 
-	if (sscanf(Packet.data, "%6s:h%f,v%f", t, &h, &v)!=3) {
+	if (sscanf(Packet.data, "%6s:h%f,%c%f", t, &h, &c, &v)!=4) {
 	  error ("%s: error parsing display identification string", Name);
 	  return -1;
 	}
-	info ("%s: display type '%s', hardware version %3.1f, firmware version %3.1f", Name, t, h, v);
+	info ("%s: display type '%s', hardware version %3.1f, firmware version %c%3.1f", Name, t, h, c, v);
 	if (strncmp(t, "CFA", 3)==0) {
 	  for (m=0; Models[m].type!=-1; m++) {
 	    // omit the 'CFA'
@@ -709,12 +723,12 @@ static int drv_CF_start (char *section)
   memset (Line, ' ', sizeof(Line));
   
   // set contrast
-  if (cfg_number(section, "Contrast", 0, 0, 100, &i)==0) {
+  if (cfg_number(section, "Contrast", 0, 0, 100, &i)>0) {
     drv_CF_contrast(i);
   }
 
   // set backlight
-  if (cfg_number(section, "Backlight", 0, 0, 100, &i)==0) {
+  if (cfg_number(section, "Backlight", 0, 0, 100, &i)>0) {
     drv_CF_backlight(i);
   }
 

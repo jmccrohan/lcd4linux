@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.13 2004/02/15 21:43:43 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.14 2004/03/01 04:29:51 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,12 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.14  2004/03/01 04:29:51  reinelt
+ * cfg_number() returns -1 on error, 0 if value not found (but default val used),
+ *  and 1 if value was used from the configuration.
+ * HD44780 driver adopted to new cfg_number()
+ * Crystalfontz 631 driver nearly finished
+ *
  * Revision 1.13  2004/02/15 21:43:43  reinelt
  * T6963 driver nearly finished
  * framework for graphic displays done
@@ -639,7 +645,7 @@ static int drv_HD_start (char *section)
   // maybe set brightness
   if (Capabilities & CAP_BRIGHTNESS) {
     int brightness;
-    if (cfg_number(section, "Brightness", 0, 0, 3, &brightness)==0) {
+    if (cfg_number(section, "Brightness", 0, 0, 3, &brightness)>0) {
       drv_HD_brightness(brightness);
     }
   }

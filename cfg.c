@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.34 2004/02/18 06:39:20 reinelt Exp $^
+/* $Id: cfg.c,v 1.35 2004/03/01 04:29:51 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.35  2004/03/01 04:29:51  reinelt
+ * cfg_number() returns -1 on error, 0 if value not found (but default val used),
+ *  and 1 if value was used from the configuration.
+ * HD44780 driver adopted to new cfg_number()
+ * Crystalfontz 631 driver nearly finished
+ *
  * Revision 1.34  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -504,7 +510,7 @@ int l4l_cfg_number (char *section, char *key, int defval, int min, int max, int 
     return -1;
   }
 
-  return 0;
+  return 1;
 }
 
 

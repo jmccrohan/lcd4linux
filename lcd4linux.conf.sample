@@ -9,12 +9,13 @@ Display LK204 {
 
 
 Display CF631 {
-    Icons 2
+    Icons 5
     Driver 'Crystalfontz'
     Model '631'
     Port '/dev/usb/tts/0'
-    Port '/dev/tts/0'
     Speed 115200
+    Contrast 95
+    Backlight 100
 }
 
 Display CF632 {
@@ -370,7 +371,11 @@ Layout L16x2 {
 	Col1  'Busy'
 	Col11 'BusyBar'
     }
-#    Row2 {
+    Row2 {
+	Col1  'Disk'
+	Col11 'DiskBar'
+    }
+#   Row2 {
 #	Col1 'Heartbeat'
 #	Col2 'EKG'
 #	Col3 'Karo'
@@ -378,7 +383,7 @@ Layout L16x2 {
 #	Col5 'Blob'
 #	Col6 'Wave'
 #	Col7 'Squirrel'
-#    }
+#   }
 }
 
 Layout Test {
@@ -403,15 +408,15 @@ Layout Test {
 #Display 'LK204'
 #Display 'HD44780-20x4'
 #Display 'M50530-24x8'
-#Display 'CF631'
+Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'USBLCD'
-Display 'T6963-240x64'
+#Display 'T6963-240x64'
 #Display 'XWindow'
 
-Layout  'Default'
-#Layout  'L16x2'
+#Layout  'Default'
+Layout  'L16x2'
 #Layout 'Test'
 
 
