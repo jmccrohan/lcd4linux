@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.10 2001/09/12 05:37:22 reinelt Exp $
+/* $Id: mail.c,v 1.11 2001/09/12 05:58:16 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.11  2001/09/12 05:58:16  reinelt
+ * fixed bug in mail2.c
+ *
  * Revision 1.10  2001/09/12 05:37:22  reinelt
  *
  * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
@@ -92,11 +95,11 @@ int Mail (int index, int *num, int *unseen)
 {
   FILE *fstr;
   char buffer[32];
-  static int cfgmbx[MAILBOXES+1]={[0 ... MAILBOXES]=TRUE,}; // Mailbox #index configured?
-  static time_t mbxlt[MAILBOXES+1]={[0 ... MAILBOXES]=0,};  // mtime of Mailbox #index
-  static int mbxnum[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last calculated # of mails
-  static time_t now[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last call to procedure at 
-                                                            // for Mailbox #index
+  static int   cfgmbx[MAILBOXES+1]={[0 ... MAILBOXES]=TRUE,}; // Mailbox #index configured?
+  static time_t mbxlt[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // mtime of Mailbox #index
+  static int   mbxnum[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last calculated # of mails
+  static time_t   now[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last call to procedure at 
+                                                              // for Mailbox #index
   char *fnp1;
   int v1=0;
   int last_line_blank1;                   // Was the last line blank?

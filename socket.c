@@ -1,4 +1,4 @@
-/* $Id: socket.c,v 1.3 2001/09/12 05:37:22 reinelt Exp $
+/* $Id: socket.c,v 1.4 2001/09/12 05:58:16 reinelt Exp $
  *
  * simple socket functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: socket.c,v $
+ * Revision 1.4  2001/09/12 05:58:16  reinelt
+ * fixed bug in mail2.c
+ *
  * Revision 1.3  2001/09/12 05:37:22  reinelt
  *
  * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
@@ -84,7 +87,7 @@
 
 static char *quotemeta (char *string)
 {
-  char buffer[256];
+  static char buffer[256];
   char *s, *p;
 
   p=buffer;

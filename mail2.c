@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.4 2001/03/16 09:28:08 ltoetsch Exp $
+/* $Id: mail2.c,v 1.5 2001/09/12 05:58:16 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.5  2001/09/12 05:58:16  reinelt
+ * fixed bug in mail2.c
+ *
  * Revision 1.4  2001/03/16 09:28:08  ltoetsch
  * bugfixes
  *
@@ -189,6 +192,9 @@ static int check_nntp(char *user, char *pass, char *machine,
   int totg, unsg;
   int first;
   
+  *total = 0;
+  *unseen = 0;
+  
   strcpy(buf, cfg_get("Newsrc") ?: ".newsrc");
   if (*buf == 0 || ((fp = fopen(buf, "r")) == NULL)) {
     error("Couldn't open .newsrc-file '%s'", buf);
@@ -293,6 +299,9 @@ static int check_imap4(char *user, char *pass, char *machine,
   char buf[BUFLEN];
   char *p;
 
+  *total=0;
+  *unseen = 0;
+
   if (fd < 0)
     {
       error("Couldn't connect to %s:%d (%s)", machine, port, strerror(errno));
@@ -336,6 +345,9 @@ static int check_pop3(char *user, char *pass, char *machine,
   int fd = open_socket(machine, port);
   int n;
   char buf[BUFLEN];
+
+  *total=0;
+  *unseen=0;
 
   if (fd < 0)
     {
