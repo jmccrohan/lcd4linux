@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.5 2001/09/12 05:58:16 reinelt Exp $
+/* $Id: mail2.c,v 1.6 2001/09/12 06:17:22 reinelt Exp $
  *
  * mail: pop3, imap, news functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.6  2001/09/12 06:17:22  reinelt
+ * *** empty log message ***
+ *
  * Revision 1.5  2001/09/12 05:58:16  reinelt
  * fixed bug in mail2.c
  *
@@ -226,6 +229,7 @@ static int check_nntp(char *user, char *pass, char *machine,
 	return -1;
       }
   }
+  // Fixme: this is badbadbadbad
   sleep(2);  /* wait for newsserver to read groupinfo */
   groups = 0;
   err = 0;

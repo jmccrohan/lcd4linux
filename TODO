@@ -107,3 +107,6 @@ e.g. '%nw'  is 'network transmit' for _all_ devices
 
 2001-09-11 Michael Reinelt <reinelt@eunet.at>
 remove bar code from drivers and create a common bar library
+
+2001-09-12 Carsten Nau <info@cnau.de>
+make the output for emails shorter (at the moment up to 9999 emails)
