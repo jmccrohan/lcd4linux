@@ -126,7 +126,7 @@ Display HD44780-I2C {
 
 Display M50530-24x8 {
     Driver 'M50530'
-    Port '/dev/parports/0'	
+    Port '/dev/parport0'	
 #   Port '0x378'
     Size '24x8'
     Wire.EX   'STROBE'
@@ -301,7 +301,7 @@ Widget Disk {
     # expression (proc_stat::disk('.*', 'rblk', 500)+proc_stat::disk('.*', 'wblk', 500))/2
     # with kernel 2.6, disk_io disappeared from /proc/stat but moved to /proc/diskstat
     # therefore you have to use another function called 'diskstats':
-    expression diskstats('.*', 'read_sectors', 500) + diskstats('.*', 'write_sectors', 500)
+    expression diskstats('hd.', 'read_sectors', 500) + diskstats('hd.', 'write_sectors', 500)
     prefix 'disk'
     postfix ' '
     width 10	
@@ -315,8 +315,8 @@ Widget DiskBar {
     #expression  proc_stat::disk('.*', 'rblk', 500)
     #expression2 proc_stat::disk('.*', 'wblk', 500)
     # for kernel 2.6:
-    expression  diskstats('.*', 'read_sectors',  500)
-    expression2 diskstats('.*', 'write_sectors', 500)
+    expression  diskstats('hd.', 'read_sectors',  500)
+    expression2 diskstats('hd.', 'write_sectors', 500)
     length 14	
     direction 'E'
     update tack
@@ -687,10 +687,10 @@ Layout testMySQL {
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
-Display 'CF632'
+#Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-#Display 'M50530-24x8'
+Display 'M50530-24x8'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'

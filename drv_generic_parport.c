@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.11 2004/09/18 15:58:57 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.12 2005/01/06 16:54:54 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.12  2005/01/06 16:54:54  reinelt
+ * M50530 fixes
+ *
  * Revision 1.11  2004/09/18 15:58:57  reinelt
  * even more HD44780 cleanups, hardwiring for LCM-162
  *
@@ -426,11 +429,11 @@ void drv_generic_parport_toggle (const unsigned char bits, const int level, cons
 
   /* any signal affected? */
   /* Note: this may happen in case a signal is hardwired to GND */
-  if (bits==0) return;
+  if (bits == 0) return;
 
   /* prepare value */
-  value1=level?bits:0;
-  value2=level?0:bits;
+  value1 = level ? bits : 0;
+  value2 = level ? 0    : bits;
   
   /* Strobe, Select and AutoFeed are inverted! */
   value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
@@ -440,18 +443,19 @@ void drv_generic_parport_toggle (const unsigned char bits, const int level, cons
 #ifdef WITH_PPDEV
   if (PPdev) {
     struct ppdev_frob_struct frob;
-    frob.mask=bits;
-    
+    frob.mask = bits;
+      
     /* rise */
-    frob.val=value1;
+    frob.val = value1;
     ioctl (PPfd, PPFCONTROL, &frob);
-    
+      
     /* pulse width */
     ndelay(delay);      
-    
+      
     /* lower */
-    frob.val=value2;
+    frob.val = value2;
     ioctl (PPfd, PPFCONTROL, &frob);
+
   } else
 #endif
     {

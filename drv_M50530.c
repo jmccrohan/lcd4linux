@@ -1,4 +1,4 @@
-#/* $Id: drv_M50530.c,v 1.14 2004/06/26 12:04:59 reinelt Exp $
+#/* $Id: drv_M50530.c,v 1.15 2005/01/06 16:54:53 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.15  2005/01/06 16:54:53  reinelt
+ * M50530 fixes
+ *
  * Revision 1.14  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -156,13 +159,13 @@ static void drv_M5_command (const unsigned int cmd, const int delay)
 {
     
   /* put data on DB1..DB8 */
-  drv_generic_parport_data (cmd&0xff);
-    
+  drv_generic_parport_data (cmd & 0xff);
+
   /* set I/OC1 */
   /* set I/OC2 */
-  drv_generic_parport_control (SIGNAL_IOC1|SIGNAL_IOC2, 
-			       (cmd&0x200?SIGNAL_IOC1:0) | 
-			       (cmd&0x100?SIGNAL_IOC2:0));
+  drv_generic_parport_control (SIGNAL_IOC1 | SIGNAL_IOC2, 
+			       (cmd & 0x100 ? SIGNAL_IOC1 : 0) | 
+			       (cmd & 0x200 ? SIGNAL_IOC2 : 0));
   
   /* Control data setup time */
   ndelay(200);
@@ -195,8 +198,8 @@ static void drv_M5_write (const int row, const int col, const char *data, const 
   drv_M5_command (0x300 | pos, 20);
   
   while (l--) {
-    cmd = *data++;
-    drv_M5_command (0x100 | cmd, 20);
+    cmd = *(unsigned char*)data++;
+    drv_M5_command (0x200 | cmd, 20);
   }
 }
 
@@ -205,12 +208,12 @@ static void drv_M5_defchar (const int ascii, const unsigned char *matrix)
 {
   int i;
   
-  drv_M5_command (0x300+192+8*(ascii-CHAR0), 20);
+  drv_M5_command (0x300 + 192 + 8 * (ascii - CHAR0), 20);
 
   /* Fixme: looks like the M50530 cannot control the bottom line */
   /* therefore we have only 7 bytes here */
-  for (i=0; i<7; i++) {
-    drv_M5_command (0x100|(matrix[i] & 0x3f), 20);
+  for (i = 0; i < 7; i++) {
+    drv_M5_command (0x200 | (matrix[i] & 0x3f), 20);
   }
 }
 
@@ -282,11 +285,14 @@ static int drv_M5_start (const char *section, const int quiet)
   if ((SIGNAL_EX   = drv_generic_parport_wire_ctrl ("EX",   "STROBE"))==0xff) return -1;
   if ((SIGNAL_IOC1 = drv_generic_parport_wire_ctrl ("IOC1", "SELECT"))==0xff) return -1;
   if ((SIGNAL_IOC2 = drv_generic_parport_wire_ctrl ("IOC2", "AUTOFD"))==0xff) return -1;
-  if ((SIGNAL_GPO  = drv_generic_parport_wire_ctrl ("GPO",  "INIT"  ))==0xff) return -1;
+  if ((SIGNAL_GPO  = drv_generic_parport_wire_ctrl ("GPO",  "GND"   ))==0xff) return -1;
 
   /* clear all signals */
   drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);
-
+  
+  /* for any mysterious reason, this delay is necessary... */
+  udelay(2000);
+  
   /* set direction: write */
   drv_generic_parport_direction (0);
   
@@ -362,37 +368,37 @@ int drv_M5_init (const char *section, const int quiet)
 
 
   /* start display */
-  if ((ret=drv_M5_start (section, quiet))!=0)
+  if ((ret = drv_M5_start (section, quiet)) != 0)
     return ret;
   
   /* initialize generic text driver */
-  if ((ret=drv_generic_text_init(section, Name))!=0)
+  if ((ret = drv_generic_text_init(section, Name)) != 0)
     return ret;
 
   /* initialize generic icon driver */
-  if ((ret=drv_generic_text_icon_init())!=0)
+  if ((ret = drv_generic_text_icon_init()) != 0)
     return ret;
   
   /* initialize generic bar driver */
-  if ((ret=drv_generic_text_bar_init(0))!=0)
+  if ((ret = drv_generic_text_bar_init(0)) != 0)
     return ret;
   
   /* add fixed chars to the bar driver */
-  drv_generic_text_bar_add_segment (0,0,255,32); /* ASCII  32 = blank */
+  drv_generic_text_bar_add_segment (0, 0, 255, 32); /* ASCII  32 = blank */
 
   /* register text widget */
-  wc=Widget_Text;
-  wc.draw=drv_generic_text_draw;
+  wc = Widget_Text;
+  wc.draw = drv_generic_text_draw;
   widget_register(&wc);
   
   /* register icon widget */
-  wc=Widget_Icon;
-  wc.draw=drv_generic_text_icon_draw;
+  wc = Widget_Icon;
+  wc.draw = drv_generic_text_icon_draw;
   widget_register(&wc);
   
   /* register bar widget */
-  wc=Widget_Bar;
-  wc.draw=drv_generic_text_bar_draw;
+  wc = Widget_Bar;
+  wc.draw = drv_generic_text_bar_draw;
   widget_register(&wc);
   
   /* register plugins */
@@ -420,6 +426,7 @@ int drv_M5_quit (const int quiet) {
   /* clear all signals */
   drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);
   
+  /* close port */
   drv_generic_parport_close();
   
   return (0);
