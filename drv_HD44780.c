@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.7 2004/01/30 07:12:35 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.8 2004/02/01 08:05:12 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,11 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.8  2004/02/01 08:05:12  reinelt
+ * Crystalfontz 633 extensions (CRC checking and stuff)
+ * Models table for HD44780
+ * Noritake VFD BVrightness patch from Bill Paxton
+ *
  * Revision 1.7  2004/01/30 07:12:35  reinelt
  * HD44780 busy-flag support from Martin Hejl
  * loadavg() uClibc replacement from Martin Heyl
@@ -93,6 +98,8 @@
 
 static char Name[]="HD44780";
 
+static int Model;
+static int Capabilities;
 
 /* low level communication timings [nanoseconds]
  * as these values differ from spec to spec,
@@ -131,12 +138,29 @@ static unsigned char SIGNAL_GPO;
 
 /* maximum time to wait for the busy-flag (in usec) */
 #define MAX_BUSYFLAG_WAIT 100000
-static int use_busy_flag = 0;
+static int UseBusy = 0;
 
 
 // Fixme
 static int GPOS;
 // static int GPO=0;
+
+
+typedef struct {
+  int type;
+  char *name;
+  int capabilities;
+} MODEL;
+
+#define CAP_BRIGHTNESS (1<<0)
+#define CAP_BUSY4BIT   (1<<1)
+
+static MODEL Models[] = {
+  { 0x01, "generic",  0 },
+  { 0x02, "Noritake", CAP_BRIGHTNESS },
+  { 0x03, "Soekris",  CAP_BUSY4BIT },
+  { 0xff, "Unknown",  0 }
+};
 
 
 // ****************************************
@@ -321,7 +345,7 @@ static void drv_HD_command (unsigned char controller, unsigned char cmd, int del
   }
   
   // wait for command completion
-  if (!use_busy_flag) udelay(delay);
+  if (!UseBusy) udelay(delay);
   
 }
 
@@ -333,7 +357,7 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
   // sanity check
   if (len<=0) return;
 
-  if (use_busy_flag) wait_for_busy_flag(controller);
+  if (UseBusy) wait_for_busy_flag(controller);
 
   if (Bits==8) {
 
@@ -345,7 +369,7 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
     if (controller&0x01) enable|=SIGNAL_ENABLE;
     if (controller&0x02) enable|=SIGNAL_ENABLE2;
     
-    if (!use_busy_flag) {
+    if (!UseBusy) {
       // clear RW, set RS
       drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
       // Address set-up time
@@ -354,7 +378,7 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
     
     while (len--) {
 
-      if (use_busy_flag) {
+      if (UseBusy) {
 	wait_for_busy_flag(controller);
 	// clear RW, set RS
 	drv_generic_parport_control (SIGNAL_RW | SIGNAL_RS, SIGNAL_RS);
@@ -369,19 +393,19 @@ static void drv_HD_data (unsigned char controller, char *string, int len, int de
       drv_generic_parport_toggle (enable, 1, T_PW);
       
       // wait for command completion
-      if (!use_busy_flag) udelay(delay);
+      if (!UseBusy) udelay(delay);
     }
     
   } else { // 4 bit mode
     
     while (len--) {
-      if (use_busy_flag) wait_for_busy_flag(controller);
+      if (UseBusy) wait_for_busy_flag(controller);
 
       // send data with RS enabled
       drv_HD_byte (controller, *(string++), SIGNAL_RS);
       
       // wait for command completion
-      if (!use_busy_flag) udelay(delay);
+      if (!UseBusy) udelay(delay);
     }
   }
 }
@@ -416,11 +440,81 @@ static void drv_HD_goto (int row, int col)
 }
 
 
+static void drv_HD_write (char *string, int len)
+{
+  drv_HD_data (currController, string, len, T_EXEC);
+}
+
+
+static void drv_HD_defchar (int ascii, char *buffer)
+{
+  // define chars on *both* controllers!
+  drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
+  drv_HD_data (allControllers, buffer, 8, T_WRCG);
+}
+
+
+static int drv_HD_brightness (int brightness)
+{
+  char cmd;
+  
+  if (!(Capabilities & CAP_BRIGHTNESS)) return -1;
+
+  if (brightness<0) brightness=0;
+  if (brightness>3) brightness=3;
+
+  cmd='0'+brightness;
+  
+  drv_HD_command (allControllers, 0x38, T_EXEC); // enable function
+  drv_HD_data (allControllers, &cmd, 1, T_WRCG); // set brightness
+
+  return brightness;
+}
+
+  
+// Fixme
+#if 0
+static void drv_HD_setGPO (int bits)
+{
+  if (Lcd.gpos>0) {
+    
+    // put data on DB1..DB8
+    drv_generic_parport_data (bits);
+    
+    // 74HCT573 set-up time
+    ndelay(20);
+    
+    // send data
+    // 74HCT573 enable pulse width = 24ns
+    drv_generic_parport_toggle (SIGNAL_GPO, 1, 230);
+  }
+}
+#endif
+
+
 static int drv_HD_start (char *section)
 {
+  char *model, *s;
   int rows=-1, cols=-1, gpos=-1;
-  char *s;
   
+  model=cfg_get(section, "Model", NULL);
+  if (model!=NULL && *model!='\0') {
+    int i;
+    for (i=0; Models[i].type!=0xff; i++) {
+      if (strcasecmp(Models[i].name, model)==0) break;
+    }
+    if (Models[i].type==0xff) {
+      error ("%s: %s.Model '%s' is unknown from %s", Name, section, model, cfg_source());
+      return -1;
+    }
+    Model=i;
+    Capabilities=Models[Model].capabilities;
+    info ("%s: using model '%s'", Name, Models[Model].name);
+  } else {
+    error ("%s: no '%s.Model' entry from %s", Name, section, cfg_source());
+    return -1;
+  }
+
   s=cfg_get(section, "Size", NULL);
   if (s==NULL || *s=='\0') {
     error ("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
@@ -499,58 +593,41 @@ static int drv_HD_start (char *section)
   drv_HD_command (allControllers, 0x08, T_EXEC);  // Display off, cursor off, blink off
   drv_HD_command (allControllers, 0x0c, T_CLEAR); // Display on, cursor off, blink off, wait 1.64 ms
   drv_HD_command (allControllers, 0x06, T_EXEC);  // curser moves to right, no shift
+  
+  // maybe use busy-flag from now on 
+  // (we can't use the busy flag during the init sequence)
+  cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
+  
+  // make sure we don't use the busy flag with RW wired to GND
+  if (UseBusy && SIGNAL_RW)   {
+    error("%s: Busyflag is to be used, but RW is wired to GND", Name);
+    UseBusy=0;
+  }
 
-  // Save it in a local variable, until init is complete (for init, we can't use the busy flag)
-  if (cfg_number(section, "UseBusy", 0, 0, 1, &use_busy_flag)<0) return -1;
-
-  // Make sure we don't use the busy flag, if it's set to GND
-  if (SIGNAL_RW == 0 && use_busy_flag != 0 )   {
-	  debug("HD44780: Busyflag is to be used, but wiring set RW to GND. Disabling busy-flag");
-	  use_busy_flag=0;
+  // make shure the display supports busy-flag checking in 4-Bit-Mode
+  // at the moment this is inly possible with martin Hejl's gpio driver,
+  // which allows to use 4 bits as input and 4 bits as output
+  if (UseBusy && Bits==4 && !(Capabilities&CAP_BUSY4BIT)) {
+    error("%s: Model '%s' does not support busy-flag checking in 4-bit-mode", Name, Models[Model].name);
+    UseBusy=0;
   }
   
-  info("HD44780: %susing Busyflag", use_busy_flag?"":"not ");
+  info("%s: %susing busy-flag checking", Name, UseBusy?"":"not ");
 
   drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
   drv_HD_command (allControllers, 0x03, T_CLEAR); // return home
+  
+  // maybe set brightness
+  if (Capabilities & CAP_BRIGHTNESS) {
+    int brightness;
+    if (cfg_number(section, "Brightness", 0, 0, 3, &brightness)==0) {
+      drv_HD_brightness(brightness);
+    }
+  }
 
- 
   return 0;
 }
 
-
-static void drv_HD_write (char *string, int len)
-{
-  drv_HD_data (currController, string, len, T_EXEC);
-}
-
-
-static void drv_HD_defchar (int ascii, char *buffer)
-{
-  // define chars on *both* controllers!
-  drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
-  drv_HD_data (allControllers, buffer, 8, T_WRCG);
-}
-
-
-// Fixme
-#if 0
-static void drv_HD_setGPO (int bits)
-{
-  if (Lcd.gpos>0) {
-    
-    // put data on DB1..DB8
-    drv_generic_parport_data (bits);
-    
-    // 74HCT573 set-up time
-    ndelay(20);
-    
-    // send data
-    // 74HCT573 enable pulse width = 24ns
-    drv_generic_parport_toggle (SIGNAL_GPO, 1, 230);
-  }
-}
-#endif
 
 // ****************************************
 // ***            plugins               ***
@@ -575,7 +652,11 @@ static void drv_HD_setGPO (int bits)
 // list models
 int drv_HD_list (void)
 {
-  printf ("any");
+  int i;
+  
+  for (i=0; Models[i].type!=0xff; i++) {
+    printf ("%s ", Models[i].name);
+  }
   return 0;
 }
 
@@ -665,3 +746,19 @@ DRIVER drv_HD44780 = {
   quit: drv_HD_quit, 
 };
 
+
+#if 0
++
++// Change Noritake CU series VFD brightness level
++  char tmpbuffer[2];
++  int cu_vfd_brightness;
++  if (cfg_number("CU_VFD_Brightness", 0, 0, 3, &cu_vfd_brightness)<0) return -1;
++  if (cu_vfd_brightness) {
+  +    snprintf (tmpbuffer, 2, "\%o", cu_vfd_brightness);
+  +    HD_command (0x03, 0x38, T_EXEC);           // enable function
+  +    HD_write (0x03, tmpbuffer, 1, T_WRCG);     // set brightness
+  +    info ("HD44780: Noritake CU VFD detected. Brightness = %d (0-3)", cu_vfd_brightness);
+  +    info ("         Settings: 0=100\%, 1=75\%, 2=50\%, 3=25\%");
+  + }
+ 
+#endif

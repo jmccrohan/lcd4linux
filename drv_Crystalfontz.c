@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.8 2004/02/01 08:05:12 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.8  2004/02/01 08:05:12  reinelt
+ * Crystalfontz 633 extensions (CRC checking and stuff)
+ * Models table for HD44780
+ * Noritake VFD BVrightness patch from Bill Paxton
+ *
  * Revision 1.7  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -116,23 +121,23 @@ static MODEL Models[] = {
 // x^0 + x^5 + x^12
 #define CRCPOLY 0x8408 
 
-static unsigned short CRC=0xffff;
-
-static unsigned short CRC16 (unsigned short crc, unsigned char *p, size_t len)
+static unsigned short CRC (unsigned char *p, size_t len, unsigned short seed)
 {
   int i;
   while (len--) {
-    crc ^= *p++;
+    seed ^= *p++;
     for (i = 0; i < 8; i++)
-      crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY : 0);
+      seed = (seed >> 1) ^ ((seed & 1) ? CRCPOLY : 0);
   }
-  return ~crc;
+  return ~seed;
 }
 
 
 static void drv_CF_write_crc (char *string, int len)
 {
   unsigned char buffer[16+2];
+  unsigned short crc;
+
   
   if (len>sizeof(buffer)-2) {
     error ("%s: internal error: packet length %d exceeds buffer size %d", Name, len, sizeof(buffer)-2);
@@ -140,9 +145,12 @@ static void drv_CF_write_crc (char *string, int len)
   }
   
   strcpy (buffer, string);
-  CRC = CRC16(CRC, buffer, len);
-  buffer[len]   = (CRC >> 8);
-  buffer[len+1] =  CRC & 0xff;
+  crc = CRC(buffer, len, 0xffff);
+  buffer[len]   =  crc & 0xff;
+  buffer[len+1] = (crc >> 8);
+
+  drv_generic_serial_write (buffer, len+2);
+
 }
 
 
@@ -219,16 +227,19 @@ static int drv_CF_start (char *section)
   drv_CF_write ("\1", 2);
   usleep(250*1000);
 #if 1
-  {
-    int len=drv_generic_serial_read (buffer, 16);
-    debug ("Michi: len=<%d> buffer=<%s>", len, buffer);
+  while (1) {
+    int len;
+    // memset(buffer, 0, sizeof(buffer));
+    len=drv_generic_serial_read (buffer, 16);
+    debug ("Michi1: len=<%d> buffer=<%d> <%d> <%d> <%d> <%s>", len, buffer[0], buffer[1], buffer[2], buffer[3], buffer);
+    usleep(250*1000);
   }
 #else
   if (drv_generic_serial_read (buffer, 16)==16) {
     info ("%s: display reports serial number 0x%x", Name, *(short*)buffer);
   }
 #endif
-
+  
   // initialize global variables
   DROWS    = Models[Model].rows;
   DCOLS    = Models[Model].cols;

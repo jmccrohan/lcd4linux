@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.h,v 1.1 2004/01/20 14:26:09 reinelt Exp $
+/* $Id: drv_generic_serial.h,v 1.2 2004/02/01 08:05:12 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_serial.h,v $
+ * Revision 1.2  2004/02/01 08:05:12  reinelt
+ * Crystalfontz 633 extensions (CRC checking and stuff)
+ * Models table for HD44780
+ * Noritake VFD BVrightness patch from Bill Paxton
+ *
  * Revision 1.1  2004/01/20 14:26:09  reinelt
  * moved drv_generic to drv_generic_serial
  *
@@ -47,9 +52,10 @@
 #ifndef _DRV_GENERIC_SERIALH_
 #define _DRV_GENERIC_SERIAL_H_
 
-int           drv_generic_serial_open        (char *section, char *driver);
-int           drv_generic_serial_read        (char *string, int len);
-void          drv_generic_serial_write       (char *string, int len);
-int           drv_generic_serial_close       (void);
+int   drv_generic_serial_open  (char *section, char *driver);
+int   drv_generic_serial_poll  (char *string, int len);
+int   drv_generic_serial_read  (char *string, int len);
+void  drv_generic_serial_write (char *string, int len);
+int   drv_generic_serial_close (void);
 
 #endif
