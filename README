@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.16 2001/03/09 14:24:49 ltoetsch Exp $
+# $Id: README,v 1.17 2001/03/13 07:41:22 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -23,8 +23,10 @@ lcd4linux -h
 lcd4linux -l 
   list available drivers
 
+#ifdef USE_OLD_UDELAY
 lcd4linux -d
   calibrate delay loop (necessary for some drivers)
+#endif
 
 lcd4linux [-c key=val] [-F] [-f config-file] [-o output] [-q] [-v]
   run lcd4linux 

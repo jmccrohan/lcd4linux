@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.31 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.32 2001/03/13 07:41:22 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.32  2001/03/13 07:41:22  reinelt
+ *
+ * added NEWS file
+ *
  * Revision 1.31  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -200,7 +204,9 @@ static void usage(void)
   printf ("%s\n", release);
   printf ("usage: lcd4linux [-h]\n");
   printf ("       lcd4linux [-l]\n");
+#ifdef USE_OLD_UDELAY
   printf ("       lcd4linux [-d]\n");
+#endif
   printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
