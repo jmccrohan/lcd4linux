@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.11 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.12 2004/06/29 04:49:30 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,10 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.12  2004/06/29 04:49:30  reinelt
+ *
+ * B+E enhanced port detection
+ *
  * Revision 1.11  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -377,12 +381,14 @@ static int drv_BuE_CT_start (const char *section)
   if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
   
 #if 0
-  drv_generic_serial_write (ESC "Kr", 3); /* restart terminal   */
+  /* restart terminal */
+  drv_generic_serial_write (ESC "Kr", 3);
   usleep(10000);
 #endif
   
   /* Fixme: the CT does not return a serial number in byte mode */
-  drv_generic_serial_write (ESC "KM\073", 4); /* set parameter mode 'decimal' */
+  /* set parameter mode 'decimal' */
+  drv_generic_serial_write (ESC "KM\073", 4);
   
   /* read version */
   drv_generic_serial_write (ESC "?V", 3);
@@ -396,7 +402,8 @@ static int drv_BuE_CT_start (const char *section)
     }
   }
 
-  drv_generic_serial_write (ESC "KM\072", 4); /* set parameter mode 'byte' */
+  /* set parameter mode 'byte' */
+  drv_generic_serial_write (ESC "KM\072", 4);
 
   /* the CT20x4 can control smaller displays, too */
   size = cfg_get(section, "Size", NULL);
@@ -408,9 +415,10 @@ static int drv_BuE_CT_start (const char *section)
       return -1;
     }
     info ("%s: display size: %d rows %d columns", Name, r, c); 
+    /* set display size */
     cmd[3] = (char) r;
     cmd[4] = (char) c;
-    drv_generic_serial_write (cmd, 5); /* set display size */
+    drv_generic_serial_write (cmd, 5);
     DCOLS = c;
     DROWS = r;
   }
@@ -425,7 +433,8 @@ static int drv_BuE_CT_start (const char *section)
     drv_BuE_CT_backlight(i);
   }
 
-  /* identify I/O Port */
+
+  /* identify modules */
 
   for (i = 0; i < 8; i++) {
     char cmd[5] = ESC "K?Pn";
@@ -433,7 +442,38 @@ static int drv_BuE_CT_start (const char *section)
     drv_generic_serial_write (cmd, 5); /* query I/O port */
     usleep(10000);
     if ((len = drv_generic_serial_read (buffer, 4)) == 4) {
-      info ("%s: Port %d is type %d", Name, i, buffer[3]);
+      char *type = NULL;
+      if (i == 0) {
+	if( buffer[3] == 8) {
+	  /* internal port */
+	  type = "CT 20x4 internal port";
+	} else {
+	  error ("%s: internal error: port 0 type %d should be type 8", Name, buffer[3]);
+	  continue;
+	}
+      } else {
+	switch (buffer[3]) {
+	case 1: /* Key Module */
+	  type = "XM-KEY-2x4-LED";
+	  break;
+	case 8: /* I/O Module */
+	  type = "XM-IO8-T";
+	  break;
+	case 9: /* I/O Module */
+	  type = "XM-IO4-R";
+	  break;
+	case 15: /* nothing */
+	  continue;
+	default: /* unhandled */
+	  type = NULL;
+	  break;
+	}
+      }
+      if (type != NULL) {
+	info ("%s: Port %d: %s", Name, i, type);
+      } else {
+	error ("%s: internal error: port % unknown type %d", Name, i, cmd[3]);
+      }
     } else {
       error ("%s: error fetching type of port %d", Name, i);
     }
