@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.11 2001/02/13 12:43:24 reinelt Exp $
+/* $Id: HD44780.c,v 1.12 2001/02/14 07:40:16 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.12  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.11  2001/02/13 12:43:24  reinelt
  *
  * HD_gpo() was missing
@@ -137,6 +141,7 @@ static unsigned short Port=0;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
+static int  GPO=0;
 
 static int nSegment=2;
 static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
@@ -155,10 +160,21 @@ static void HD_write (char *string, int len, int delay)
 {
   while (len--) {
     outb (*string++, Port); // put data on DB1..DB8
-    outb (0x00, Port+2); // set Enable = bit 0 invertet
+    outb (0x00, Port+2);    // set Enable = bit 0 invertet
     udelay (1);
-    outb (0x01, Port+2); // clear Enable
+    outb (0x01, Port+2);    // clear Enable
     udelay (delay);
+  }
+}
+
+static void HD_setGPO (int bits)
+{
+  if (Lcd.gpos>0) {
+    outb (bits, Port);    // put data on DB1..DB8
+    outb (0x05, Port+2);  // set INIT = bit 2 invertet
+    udelay (1);
+    outb (0x03, Port+2);  // clear INIT
+    udelay (1);
   }
 }
 
@@ -177,7 +193,6 @@ static int HD_open (void)
   HD_command (0x08, 40);   // Display off, cursor off, blink off
   HD_command (0x0c, 1640); // Display on, cursor off, blink off, wait 1.64 ms
   HD_command (0x06, 40);   // curser moves to right, no shift
-
   return 0;
 }
 
@@ -361,13 +376,15 @@ int HD_clear (void)
       Bar[row][col].segment=-1;
     }
   }
+  GPO=0;
+  HD_setGPO (GPO);         // All GPO's off
   HD_command (0x01, 1640); // clear display
   return 0;
 }
 
 int HD_init (LCD *Self)
 {
-  int rows=-1, cols=-1;
+  int rows=-1, cols=-1, gpos=-1;
   char *s, *e;
   
   s=cfg_get ("Port");
@@ -400,15 +417,25 @@ int HD_init (LCD *Self)
     return -1;
   }
 
+  s=cfg_get ("GPOs");
+  if (s==NULL) {
+    gpos=0;
+  }
+  else if ((gpos=strtol(s, &e, 0))==0 || *e!='\0' || gpos<0 || gpos>8) {
+    error ("HD44780: bad GPOs '%s' in %s", s, cfg_file());
+    return -1;
+  }    
+  
   Self->rows=rows;
   Self->cols=cols;
+  Self->gpos=gpos;
   Lcd=*Self;
-
+  
   if (HD_open()!=0)
     return -1;
   
   HD_clear();
-
+  
   return 0;
 }
 
@@ -504,6 +531,14 @@ int HD_bar (int type, int row, int col, int max, int len1, int len2)
 
 int HD_gpo (int num, int val)
 {
+  if (num>=Lcd.gpos) 
+    return -1;
+
+  if (val) {
+    GPO |= 1<<num;     // set bit
+  } else {
+    GPO &= ~(1<<num);  // clear bit
+  }
   return 0;
 }
 
@@ -539,6 +574,9 @@ int HD_flush (void)
       HD_write (buffer, p-buffer, 40);
     }
   }
+
+  HD_setGPO(GPO);
+
   return 0;
 }
 

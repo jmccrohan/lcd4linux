@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.20 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.21 2001/02/14 07:40:16 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.21  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.20  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -157,6 +161,7 @@ static int Device=-1;
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
+static int  GPO;
 
 static int nSegment=2;
 static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
@@ -397,7 +402,9 @@ int MO_clear (void)
       Bar[row][col].segment=-1;
     }
   }
-  MO_write ("\014", 1);
+  MO_write ("\014",  1);  // Clear Screen
+  MO_write ("\376V", 2);  // GPO off
+  GPO=0;
   return 0;
 }
 
@@ -453,7 +460,6 @@ int MO_init (LCD *Self)
   MO_write ("\376T", 2);  // blink off
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
-  MO_write ("\376V", 2);  // GPO off
 
   return 0;
 }
@@ -542,6 +548,14 @@ int MO_bar (int type, int row, int col, int max, int len1, int len2)
 
 int MO_gpo (int num, int val)
 {
+  if (num>=Lcd.gpos) 
+    return -1;
+
+  if (val) {
+    GPO |= 1<<num;     // set bit
+  } else {
+    GPO &= ~(1<<num);  // clear bit
+  }
   return 0;
 }
 
@@ -578,6 +592,13 @@ int MO_flush (void)
       MO_write (buffer, p-buffer);
     }
   }
+
+  if (GPO & 1) {
+    MO_write ("\376W", 2);  // GPO on
+  } else {
+    MO_write ("\376V", 2);  // GPO off
+  }
+
   return 0;
 }
 
@@ -590,10 +611,10 @@ int MO_quit (void)
 }
 
 LCD MatrixOrbital[] = {
-  { "LCD0821",2, 8,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD1621",2,16,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD2021",2,20,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD2041",4,20,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
-  { "LCD4021",2,40,XRES,YRES,BARS,0,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD0821",2, 8,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD1621",2,16,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD2021",2,20,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD2041",4,20,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
+  { "LCD4021",2,40,XRES,YRES,BARS,1,MO_init,MO_clear,MO_put,MO_bar,MO_gpo,MO_flush,MO_quit },
   { NULL }
 };

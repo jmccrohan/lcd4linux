@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.5 2000/05/21 06:20:35 reinelt Exp $
+/* $Id: parser.h,v 1.6 2001/02/14 07:40:16 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.6  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.5  2000/05/21 06:20:35  reinelt
  *
  * added ppp throughput
@@ -70,6 +74,7 @@ typedef enum {
   C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SENSOR
 } CLASS;
 
-char *parse (char *string, int supported_bars, int usage[]);
+char *parse_row (char *string, int supported_bars, int usage[]);
+char  parse_gpo (char *string, int usage[]);
 
 #endif

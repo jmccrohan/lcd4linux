@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.28 2000/10/25 08:10:48 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.29 2001/02/14 07:40:16 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.29  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.28  2000/10/25 08:10:48  reinelt
  *
  * added restart funnctionality
@@ -204,7 +208,7 @@ int hello (void)
 		    "(c) M.Reinelt",
 		    NULL };
   
-  lcd_query (&y, &x, NULL, NULL, NULL);
+  lcd_query (&y, &x, NULL, NULL, NULL, NULL);
   
   flag=0;
   for (i=0; line1[i]; i++) {

@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.10 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: processor.c,v 1.11 2001/02/14 07:40:16 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.11  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.10  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -97,9 +101,11 @@
 
 
 #define ROWS 16
+#define GPOS 16
 
 char *row[ROWS];
-int   rows, cols, xres, yres, supported_bars;
+char  gpo[GPOS];
+int   rows, cols, xres, yres, supported_bars, gpos;
 int   token_usage[256]={0,};
 
 struct { int total, used, free, shared, buffer, cache, avail; } ram;
@@ -440,32 +446,65 @@ static char *process_row (int r)
   return buffer;
 }
 
+static int process_gpo (int r)
+{
+  int token;
+  double val;
+
+  token=(unsigned char)gpo[r];
+  val=query(token);
+
+  return (val > 0.0);
+}
+
 void process_init (void)
 {
   int i;
 
   load.overload=atof(cfg_get("overload")?:"2.0");
-  lcd_query (&rows, &cols, &xres, &yres, &supported_bars);
-  debug ("%d rows, %d columns, %dx%d pixels", rows, cols, xres, yres);
+
+  lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &gpos);
+  if (rows>ROWS) {
+    error ("%d rows exceeds limit, reducing to %d rows", rows, ROWS);
+    rows=ROWS;
+  }
+  if (gpos>GPOS) {
+    error ("%d gpos exceeds limit, reducing to %d gpos", gpos, GPOS);
+    gpos=GPOS;
+  }
+  debug ("%d rows, %d columns, %dx%d pixels, %d GPOs", rows, cols, xres, yres, gpos);
+
   for (i=1; i<=rows; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
     p=cfg_get(buffer)?:"";
     debug ("%s: %s", buffer, p);
-    row[i]=strdup(parse(p, supported_bars, token_usage));
+    row[i]=strdup(parse_row(p, supported_bars, token_usage));
+  }
+
+  for (i=1; i<=gpos; i++) {
+    char buffer[8], *p;
+    snprintf (buffer, sizeof(buffer), "GPO%d", i);
+    p=cfg_get(buffer)?:"";
+    debug ("%s: %s", buffer, p);
+    gpo[i]=parse_gpo(p, token_usage);
   }
 }
 
 void process (int smooth)
 {
-  int i;
+  int i, val;
   char *txt;
-
+  
   collect_data();
   for (i=1; i<=rows; i++) {
     txt=process_row (i);
     if (smooth==0)
       lcd_put (i, 1, txt);
+  }
+  for (i=1; i<=gpos; i++) {
+    val=process_gpo (i);
+    lcd_gpo (i, val);
   }
   lcd_flush();
 }

@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.7 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: parser.c,v 1.8 2001/02/14 07:40:16 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.8  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.7  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -63,8 +67,13 @@
 /* 
  * exported functions:
  *
- * char *parse (char *string, int supported_bars, int usage[])
+ * char *parse_row (char *string, int supported_bars, int usage[])
  *    converts a row definition from the config file
+ *    into the internal form using tokens
+ *    sets the array usage[token] to usage count
+ *
+ * char parse_gpo (char *string, int usage[])
+ *    converts a GPO definition from the config file
  *    into the internal form using tokens
  *    sets the array usage[token] to usage count
  *
@@ -167,7 +176,7 @@ static TOKEN get_token (char *s, char **p, int bar, int usage[])
   return -1;
 }
 
-char *parse (char *string, int supported_bars, int usage[])
+char *parse_row (char *string, int supported_bars, int usage[])
 {
   static char buffer[256];
   char *s=string;
@@ -253,4 +262,22 @@ char *parse (char *string, int supported_bars, int usage[])
 
   *p='\0';
   return buffer;
+}
+
+char parse_gpo (char *string, int usage[])
+{
+  char *s=string;
+  TOKEN token=-1;
+  
+  if (*s=='%') {
+    if ((token=get_token (++s, &s, 0, usage))==-1) {
+      error ("WARNING: unknown token <%%%c> in <%s>", *s, string);
+    }
+  }
+  
+  if (*s!='\0') {
+    error ("WARNING: error while parsing <%s>", string);
+  }
+
+  return token;
 }

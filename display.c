@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.22 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: display.c,v 1.23 2001/02/14 07:40:16 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.23  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.22  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -128,7 +132,7 @@
  * lcd_init (char *driver)
  *    initializes the named driver
  *
- * lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
+ * lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos)
  *    queries the attributes of the selected driver
  *
  * lcd_clear ()
@@ -219,16 +223,17 @@ int lcd_init (char *driver)
   return -1;
 }
 
-int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars)
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos)
 {
   if (Lcd==NULL)
     return -1;
   
   if (rows) *rows=Lcd->rows;
-  if(cols) *cols=Lcd->cols;
+  if (cols) *cols=Lcd->cols;
   if (xres) *xres=Lcd->xres;
   if (yres) *yres=Lcd->yres;
   if (bars) *bars=Lcd->bars;
+  if (gpos) *gpos=Lcd->gpos;
 
   return 0;
 }

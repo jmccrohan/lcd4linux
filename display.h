@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.12 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: display.h,v 1.13 2001/02/14 07:40:16 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.13  2001/02/14 07:40:16  reinelt
+ *
+ * first (incomplete) GPO implementation
+ *
  * Revision 1.12  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -113,7 +117,7 @@ typedef struct {
 
 int lcd_list (void);
 int lcd_init (char *driver);
-int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars);
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos);
 int lcd_clear (void);
 int lcd_put (int row, int col, char *text);
 int lcd_bar (int type, int row, int col, int max, int len1, int len2);
