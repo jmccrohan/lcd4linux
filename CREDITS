@@ -3,6 +3,12 @@ Herbert Rosmanith <herp@wildsau.idv-edu.uni-linz.ac.at>
   CrystalFontz driver
   lots of ideas and bugfixes
 
+Leopold Tötsch <lt@toetsch.at>
+  PNG driver
+  POP & IMAP client
+  simple web interface
+  lots of (well, sometimes too much :-) ideas
+
 Michael Mueller <m.mueller@netsystec.de>
   support for Beckmann & Egle driver
 

@@ -70,3 +70,10 @@ remove USE_OLD_UDELAY after wide testing of new udelay code
 
 2001-03-14 Leopold Toetsch <lt@toetsch.at>
 improve unseen for mbox (check Status:)
+
+2001-03-14 Michael Reinelt <reinelt@eunet.at>
+add a new Token 'nc' for 'network collisions'
+
+2001-03-14 Michael Reinelt <reinelt@eunet.at>
+add translation tables ('german umlauts' don't 
+follow any scheme on most displays)

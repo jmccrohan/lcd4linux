@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.16 2001/03/14 15:30:53 reinelt Exp $
+/* $Id: HD44780.c,v 1.17 2001/03/14 16:47:41 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.17  2001/03/14 16:47:41  reinelt
+ * minor cleanups
+ *
  * Revision 1.16  2001/03/14 15:30:53  reinelt
  *
  * make ppdev compatible to earlier kernels
@@ -219,19 +222,18 @@ static void HD_command (unsigned char cmd, int delay)
     // wait
     udelay(delay);
 
-  } else {
+  } else
 
 #endif
 
-    outb (cmd, Port);    // put data on DB1..DB8
-    outb (0x02, Port+2); // set Enable = bit 0 invertet
-    udelay (1);
-    outb (0x03, Port+2); // clear Enable
-    udelay (delay);
+    {
+      outb (cmd, Port);    // put data on DB1..DB8
+      outb (0x02, Port+2); // set Enable = bit 0 invertet
+      udelay (1);
+      outb (0x03, Port+2); // clear Enable
+      udelay (delay);
     
-#ifdef WITH_PPDEV
-  }
-#endif
+    }
 }
 
 static void HD_write (char *string, int len, int delay)
@@ -259,26 +261,27 @@ static void HD_write (char *string, int len, int delay)
       udelay(delay);
     }
     
-  } else {
+  } else
 
 #endif
 
-    while (len--) {
-      outb (*string++, Port); // put data on DB1..DB8
-      outb (0x00, Port+2);    // set Enable = bit 0 invertet
-      udelay (1);
-      outb (0x01, Port+2);    // clear Enable
-      udelay (delay);
+    {
+      while (len--) {
+	outb (*string++, Port); // put data on DB1..DB8
+	outb (0x00, Port+2);    // set Enable = bit 0 invertet
+	udelay (1);
+	outb (0x01, Port+2);    // clear Enable
+	udelay (delay);
+      }
     }
-#ifdef WITH_PPDEV
-  }
-#endif
 }
+
 static void HD_setGPO (int bits)
 {
   if (Lcd.gpos>0) {
 
 #ifdef WITH_PPDEV
+
     if (PPdev) {
 
       // put data on DB1..DB8
@@ -287,25 +290,24 @@ static void HD_setGPO (int bits)
       // toggle INIT
       HD_toggle(PARPORT_CONTROL_INIT);
 
-    } else {
+    } else
+      
 #endif
-
-      outb (bits, Port);    // put data on DB1..DB8
-      outb (0x05, Port+2);  // set INIT = bit 2 invertet
-      udelay (1);
-      outb (0x03, Port+2);  // clear INIT
-      udelay (1);
-
-#ifdef WITH_PPDEV
-    }
-#endif
+      
+      {
+	outb (bits, Port);    // put data on DB1..DB8
+	outb (0x05, Port+2);  // set INIT = bit 2 invertet
+	udelay (1);
+	outb (0x03, Port+2);  // clear INIT
+	udelay (1);
+      }
   }
 }
 
 static int HD_open (void)
 {
-
 #ifdef WITH_PPDEV
+
   if (PPdev) {
     debug ("using ppdev %s", PPdev);
     PPfd=open(PPdev, O_RDWR);
@@ -313,7 +315,9 @@ static int HD_open (void)
       error ("open(%s) failed: %s", PPdev, strerror(errno));
       return -1;
     }
+    
 #if 0
+    // FIXME: This doesn't work for some reason...
     if (ioctl(PPfd, PPEXCL)) {
       error ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
       return -1;
@@ -323,17 +327,18 @@ static int HD_open (void)
       error ("ioctl(%s, PPCLAIM) failed: %s", PPdev, strerror(errno));
       return -1;
     }
-  } else {
-#endif
-    debug ("using raw port 0x%x", Port);
-    if (ioperm(Port, 3, 1)!=0) {
-      error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
-      return -1;
-    }
-#ifdef WITH_PPDEV
-  }
+  } else
+
 #endif
 
+    {
+      debug ("using raw port 0x%x", Port);
+      if (ioperm(Port, 3, 1)!=0) {
+	error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
+	return -1;
+      }
+    }
+  
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
   HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
