@@ -154,8 +154,8 @@ if test "$PLUGIN_DISKSTATS" = "yes"; then
    AC_DEFINE(PLUGIN_DISKSTATS,1,[diskstats plugin])
 fi
 if test "$PLUGIN_DVB" = "yes"; then
-   AC_CHECK_HEADERS(linux/dvb/frontend.h, [has_dvb_header=true], [has_dvb_header=false])
-   if test "$has_dvb_header" = true; then
+   AC_CHECK_HEADERS(linux/dvb/frontend.h, [has_dvb_header="true"], [has_dvb_header="false"])
+   if test "$has_dvb_header" = "true"; then
       PLUGINS="$PLUGINS plugin_dvb.o"
       AC_DEFINE(PLUGIN_DVB,1,[dvb plugin])
    else
@@ -175,8 +175,8 @@ if test "$PLUGIN_IMON" = "yes"; then
    AC_DEFINE(PLUGIN_IMON,1,[imon plugin])
 fi
 if test "$PLUGIN_ISDN" = "yes"; then
-   AC_CHECK_HEADERS(linux/isdn.h, [has_isdn_header=true], [has_isdn_header=false])
-   if test "$has_dvb_header" = false; then
+   AC_CHECK_HEADERS(linux/isdn.h, [has_isdn_header="true"], [has_isdn_header="false"])
+   if test "$has_dvb_header" = "false"; then
       AC_MSG_WARN(linux/isdn.h header not found: isdn plugin CPS disabled)
    fi   
    PLUGINS="$PLUGINS plugin_isdn.o"
@@ -191,10 +191,10 @@ if test "$PLUGIN_MEMINFO" = "yes"; then
    AC_DEFINE(PLUGIN_MEMINFO,1,[meminfo plugin])
 fi
 if test "$PLUGIN_MYSQL" = "yes"; then
-   AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header=true], [has_mysql_header=false])
-   if test "$has_mysql_header" = true; then	
-      AC_CHECK_LIB(mysqlclient, mysql_init, [has_mysql_lib=true], [has_mysql_lib=false])
-      if test "$has_mysql_lib" = true; then
+   AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header="true"], [has_mysql_header="false"])
+   if test "$has_mysql_header" = "true"; then	
+      AC_CHECK_LIB(mysqlclient, mysql_init, [has_mysql_lib="true"], [has_mysql_lib="false"])
+      if test "$has_mysql_lib" = "true"; then
         PLUGINS="$PLUGINS plugin_mysql.o"
         AC_DEFINE(PLUGIN_MYSQL,1,[mysql plugin])
         PLUGINLIBS="$PLUGINLIBS -lmysqlclient"
@@ -214,8 +214,8 @@ if test "$PLUGIN_POP3" = "yes"; then
    AC_DEFINE(PLUGIN_POP3,1,[POP3 plugin])
 fi
 if test "$PLUGIN_PPP" = "yes"; then
-   AC_CHECK_HEADERS(net/if_ppp.h, [has_ppp_header=true], [has_ppp_header=false])
-   if test "$has_ppp_header" = true; then
+   AC_CHECK_HEADERS(net/if_ppp.h, [has_ppp_header="true"], [has_ppp_header="false"])
+   if test "$has_ppp_header" = "true"; then
    PLUGINS="$PLUGINS plugin_ppp.o"
    AC_DEFINE(PLUGIN_PPP,1,[ppp plugin])
    else

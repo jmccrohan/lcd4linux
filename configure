@@ -5289,9 +5289,9 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_gd=true
+ has_gd="true";break
 else
-  has_gd=false
+  has_gd="false"
 fi
 
 done
@@ -5442,9 +5442,9 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_usb=true
+ has_usb="true"
 else
-  has_usb=false
+  has_usb="false"
 fi
 
 done
@@ -5515,9 +5515,9 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_i2c=true
+ has_i2c="true"
 else
-  has_i2c=false
+  has_i2c="false";break
 fi
 
 done
@@ -6234,14 +6234,14 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_dvb_header=true
+ has_dvb_header="true"
 else
-  has_dvb_header=false
+  has_dvb_header="false"
 fi
 
 done
 
-   if test "$has_dvb_header" = true; then
+   if test "$has_dvb_header" = "true"; then
       PLUGINS="$PLUGINS plugin_dvb.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -6422,14 +6422,14 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_isdn_header=true
+ has_isdn_header="true"
 else
-  has_isdn_header=false
+  has_isdn_header="false"
 fi
 
 done
 
-   if test "$has_dvb_header" = false; then
+   if test "$has_dvb_header" = "false"; then
       { echo "$as_me:$LINENO: WARNING: linux/isdn.h header not found: isdn plugin CPS disabled" >&5
 echo "$as_me: WARNING: linux/isdn.h header not found: isdn plugin CPS disabled" >&2;}
    fi
@@ -6601,14 +6601,14 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_mysql_header=true
+ has_mysql_header="true"
 else
-  has_mysql_header=false
+  has_mysql_header="false"
 fi
 
 done
 
-   if test "$has_mysql_header" = true; then
+   if test "$has_mysql_header" = "true"; then
       echo "$as_me:$LINENO: checking for mysql_init in -lmysqlclient" >&5
 echo $ECHO_N "checking for mysql_init in -lmysqlclient... $ECHO_C" >&6
 if test "${ac_cv_lib_mysqlclient_mysql_init+set}" = set; then
@@ -6673,12 +6673,12 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_mysqlclient_mysql_init" >&5
 echo "${ECHO_T}$ac_cv_lib_mysqlclient_mysql_init" >&6
 if test $ac_cv_lib_mysqlclient_mysql_init = yes; then
-  has_mysql_lib=true
+  has_mysql_lib="true"
 else
-  has_mysql_lib=false
+  has_mysql_lib="false"
 fi
 
-      if test "$has_mysql_lib" = true; then
+      if test "$has_mysql_lib" = "true"; then
         PLUGINS="$PLUGINS plugin_mysql.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -6856,14 +6856,14 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- has_ppp_header=true
+ has_ppp_header="true"
 else
-  has_ppp_header=false
+  has_ppp_header="false"
 fi
 
 done
 
-   if test "$has_ppp_header" = true; then
+   if test "$has_ppp_header" = "true"; then
    PLUGINS="$PLUGINS plugin_ppp.o"
 
 cat >>confdefs.h <<\_ACEOF
