@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.21 2004/06/01 06:45:28 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.22 2004/06/02 05:56:25 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.22  2004/06/02 05:56:25  reinelt
+ *
+ * extended contrast range for Crystalfontz
+ *
  * Revision 1.21  2004/06/01 06:45:28  reinelt
  *
  * some Fixme's processed
@@ -792,7 +796,7 @@ static int drv_CF_start (char *section)
   memset (Line, ' ', sizeof(Line));
   
   // set contrast
-  if (cfg_number(section, "Contrast", 0, 0, 100, &i)>0) {
+  if (cfg_number(section, "Contrast", 0, 0, 255, &i)>0) {
     drv_CF_contrast(i);
   }
 
