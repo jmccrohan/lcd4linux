@@ -1,4 +1,4 @@
-/* $Id: plugin_dvb.c,v 1.1 2004/02/10 06:54:39 reinelt Exp $
+/* $Id: plugin_dvb.c,v 1.2 2004/02/16 13:03:37 reinelt Exp $
  *
  * plugin for DVB status
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_dvb.c,v $
+ * Revision 1.2  2004/02/16 13:03:37  reinelt
+ * compile problem with missing frontend.h fixed
+ *
  * Revision 1.1  2004/02/10 06:54:39  reinelt
  * DVB plugin ported
  *
@@ -46,8 +49,17 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <asm/types.h>
 
+#ifdef HAVE_LINUX_DVB_FRONTEND_H
 #include <linux/dvb/frontend.h>
+#else
+#warning linux/dvb/frontend.h not found: using hardcoded ioctl definitions
+#define FE_READ_BER                _IOR('o', 70, __u32)
+#define FE_READ_SIGNAL_STRENGTH    _IOR('o', 71, __u16)
+#define FE_READ_SNR                _IOR('o', 72, __u16)
+#define FE_READ_UNCORRECTED_BLOCKS _IOR('o', 73, __u32)
+#endif
 
 #include "debug.h"
 #include "plugin.h"
