@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.24 2001/08/05 17:13:29 reinelt Exp $
+/* $Id: system.c,v 1.25 2002/12/05 19:12:47 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.25  2002/12/05 19:12:47  reinelt
+ * sensors factor and offset patch from Petri Damsten <petri.damsten@raketti.net>
+ *
  * Revision 1.24  2001/08/05 17:13:29  reinelt
  *
  * cleaned up inlude of sys/time.h and time.h
@@ -743,6 +746,8 @@ int Sensor (int index, double *val, double *min, double *max)
   static double val_buf[SENSORS+1]={0.0,};
   static double min_buf[SENSORS+1]={0.0,};
   static double max_buf[SENSORS+1]={0.0,};
+  static double factor_buf[SENSORS+1]={0.0,};
+  static double offset_buf[SENSORS+1]={0.0,};
   static time_t now[SENSORS+1]={0,};
 
   if (index<0 || index>SENSORS) return -1;
@@ -772,7 +777,13 @@ int Sensor (int index, double *val, double *min, double *max)
     snprintf(buffer, 32, "Sensor%d_max", index);
     max_buf[index]=atof(cfg_get(buffer)?:"100");
     *max=max_buf[index];
-    
+
+    snprintf(buffer, 32, "Sensor%d_factor", index);
+    factor_buf[index]=atof(cfg_get(buffer)?:"1");
+
+    snprintf(buffer, 32, "Sensor%d_offset", index);
+    offset_buf[index]=atof(cfg_get(buffer)?:"0");
+
     fd[index]=open(sensor[index], O_RDONLY);
     if (fd[index]==-1) {
       error ("open(%s) failed: %s", sensor[index], strerror(errno));
@@ -798,7 +809,8 @@ int Sensor (int index, double *val, double *min, double *max)
     fd[index]=-1;
     return -1;
   }
-
+  value *= factor_buf[index];
+  value += offset_buf[index];
   val_buf[index]=value;
   *val=value;
   return 0;
