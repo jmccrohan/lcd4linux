@@ -1,4 +1,4 @@
-/* $Id: config.c,v 1.3 2000/03/07 11:01:34 reinelt Exp $
+/* $Id: cfg.c,v 1.1 2000/03/10 11:40:47 reinelt Exp $
  *
  * config file stuff
  *
@@ -19,7 +19,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: config.c,v $
+ * $Log: cfg.c,v $
+ * Revision 1.1  2000/03/10 11:40:47  reinelt
+ * *** empty log message ***
+ *
  * Revision 1.3  2000/03/07 11:01:34  reinelt
  *
  * system.c cleanup
@@ -58,7 +61,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "config.h"
+#include "cfg.h"
 
 typedef struct {
   char *key;

@@ -1,4 +1,4 @@
-/* $Id: config.h,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: cfg.h,v 1.1 2000/03/10 11:40:47 reinelt Exp $
  *
  * config file stuff
  *
@@ -19,7 +19,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: config.h,v $
+ * $Log: cfg.h,v $
+ * Revision 1.1  2000/03/10 11:40:47  reinelt
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -27,8 +30,8 @@
  *
  */
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef _CFG_H_
+#define _CFG_H_
 
 void  cfg_set (char *key, char *value);
 char *cfg_get (char *key);
