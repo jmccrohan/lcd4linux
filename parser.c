@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.6 2000/05/21 06:20:35 reinelt Exp $
+/* $Id: parser.c,v 1.7 2000/08/10 09:44:09 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.7  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.6  2000/05/21 06:20:35  reinelt
  *
  * added ppp throughput
@@ -70,6 +75,7 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "debug.h"
 #include "display.h"
 #include "parser.h"
 
@@ -174,7 +180,7 @@ char *parse (char *string, int supported_bars, int usage[])
       
     case '%':
       if ((token=get_token (++s, &s, 0, usage))==-1) {
-	fprintf (stderr, "WARNING: unknown token <%%%c> in <%s>\n", *s, string);
+	error ("WARNING: unknown token <%%%c> in <%s>", *s, string);
       } else {
 	*p++='%';
 	*p++=token;
@@ -184,21 +190,21 @@ char *parse (char *string, int supported_bars, int usage[])
     case '$':
       type=bar_type(tolower(*++s));
       if (type==0) {
-	fprintf (stderr, "WARNING: invalid bar type <$%c> in <%s>\n", *s, string);
+	error ("WARNING: invalid bar type <$%c> in <%s>", *s, string);
 	break;
       }
       if (!(type & supported_bars)) {
-	fprintf (stderr, "WARNING: driver does not support bar type '%c'\n", *s);
+	error ("WARNING: driver does not support bar type '%c'", *s);
 	break;
       }
       if (isupper(*s)) type |= BAR_LOG;
       len=strtol(++s, &s, 10);
       if (len<1 || len>127) {
-	fprintf (stderr, "WARNING: invalid bar length in <%s>\n", string);
+	error ("WARNING: invalid bar length in <%s>", string);
 	break;
       }
       if ((token=get_token (s, &s, 0, usage))==-1) {
-	fprintf (stderr, "WARNING: unknown token <$%c> in <%s>\n", *s, string);
+	error ("WARNING: unknown token <$%c> in <%s>", *s, string);
 	break;
       }
       token2=-1;
@@ -208,11 +214,11 @@ char *parse (char *string, int supported_bars, int usage[])
 	} else if ((type & BAR_V) && (supported_bars & BAR_V2)) {
 	  type |= BAR_V2;
 	} else {
-	  fprintf (stderr, "WARNING: driver does not support double bars\n");
+	  error ("WARNING: driver does not support double bars");
 	  break;
 	}
 	if ((token2=get_token (s+1, &s, 0, usage))==-1) {
-	  fprintf (stderr, "WARNING: unknown token <$%c> in <%s>\n", *s, string);
+	  error ("WARNING: unknown token <$%c> in <%s>", *s, string);
 	  break;
 	}
       }
@@ -231,7 +237,7 @@ char *parse (char *string, int supported_bars, int usage[])
 	unsigned int c=0; int n;
 	sscanf (s+1, "%3o%n", &c, &n);
 	if (c==0 || c>255) {
-	  fprintf (stderr, "WARNING: illegal '\\' in <%s>\n", string);
+	  error ("WARNING: illegal '\\' in <%s>", string);
 	} else {
 	  *p++=c;
 	  s+=n+1;

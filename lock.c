@@ -1,4 +1,4 @@
-/* $Id: lock.c,v 1.1 2000/04/07 05:42:20 reinelt Exp $
+/* $Id: lock.c,v 1.2 2000/08/10 09:44:09 reinelt Exp $
  *
  * UUCP style locking
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lock.c,v $
+ * Revision 1.2  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.1  2000/04/07 05:42:20  reinelt
  *
  * UUCP style lockfiles for the serial port
@@ -51,6 +56,7 @@
 #include <sys/stat.h>
 
 
+#include "debug.h"
 #include "lock.h"
 
 
@@ -71,18 +77,18 @@ pid_t lock_port (char *port)
   snprintf(tempfile, sizeof(tempfile), LOCK, "TMP.XXXXXX");
 
   if (mktemp(tempfile)==NULL) {
-    fprintf(stderr, "mktemp(%s) failed.\n", tempfile);
+    error ("mktemp(%s) failed.", tempfile);
     return -1;
   }
   
   if ((fd=creat(tempfile, 0664))==-1) {
-    fprintf(stderr, "creat(%s) failed: %s\n", tempfile, strerror(errno));
+    error ("creat(%s) failed: %s", tempfile, strerror(errno));
     return -1;
   }
   
   snprintf (buffer, sizeof(buffer), "%10d\n", (int)getpid());
   if (write(fd, buffer, strlen(buffer))!=strlen(buffer)) {
-    fprintf(stderr, "write(%s) failed: %s\n", tempfile, strerror(errno));
+    error ("write(%s) failed: %s", tempfile, strerror(errno));
     close(fd);
     unlink(tempfile);
     return -1;
@@ -93,42 +99,42 @@ pid_t lock_port (char *port)
   while (link(tempfile, lockfile)==-1) {
 
     if (errno!=EEXIST) {
-      fprintf(stderr, "link(%s, %s) failed: %s\n", tempfile, lockfile, strerror(errno));
+      error ("link(%s, %s) failed: %s", tempfile, lockfile, strerror(errno));
       unlink(tempfile);
       return -1;
     }
 
     if ((fd=open(lockfile, O_RDONLY))==-1) {
       if (errno==ENOENT) continue; // lockfile disappared
-      fprintf (stderr, "open(%s) failed: %s\n", lockfile, strerror(errno));
+      error ("open(%s) failed: %s", lockfile, strerror(errno));
       unlink (tempfile);
       return -1;
     }
 
     len=read(fd, buffer, sizeof(buffer)-1);
     if (len<0) {
-      fprintf (stderr, "read(%s) failed: %s\n", lockfile, strerror(errno));
+      error ("read(%s) failed: %s", lockfile, strerror(errno));
       unlink (tempfile);
       return -1;
     }
     
     buffer[len]='\0';
     if (sscanf(buffer, "%d", &pid)!=1 || pid==0) {
-      fprintf (stderr, "scan(%s) failed.\n", lockfile);
+      error ("scan(%s) failed.", lockfile);
       unlink (tempfile);
       return -1;
     }
 
     if (pid==getpid()) {
-      fprintf (stderr, "%s already locked by us. uh-oh...\n", lockfile);
+      error ("%s already locked by us. uh-oh...", lockfile);
       unlink(tempfile);
       return 0;
     }
     
     if ((kill(pid, 0)==-1) && errno==ESRCH) {
-      fprintf (stderr, "removing stale lockfile %s\n", lockfile);
+      error ("removing stale lockfile %s", lockfile);
       if (unlink(lockfile)==-1 && errno!=ENOENT) {
-	fprintf (stderr, "unlink(%s) failed: %s\n", lockfile, strerror(errno));
+	error ("unlink(%s) failed: %s", lockfile, strerror(errno));
 	unlink(tempfile);
 	return pid;
       }

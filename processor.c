@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.7 2000/07/31 10:43:44 reinelt Exp $
+/* $Id: processor.c,v 1.8 2000/08/10 09:44:09 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.8  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.7  2000/07/31 10:43:44  reinelt
  *
  * some changes to support kernel-2.4 (different layout of various files in /proc)
@@ -431,12 +436,12 @@ void process_init (void)
 
   load.overload=atof(cfg_get("overload")?:"2.0");
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars);
-  debug ("%d rows, %d columns, %dx%d pixels\n", rows, cols, xres, yres);
+  debug ("%d rows, %d columns, %dx%d pixels", rows, cols, xres, yres);
   for (i=1; i<=rows; i++) {
     char buffer[8], *p;
     snprintf (buffer, sizeof(buffer), "Row%d", i);
     p=cfg_get(buffer)?:"";
-    debug ("%s: %s\n", buffer, p);
+    debug ("%s: %s", buffer, p);
     row[i]=strdup(parse(p, supported_bars, token_usage));
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.1 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: debug.h,v 1.2 2000/08/10 09:44:09 reinelt Exp $
  *
  * debug messages
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.2  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.1  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -32,7 +37,10 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
-extern int debugging;
-#define debug(args...) do { if (debugging) printf(__FILE__ ": " args); } while(0)
+void message (int level, const char *format, ...);
+
+#define debug(args...) message (2, __FILE__ ": " args)
+#define info(args...) message (1, args)
+#define error(args...) message (0, args)
 
 #endif

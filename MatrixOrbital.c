@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.18 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.19 2000/08/10 09:44:09 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.19  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.18  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -162,24 +167,24 @@ static int MO_open (void)
   
   if ((pid=lock_port(Port))!=0) {
     if (pid==-1)
-      fprintf (stderr, "MatrixOrbital: port %s could not be locked\n", Port);
+      error ("MatrixOrbital: port %s could not be locked", Port);
     else
-      fprintf (stderr, "MatrixOrbital: port %s is locked by process %d\n", Port, pid);
+      error ("MatrixOrbital: port %s is locked by process %d", Port, pid);
     return -1;
   }
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
-    fprintf (stderr, "MatrixOrbital: open(%s) failed: %s\n", Port, strerror(errno));
+    error ("MatrixOrbital: open(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   if (tcgetattr(fd, &portset)==-1) {
-    fprintf (stderr, "MatrixOrbital: tcgetattr(%s) failed: %s\n", Port, strerror(errno));
+    error ("MatrixOrbital: tcgetattr(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   cfmakeraw(&portset);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-    fprintf (stderr, "MatrixOrbital: tcsetattr(%s) failed: %s\n", Port, strerror(errno));
+    error ("MatrixOrbital: tcsetattr(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   return fd;
@@ -193,7 +198,7 @@ static void MO_write (char *string, int len)
       usleep(1000);
       if (write (Device, string, len)>=0) return;
     }
-    fprintf (stderr, "MatrixOrbital: write(%s) failed: %s\n", Port, strerror(errno));
+    error ("MatrixOrbital: write(%s) failed: %s", Port, strerror(errno));
   }
 }
 
@@ -268,13 +273,13 @@ static void MO_compact_bars (void)
   int i, j, r, c, min;
   int pack_i, pack_j;
   int pass1=1;
-  int error[nSegment][nSegment];
+  int deviation[nSegment][nSegment];
   
   if (nSegment>CHARS+2) {
 
     for (i=2; i<nSegment; i++) {
       for (j=0; j<nSegment; j++) {
-	error[i][j]=MO_segment_diff(i,j);
+	deviation[i][j]=MO_segment_diff(i,j);
       }
     }
     
@@ -285,8 +290,8 @@ static void MO_compact_bars (void)
       for (i=2; i<nSegment; i++) {
 	if (pass1 && Segment[i].used) continue;
 	for (j=0; j<nSegment; j++) {
-	  if (error[i][j]<min) {
-	    min=error[i][j];
+	  if (deviation[i][j]<min) {
+	    min=deviation[i][j];
 	    pack_i=i;
 	    pack_j=j;
 	  }
@@ -297,7 +302,7 @@ static void MO_compact_bars (void)
 	  pass1=0;
 	  continue;
 	} else {
-	  fprintf (stderr, "MatrixOrbital: unable to compact bar characters\n");
+	  error ("MatrixOrbital: unable to compact bar characters");
 	  nSegment=CHARS;
 	  break;
 	}
@@ -307,8 +312,8 @@ static void MO_compact_bars (void)
       Segment[pack_i]=Segment[nSegment];
       
       for (i=0; i<nSegment; i++) {
-	error[pack_i][i]=error[nSegment][i];
-	error[i][pack_i]=error[i][nSegment];
+	deviation[pack_i][i]=deviation[nSegment][i];
+	deviation[i][pack_i]=deviation[i][nSegment];
       }
       
       for (r=0; r<Lcd.rows; r++) {
@@ -406,7 +411,7 @@ int MO_init (LCD *Self)
 
   port=cfg_get ("Port");
   if (port==NULL || *port=='\0') {
-    fprintf (stderr, "MatrixOrbital: no 'Port' entry in %s\n", cfg_file());
+    error ("MatrixOrbital: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port=strdup(port);
@@ -427,11 +432,11 @@ int MO_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    fprintf (stderr, "MatrixOrbital: unsupported speed '%s' in %s\n", speed, cfg_file());
+    error ("MatrixOrbital: unsupported speed '%s' in %s", speed, cfg_file());
     return -1;
   }    
 
-  debug ("using port %s at %d baud\n", Port, atoi(speed));
+  debug ("using port %s at %d baud", Port, atoi(speed));
 
   Device=MO_open();
   if (Device==-1) return -1;
@@ -569,7 +574,7 @@ int MO_flush (void)
 
 int MO_quit (void)
 {
-  debug ("closing port %s\n", Port);
+  debug ("closing port %s", Port);
   close (Device);
   unlock_port(Port);
   return (0);

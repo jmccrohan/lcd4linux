@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.2 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.3 2000/08/10 09:44:09 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.3  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.2  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -78,24 +83,24 @@ static int Palm_open (void)
   
   if ((pid=lock_port(Port))!=0) {
     if (pid==-1)
-      fprintf (stderr, "PalmPilot: port %s could not be locked\n", Port);
+      error ("PalmPilot: port %s could not be locked", Port);
     else
-      fprintf (stderr, "PalmPilot: port %s is locked by process %d\n", Port, pid);
+      error ("PalmPilot: port %s is locked by process %d", Port, pid);
     return -1;
   }
   fd = open(Port, O_RDWR | O_NOCTTY | O_NDELAY); 
   if (fd==-1) {
-    fprintf (stderr, "PalmPilot: open(%s) failed: %s\n", Port, strerror(errno));
+    error ("PalmPilot: open(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   if (tcgetattr(fd, &portset)==-1) {
-    fprintf (stderr, "PalmPilot: tcgetattr(%s) failed: %s\n", Port, strerror(errno));
+    error ("PalmPilot: tcgetattr(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   cfmakeraw(&portset);
   cfsetospeed(&portset, Speed);
   if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-    fprintf (stderr, "PalmPilot: tcsetattr(%s) failed: %s\n", Port, strerror(errno));
+    error ("PalmPilot: tcsetattr(%s) failed: %s", Port, strerror(errno));
     return -1;
   }
   return fd;
@@ -109,7 +114,7 @@ static void Palm_write (char *string, int len)
       usleep(1000);
       if (write (Device, string, len)>=0) return;
     }
-    fprintf (stderr, "PalmPilot: write(%s) failed: %s\n", Port, strerror(errno));
+    error ("PalmPilot: write(%s) failed: %s", Port, strerror(errno));
   }
 }
 
@@ -124,14 +129,14 @@ int Palm_flush (void)
   
   if (bitbuf==NULL) {
     if ((bitbuf=malloc(xsize*ysize*sizeof(*bitbuf)))==NULL) {
-      fprintf (stderr, "PalmPilot: malloc(%d) failed: %s\n", xsize*ysize*sizeof(*bitbuf), strerror(errno));
+      error ("PalmPilot: malloc(%d) failed: %s", xsize*ysize*sizeof(*bitbuf), strerror(errno));
       return -1;
     }
   }
   
   if (rowbuf==NULL) {
     if ((rowbuf=malloc(((xsize+7)/8)*sizeof(*rowbuf)))==NULL) {
-      fprintf (stderr, "PalmPilot: malloc(%d) failed: %s\n", ((xsize+7)/8)*sizeof(*rowbuf), strerror(errno));
+      error ("PalmPilot: malloc(%d) failed: %s", ((xsize+7)/8)*sizeof(*rowbuf), strerror(errno));
       return -1;
     }
   }
@@ -186,7 +191,7 @@ int Palm_init (LCD *Self)
 
   port=cfg_get ("Port");
   if (port==NULL || *port=='\0') {
-    fprintf (stderr, "PalmPilot: no 'Port' entry in %s\n", cfg_file());
+    error ("PalmPilot: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   Port=strdup(port);
@@ -210,29 +215,29 @@ int Palm_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    fprintf (stderr, "PalmPilot: unsupported speed '%s' in %s\n", speed, cfg_file());
+    error ("PalmPilot: unsupported speed '%s' in %s", speed, cfg_file());
     return -1;
   }    
 
-  debug ("using port %s at %d baud\n", Port, atoi(speed));
+  debug ("using port %s at %d baud", Port, atoi(speed));
 
   if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
-    fprintf (stderr, "PalmPilot: bad size '%s'\n", s);
+    error ("PalmPilot: bad size '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("font")?:"6x8", "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
-    fprintf (stderr, "PalmPilot: bad font '%s'\n", s);
+    error ("PalmPilot: bad font '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("pixel")?:"1+0", "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
-    fprintf (stderr, "PalmPilot: bad pixel '%s'\n", s);
+    error ("PalmPilot: bad pixel '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("gap")?:"0x0", "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
-    fprintf (stderr, "PalmPilot: bad gap '%s'\n", s);
+    error ("PalmPilot: bad gap '%s'", s);
     return -1;
   }
   if (rgap<0) rgap=pixel+pgap;
@@ -241,7 +246,7 @@ int Palm_init (LCD *Self)
   border=atoi(cfg_get("border")?:"0");
 
   if (pix_init (rows, cols, xres, yres)!=0) {
-    fprintf (stderr, "PalmPilot: pix_init(%d, %d, %d, %d) failed\n", rows, cols, xres, yres);
+    error ("PalmPilot: pix_init(%d, %d, %d, %d) failed", rows, cols, xres, yres);
     return -1;
   }
 
@@ -272,7 +277,7 @@ int Palm_bar (int type, int row, int col, int max, int len1, int len2)
 
 int Palm_quit (void)
 {
-  debug ("closing port %s\n", Port);
+  debug ("closing port %s", Port);
   close (Device);
   unlock_port (Port);
   return 0;

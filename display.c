@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.19 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: display.c,v 1.20 2000/08/10 09:44:09 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.20  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.19  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -138,6 +143,8 @@
 #include <stdio.h>
 #include <math.h>
 
+
+#include "debug.h"
 #include "cfg.h"
 #include "display.h"
 
@@ -195,7 +202,7 @@ int lcd_init (char *driver)
       }
     }
   }
-  fprintf (stderr, "lcd_init(%s) failed: no such display\n", driver);
+  error ("lcd_init(%s) failed: no such display", driver);
   return -1;
 }
 

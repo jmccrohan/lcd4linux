@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.7 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: HD44780.c,v 1.8 2000/08/10 09:44:09 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.8  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.7  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -145,9 +150,9 @@ static void HD_write (char *string, int len, int delay)
 
 static int HD_open (void)
 {
-  debug ("using port 0x%x\n", Port);
+  debug ("using port 0x%x", Port);
   if (ioperm(Port, 3, 1)!=0) {
-    fprintf (stderr, "HD44780: ioperm(0x%x) failed: %s\n", Port, strerror(errno));
+    error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
     return -1;
   }
 
@@ -222,13 +227,13 @@ static void HD_compact_bars (void)
   int i, j, r, c, min;
   int pack_i, pack_j;
   int pass1=1;
-  int error[nSegment][nSegment];
+  int deviation[nSegment][nSegment];
   
   if (nSegment>CHARS+2) {
 
     for (i=2; i<nSegment; i++) {
       for (j=0; j<nSegment; j++) {
-	error[i][j]=HD_segment_diff(i,j);
+	deviation[i][j]=HD_segment_diff(i,j);
       }
     }
     
@@ -239,8 +244,8 @@ static void HD_compact_bars (void)
       for (i=2; i<nSegment; i++) {
 	if (pass1 && Segment[i].used) continue;
 	for (j=0; j<nSegment; j++) {
-	  if (error[i][j]<min) {
-	    min=error[i][j];
+	  if (deviation[i][j]<min) {
+	    min=deviation[i][j];
 	    pack_i=i;
 	    pack_j=j;
 	  }
@@ -251,7 +256,7 @@ static void HD_compact_bars (void)
 	  pass1=0;
 	  continue;
 	} else {
-	  fprintf (stderr, "HD44780: unable to compact bar characters\n");
+	  error ("HD44780: unable to compact bar characters");
 	  nSegment=CHARS;
 	  break;
 	}
@@ -261,8 +266,8 @@ static void HD_compact_bars (void)
       Segment[pack_i]=Segment[nSegment];
       
       for (i=0; i<nSegment; i++) {
-	error[pack_i][i]=error[nSegment][i];
-	error[i][pack_i]=error[i][nSegment];
+	deviation[pack_i][i]=deviation[nSegment][i];
+	deviation[i][pack_i]=deviation[i][nSegment];
       }
       
       for (r=0; r<Lcd.rows; r++) {
@@ -353,31 +358,31 @@ int HD_init (LCD *Self)
   
   s=cfg_get ("Port");
   if (s==NULL || *s=='\0') {
-    fprintf (stderr, "HD44780: no 'Port' entry in %s\n", cfg_file());
+    error ("HD44780: no 'Port' entry in %s", cfg_file());
     return -1;
   }
   if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
-    fprintf (stderr, "HD44780: bad port '%s' in %s\n", s, cfg_file());
+    error ("HD44780: bad port '%s' in %s", s, cfg_file());
     return -1;
   }    
 
   s=cfg_get ("Delay");
   if (s==NULL || *s=='\0') {
-    fprintf (stderr, "HD44780: no 'Delay' entry in %s\n", cfg_file());
+    error ("HD44780: no 'Delay' entry in %s", cfg_file());
     return -1;
   }
   if ((loops_per_usec=strtol(s, &e, 0))==0 || *e!='\0') {
-    fprintf (stderr, "HD44780: bad delay '%s' in %s\n", s, cfg_file());
+    error ("HD44780: bad delay '%s' in %s", s, cfg_file());
     return -1;
   }    
   
   s=cfg_get("Size");
   if (s==NULL || *s=='\0') {
-    fprintf (stderr, "HD44780: no 'Size' entry in %s\n", cfg_file());
+    error ("HD44780: no 'Size' entry in %s", cfg_file());
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
-    fprintf(stderr,"HD44780: bad size '%s'\n",s);
+    error ("HD44780: bad size '%s'",s);
     return -1;
   }
 
@@ -520,9 +525,9 @@ int HD_flush (void)
 
 int HD_quit (void)
 {
-  debug ("closing port 0x%x\n", Port);
+  debug ("closing port 0x%x", Port);
   if (ioperm(Port, 3, 0)!=0) {
-    fprintf (stderr, "HD44780: ioperm(0x%x) failed: %s\n", Port, strerror(errno));
+    error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
     return -1;
   }
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.25 2000/08/09 14:14:11 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.26 2000/08/10 09:44:09 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.26  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.25  2000/08/09 14:14:11  reinelt
  *
  * new switch -F (do not fork)
@@ -159,7 +164,8 @@
 char *release="LCD4Linux " VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
 char *output=NULL;
 int got_signal=0;
-int debugging=0;
+int debugging=1;
+int foreground=0;
 int tick, tack;
 
 static void usage(void)
@@ -225,7 +231,7 @@ void calibrate (void)
 
 void handler (int signal)
 {
-  debug ("got signal %d\n", signal);
+  debug ("got signal %d", signal);
   got_signal=signal;
 }
 
@@ -234,7 +240,6 @@ int main (int argc, char *argv[])
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
   int c, smooth;
-  int foreground=0;
   int quiet=0;
   
   while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
@@ -269,7 +274,6 @@ int main (int argc, char *argv[])
       break;
     case 'v':
       debugging++;
-      foreground++;
       break;
     default:
       exit(2);
@@ -283,24 +287,23 @@ int main (int argc, char *argv[])
 
   if (!foreground) {
     pid_t i;
-    // debugging does not make sense here
-    // because -v implies -F which sets foreground=1
-    // debug ("going background...\n");
+    debug ("going background...");
     i=fork();
     if (i<0) {
-      perror ("fork() failed");
+      error ("fork() failed: %s", strerror(errno));
       exit (1);
     }
-    printf ("fork() returned %d\n", i);
     if (i!=0)
       exit (0);
-    close (0);
-    close (1);
-    printf ("Hallo stdout\n");
-    fprintf (stderr, "Hallo stderr\n");
+    
+    // close stdin/out/err ???
+    // open (dev/null) ???
   }
-
-  debug ("LCD4Linux " VERSION "\n");
+  
+  if (foreground)
+    debug ("LCD4Linux " VERSION);
+  else
+    info ("Version " VERSION " starting");
 
   // set default values
  
@@ -314,11 +317,11 @@ int main (int argc, char *argv[])
   
   driver=cfg_get("display");
   if (driver==NULL || *driver=='\0') {
-    fprintf (stderr, "%s: missing 'display' entry!\n", cfg_file());
+    error ("%s: missing 'display' entry!", cfg_file());
     exit (1);
   }
   
-  debug ("initializing driver %s\n", driver);
+  debug ("initializing driver %s", driver);
   if (lcd_init(driver)==-1) {
     exit (1);
   }
@@ -339,7 +342,7 @@ int main (int argc, char *argv[])
     lcd_clear();
   }
   
-  debug ("starting main loop\n");
+  debug ("starting main loop");
 
   smooth=0;
   while (got_signal==0) {
@@ -349,14 +352,14 @@ int main (int argc, char *argv[])
     usleep(tick*1000);
   }
 
-  debug ("leaving main loop\n");
+  debug ("leaving main loop");
   
   lcd_clear();
   if (!quiet) hello();
   lcd_quit();
   
   if (got_signal==SIGHUP) {
-    debug ("restarting\n");
+    debug ("restarting");
   }
   exit (0);
 }

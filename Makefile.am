@@ -13,7 +13,7 @@ endif
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
-debug.h \
+debug.c debug.h \
 cfg.c cfg.h \
 lock.c lock.h \
 parser.c parser.h \

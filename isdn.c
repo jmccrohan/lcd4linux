@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.6 2000/04/15 11:56:35 reinelt Exp $
+/* $Id: isdn.c,v 1.7 2000/08/10 09:44:09 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.7  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.6  2000/04/15 11:56:35  reinelt
  *
  * more debug messages
@@ -83,25 +88,25 @@ static int Usage (void)
 
   fd=open ("/dev/isdninfo", O_RDONLY | O_NDELAY);
   if (fd==-1) {
-    perror ("open(/dev/isdninfo) failed");
+    error ("open(/dev/isdninfo) failed: %s", strerror(errno));
     return 0;
   }
   
   if (read (fd, buffer, sizeof(buffer))==-1) {
-    perror ("read(/dev/isdninfo) failed");
+    error ("read(/dev/isdninfo) failed: %s", strerror(errno));
     fd=-1;
     return 0;
   }
 
   if (close(fd)==-1) {
-    perror ("close(/dev/isdninfo) failed");
+    error ("close(/dev/isdninfo) failed: %s", strerror(errno));
     fd=-1;
     return 0;
   }
 
   p=strstr(buffer, "usage:");
   if (p==NULL) {
-    fprintf (stderr, "parse(/dev/isdninfo) failed: no usage line\n");
+    error ("parse(/dev/isdninfo) failed: no usage line");
     fd=-1;
     return 0;
   }
@@ -130,14 +135,14 @@ int Isdn (int *rx, int *tx, int *usage)
   if (fd==-2) {
     fd = open("/dev/isdninfo", O_RDONLY | O_NDELAY);
     if (fd==-1) {
-      perror ("open(/dev/isdninfo) failed");
+      error ("open(/dev/isdninfo) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open (/proc/isdninfo)=%d\n", fd);
+    debug ("open (/proc/isdninfo)=%d", fd);
   }
 
   if (ioctl(fd, IIOCGETCPS, &cps)) {
-    perror("ioctl(IIOCGETCPS) failed");
+    error("ioctl(IIOCGETCPS) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }

@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.4 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.5 2000/08/10 09:44:09 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.5  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.4  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -65,7 +70,7 @@ static char isAnyBarDirty;
 
 int cryfonquit(void) {
 
-        debug ("closing port %s\n", Port);
+        debug ("closing port %s", Port);
 	close(Device);
 	unlock_port(Port);
 	exit(0);
@@ -77,26 +82,23 @@ pid_t pid;
 struct termios portset;
 
 	if ((pid=lock_port(Port))!=0) {
-		if (pid==-1) fprintf(stderr,"Crystalfontz: port %s could not be locked\n",Port);
-		else fprintf(stderr,"Crystalfontz: port %s is locked by process %d\n",Port,pid);
+		if (pid==-1) error ("Crystalfontz: port %s could not be locked",Port);
+		else  error ("Crystalfontz: port %s is locked by process %d",Port,pid);
 		return -1;
 	}
 	fd=open(Port,O_RDWR|O_NOCTTY|O_NDELAY);
 	if (fd==-1) {
-		fprintf(stderr,"Crystalfontz: open(%s) failed: %s\n",
-			Port,strerror(errno));
+		error ("Crystalfontz: open(%s) failed: %s", Port, strerror(errno));
 		return -1;
 	}
 	if (tcgetattr(fd,&portset)==-1) {
-		fprintf(stderr,"Crystalfontz: tcgetattr(%s) failed: %s\n",
-			Port,strerror(errno));
+		error ("Crystalfontz: tcgetattr(%s) failed: %s", Port, strerror(errno));
 		return -1;
 	}
 	cfmakeraw(&portset);
 	cfsetospeed(&portset,Speed);
 	if (tcsetattr(fd, TCSANOW, &portset)==-1) {
-		fprintf(stderr,"Crystalfontz: tcsetattr(%s) failed: %s\n",
-			Port,strerror(errno));
+		error ("Crystalfontz: tcsetattr(%s) failed: %s", Port, strerror(errno));
 		return -1;
 	}
 	return fd;
@@ -118,8 +120,7 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 	}
 
 	if ((port=cfg_get("Port"))==NULL || *port=='\0') {
-		fprintf(stderr,"CrystalFontz: no 'Port' entry in %s\n",
-			cfg_file());
+		error ("CrystalFontz: no 'Port' entry in %s", cfg_file());
 		return -1;
 	}
 	if (port[0]=='/') Port=strdup(port);
@@ -143,12 +144,11 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 		Speed=B19200;
 		break;
 	default:
-		fprintf(stderr,"CrystalFontz: unsupported speed '%s' in '%s'\n",
-			speed,cfg_file());
+		error ("CrystalFontz: unsupported speed '%s' in '%s'", speed, cfg_file());
 		return -1;
 	}
 
-	debug ("using port %s at %d baud\n", Port, atoi(speed));
+	debug ("using port %s at %d baud", Port, atoi(speed));
 
 	if ((Device=cryfonopen())==-1)
 		return -1;
@@ -158,32 +158,32 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 			
 	Txtbuf=(char *)malloc(tdim);
 	if (Txtbuf==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	CustCharMap=(char *)malloc(tdim);
 	if (CustCharMap==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	BackupTxtbuf=(char *)malloc(tdim);
 	if (BackupTxtbuf==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	Barbuf=(char *)malloc(bdim);
 	if (Barbuf==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	BackupBarbuf=(char *)malloc(bdim);
 	if (BackupBarbuf==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	isBarDirty=(char *)malloc(Lcd.rows);
 	if (isBarDirty==NULL) {
-		fprintf(stderr,"CrystalFontz: out of memory\n");
+		error ("CrystalFontz: out of memory");
 		return -1;
 	}
 	memset(Txtbuf,' ',tdim);
@@ -444,7 +444,7 @@ int x;
 	}
 	/* else: internal consistency failure */
 	else {
-		printf("Crystalfontz: internal consistency failure 1\n");
+		error ("Crystalfontz: internal consistency failure 1");
 		exit(0);
 	}
 }
@@ -457,7 +457,7 @@ int ci,x;
 		CustCharMap[x]=-1;
 		cust_chars[ci].use_count--;
 		if (cust_chars[i].use_count==-1) {
-			printf("Crystalfontz: internal consistency failure 2\n");
+			error ("Crystalfontz: internal consistency failure 2");
 			exit(0);
 		}
 	}
@@ -520,7 +520,7 @@ int i,j,k1,k2,ci;
 								writeChar(i,j,128+ci);
 								use_cust_char(i,j,ci);
 							}
-							else printf("failed to alloc a custom char\n");
+							else error ("failed to alloc a custom char");
 						}
 					}
 					BackupBarbuf[k1]=c1;

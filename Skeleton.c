@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.4 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: Skeleton.c,v 1.5 2000/08/10 09:44:09 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.5  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.4  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -53,6 +58,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "debug.h"
 #include "cfg.h"
 #include "display.h"
 
@@ -67,7 +73,7 @@ int Skel_init (LCD *Self)
 {
   Lcd=*Self;
 
-  fprintf (stderr, "Skeleton: This driver does not drive anything!");
+  error ("Skeleton: This driver does not drive anything!");
   return -1;
 
   Skel_clear();

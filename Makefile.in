@@ -73,7 +73,7 @@ AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 lcd4linux_LDFLAGS = $(X_LIBS)
 @WITH_X_TRUE@lcd4linux_LDADD = -lX11
 
-lcd4linux_SOURCES =  lcd4linux.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h Skeleton.c MatrixOrbital.c BeckmannEgle.c HD44780.c Crystalfontz.c Crystalfontz.h PalmPilot.c Raster.c XWindow.c
+lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h fontmap.c fontmap.h Skeleton.c MatrixOrbital.c BeckmannEgle.c HD44780.c Crystalfontz.c Crystalfontz.h PalmPilot.c Raster.c XWindow.c
 
 
 EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm FAQ TODO README.Drivers README.MatrixOrbital README.HD44780 README.Crystalfontz README.X11 README.KDE README.Raster
@@ -92,10 +92,10 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-lcd4linux_OBJECTS =  lcd4linux.o cfg.o lock.o parser.o processor.o \
-system.o isdn.o filter.o udelay.o display.o pixmap.o fontmap.o \
-Skeleton.o MatrixOrbital.o BeckmannEgle.o HD44780.o Crystalfontz.o \
-PalmPilot.o Raster.o XWindow.o
+lcd4linux_OBJECTS =  lcd4linux.o debug.o cfg.o lock.o parser.o \
+processor.o system.o isdn.o filter.o udelay.o display.o pixmap.o \
+fontmap.o Skeleton.o MatrixOrbital.o BeckmannEgle.o HD44780.o \
+Crystalfontz.o PalmPilot.o Raster.o XWindow.o
 @WITH_X_TRUE@lcd4linux_DEPENDENCIES = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -111,10 +111,10 @@ TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/BeckmannEgle.P .deps/Crystalfontz.P .deps/HD44780.P \
 .deps/MatrixOrbital.P .deps/PalmPilot.P .deps/Raster.P .deps/Skeleton.P \
-.deps/XWindow.P .deps/cfg.P .deps/display.P .deps/filter.P \
-.deps/fontmap.P .deps/isdn.P .deps/lcd4linux.P .deps/lock.P \
-.deps/parser.P .deps/pixmap.P .deps/processor.P .deps/system.P \
-.deps/udelay.P
+.deps/XWindow.P .deps/cfg.P .deps/debug.P .deps/display.P \
+.deps/filter.P .deps/fontmap.P .deps/isdn.P .deps/lcd4linux.P \
+.deps/lock.P .deps/parser.P .deps/pixmap.P .deps/processor.P \
+.deps/system.P .deps/udelay.P
 SOURCES = $(lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.8 2000/07/31 06:46:35 reinelt Exp $
+/* $Id: cfg.c,v 1.9 2000/08/10 09:44:09 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.9  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.8  2000/07/31 06:46:35  reinelt
  *
  * eliminated some compiler warnings with glibc
@@ -103,6 +108,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "debug.h"
 #include "cfg.h"
 
 typedef struct {
@@ -211,7 +217,7 @@ int cfg_read (char *file)
   
   stream=fopen (file, "r");
   if (stream==NULL) {
-    fprintf (stderr, "open(%s) failed: %s\n", file, strerror(errno));
+    error ("open(%s) failed: %s", file, strerror(errno));
     return-1;
   }
 

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.9 2000/04/03 04:01:31 reinelt Exp $
+/* $Id: Raster.c,v 1.10 2000/08/10 09:44:09 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.10  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.9  2000/04/03 04:01:31  reinelt
  *
  * if 'gap' is specified as -1, a gap of (pixelsize+pixelgap) is selected automatically
@@ -83,6 +88,7 @@
 #include <sys/stat.h>
 
 
+#include "debug.h"
 #include "cfg.h"
 #include "display.h"
 #include "pixmap.h"
@@ -119,14 +125,14 @@ int Raster_flush (void)
   
   if (bitbuf==NULL) {
     if ((bitbuf=malloc(xsize*ysize*sizeof(*bitbuf)))==NULL) {
-      fprintf (stderr, "Raster: malloc(%d) failed: %s\n", xsize*ysize*sizeof(*bitbuf), strerror(errno));
+      error ("Raster: malloc(%d) failed: %s", xsize*ysize*sizeof(*bitbuf), strerror(errno));
       return -1;
     }
   }
   
   if (rowbuf==NULL) {
     if ((rowbuf=malloc(3*xsize*sizeof(*rowbuf)))==NULL) {
-      fprintf (stderr, "Raster: malloc(%d) failed: %s\n", 3*xsize*sizeof(*rowbuf), strerror(errno));
+      error ("Raster: malloc(%d) failed: %s", 3*xsize*sizeof(*rowbuf), strerror(errno));
       return -1;
     }
   }
@@ -148,13 +154,13 @@ int Raster_flush (void)
   snprintf (tmp, sizeof(tmp), "%s.tmp", path);
   
   if ((fd=open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644))<0) {
-    fprintf (stderr, "Raster: open(%s) failed: %s\n", tmp, strerror(errno));
+    error ("Raster: open(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   
   snprintf (buffer, sizeof(buffer), "P6\n%d %d\n255\n", xsize, ysize);
   if (write (fd, buffer, strlen(buffer))<0) {
-    fprintf (stderr, "Raster: write(%s) failed: %s\n", tmp, strerror(errno));
+    error ("Raster: write(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   
@@ -179,17 +185,17 @@ int Raster_flush (void)
       rowbuf[c++]=B[i];
     }
     if (write (fd, rowbuf, c)<0) {
-      fprintf (stderr, "Raster: write(%s) failed: %s\n", tmp, strerror(errno));
+      error ("Raster: write(%s) failed: %s", tmp, strerror(errno));
       return -1;
     }
   }
   
   if (close (fd)<0) {
-    fprintf (stderr, "Raster: close(%s) failed: %s\n", tmp, strerror(errno));
+    error ("Raster: close(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   if (rename (tmp, path)<0) {
-    fprintf (stderr, "Raster: close(%s) failed: %s\n", tmp, strerror(errno));
+    error ("Raster: close(%s) failed: %s", tmp, strerror(errno));
     return -1;
   }
   
@@ -211,27 +217,27 @@ int Raster_init (LCD *Self)
   int xres=1, yres=-1;
   
   if (output==NULL || *output=='\0') {
-    fprintf (stderr, "Raster: no output file specified (use -o switch)\n");
+    error ("Raster: no output file specified (use -o switch)");
     return -1;
   }
     
   if (sscanf(s=cfg_get("size")?:"20x4", "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
-    fprintf (stderr, "Raster: bad size '%s'\n", s);
+    error ("Raster: bad size '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("font")?:"5x8", "%dx%d", &xres, &yres)!=2 || xres<5 || yres<7) {
-    fprintf (stderr, "Raster: bad font '%s'\n", s);
+    error ("Raster: bad font '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("pixel")?:"4+1", "%d+%d", &pixel, &pgap)!=2 || pixel<1 || pgap<0) {
-    fprintf (stderr, "Raster: bad pixel '%s'\n", s);
+    error ("Raster: bad pixel '%s'", s);
     return -1;
   }
 
   if (sscanf(s=cfg_get("gap")?:"3x3", "%dx%d", &cgap, &rgap)!=2 || cgap<-1 || rgap<-1) {
-    fprintf (stderr, "Raster: bad gap '%s'\n", s);
+    error ("Raster: bad gap '%s'", s);
     return -1;
   }
   if (rgap<0) rgap=pixel+pgap;
@@ -240,20 +246,20 @@ int Raster_init (LCD *Self)
   border=atoi(cfg_get("border")?:"0");
 
   if (sscanf(s=cfg_get("foreground")?:"#102000", "#%x", &foreground)!=1) {
-    fprintf (stderr, "Raster: bad foreground color '%s'\n", s);
+    error ("Raster: bad foreground color '%s'", s);
     return -1;
   }
   if (sscanf(s=cfg_get("halfground")?:"#70c000", "#%x", &halfground)!=1) {
-    fprintf (stderr, "Raster: bad halfground color '%s'\n", s);
+    error ("Raster: bad halfground color '%s'", s);
     return -1;
   }
   if (sscanf(s=cfg_get("background")?:"#80d000", "#%x", &background)!=1) {
-    fprintf (stderr, "Raster: bad background color '%s'\n", s);
+    error ("Raster: bad background color '%s'", s);
     return -1;
   }
 
   if (pix_init (rows, cols, xres, yres)!=0) {
-    fprintf (stderr, "Raster: pix_init(%d, %d, %d, %d) failed\n", rows, cols, xres, yres);
+    error ("Raster: pix_init(%d, %d, %d, %d) failed", rows, cols, xres, yres);
     return -1;
   }
 

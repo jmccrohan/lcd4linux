@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.15 2000/08/09 11:03:07 reinelt Exp $
+/* $Id: system.c,v 1.16 2000/08/10 09:44:09 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.16  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.15  2000/08/09 11:03:07  reinelt
  *
  * fixed a bug in system.c where the format of /proc/net/dev was not correctly
@@ -172,11 +177,11 @@ static int parse_meminfo (char *tag, char *buffer)
   
   p=strstr(buffer, tag);
   if (p==NULL) {
-    fprintf (stderr, "parse(/proc/meminfo) failed: no '%s' line\n", tag);
+    error ("parse(/proc/meminfo) failed: no '%s' line", tag);
     return -1;
   }
   if (sscanf(p+strlen(tag), "%lu", &val)<1) {
-    fprintf (stderr, "scanf(/proc/meminfo) failed\n");
+    error ("scanf(/proc/meminfo) failed");
     return -1;
   }
   return val;
@@ -189,10 +194,10 @@ char *System(void)
 
   if (*buffer=='\0') {
     if (uname(&ubuf)==-1) {
-      perror ("uname() failed");
+      error ("uname() failed: %s", strerror(errno));
       strcpy (buffer, "unknown");
     } else {
-      debug ("uname(sysname)=%s\n", ubuf.sysname);
+      debug ("uname(sysname)=%s", ubuf.sysname);
       strncpy (buffer, ubuf.sysname, sizeof(buffer));
     }
   }
@@ -206,10 +211,10 @@ char *Release(void)
 
   if (*buffer=='\0') {
     if (uname(&ubuf)==-1) {
-      perror ("uname() failed");
+      error ("uname() failed: %s", strerror(errno));
       strcpy (buffer, "unknown");
     } else {
-      debug ("uname(release)=%s\n", ubuf.release);
+      debug ("uname(release)=%s", ubuf.release);
       strncpy (buffer, ubuf.release, sizeof(buffer));
     }
   }
@@ -223,10 +228,10 @@ char *Processor(void)
 
   if (*buffer=='\0') {
     if (uname(&ubuf)==-1) {
-      perror ("uname() failed");
+      error ("uname() failed: %s", strerror(errno));
       strcpy (buffer, "unknown");
     } else {
-      debug ("uname(machine)=%s\n", ubuf.machine);
+      debug ("uname(machine)=%s", ubuf.machine);
       strncpy (buffer, ubuf.machine, sizeof(buffer));
     }
   }
@@ -244,13 +249,13 @@ double BogoMips (void)
     char *p;
     int fd=open("/proc/cpuinfo", O_RDONLY);
     if (fd==-1) {
-      perror ("open(/proc/cpuinfo) failed");
+      error ("open(/proc/cpuinfo) failed: %s", strerror(errno));
       val=-1;
       return -1;
     }
-    debug ("open(proc/cpuinfo)=%d\n", fd);
+    debug ("open(proc/cpuinfo)=%d", fd);
     if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-      perror ("read(/proc/cpuinfo) failed");
+      error ("read(/proc/cpuinfo) failed: %s", strerror(errno));
       close (fd);
       val=-1;
       return -1;
@@ -258,16 +263,16 @@ double BogoMips (void)
     close (fd);
     p=strstr(buffer, "bogomips");
     if (p==NULL) {
-      fprintf (stderr, "parse(/proc/cpuinfo) failed: no 'bogomips' line\n");
+      error ("parse(/proc/cpuinfo) failed: no 'bogomips' line");
       val=-1;
       return -1;
     }
     if (sscanf(p+8, " : %lf", &val)<1) {
-      fprintf (stderr, "scanf(/proc/cpuinfo) failed\n");
+      error ("scanf(/proc/cpuinfo) failed");
       val=-1;
       return -1;
     }
-    debug ("BogoMips=%f\n", val);
+    debug ("BogoMips=%f", val);
   }
   return val;
 }
@@ -279,10 +284,10 @@ int Memory(void)
 
   if (value==-1) {
     if (stat("/proc/kcore", &buf)==-1) {
-      perror ("stat(/proc/kcore) failed");
+      error ("stat(/proc/kcore) failed: %s", strerror(errno));
       value=0;
     } else {
-      debug ("sizeof(/proc/kcore)=%ld bytes\n", buf.st_size);
+      debug ("sizeof(/proc/kcore)=%ld bytes", buf.st_size);
       value=buf.st_size>>20;
     }
   }
@@ -314,19 +319,19 @@ int Ram (int *total, int *free, int *shared, int *buffered, int *cached)
   if (fd==-2) {
     fd = open("/proc/meminfo", O_RDONLY | O_NDELAY);
     if (fd==-1) {
-      perror ("open(/proc/meminfo) failed");
+      error ("open(/proc/meminfo) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open(/proc/meminfo)=%d\n", fd);
+    debug ("open(/proc/meminfo)=%d", fd);
   }
   
   if (lseek(fd, 0L, SEEK_SET)!=0) {
-    perror ("lseek(/proc/meminfo) failed");
+    error ("lseek(/proc/meminfo) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    perror ("read(/proc/meminfo) failed");
+    error ("read(/proc/meminfo) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
@@ -383,26 +388,26 @@ int Load (double *load1, double *load2, double *load3)
   if (fd==-2) {
     fd=open("/proc/loadavg", O_RDONLY);
     if (fd==-1) {
-      perror ("open(/proc/loadavg) failed");
+      error ("open(/proc/loadavg) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open(/proc/loadavg)=%d\n", fd);
+    debug ("open(/proc/loadavg)=%d", fd);
   }
 
   if (lseek(fd, 0L, SEEK_SET)!=0) {
-    perror("lseek(/proc/loadavg) failed");
+    error("lseek(/proc/loadavg) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
 
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    perror("read(/proc/loadavg) failed");
+    error("read(/proc/loadavg) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
 
   if (sscanf(buffer, "%lf %lf %lf", &val1, &val2, &val3)<3) {
-    fprintf(stderr, "scanf(/proc/loadavg) failed\n");
+    error ("scanf(/proc/loadavg) failed");
     fd=-1;
     return -1;
   }
@@ -431,25 +436,25 @@ int Busy (double *user, double *nice, double *system, double *idle)
   if (fd==-2) {
     fd=open("/proc/stat", O_RDONLY);
     if (fd==-1) {
-      perror ("open(proc/stat) failed");
+      error ("open(proc/stat) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open (/proc/stat)=%d\n", fd);
+    debug ("open (/proc/stat)=%d", fd);
   }
 
   if (lseek(fd, 0L, SEEK_SET)!=0) {
-    perror ("lseek(/proc/stat) failed");
+    error ("lseek(/proc/stat) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
 
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    perror ("read(/proc/stat) failed");
+    error ("read(/proc/stat) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
-  if (sscanf(buffer, "%*s %lu %lu %lu %lu\n", &v1, &v2, &v3, &v4)<4) {
-    fprintf (stderr, "scanf(/proc/stat) failed\n");
+  if (sscanf(buffer, "%*s %lu %lu %lu %lu", &v1, &v2, &v3, &v4)<4) {
+    error ("scanf(/proc/stat) failed");
     fd=-1;
     return -1;
   }
@@ -482,19 +487,19 @@ int Disk (int *r, int *w)
   if (fd==-2) {
     fd = open("/proc/stat", O_RDONLY | O_NDELAY);
     if (fd==-1) {
-      perror ("open(/proc/stat) failed");
+      error ("open(/proc/stat) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open (/proc/stat)=%d\n", fd);
+    debug ("open (/proc/stat)=%d", fd);
   }
   
   if (lseek(fd, 0L, SEEK_SET)!=0) {
-    perror ("lseek(/proc/stat) failed");
+    error ("lseek(/proc/stat) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    perror ("read(/proc/stat) failed");
+    error ("read(/proc/stat) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
@@ -523,23 +528,23 @@ int Disk (int *r, int *w)
     unsigned long w1, w2, w3, w4;
     p=strstr(buffer, "disk_rblk");
     if (p==NULL) {
-      fprintf (stderr, "parse(/proc/stat) failed: neither 'disk_io' nor 'disk_rblk' found\n");
+      error ("parse(/proc/stat) failed: neither 'disk_io' nor 'disk_rblk' found");
       fd=-1;
       return -1;
     }
-    if (sscanf(p+9, "%lu %lu %lu %lu\n", &r1, &r2, &r3, &r4)<4) {
-      fprintf (stderr, "scanf(/proc/stat) failed\n");
+    if (sscanf(p+9, "%lu %lu %lu %lu", &r1, &r2, &r3, &r4)<4) {
+      error ("scanf(/proc/stat) failed");
       fd=-1;
       return -1;
     }
     p=strstr(buffer, "disk_wblk");
     if (p==NULL) {
-      fprintf (stderr, "parse(/proc/stat) failed: no 'disk_wblk' line\n");
+      error ("parse(/proc/stat) failed: no 'disk_wblk' line");
       fd=-1;
       return -1;
     }
-    if (sscanf(p+9, "%lu %lu %lu %lu\n", &w1, &w2, &w3, &w4)<4) {
-      fprintf (stderr, "scanf(/proc/stat) failed\n");
+    if (sscanf(p+9, "%lu %lu %lu %lu", &w1, &w2, &w3, &w4)<4) {
+      error ("scanf(/proc/stat) failed");
       fd=-1;
       return -1;
     }
@@ -567,36 +572,36 @@ int Net (int *rx, int *tx, int *bytes)
   if (fd==-2) {
     struct utsname ubuf;
     if (uname(&ubuf)==-1) {
-      perror ("uname() failed");
+      error ("uname() failed: %s", strerror(errno));
       fd=-1;
       return -1;
     }
     if (strncmp(ubuf.release,"2.0.",4)==0) {
-      debug ("using old /proc/net/dev format\n");
+      debug ("using old /proc/net/dev format");
       proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %ld";
       proc_net_dev_bytes=0;
     } else {
-      debug ("using new /proc/net/dev format\n");
+      debug ("using new /proc/net/dev format");
       proc_net_dev_fmt=" eth%*d: %ld %*d %*d %*d %*d %*d %*d %*d %ld";
       proc_net_dev_bytes=1;
     }
     
     fd = open("/proc/net/dev", O_RDONLY | O_NDELAY);
     if (fd==-1) {
-      perror ("open(/proc/net/dev) failed");
+      error ("open(/proc/net/dev) failed: %s", strerror(errno));
       return -1;
     }
-    debug ("open (/proc/net/dev)=%d\n", fd);
+    debug ("open (/proc/net/dev)=%d", fd);
   }
   
   if (lseek(fd, 0L, SEEK_SET)!=0) {
-    perror ("lseek(/proc/net/dev) failed");
+    error ("lseek(/proc/net/dev) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
 
   if (read (fd, &buffer, sizeof(buffer)-1)==-1) {
-    perror ("read(/proc/net/dev) failed");
+    error ("read(/proc/net/dev) failed: %s", strerror(errno));
     fd=-1;
     return -1;
   }
@@ -633,10 +638,10 @@ int PPP (int unit, int *rx, int *tx)
   if (fd==-2) {
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd==-1) {
-      perror ("socket() failed");
+      error ("socket() failed: %s", strerror(errno));
       return -1;
     }
-    debug ("socket()=%d\n", fd);
+    debug ("socket()=%d", fd);
   }
 
   memset (&req, 0, sizeof (req));
@@ -681,7 +686,7 @@ int Sensor (int index, double *val, double *min, double *max)
     snprintf(buffer, 32, "Sensor%d", index);
     sensor[index]=cfg_get(buffer);
     if (sensor[index]==NULL || *sensor[index]=='\0') {
-      fprintf (stderr, "%s: no entry for '%s'\n", cfg_file(), buffer);
+      error ("%s: no entry for '%s'", cfg_file(), buffer);
       fd[index]=-1;
       return -1;
     }
@@ -693,26 +698,26 @@ int Sensor (int index, double *val, double *min, double *max)
     
     fd[index]=open(sensor[index], O_RDONLY);
     if (fd[index]==-1) {
-      fprintf (stderr, "open(%s) failed: %s\n", sensor[index], strerror(errno));
+      error ("open(%s) failed: %s", sensor[index], strerror(errno));
       return -1;
     }
-    debug ("open (%s)=%d\n", sensor[index], fd[index]);
+    debug ("open (%s)=%d", sensor[index], fd[index]);
   }
 
   if (lseek(fd[index], 0L, SEEK_SET)!=0) {
-    fprintf (stderr, "lseek(%s) failed: %s\n", sensor[index], strerror(errno));
+    error ("lseek(%s) failed: %s", sensor[index], strerror(errno));
     fd[index]=-1;
     return -1;
   }
 
   if (read (fd[index], &buffer, sizeof(buffer)-1)==-1) {
-    fprintf (stderr, "read(%s) failed: %s\n", sensor[index], strerror(errno));
+    error ("read(%s) failed: %s", sensor[index], strerror(errno));
     fd[index]=-1;
     return -1;
   }
 
   if (sscanf(buffer, "%*f %*f %lf", &value)<1) {
-    fprintf (stderr, "scanf(%s) failed\n", sensor[index]);
+    error ("scanf(%s) failed", sensor[index]);
     fd[index]=-1;
     return -1;
   }

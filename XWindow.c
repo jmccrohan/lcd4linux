@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.19 2000/08/09 09:50:29 reinelt Exp $
+/* $Id: XWindow.c,v 1.20 2000/08/10 09:44:09 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.20  2000/08/10 09:44:09  reinelt
+ *
+ * new debugging scheme: error(), info(), debug()
+ * uses syslog if in daemon mode
+ *
  * Revision 1.19  2000/08/09 09:50:29  reinelt
  *
  * opened 0.98 development
@@ -112,6 +117,7 @@
 #include	<unistd.h>
 #include        <signal.h>
 
+#include        "debug.h"
 #include	"cfg.h"
 #include	"display.h"
 #include	"pixmap.h"
@@ -190,12 +196,12 @@ static int init_shm(int nbytes,unsigned char **buf) {
 
 	shmid=shmget(IPC_PRIVATE,nbytes,SHM_R|SHM_W);
 	if (shmid==-1) {
-		perror("X11: shmget() failed");
+		error ("X11: shmget() failed: %s", strerror(errno));
 		return -1;
 	}
 	*buf=shmat(shmid,NULL,0);
 	if (*buf==NULL) {
-		perror("X11: shmat() failed");
+		error ("X11: shmat() failed: %s", strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -210,7 +216,7 @@ union semun semun;
 
 	semid=semget(IPC_PRIVATE,1,SEM_ALTER);
 	if (semid==-1) {
-		perror("X11: semget() failed");
+		error ("X11: semget() failed: %s", strerror(errno));
 		return -1;
 	}
 	semun.val=1;
@@ -219,11 +225,11 @@ union semun semun;
 	ppid=getpid();
 	switch(async_updater_pid=fork()) {
 	case -1:
-		perror("X11: fork() failed");
+		error ("X11: fork() failed: %s", strerror(errno));
 		return -1;
 	case 0:
 		async_update();
-		fprintf(stderr,"X11: async_update failed\n");
+		error ("X11: async_update failed");
 		kill(ppid,SIGTERM);
 		exit(-1);
 	default:
@@ -240,7 +246,7 @@ XColor co_dummy;
 XEvent ev;
 
 	if ((dp=XOpenDisplay(NULL))==NULL) {
-		fprintf(stderr,"X11: can't open display\n");
+		error ("X11: can't open display");
 		return -1;
 	}
 	sc=DefaultScreen(dp);
@@ -251,17 +257,17 @@ XEvent ev;
 	cm=DefaultColormap(dp,sc);
 
 	if (XAllocNamedColor(dp,cm,rgbfg,&co[0],&co_dummy)==False) {
-		fprintf(stderr,"X11: can't alloc foreground color '%s'\n",
+		error ("X11: can't alloc foreground color '%s'",
 			rgbfg);
 		return -1;
 	}
 	if (XAllocNamedColor(dp,cm,rgbbg,&co[1],&co_dummy)==False) {
-		fprintf(stderr,"X11: can't alloc background color '%s'\n",
+		error ("X11: can't alloc background color '%s'",
 			rgbbg);
 		return -1;
 	}
 	if (XAllocNamedColor(dp,cm,rgbhg,&co[2],&co_dummy)==False) {
-		fprintf(stderr,"X11: can't alloc halfground color '%s'\n",
+		error ("X11: can't alloc halfground color '%s'",
 			rgbhg);
 		return -1;
 	}
@@ -304,22 +310,22 @@ char *s;
 
 	if (sscanf(s=cfg_get("size")?:"20x4","%dx%d",&cols,&rows)!=2
 		|| rows<1 || cols<1) {
-		fprintf(stderr,"X11: bad size '%s'\n",s);
+		error ("X11: bad size '%s'",s);
 		return -1;
 	}
 	if (sscanf(s=cfg_get("font")?:"5x8","%dx%d",&xres,&yres)!=2
 		|| xres<5 || yres>10) {
-    		fprintf(stderr,"X11: bad font '%s'\n",s);
+    		error ("X11: bad font '%s'",s);
     		return -1;
 	}
 	if (sscanf(s=cfg_get("pixel")?:"4+1","%d+%d",&pixel,&pgap)!=2
 		|| pixel<1 || pgap<0) {
-		fprintf(stderr,"X11: bad pixel '%s'\n",s);
+		error ("X11: bad pixel '%s'",s);
 		return -1;
 	}
 	if (sscanf(s=cfg_get("gap")?:"3x3","%dx%d",&cgap,&rgap)!=2
 		|| cgap<-1 || rgap<-1) {
-		fprintf(stderr,"X11: bad gap '%s'\n",s);
+		error ("X11: bad gap '%s'",s);
 		return -1;
 	}
 	if (rgap<0) rgap=pixel+pgap;
