@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.34 2003/07/21 06:34:14 reinelt Exp $
+/* $Id: processor.c,v 1.35 2003/07/24 04:48:09 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.35  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.34  2003/07/21 06:34:14  reinelt
  * bars on virtual rows fixed
  *
@@ -801,6 +804,7 @@ void process (int smooth)
     while (offset>=lines) {
       offset-=lines;
     }
+    lcd_clear(0); // soft clear
   }
   
   for (i=1; i<=rows; i++) {

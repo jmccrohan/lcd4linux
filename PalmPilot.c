@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.9  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.8  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -193,12 +196,15 @@ int Palm_flush (void)
   return 0;
 }
 
-int Palm_clear (void)
+int Palm_clear (int full)
 {
   if (pix_clear()!=0) 
     return -1;
   
-  return Palm_flush();
+  if (full)
+    return Palm_flush();
+
+  return 0;
 }
 
 int Palm_init (LCD *Self)

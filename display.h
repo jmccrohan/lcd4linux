@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.15 2002/08/19 04:41:20 reinelt Exp $
+/* $Id: display.h,v 1.16 2003/07/24 04:48:09 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.16  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.15  2002/08/19 04:41:20  reinelt
  * introduced bar.c, moved bar stuff from display.h to bar.h
  *
@@ -96,7 +99,7 @@ typedef struct LCD {
   int bars;
   int gpos;
   int (*init) (struct LCD *Self);
-  int (*clear) (void);
+  int (*clear) (int full);
   int (*put) (int x, int y, char *text);
   int (*bar) (int type, int x, int y, int max, int len1, int len2);
   int (*gpo) (int num, int val);
@@ -112,7 +115,7 @@ typedef struct {
 int lcd_list (void);
 int lcd_init (char *driver);
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos);
-int lcd_clear (void);
+int lcd_clear (int full);
 int lcd_put (int row, int col, char *text);
 int lcd_bar (int type, int row, int col, int max, int len1, int len2);
 int lcd_gpo (int num, int val);

@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.7 2001/03/09 13:08:11 ltoetsch Exp $
+/* $Id: Skeleton.c,v 1.8 2003/07/24 04:48:09 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.8  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.7  2001/03/09 13:08:11  ltoetsch
  * Added Text driver
  *
@@ -71,7 +74,7 @@
 
 static LCD Lcd;
 
-int Skel_clear (void)
+int Skel_clear (int full)
 {
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.21 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: Raster.c,v 1.22 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.22  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.21  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -322,7 +325,7 @@ int PNG_flush (void)
 #endif
 
 
-int Raster_clear (void)
+int Raster_clear (int full)
 {
   if (pix_clear()!=0) 
     return -1;

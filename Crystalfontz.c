@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.9 2003/02/22 07:53:09 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.10 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.10  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.9  2003/02/22 07:53:09  reinelt
  * cfg_get(key,defval)
  *
@@ -232,7 +235,7 @@ char cmd_contrast[2]={ CRYFON_CONTRAST_CTRL, };
 	return 0;
 }
 
-int cryfonclear() {
+int cryfonclear(int full) {
 	memset(Txtbuf,' ',tdim);
 	memset(Barbuf,0,bdim);
 	return 0;

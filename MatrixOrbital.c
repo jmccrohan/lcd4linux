@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.27 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.28 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.28  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.27  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -254,6 +257,8 @@ static int MO_clear (int protocol)
 
   bar_clear();
 
+  GPO=0;
+
   switch (protocol) {
   case 1:
     MO_write ("\014",  1);  // Clear Screen
@@ -269,18 +274,17 @@ static int MO_clear (int protocol)
     break;
   }
   
-  GPO=0;
   return 0;
 }
 
-int MO_clear1 (void)
+int MO_clear1 (int full)
 {
-  return MO_clear(1);
+  return MO_clear(full?1:0);
 }
 
-int MO_clear2 (void)
+int MO_clear2 (int full)
 {
-  return MO_clear(2);
+  return MO_clear(full?2:0);
 }
 
 

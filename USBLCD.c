@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.9 2003/04/04 06:01:59 reinelt Exp $
+/* $Id: USBLCD.c,v 1.10 2003/07/24 04:48:09 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.10  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.9  2003/04/04 06:01:59  reinelt
  * new parallel port abstraction scheme
  *
@@ -190,19 +193,20 @@ static void USBLCD_define_char (int ascii, char *buffer)
 }
 
 
-int USBLCD_clear (void)
+int USBLCD_clear (int full)
 {
   int row, col;
-
+  
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       Txt[row][col]='\t';
     }
   }
-
+  
   bar_clear();
-
-  USBLCD_command (0x01); // clear display
+  
+  if (full)
+    USBLCD_command (0x01); // clear display
 
   return 0;
 }
@@ -251,7 +255,7 @@ int USBLCD_init (LCD *Self)
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
-  USBLCD_clear();
+  USBLCD_clear(1);
   USBLCD_send();
 
   return 0;

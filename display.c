@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.34 2002/12/05 19:09:57 reinelt Exp $
+/* $Id: display.c,v 1.35 2003/07/24 04:48:09 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.35  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.34  2002/12/05 19:09:57  reinelt
  * patches for gcc-3.2
  *
@@ -314,10 +317,10 @@ int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos)
   return 0;
 }
 
-int lcd_clear (void)
+int lcd_clear (int full)
 {
   if (Lcd->clear==NULL) return 0;
-  return Lcd->clear();
+  return Lcd->clear(full);
 }
 
 int lcd_put (int row, int col, char *text)

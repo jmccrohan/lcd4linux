@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.31 2003/04/12 16:23:10 reinelt Exp $
+/* $Id: XWindow.c,v 1.32 2003/07/24 04:48:09 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.32  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.31  2003/04/12 16:23:10  reinelt
  * small glitch in XWindow.c (thanks to Moe Wibble)
  *
@@ -436,7 +439,7 @@ int xlcdinit(LCD *Self)
 }
 
 
-int xlcdclear() 
+int xlcdclear(int full) 
 {
   return pix_clear();
 }

@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.8 2003/04/07 06:02:59 reinelt Exp $
+/* $Id: M50530.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.9  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.8  2003/04/07 06:02:59  reinelt
  * further parallel port abstraction
  *
@@ -145,7 +148,7 @@ static void M5_define_char (int ascii, char *buffer)
 }
 
 
-int M5_clear (void)
+int M5_clear (int full)
 {
   int row, col;
 
@@ -158,9 +161,12 @@ int M5_clear (void)
   bar_clear();
 
   GPO=0;
-  M5_setGPO (GPO);           // All GPO's off
 
-  M5_command (0x0001, 1250); // clear display
+  if (full) {
+    M5_command (0x0001, 1250); // clear display
+    M5_setGPO (GPO);           // All GPO's off
+  }
+  
   return 0;
 }
 
@@ -214,12 +220,11 @@ int M5_init (LCD *Self)
   M5_command (0x0020, 20); // set display mode
   M5_command (0x0050, 20); // set entry mode
   M5_command (0x0030, 20); // set display mode
-  M5_command (0x0001, 1250); // clear display
   
   bar_init(rows, cols, XRES, YRES, CHARS);
   bar_add_segment(0,0,255,32); // ASCII 32 = blank
   
-  M5_clear();
+  M5_clear(1);
   
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.8 2003/05/19 05:55:17 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.9  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.8  2003/05/19 05:55:17  reinelt
  * Cwlinux sleep optimization
  *
@@ -199,7 +202,7 @@ static void CW1602_define_char (int ascii, char *buffer)
 }
 
 
-int CW_clear(void)
+int CW_clear(int full)
 {
   int row, col;
 
@@ -211,17 +214,19 @@ int CW_clear(void)
 
   bar_clear();
 
+  if (full) {
 #if 0
-  CW_write("\376X\375",3);
+    CW_write("\376X\375",3);
 #else
-  // for some mysterious reason, we have to sleep after 
-  // the command _and_ after the CMD_END...
-  usleep(20);
-  CW_write("\376X",2);
-  usleep(20);
-  CW_write("\375",1);
-  usleep(20);
+    // for some mysterious reason, we have to sleep after 
+    // the command _and_ after the CMD_END...
+    usleep(20);
+    CW_write("\376X",2);
+    usleep(20);
+    CW_write("\375",1);
+    usleep(20);
 #endif
+  }
 
   return 0;
 }
@@ -308,7 +313,7 @@ int CW_init(LCD * Self)
   info ("Cwlinux Firmware %d.%d", (int)buffer[0], (int)buffer[1]);
 #endif
 
-  CW_clear();
+  CW_clear(1);
 
   // auto line wrap off
   CW_write ("\376D\375", 3);

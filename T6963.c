@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.6 2003/04/07 06:03:00 reinelt Exp $
+/* $Id: T6963.c,v 1.7 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.7  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.6  2003/04/07 06:03:00  reinelt
  * further parallel port abstraction
  *
@@ -290,23 +293,26 @@ static void T6_memcpy(unsigned short addr, unsigned char *data, int len)
 }
 
 
-int T6_clear (void)
+int T6_clear (int full)
 {
   int rows;
   
-  rows=(Lcd.rows>8 ? 8 : Lcd.rows);
-  
-  T6_memset(0x0000, 0, Lcd.cols*rows);    // clear text area 
-  T6_memset(0x0200, 0, Lcd.cols*rows*8);  // clear graphic area
-  
-  if (Lcd.rows>8) {
-    T6_memset(0x8000, 0, Lcd.cols*(Lcd.rows-rows));    // clear text area #2
-    T6_memset(0x8200, 0, Lcd.cols*(Lcd.rows-rows)*8);  // clear graphic area #2
+  if (full) {
+    
+    rows=(Lcd.rows>8 ? 8 : Lcd.rows);
+    
+    T6_memset(0x0000, 0, Lcd.cols*rows);    // clear text area 
+    T6_memset(0x0200, 0, Lcd.cols*rows*8);  // clear graphic area
+    
+    if (Lcd.rows>8) {
+      T6_memset(0x8000, 0, Lcd.cols*(Lcd.rows-rows));    // clear text area #2
+      T6_memset(0x8200, 0, Lcd.cols*(Lcd.rows-rows)*8);  // clear graphic area #2
+    }
+    
+    memset(Buffer1,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
+    memset(Buffer2,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer2));
   }
-
-  memset(Buffer1,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer1));
-  memset(Buffer2,0,Lcd.cols*Lcd.rows*Lcd.yres*sizeof(*Buffer2));
-
+  
   return pix_clear();
 }
 
@@ -363,7 +369,7 @@ int T6_init (LCD *Self)
   T6_write_cmd (0xa0);            // Set Cursor Pattern: 1 line cursor
   T6_send_word (0x21, 0x0000);    // Set Cursor Pointer to (0,0)
 
-  T6_clear();
+  T6_clear(1);
   
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.12 2003/02/22 07:53:09 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.13 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.13  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.12  2003/02/22 07:53:09  reinelt
  * cfg_get(key,defval)
  *
@@ -194,7 +197,7 @@ static void BE_define_char (int ascii, char *buffer)
 }
 
 
-int BE_clear (void)
+int BE_clear (int full)
 {
   int row, col;
 
@@ -206,7 +209,9 @@ int BE_clear (void)
 
   bar_clear();
 
-  BE_write ("\033&#", 3);
+  if (full)
+    BE_write ("\033&#", 3);
+  
   return 0;
 }
 
@@ -268,7 +273,7 @@ int BE_init (LCD *Self)
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
-  BE_clear();
+  BE_clear(1);
 
   return 0;
 }

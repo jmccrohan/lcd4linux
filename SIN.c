@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: SIN.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.9  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.8  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -155,7 +158,7 @@ static void SIN_write (char *string, int len)
   }
 }
 
-int SIN_clear (void)
+int SIN_clear (int full)
 {
   int row, col;
 
@@ -165,7 +168,9 @@ int SIN_clear (void)
     }
   }
   
-  SIN_write ("\033 ",2);
+  if (full)
+    SIN_write ("\033 ",2);
+  
   return 0;
 }
 

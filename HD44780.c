@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.28 2003/04/07 06:02:58 reinelt Exp $
+/* $Id: HD44780.c,v 1.29 2003/07/24 04:48:09 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.29  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.28  2003/04/07 06:02:58  reinelt
  * further parallel port abstraction
  *
@@ -247,7 +250,7 @@ static void HD_define_char (int ascii, char *buffer)
 }
 
 
-int HD_clear (void)
+int HD_clear (int full)
 {
   int row, col;
 
@@ -260,8 +263,12 @@ int HD_clear (void)
   bar_clear();
 
   GPO=0;
-  HD_setGPO (GPO);         // All GPO's off
-  HD_command (0x01, 1640); // clear display
+
+  if (full) {
+    HD_command (0x01, 1640); // clear display
+    HD_setGPO (GPO);         // All GPO's off
+  }
+
   return 0;
 }
 
@@ -325,7 +332,7 @@ int HD_init (LCD *Self)
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
   
-  HD_clear();
+  HD_clear(1);
   
   return 0;
 }

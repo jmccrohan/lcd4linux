@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.38 2003/06/13 05:11:11 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.39 2003/07/24 04:48:09 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.39  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.38  2003/06/13 05:11:11  reinelt
  * error message cosmetics
  *
@@ -431,11 +434,11 @@ int main (int argc, char *argv[])
   tack=atoi(cfg_get("tack","500"));
 
   process_init();
-  lcd_clear();
+  lcd_clear(1);
 
   if (!quiet && hello()) {
     sleep (3);
-    lcd_clear();
+    lcd_clear(1);
   }
   
   debug ("starting main loop");
@@ -450,7 +453,7 @@ int main (int argc, char *argv[])
 
   debug ("leaving main loop");
   
-  lcd_clear();
+  lcd_clear(1);
   if (!quiet) hello();
   lcd_quit();
   

@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.8 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: Text.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.9  2003/07/24 04:48:09  reinelt
+ * 'soft clear' needed for virtual rows
+ *
  * Revision 1.8  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -97,10 +100,12 @@ static WINDOW *w, *err_win;
 static int err_rows;
 
 
-int Text_clear (void)
+int Text_clear (int full)
 {
-  werase(w);
-  box(w, 0, 0);
+  if (full) {
+    werase(w);
+    box(w, 0, 0);
+  }
   return 0;
 }
 
@@ -148,7 +153,7 @@ int Text_init (LCD *Self)
     wmove(err_win, 1 , 0);
     wrefresh(err_win);
   }
-  Text_clear();
+  Text_clear(1);
   return w ? 0 : -1;
 }
 
