@@ -30,6 +30,8 @@ AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
@@ -52,6 +54,16 @@ AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd=true], [has_gd=false])
 # check for usb.h
 AC_CHECK_HEADERS(usb.h, [has_usb=true], [has_usb=false])
 
+# check for i2c
+AC_CHECK_HEADERS(linux/compiler.h,
+	[AC_CHECK_HEADERS(linux/i2c.h,
+		[AC_CHECK_HEADERS(linux/i2c-dev.h,
+			[has_i2c=true],
+			[has_i2c=false])],
+		[has_i2c=false])]
+	[has_i2c=false]
+)
+
 # drivers
 sinclude(drivers.m4)
 
@@ -69,6 +81,7 @@ AC_CHECK_HEADERS(asm/msr.h)
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
+AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_HEADER_TIME

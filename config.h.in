@@ -49,8 +49,17 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the <linux/compiler.h> header file. */
+#undef HAVE_LINUX_COMPILER_H
+
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
+
+/* Define to 1 if you have the <linux/i2c-dev.h> header file. */
+#undef HAVE_LINUX_I2C_DEV_H
+
+/* Define to 1 if you have the <linux/i2c.h> header file. */
+#undef HAVE_LINUX_I2C_H
 
 /* Define to 1 if you have the <linux/isdn.h> header file. */
 #undef HAVE_LINUX_ISDN_H
@@ -332,6 +341,9 @@
 /* HD44780 driver */
 #undef WITH_HD44780
 
+/* I2C bus driver */
+#undef WITH_I2C
+
 /* LCD-Linux driver */
 #undef WITH_LCDLINUX
 
@@ -385,6 +397,9 @@
 #ifndef __cplusplus
 #undef inline
 #endif
+
+/* Define to `long' if <sys/types.h> does not define. */
+#undef off_t
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t

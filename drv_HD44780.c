@@ -1,9 +1,12 @@
-/* $Id: drv_HD44780.c,v 1.45 2005/03/25 15:44:43 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.46 2005/03/28 19:39:23 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
  * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ *
+ * Support for I2C bus
+ * Copyright (C) 2005 Luis F. Correia <luis.f.correia@seg-social.pt>
  *
  * Modification for 4-Bit mode
  * Copyright (C) 2003 Martin Hejl (martin@hejl.de)
@@ -29,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.46  2005/03/28 19:39:23  reinelt
+ * HD44780/I2C patch from Luis merged (still does not work for me)
+ *
  * Revision 1.45  2005/03/25 15:44:43  reinelt
  * HD44780 Backlight fixed (thanks to geronet)
  *
@@ -235,12 +241,6 @@
 #include <sys/time.h>
 #include <sys/ioctl.h>
 
-/* Fixme: I2C support does not compile */
-#if 0
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#endif
-
 #include "debug.h"
 #include "cfg.h"
 #include "udelay.h"
@@ -254,6 +254,10 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_parport.h"
+
+#ifdef WITH_I2C
+#include "drv_generic_i2c.h"
+#endif
 
 static char Name[]="HD44780";
 
@@ -340,11 +344,6 @@ static MODEL Models[] = {
   { 0x05, "LCM-162",  CAP_PARPORT|CAP_LCM162 },
   { 0xff, "Unknown",  0 }
 };
-
-
-/* handle for I2C device */
-static int i2c_device;
-
 
 
 /****************************************/
@@ -746,32 +745,40 @@ static void drv_HD_PP_stop (void)
 /***  i2c dependant functions         ***/
 /****************************************/
 
-/* Fixme: remove the __attribute__((unused)) as soon as the i2c driver works */
-static void drv_HD_I2C_nibble (const __attribute__((unused)) unsigned char controller, 
-			       const __attribute__((unused)) unsigned char nibble)
+#ifdef WITH_I2C
+
+static void drv_HD_I2C_nibble (unsigned char controller, unsigned char nibble)
 {
-/* Fixme: I2C support does not compile */
-#if 0
+  unsigned char enable;
+
+  /* enable signal: 'controller' is a bitmask */
+  /* bit 0 .. send to controller #0 */
+  /* bit 1 .. send to controller #1 */
+  /* so we can send a byte to both controllers at the same time! */
+  enable = 0;
+  if (controller & 0x01) enable |= SIGNAL_ENABLE;
+  if (controller & 0x02) enable |= SIGNAL_ENABLE2;
+  
+
   /* clear ENABLE */
   /* put data on DB1..DB4 */
   /* nibble already contains RS bit! */
-  i2c_smbus_write_byte_data(i2c_device, 0, nibble);
+  drv_generic_i2c_data(nibble);
   
   /* Address set-up time */
   ndelay(T_AS);
   
   /* rise ENABLE */
-  i2c_smbus_write_byte_data(i2c_device, 0, nibble | SIGNAL_ENABLE);
+   drv_generic_i2c_data(nibble | enable);
   
   /* Enable pulse width */
   ndelay(T_PW);
   
   /* lower ENABLE */
-  i2c_smbus_write_byte_data(i2c_device, 0, nibble);
+   drv_generic_i2c_data(nibble);
   
   /* Address hold time */
   ndelay(T_H);
-#endif
 }
 
 
@@ -792,7 +799,11 @@ static void drv_HD_I2C_byte (const unsigned char controller, const unsigned char
 static void drv_HD_I2C_command (const unsigned char controller, const unsigned char cmd, const int delay)
 {
   /* send data with RS disabled */
-  drv_HD_I2C_byte (controller, cmd);
+  drv_HD_I2C_nibble (controller, ((cmd>>4)&0x0f));
+
+  ndelay(T_CYCLE-T_AS-T_PW);
+
+  drv_HD_I2C_nibble (controller, ((cmd)&0x0f));
  
   /* wait for command completion */
   udelay(delay);
@@ -817,51 +828,29 @@ static void drv_HD_I2C_data (const unsigned char controller, const char *string,
 
 static int drv_HD_I2C_load (const char *section)
 {
-  int dev;
-  char *bus,*device;
-
-  bus    = cfg_get(section, "Port", NULL);   
-  device = cfg_get(section, "Device", NULL);   
-  dev    = 0x70;
-
-  info("%s: initializing I2C bus %s",Name,bus);
-  if ((i2c_device = open(bus,O_RDWR)) < 0) {
-    error("%s: I2C bus %s open failed !\n",Name,bus);
-    return -1;
-  }
-  
-  info("%s: initializing I2C slave device 0x%x",Name,dev);
-/* Fixme: I2C support does not compile */
-#if 0
-  if (ioctl(i2c_device,I2C_SLAVE, (dev>>1) ) < 0) {
-    error("%s: error initializing device 0x%x\n",Name,dev);
-    close(i2c_device);
-    return -1;
-  }
-#endif
-
-  info("%s: detecting I2C device 0x%x on bus %s ",Name,dev,bus);
-/* Fixme: I2C support does not compile */
-#if 0
-  if (i2c_smbus_write_quick(i2c_device,I2C_SMBUS_WRITE) < 0) {
-    error("%s: i2c slave-device 0x%x not found!\n",Name,dev);
-    close(i2c_device);
-    return -1;
-  }
-#endif
-  
   if (cfg_number(section, "Bits", 8, 4, 8, &Bits)<0) return -1;
   if (Bits!=4) {
-    error ("%s: bad %s.Bits '%d' from %s, should be '4' ", Name, section, Bits, cfg_source());
+    error ("%s: bad %s.Bits '%d' from %s, should be '4'", Name, section, Bits, cfg_source());
     return -1;
-  }   
+  }    
   
   info ("%s: using %d bit mode", Name, Bits);
   
-  /* initialize *both* displays */
+  if (drv_generic_i2c_open(section, Name) != 0) {
+    error ("%s: could not initialize i2c attached device!", Name);
+    return -1;
+  }
+
+  if ((SIGNAL_RS      = drv_generic_i2c_wire ("RS",      "DB4"))==0xff) return -1;
+  if ((SIGNAL_RW      = drv_generic_i2c_wire ("RW",      "DB5"))==0xff) return -1;
+  if ((SIGNAL_ENABLE  = drv_generic_i2c_wire ("ENABLE",  "DB6"))==0xff) return -1;
+  if ((SIGNAL_ENABLE2 = drv_generic_i2c_wire ("ENABLE2", "GND"))==0xff) return -1;
+  if ((SIGNAL_GPO     = drv_generic_i2c_wire ("GPO",     "GND"))==0xff) return -1;
+  
+  /* initialize display */
   drv_HD_I2C_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
   drv_HD_I2C_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
-  drv_HD_I2C_nibble  (allControllers, 0x03); udelay(T_INIT1); /* 4 Bit mode, wait 4.1 ms */
+  drv_HD_I2C_nibble  (allControllers, 0x03); udelay(T_INIT2); /* 4 Bit mode, wait 4.1 ms */
   drv_HD_I2C_nibble  (allControllers, 0x02); udelay(T_INIT2); /* 4 Bit mode, wait 100 us */
   drv_HD_I2C_command (allControllers, 0x28, T_EXEC);          /* 4 Bit mode, 1/16 duty cycle, 5x8 font */
 
@@ -874,12 +863,13 @@ static int drv_HD_I2C_load (const char *section)
 static void drv_HD_I2C_stop (void)
 {
   /* clear all signals */
-  // drv_generic_i2c_data (0);
-  /* close port */
-  // drv_generic_i2c_close();
+  drv_generic_i2c_data (0);
 
-  close(i2c_device);
+  /* close port */
+  drv_generic_i2c_close();
 }
+
+#endif /* WITH_I2C */
 
 
 /****************************************/
@@ -1068,12 +1058,19 @@ static int drv_HD_start (const char *section, const int quiet)
     drv_HD_stop    = drv_HD_PP_stop;
     
   } else if (strcasecmp(bus, "i2c") == 0) {
+#ifdef WITH_I2C
     info ("%s: using I2C bus", Name);
     Bus = BUS_I2C;
     drv_HD_load    = drv_HD_I2C_load;
     drv_HD_command = drv_HD_I2C_command;
     drv_HD_data    = drv_HD_I2C_data;
     drv_HD_stop    = drv_HD_I2C_stop;
+#else
+    error ("%s: %s.Bus '%s' from %s not available:", Name, section, bus, cfg_source());
+    error ("%s: lcd4linux was compiled without i2c support!", Name);
+    free (bus);
+    return -1;
+#endif
 
   } else {
     error ("%s: bad %s.Bus '%s' from %s, should be 'parport' or 'i2c'", Name, section, bus, cfg_source());

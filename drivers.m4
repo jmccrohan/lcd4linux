@@ -137,11 +137,17 @@ done
 
 AC_MSG_RESULT([done])
 
-PARPORT="no"
-SERIAL="no"
+
+# generic display drivers
 TEXT="no"
 GRAPHIC="no"
 IMAGE="no"
+
+# generiv I/O drivers
+PARPORT="no"
+SERIAL="no"
+I2C="no"
+
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
@@ -189,6 +195,7 @@ fi
 if test "$HD44780" = "yes"; then
    TEXT="yes"
    PARPORT="yes"
+   I2C="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
 fi
@@ -287,14 +294,16 @@ if test "$X11" = "yes"; then
       GRAPHIC="yes"
       DRIVERS="$DRIVERS drv_X11.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
-      AC_DEFINE(WITH_X11,1,[X11 driver])
+      AC_DEFINE(WITH_X11, 1, [X11 driver])
    fi
 fi
 
+
 if test "$DRIVERS" = ""; then
-   AC_MSG_ERROR([You should include at least one driver...])
+   AC_MSG_ERROR([You should activate at least one driver...])
 fi
    
+
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
@@ -306,6 +315,7 @@ if test "$GRAPHIC" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 
+
 # generic parport driver
 if test "$PARPORT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_parport.o"
@@ -315,6 +325,18 @@ fi
 if test "$SERIAL" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_serial.o"
 fi
+
+# generic i2c driver
+if test "$I2C" = "yes"; then
+   if test "$has_i2c" = true; then
+      AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
+      DRIVERS="$DRIVERS drv_generic_i2c.o"
+   else
+      I2C="no"
+      AC_MSG_WARN(I2C include files not found: I2C bus driver disabled)
+   fi   
+fi
+
 
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)

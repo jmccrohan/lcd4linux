@@ -57,6 +57,8 @@ drv_generic_serial.c        \
 drv_generic_serial.h        \
 drv_generic_parport.c       \
 drv_generic_parport.h       \
+drv_generic_i2c.c           \
+drv_generic_i2c.h           \
 drv_BeckmannEgle.c          \
 drv_BWCT.c                  \
 drv_Crystalfontz.c          \
