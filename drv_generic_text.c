@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.22 2004/11/28 15:50:24 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.23 2005/01/09 10:53:24 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.23  2005/01/09 10:53:24  reinelt
+ * small type in plugin_uname fixed
+ * new homepage lcd4linux.bulix.org
+ *
  * Revision 1.22  2004/11/28 15:50:24  reinelt
  * Cwlinux fixes (invalidation of user-defined chars)
  *
@@ -351,10 +355,8 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
 		    "L4Linux",
 		    NULL };
   
-  char *line2[] = { "http://lcd4linux.sourceforge.net",
-		    "lcd4linux.sourceforge.net",
-		    "http://lcd4linux.sf.net",
-		    "lcd4linux.sf.net",
+  char *line2[] = { "http://lcd4linux.bulix.org",
+		    "lcd4linux.bulix.org",
 		    NULL };
   
   

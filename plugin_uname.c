@@ -1,4 +1,4 @@
-/* $Id: plugin_uname.c,v 1.3 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_uname.c,v 1.4 2005/01/09 10:53:24 reinelt Exp $
  *
  * plugin for uname() syscall
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_uname.c,v $
+ * Revision 1.4  2005/01/09 10:53:24  reinelt
+ * small type in plugin_uname fixed
+ * new homepage lcd4linux.bulix.org
+ *
  * Revision 1.3  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -76,8 +80,6 @@ static void my_uname (RESULT *result, RESULT *arg1)
 
   if (strcasecmp(key, "sysname")==0) {
     value=utsbuf.sysname;
-  } else if  (strcasecmp(key, "nodename")==0) {
-    value=utsbuf.nodename;
   } else if  (strcasecmp(key, "nodename")==0) {
     value=utsbuf.nodename;
   } else if  (strcasecmp(key, "release")==0) {

@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.13  2005/01/09 10:53:24  reinelt
+ * small type in plugin_uname fixed
+ * new homepage lcd4linux.bulix.org
+ *
  * Revision 1.12  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -229,10 +233,8 @@ int drv_generic_graphic_greet (const char *msg1, const char *msg2)
 		    "L4Linux",
 		    NULL };
   
-  char *line2[] = { "http://lcd4linux.sourceforge.net",
-		    "lcd4linux.sourceforge.net",
-		    "http://lcd4linux.sf.net",
-		    "lcd4linux.sf.net",
+  char *line2[] = { "http://lcd4linux.bulix.org",
+		    "lcd4linux.bulix.org",
 		    NULL };
   
   int i;

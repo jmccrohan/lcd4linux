@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([LCD4Linux],[0.10.0-RC1],[lcd4linux-devel@lists.sourceforge.net])
+AC_INIT([LCD4Linux],[0.10.0-RC1],[lcd4linux-users@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([lcd4linux.c])
 AM_INIT_AUTOMAKE([lcd4linux],0.10.0-RC1)
 AM_CONFIG_HEADER(config.h)
