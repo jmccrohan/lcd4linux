@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.8 2000/08/10 09:44:09 reinelt Exp $
+/* $Id: HD44780.c,v 1.9 2000/10/20 07:17:07 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.9  2000/10/20 07:17:07  reinelt
+ *
+ *
+ * corrected a bug in HD_goto()
+ * Thanks to Gregor Szaktilla <gregor@szaktilla.de>
+ *
  * Revision 1.8  2000/08/10 09:44:09  reinelt
  *
  * new debugging scheme: error(), info(), debug()
@@ -401,8 +407,8 @@ int HD_init (LCD *Self)
 void HD_goto (int row, int col)
 {
   int pos;
-  pos=(row%2)*64+col;
-  if (row>2) pos+=20;
+
+  pos=(row%2)*64+(row/2)*20+col;
   HD_command (0x80|pos, 40);
 }
 
