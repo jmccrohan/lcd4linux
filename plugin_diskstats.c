@@ -1,4 +1,4 @@
-/* $Id: plugin_diskstats.c,v 1.1 2004/05/29 00:27:23 reinelt Exp $
+/* $Id: plugin_diskstats.c,v 1.2 2004/05/29 01:07:56 reinelt Exp $
  *
  * plugin for /proc/diskstats parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_diskstats.c,v $
+ * Revision 1.2  2004/05/29 01:07:56  reinelt
+ * bug in plugin_diskstats fixed
+ *
  * Revision 1.1  2004/05/29 00:27:23  reinelt
  *
  * added plugin_diskstats.c
@@ -101,7 +104,7 @@ static int parse_diskstats (void)
     while (beg != NULL) {
       while (*beg == ' ') beg++; 
       if ((end = strchr(beg, ' '))) *end = '\0'; 
-      switch (i++) {
+      switch (i) {
       case 0:
 	major = beg;
 	break;
@@ -110,12 +113,13 @@ static int parse_diskstats (void)
 	break;
       case 2:
 	name = beg;
-	hash_set2 ("major", name, major); 
-	hash_set2 ("minor", name, minor); 
+	hash_set2 (name, "major", major); 
+	hash_set2 (name, "minor", minor); 
 	break;
       default:
-	hash_set2 (key[i-3], name, beg); 
+	hash_set2 (name, key[i-3], beg); 
       }
+      i++;
       beg = end ? end+1 : NULL;
     }
   }
