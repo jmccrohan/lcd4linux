@@ -1,0 +1,16 @@
+Source: lcd4linux
+Section: utils
+Priority: extra
+Maintainer: Samuel Mimram <samuel.mimram@ens-lyon.org>
+Build-Depends: debhelper (>= 4.0.0), debconf
+Standards-Version: 3.6.0
+
+Package: lcd4linux
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Display informations on an external liquid crystal display
+ Grab informations from the kernel and some subsystems and display it on an
+ external liquid crystal display.
+ .
+ The use of special sequences (tokens) gives you full control of the layout,
+ and therefore lcd4linux is completely independent from the display size.
