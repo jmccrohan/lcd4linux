@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.19 2001/02/16 08:23:09 reinelt Exp $
+/* $Id: system.c,v 1.20 2001/03/02 20:18:12 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.20  2001/03/02 20:18:12  reinelt
+ *
+ * allow compile on systems without net/if_ppp.h
+ *
  * Revision 1.19  2001/02/16 08:23:09  reinelt
  *
  * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
@@ -177,7 +181,12 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
+#ifdef HAVE_NET_IF_PPP_H
 #include <net/if_ppp.h>
+#else
+#warning if_ppp.h not found. PPP support deactivated.
+#endif
 
 #include "debug.h"
 #include "cfg.h"
@@ -667,13 +676,16 @@ int Net (int *rx, int *tx, int *bytes)
 int PPP (int unit, int *rx, int *tx)
 {
   static int fd=-2;
-  struct ifpppstatsreq req;
   char buffer[16];
-
-  static double junk=0;
+  
+#ifdef HAVE_NET_IF_PPP_H
+  struct ifpppstatsreq req;
+#endif
 
   *rx=0;
   *tx=0;
+
+#ifdef HAVE_NET_IF_PPP_H
 
   if (fd==-1) return -1;
   
@@ -697,8 +709,8 @@ int PPP (int unit, int *rx, int *tx)
   *rx=smooth(buffer, 500, req.stats.p.ppp_ibytes);
   snprintf (buffer, sizeof(buffer), "ppp%d_tx", unit);
   *tx=smooth(buffer, 500, req.stats.p.ppp_obytes);
-  debug ("ppp_tx=%f smooth=%f", (double)(req.stats.p.ppp_obytes-junk), (double)*tx);
-  junk=req.stats.p.ppp_obytes;
+
+#endif
 
   return 0;
 }

@@ -92,6 +92,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h strings.h sys/ioctl.h sys/time.h syslog.h unistd.h)
 AC_CHECK_HEADERS(sys/io.h asm/io.h)
 AC_CHECK_HEADERS(gd/gd.h gd.h)
+AC_CHECK_HEADERS(net/if_ppp.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
