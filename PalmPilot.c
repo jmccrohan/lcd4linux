@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.11 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.12 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.12  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.11  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -214,7 +217,8 @@ int Palm_clear (int full)
 
 int Palm_init (LCD *Self)
 {
-  char *port, *speed, *s;
+  char *port, *s;
+  int speed;
   int rows=-1, cols=-1;
   int xres=1, yres=-1;
 
@@ -230,9 +234,9 @@ int Palm_init (LCD *Self)
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed","19200");
+  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
   
-  switch (atoi(speed)) {
+  switch (speed) {
   case 1200:
     Speed=B1200;
     break;
@@ -249,11 +253,11 @@ int Palm_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    error ("PalmPilot: unsupported speed '%s' in %s", speed, cfg_source());
+    error ("PalmPilot: unsupported speed '%d' in %s", speed, cfg_source());
     return -1;
   }    
 
-  debug ("using port %s at %d baud", Port, atoi(speed));
+  debug ("using port %s at %d baud", Port, speed);
 
   if (sscanf(s=cfg_get("size","20x4"), "%dx%d", &cols, &rows)!=2 || rows<1 || cols<1) {
     error ("PalmPilot: bad size '%s'", s);
@@ -277,7 +281,7 @@ int Palm_init (LCD *Self)
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
-  border=atoi(cfg_get("border","0"));
+  if (cfg_number("border", 0, 0, 1000000, &border)<0) return -1;
 
   if (pix_init (rows, cols, xres, yres)!=0) {
     error ("PalmPilot: pix_init(%d, %d, %d, %d) failed", rows, cols, xres, yres);

@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.25 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: Raster.c,v 1.26 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.26  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.25  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -369,7 +372,7 @@ int Raster_init (LCD *Self)
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
 
-  border=atoi(cfg_get("border","0"));
+  if (cfg_number("border", 0, 0, 1000000, &border)<0) return -1;
 
   if (sscanf(s=cfg_get("foreground","#102000"), "#%x", &foreground)!=1) {
     error ("Raster: bad foreground color '%s'", s);

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.45 2003/09/09 05:30:34 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.46 2003/09/09 06:54:43 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.46  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.45  2003/09/09 05:30:34  reinelt
  * even more icons stuff
  *
@@ -241,6 +244,7 @@
 
 char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
+int tick;
 int got_signal=0;
 
 extern char* output;
@@ -321,9 +325,7 @@ int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
   char *driver;
-  char *s, *e;
   int c;
-  int tick;
   int quiet=0;
   
   // save arguments for restart
@@ -466,10 +468,7 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  s=cfg_get("tick", "100");
-  tick=strtol(s, &e, 0);
-  if (*e!='\0' || tick<0) {
-    error ("bad tick entry '%s' in %s", s, cfg_source());
+  if (cfg_number("Tick", 100, 1, 1000000, &tick)<0) {
     pid_exit(PIDFILE);
     exit (1);
   }

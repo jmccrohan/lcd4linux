@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: M50530.c,v 1.13 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.13  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.12  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -179,7 +182,7 @@ int M5_clear (int full)
 int M5_init (LCD *Self)
 {
   int rows=-1, cols=-1, gpos=-1;
-  char *s, *e;
+  char *s;
   
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
@@ -191,16 +194,7 @@ int M5_init (LCD *Self)
     return -1;
   }
 
-  s=cfg_get ("GPOs",NULL);
-  if (s==NULL) {
-    gpos=0;
-  } else {
-    gpos=strtol(s, &e, 0);
-    if (*e!='\0' || gpos<0 || gpos>8) {
-      error ("M50530: bad GPOs '%s' in %s", s, cfg_source());
-      return -1;
-    }    
-  }
+  if (cfg_number("GPOs", 0, 0, 8, &gpos)<0) return -1;
   
   Self->rows=rows;
   Self->cols=cols;

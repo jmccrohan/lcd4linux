@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.6 2003/02/22 07:53:10 reinelt Exp $
+/* $Id: filter.c,v 1.7 2003/09/09 06:54:43 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.7  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.6  2003/02/22 07:53:10  reinelt
  * cfg_get(key,defval)
  *
@@ -138,9 +141,9 @@ double damp(char *name, double value)
   double max;
   int i, j;
   
-  if (tau==-1)
-    tau=atoi(cfg_get("tau","500"));
-
+  if (tau==-1) 
+    if (cfg_number("tau", 500, 0, 1000000, &tau)<0) tau=0.0;
+  
   if (tau==0.0)
     return value;
   

@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.4 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: cfg.h,v 1.5 2003/09/09 06:54:43 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.5  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.4  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -47,10 +50,14 @@ extern int   (*cfg_init)   (char *source);
 extern char *(*cfg_source) (void);
 extern int   (*cfg_cmd)    (char *arg);
 extern char *(*cfg_get)    (char *key, char *defval);
+extern int   (*cfg_number) (char *key, int   defval, 
+			    int min, int max, int *value);
 
 int   l4l_cfg_init   (char *file);
 char *l4l_cfg_source (void);
 int   l4l_cfg_cmd    (char *arg);
 char *l4l_cfg_get    (char *key, char *defval);
+int   l4l_cfg_number (char *key, int   defval, 
+		      int min, int max, int *value);
 
 #endif

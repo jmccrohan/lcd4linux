@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.36 2003/09/09 05:30:33 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.37 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.37  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.36  2003/09/09 05:30:33  reinelt
  * even more icons stuff
  *
@@ -255,7 +258,7 @@ static int MO_contrast (void)
   char buffer[4];
   int  contrast;
 
-  contrast=atoi(cfg_get("Contrast","160"));
+  if (cfg_number("Contrast", 160, 0, 255, &contrast)<0) return -1;
   snprintf (buffer, 4, "\376P%c", contrast);
   MO_write (buffer, 3);
   return 0;
@@ -317,7 +320,7 @@ int MO_clear2 (int full)
 static int MO_init (LCD *Self, int protocol)
 {
   char *port;
-  char *s, *e;
+  int speed;
 
   Lcd=*Self;
 
@@ -341,9 +344,8 @@ static int MO_init (LCD *Self, int protocol)
   }
   Port=strdup(port);
 
-  s=cfg_get("Speed","19200");
-  
-  switch (atoi(s)) {
+  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
+  switch (speed) {
   case 1200:
     Speed=B1200;
     break;
@@ -357,28 +359,23 @@ static int MO_init (LCD *Self, int protocol)
     Speed=B19200;
     break;
   default:
-    error ("MatrixOrbital: unsupported speed '%s' in %s", s, cfg_source());
+    error ("MatrixOrbital: unsupported speed '%d' in %s", speed, cfg_source());
     return -1;
   }    
-
-  debug ("using port %s at %d baud", Port, atoi(s));
-
+  
+  debug ("using port %s at %d baud", Port, speed);
+  
   Device=MO_open();
   if (Device==-1) return -1;
 
-  s=cfg_get("Icons", "0");
-  Icons=strtol(s, &e, 0);
-  if (*e!='\0' || Icons<0 || Icons>8) {
-    error ("MatrixOrbital: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_source());
-    return -1;
-  }    
+  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, MO_define_char);
     Self->icons=Icons;
     Lcd.icons=Icons;
   }
-
+  
   bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block

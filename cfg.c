@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.15 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: cfg.c,v 1.16 2003/09/09 06:54:43 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.16  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.15  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -128,11 +131,13 @@
 #include "debug.h"
 #include "cfg.h"
 
+
 typedef struct {
   char *key;
   char *val;
   int lock;
 } ENTRY;
+
 
 static char  *Config_File=NULL;
 static ENTRY *Config=NULL;
@@ -156,6 +161,7 @@ static char *strip (char *s, int strip_comments)
   return s;
 }
 
+
 static char *dequote (char *string)
 {
   char *s=string;
@@ -171,6 +177,7 @@ static char *dequote (char *string)
   
   return string;
 }
+
 
 static void cfg_add (char *key, char *val, int lock)
 {
@@ -191,6 +198,7 @@ static void cfg_add (char *key, char *val, int lock)
   Config[i].lock=lock;
 }
 
+
 int l4l_cfg_cmd (char *arg)
 {
   char *key, *val;
@@ -209,6 +217,7 @@ int l4l_cfg_cmd (char *arg)
   return 0;
 }
 
+
 char *l4l_cfg_get (char *key, char *defval)
 {
   int i;
@@ -220,6 +229,38 @@ char *l4l_cfg_get (char *key, char *defval)
   }
   return defval;
 }
+
+
+int l4l_cfg_number (char *key, int defval, int min, int max, int *value) 
+{
+  
+  char *s, *e;
+  
+  s=cfg_get(key, NULL);
+  if (s==NULL) {
+    *value=defval;
+    return 0;
+  }
+  
+  *value=strtol(s, &e, 0);
+  if (*e!='\0') {
+    error ("bad %s entry '%s' in %s", key, s, cfg_source());
+    return -1;
+  }
+  
+  if (*value<min) {
+    error ("bad %s value '%s' in %s, minimum is %d", key, s, cfg_source(), min);
+    return -1;
+  }
+  
+  if (*value>max) {
+    error ("bad %s value '%s' in %s, maximum is %d", key, s, cfg_source(), max);
+    return -1;
+  }
+
+  return 0;
+}
+
 
 static int check_cfg_source(char *file)
 {
@@ -260,6 +301,7 @@ static int check_cfg_source(char *file)
   }
   return error;
 }
+
 
 int l4l_cfg_init (char *file)
 {
@@ -306,6 +348,7 @@ int l4l_cfg_init (char *file)
   return 0;
 }
 
+
 char *l4l_cfg_source (void)
 {
   if (Config_File)
@@ -315,8 +358,9 @@ char *l4l_cfg_source (void)
 }
 
 
-int   (*cfg_init)   (char *source)            = l4l_cfg_init;
-char *(*cfg_source) (void)                    = l4l_cfg_source;
-int   (*cfg_cmd)    (char *arg)               = l4l_cfg_cmd;
-char *(*cfg_get)    (char *key, char *defval) = l4l_cfg_get;
-
+int   (*cfg_init)   (char *source)                 = l4l_cfg_init;
+char *(*cfg_source) (void)                         = l4l_cfg_source;
+int   (*cfg_cmd)    (char *arg)                    = l4l_cfg_cmd;
+char *(*cfg_get)    (char *key, char *defval)      = l4l_cfg_get;
+int   (*cfg_number) (char *key, int   defval, 
+		     int min, int max, int *value) = l4l_cfg_number;

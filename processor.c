@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.39 2003/09/09 05:30:34 reinelt Exp $
+/* $Id: processor.c,v 1.40 2003/09/09 06:54:43 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.40  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.39  2003/09/09 05:30:34  reinelt
  * even more icons stuff
  *
@@ -769,29 +772,26 @@ void process_init (void)
   debug ("Display: %d rows, %d columns, %dx%d pixels, %d icons, %d GPOs", rows, cols, xres, yres, icons, gpos);
 
 
-  lines=atoi(cfg_get("Rows","1"));
-  if (lines<1) {
-    error ("bad 'Rows' entry in %s, ignoring.", cfg_source());
+  if (cfg_number("Rows", 1, 1, 1000, &lines)<0) {
     lines=1;
+    error ("ignoring bad 'Rows' value and using '%d'", lines);
   }
   if (lines>ROWS) {
     error ("%d virtual rows exceeds limit, reducing to %d rows", lines, ROWS);
     lines=ROWS;
   }
   if (lines>rows) {
-    scroll=atoi(cfg_get("Scroll","1"));
-    if (scroll<1) {
-      error ("bad 'Scroll' entry in %s, ignoring and using '1'", cfg_source());
+    if (cfg_number("Scroll", 1, 1, 1000, &scroll)<0) {
       scroll=1;
+      error ("ignoring bad 'Scroll' value and using '%d'", scroll);
     }
     if (scroll>rows) {
       error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_source(), scroll, rows);
       error ("This may lead to unexpected results!");
     }
-    turn=atoi(cfg_get("Turn","1000"));
-    if (turn<1) {
-      error ("bad 'Turn' entry in %s, ignoring and using '1000'", cfg_source());
-      turn=1;
+    if (cfg_number("Turn", 1000, 1, 1000000, &turn)<0) {
+      turn=1000;
+      error ("ignoring bad 'Scroll' value and using '%d'", turn);
     }
     debug ("Virtual: %d rows, scroll %d lines every %d msec", lines, scroll, turn);
   } else {
@@ -825,6 +825,9 @@ void process (void)
   int i, j, val;
   char *txt;
   static int offset=0;
+  
+  // Fixme: smooth has gone...
+  int smooth=0;
   
   collect_data();
 

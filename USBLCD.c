@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.13 2003/09/09 05:30:34 reinelt Exp $
+/* $Id: USBLCD.c,v 1.14 2003/09/09 06:54:43 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.14  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.13  2003/09/09 05:30:34  reinelt
  * even more icons stuff
  *
@@ -224,7 +227,7 @@ int USBLCD_clear (int full)
 int USBLCD_init (LCD *Self)
 {
   int rows=-1, cols=-1 ;
-  char *port, *s, *e;
+  char *port, *s;
 
   if (Port) {
     free(Port);
@@ -275,13 +278,7 @@ int USBLCD_init (LCD *Self)
   if (USBLCD_open()!=0)
     return -1;
   
-  s=cfg_get("Icons", "0");
-  Icons=strtol(s, &e, 0);
-  if (*e!='\0' || Icons<0 || Icons>8) {
-    debug ("Icons=%d e=<%s>", Icons, e);
-    error ("USBLCD: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_source());
-    return -1;
-  }    
+  if (cfg_number("Icons", 0, 0, 8, &Icons)<0) return -1;
   if (Icons>0) {
     info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, USBLCD_define_char);
@@ -335,7 +332,6 @@ int USBLCD_flush (void)
 {
   int row, col, pos1, pos2;
   int c, equal;
-  static int junk=0; //Fixme
 
   bar_process(USBLCD_define_char);
 

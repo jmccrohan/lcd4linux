@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.13 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.13  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.12  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -242,10 +245,8 @@ static void CW_Brightness(void)
 {
   int level;
   char cmd[5]="\376A_\375";
-
-  level=atoi(cfg_get("Brightness","8"));
-  if (level<0) level=0;
-  if (level>8) level=8;
+  
+  if (cfg_number("Brightness", 8, 0, 8, &level)<0) return;
   
   switch (level) {
   case 0:
@@ -268,7 +269,7 @@ static void CW_Brightness(void)
 int CW_init(LCD * Self)
 {
   char *port;
-  char *speed;
+  int speed;
   // char buffer[16];
   
   Lcd = *Self;
@@ -293,9 +294,8 @@ int CW_init(LCD * Self)
   }
   Port = strdup(port);
 
-  speed = cfg_get("Speed","19200");
-
-  switch (atoi(speed)) {
+  if (cfg_number("Speed", 19200, 9600,19200, &speed)<0) return -1;
+  switch (speed) {
   case 9600:
     Speed = B9600;
     break;
@@ -303,11 +303,11 @@ int CW_init(LCD * Self)
     Speed = B19200;
     break;
   default:
-    error("Cwlinux: unsupported speed '%s' in %s", speed, cfg_source());
+    error("Cwlinux: unsupported speed '%d' in %s", speed, cfg_source());
     return -1;
   }
 
-  debug("using port %s at %d baud", Port, atoi(speed));
+  debug("using port %s at %d baud", Port, speed);
 
   Device = CW_open();
   if (Device == -1)

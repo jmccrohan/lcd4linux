@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.7 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: parport.c,v 1.8 2003/09/09 06:54:43 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.8  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.7  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -143,17 +146,9 @@ static int PPfd=-1;
 int parport_open (void)
 {
   char *s, *e;
-
+  
 #ifdef USE_OLD_UDELAY
-  s=cfg_get ("Delay",NULL);
-  if (s==NULL || *s=='\0') {
-    error ("parport: no 'Delay' entry in %s", cfg_source());
-    return -1;
-  }
-  if ((loops_per_usec=strtol(s, &e, 0))==0 || *e!='\0') {
-    error ("parport: bad delay '%s' in %s", s, cfg_source());
-    return -1;
-  }    
+  if (cfg_number("Delay", 0, 1, 1000000000, &loops_per_usec)<0) return -1;
 #else
   udelay_init();
 #endif

@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.32 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: XWindow.c,v 1.33 2003/09/09 06:54:43 reinelt Exp $
  *
  * X11 Driver for LCD4Linux 
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.33  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.32  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -414,7 +417,9 @@ int xlcdinit(LCD *Self)
   }
   if (rgap<0) rgap=pixel+pgap;
   if (cgap<0) cgap=pixel+pgap;
-  border=atoi(cfg_get("border","0"));
+
+  if (cfg_number("border", 0, 0, 1000000, &border)<0) return -1;
+
   rgbfg=cfg_get("foreground","#000000");
   rgbbg=cfg_get("background","#80d000");
   rgbhg=cfg_get("halfground","#70c000");

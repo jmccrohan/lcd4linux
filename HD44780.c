@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.36 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: HD44780.c,v 1.37 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.37  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.36  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -400,7 +403,7 @@ int HD_clear (int full)
 int HD_init (LCD *Self)
 {
   int rows=-1, cols=-1, gpos=-1;
-  char *s, *e;
+  char *s;
   
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
@@ -411,30 +414,16 @@ int HD_init (LCD *Self)
     error ("HD44780: bad size '%s'",s);
     return -1;
   }
-
-  s=cfg_get ("GPOs",NULL);
-  if (s==NULL) {
-    gpos=0;
-  }
-  else {
-    gpos=strtol(s, &e, 0);
-    if (*e!='\0' || gpos<0 || gpos>8) {
-      error ("HD44780: bad GPOs '%s' in %s", s, cfg_source());
-      return -1;
-    }    
-  }
   
-  s=cfg_get("Controllers", "1");
-  Controllers=strtol(s, &e, 0);
-  if (*e!='\0' || Controllers<1 || Controllers>2) {
-    error ("HD44780: bad Controllers '%s' in %s, should be '1' or '2'", s, cfg_source());
-    return -1;
-  }    
+  if (cfg_number("GPOs", 0, 0, 8, &gpos)<0) return -1;
+  info ("HD44780: controlling %d GPO's", gpos);
+
+  if (cfg_number("Controllers", 1, 1, 2, &Controllers)<0) return -1;
   info ("wiring: using display with %d controllers", Controllers);
   
   // current controller
   Controller=1;
-
+  
   Self->rows=rows;
   Self->cols=cols;
   Self->gpos=gpos;
@@ -447,15 +436,14 @@ int HD_init (LCD *Self)
     error ("HD44780: framebuffer could not be allocated: malloc() failed");
     return -1;
   }
-
-  s=cfg_get("Bits", "8");
-  Bits=strtol(s, &e, 0);
-  if (*e!='\0' || (Bits!=4 && Bits!=8)) {
+  
+  if (cfg_number("Bits", 8, 4, 8, &Bits)<0) return -1;
+  if (Bits!=4 && Bits!=8) {
     error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_source());
     return -1;
   }    
   info ("wiring: using %d bit mode", Bits);
-
+  
   if (Bits==8) {
     if ((SIGNAL_RS      = parport_wire_ctrl ("RS",      "AUTOFD"))==0xff) return -1;
     if ((SIGNAL_RW      = parport_wire_ctrl ("RW",      "GND")   )==0xff) return -1;

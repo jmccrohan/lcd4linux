@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.13 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.14 2003/09/09 06:54:43 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.14  2003/09/09 06:54:43  reinelt
+ * new function 'cfg_number()'
+ *
  * Revision 1.13  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -145,7 +148,7 @@ static int CF_backlight (void)
   char buffer[3];
   int  backlight;
 
-  backlight=atoi(cfg_get("Backlight","0"));
+  if (cfg_number("Backlight", 0, 0, 100, &backlight)<0) return -1;
   snprintf (buffer, 3, "\016%c", backlight);
   CF_write (buffer, 2);
   return 0;
@@ -157,7 +160,7 @@ static int CF_contrast (void)
   char buffer[3];
   int  contrast;
 
-  contrast=atoi(cfg_get("Contrast","50"));
+  if (cfg_number("Contrast", 50, 0, 100, &contrast)<0) return -1;
   snprintf (buffer, 3, "\017%c", contrast);
   CF_write (buffer, 2);
   return 0;
@@ -192,7 +195,7 @@ static int CF_clear (int full)
 static int CF_init (LCD *Self)
 {
   char *port;
-  char *speed;
+  int speed;
 
   Lcd=*Self;
 
@@ -216,9 +219,10 @@ static int CF_init (LCD *Self)
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed","19200");
   
-  switch (atoi(speed)) {
+  if (cfg_number("Speed", 19200, 1200,19200, &speed)<0) return -1;
+  
+  switch (speed) {
   case 1200:
     Speed=B1200;
     break;
@@ -232,11 +236,11 @@ static int CF_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    error ("Crystalfontz: unsupported speed '%s' in %s", speed, cfg_source());
+    error ("Crystalfontz: unsupported speed '%d' in %s", speed, cfg_source());
     return -1;
   }    
 
-  debug ("using port %s at %d baud", Port, atoi(speed));
+  debug ("using port %s at %d baud", Port, speed);
 
   Device=CF_open();
   if (Device==-1) return -1;
