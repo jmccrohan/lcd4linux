@@ -96,7 +96,7 @@ Display SC1602D {
 Display LCM-162 {
     Driver 'HD44780'
     Model 'LCM-162'
-    Bus 'parport'
+#   Bus 'parport'
     Port '/dev/parports/0'	
     Size '16x2'
     UseBusy 1

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.37 2004/09/18 15:58:57 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.38 2004/09/19 09:31:19 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.38  2004/09/19 09:31:19  reinelt
+ * HD44780 busy flag checking improved: fall back to busy-waiting if too many errors occur
+ *
  * Revision 1.37  2004/09/18 15:58:57  reinelt
  * even more HD44780 cleanups, hardwiring for LCM-162
  *
@@ -214,6 +217,7 @@
 #include "cfg.h"
 #include "udelay.h"
 #include "qprintf.h"
+#include "timer.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -266,7 +270,12 @@ static unsigned char SIGNAL_ENABLE2;
 static unsigned char SIGNAL_GPO;
 
 /* maximum time to wait for the busy-flag (in usec) */
-#define MAX_BUSYFLAG_WAIT 100000
+#define MAX_BUSYFLAG_WAIT 10000
+
+/* maximum busy flag errors before falling back to busy-waiting */
+#define MAX_BUSYFLAG_ERRORS 20
+
+/* flag for busy-waiting vs. busy flag checking */
 static int UseBusy = 0;
 
 
@@ -308,7 +317,7 @@ static MODEL Models[] = {
 /***  generic functions               ***/
 /****************************************/
 
-static int  (*drv_HD_load)   (const char *section);
+static int  (*drv_HD_load)    (const char *section);
 static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const int delay);
 static void (*drv_HD_data)    (const unsigned char controller, const char *string, const int len, const int delay);
 static void (*drv_HD_stop)    (void);
@@ -319,27 +328,35 @@ static void (*drv_HD_stop)    (void);
 /***  parport dependant functions     ***/
 /****************************************/
 
-static void drv_HD_PP_busy(int controller)
+static void drv_HD_PP_busy(const int controller)
 {
-  unsigned char enable;
-  unsigned int counter;
-  unsigned char data=0xFF;
-  unsigned char busymask=0;
+  static unsigned int errors = 0;
 
+  unsigned char enable;
+  unsigned char data=0xFF;
+  unsigned char busymask;
+  unsigned char ctrlmask;
+  unsigned int  counter;
+  
   if (Bits==8) {
     busymask = 0x80;
   } else {
     /* Since in 4-Bit mode DB0 on the parport is mapped to DB4 on the LCD
-    (and consequently, DB3 on the partport is mapped to DB7 on the LCD)
-    we need to listen for DB3 on the parport to go low
-    */
-    busymask = 0x8;
+     * (and consequently, DB3 on the partport is mapped to DB7 on the LCD)
+     * we need to listen for DB3 on the parport to go low
+     */
+    busymask = 0x08;
   }
 
-  enable=SIGNAL_ENABLE;
+  ctrlmask = 0x02;
+  while (ctrlmask > 0 ) {
+    
+    if (controller & ctrlmask) {
 
-  while (controller > 0) {
-    if (controller&0x01 && enable!=0) {
+      enable = 0;
+      if      (ctrlmask & 0x01) enable = SIGNAL_ENABLE; 
+      else if (ctrlmask & 0x02) enable = SIGNAL_ENABLE2;
+      
       /* set data-lines to input*/
       drv_generic_parport_direction(1);
       
@@ -364,7 +381,10 @@ static void drv_HD_PP_busy(int controller)
       while (1) {
         /* read the busy flag */
         data = drv_generic_parport_read();
-        if ((data&busymask)==0) break;
+        if ((data & busymask) == 0) {
+	  errors = 0;
+	  break;
+	}
 
         /* make sure we don't wait forever
         - but only check after 5 iterations
@@ -378,25 +398,28 @@ static void drv_HD_PP_busy(int controller)
           if (counter == 5) {
             /* determine the time when the timeout has expired */
             gettimeofday (&end, NULL);
-            end.tv_usec+=MAX_BUSYFLAG_WAIT;
-            while (end.tv_usec>1000000) {
-              end.tv_usec-=1000000;
+            end.tv_usec += MAX_BUSYFLAG_WAIT;
+            while (end.tv_usec > 1000000) {
+              end.tv_usec -= 1000000;
               end.tv_sec++;
             }
           }
 
           /* get the current time */
           gettimeofday(&now, NULL);
-          if (now.tv_sec==end.tv_sec?now.tv_usec>=end.tv_usec:now.tv_sec>=end.tv_sec) {
-            error ("%s: timeout waiting for busy flag on controller %x (%x)", Name, controller, data);
+          if (now.tv_sec == end.tv_sec ? now.tv_usec >= end.tv_usec : now.tv_sec >= end.tv_sec) {
+            error ("%s: timeout waiting for busy flag on controller %x (%x)", Name, ctrlmask, data);
+	    if (++errors >= MAX_BUSYFLAG_ERRORS) {
+	      error ("%s: too many busy flag failures, turning off busy flag checking.", Name);
+	      UseBusy = 0;
+	    }
             break;
-
           }
         }
       }
 
       /* RS=low, RW=low, EN=low */
-      if (Bits==8) {
+      if (Bits == 8) {
         /* Lower EN */
         drv_generic_parport_control(enable,0);
 
@@ -414,8 +437,7 @@ static void drv_HD_PP_busy(int controller)
       /* set data-lines to output*/
       drv_generic_parport_direction(0);
     }
-    enable=SIGNAL_ENABLE2;
-    controller=controller >> 1;
+    ctrlmask >>= 1;
   }
 }
 
@@ -820,15 +842,35 @@ static void drv_HD_setGPO (const int bits)
 #endif
 
 
-static int drv_HD_LCM162_keypad (void)
+static void drv_HD_LCM162_timer (void __attribute__((unused)) *notused)
 {
   static unsigned char data = 0x00;
+
+  /* Bit 3+5 : key number */
+  /* Bit 6   : key press/release */
+  unsigned char mask3 = 1<<3;
+  unsigned char mask5 = 1<<5;
+  unsigned char mask6 = 1<<6;
+  unsigned char mask  = mask3 | mask5 | mask6;
+
+  int keynum;
+  int updown;
   
-  if (!(Capabilities & CAP_LCM162)) return -1;
+  unsigned char temp;
   
+  temp = drv_generic_parport_status() & mask;
+
+  if (data != temp) {
+    data = temp;
+
+    keynum = (data & mask3 ? 1 : 0) + (data & mask5 ? 2 : 0);
+    updown = (data & mask6 ? 1 : 0);
+
+    debug ("key %d press %d", keynum, updown);
+  }
 }
 
-  
+
 static int drv_HD_start (const char *section, const int quiet)
 {
   char *model, *size, *bus;
@@ -951,6 +993,11 @@ static int drv_HD_start (const char *section, const int quiet)
     }
   }
 
+  /* install keypad polling timer for LCM-162 */
+  if (Capabilities & CAP_LCM162) {
+    timer_add (drv_HD_LCM162_timer, NULL, 10, 0);
+  }
+  
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);

@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.10 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: timer.c,v 1.11 2004/09/19 09:31:19 reinelt Exp $
  *
  * generic timer handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: timer.c,v $
+ * Revision 1.11  2004/09/19 09:31:19  reinelt
+ * HD44780 busy flag checking improved: fall back to busy-waiting if too many errors occur
+ *
  * Revision 1.10  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -130,8 +133,6 @@ int timer_add (void (*callback)(void *data), void *data, const int interval, con
   int i;
   struct timeval now;
   
-  gettimeofday(&now, NULL);
-  
   /* find a free slot */
   for (i=0; i<nTimers; i++) {
     if (Timers[i].active==0) break;
@@ -142,6 +143,8 @@ int timer_add (void (*callback)(void *data), void *data, const int interval, con
     nTimers++;
     Timers=realloc(Timers, nTimers*sizeof(*Timers));
   }
+  
+  gettimeofday(&now, NULL);
   
   /* fill slot */
   Timers[i].callback = callback;
