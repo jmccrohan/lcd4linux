@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.18 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.19 2004/05/27 03:39:47 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.19  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.18  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -356,9 +360,9 @@ static void my_disk (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
 
 int plugin_init_proc_stat (void)
 {
-  AddFunction ("proc_stat", -1, my_proc_stat);
-  AddFunction ("cpu",  2, my_cpu);
-  AddFunction ("disk", 3, my_disk);
+  AddFunction ("proc_stat",      -1, my_proc_stat);
+  AddFunction ("proc_stat::cpu",  2, my_cpu);
+  AddFunction ("proc_stat::disk", 3, my_disk);
   return 0;
 }
 

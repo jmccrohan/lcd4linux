@@ -1,4 +1,4 @@
-/* $Id: plugin_wireless.c,v 1.2 2004/04/17 13:05:58 nicowallmeier Exp $
+/* $Id: plugin_wireless.c,v 1.3 2004/05/27 03:39:47 reinelt Exp $
  *
  * Wireless Extension plugin
  *
@@ -28,6 +28,10 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.3  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.2  2004/04/17 13:05:58  nicowallmeier
  * minor bugfix
  *
@@ -618,16 +622,16 @@ init and cleanup
 
 int plugin_init_wireless(void)
 {
-  AddFunction ("wifi_level", 1, wireless_level);
-  AddFunction ("wifi_noise", 1, wireless_noise);
-  AddFunction ("wifi_quality", 1, wireless_quality);
-  AddFunction ("wifi_protocol", 1, wireless_protocol);
-  AddFunction ("wifi_frequency", 1, wireless_frequency);
-  AddFunction ("wifi_bitrate", 1, wireless_bitrate);
-  AddFunction ("wifi_essid", 1, wireless_essid);
-  AddFunction ("wifi_op_mode", 1, wireless_op_mode);
-  AddFunction ("wifi_sensitivity", 1, wireless_sensitivity);
-  AddFunction ("wifi_sec_mode", 1, wireless_sec_mode);
+  AddFunction ("wifi::level",       1, wireless_level);
+  AddFunction ("wifi::noise",       1, wireless_noise);
+  AddFunction ("wifi::quality",     1, wireless_quality);
+  AddFunction ("wifi::protocol",    1, wireless_protocol);
+  AddFunction ("wifi::frequency",   1, wireless_frequency);
+  AddFunction ("wifi::bitrate",     1, wireless_bitrate);
+  AddFunction ("wifi::essid",       1, wireless_essid);
+  AddFunction ("wifi::op_mode",     1, wireless_op_mode);
+  AddFunction ("wifi::sensitivity", 1, wireless_sensitivity);
+  AddFunction ("wifi::sec_mode",    1, wireless_sec_mode);
   
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.22 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.23 2004/05/27 03:39:47 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.23  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.22  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -520,11 +524,11 @@ int drv_MO_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("contrast",  1, plugin_contrast);
-  AddFunction ("backlight", 1, plugin_backlight);
-  AddFunction ("gpo",       2, plugin_gpo);
-  AddFunction ("pwm",       2, plugin_pwm);
-  AddFunction ("rpm",       1, plugin_rpm);
+  AddFunction ("LCD::contrast",  1, plugin_contrast);
+  AddFunction ("LCD::backlight", 1, plugin_backlight);
+  AddFunction ("LCD::gpo",       2, plugin_gpo);
+  AddFunction ("LCD::pwm",       2, plugin_pwm);
+  AddFunction ("LCD::rpm",       1, plugin_rpm);
   
   return 0;
 }

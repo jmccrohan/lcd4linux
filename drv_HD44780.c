@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.21 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.22 2004/05/27 03:39:47 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.22  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.21  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -809,7 +813,7 @@ int drv_HD_init (char *section)
   
   // register plugins
   if (Capabilities & CAP_BRIGHTNESS)
-    AddFunction ("brightness", 1, plugin_brightness);
+    AddFunction ("LCD::brightness", 1, plugin_brightness);
   
   return 0;
 }

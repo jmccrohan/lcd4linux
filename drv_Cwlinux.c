@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.5 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.6 2004/05/27 03:39:47 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.6  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.5  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -337,7 +341,7 @@ int drv_CW_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("backlight", 1, plugin_backlight);
+  AddFunction ("LCD::backlight", 1, plugin_backlight);
   
   return 0;
 }

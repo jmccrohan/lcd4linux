@@ -1,4 +1,4 @@
-/* $Id: plugin_netdev.c,v 1.7 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: plugin_netdev.c,v 1.8 2004/05/27 03:39:47 reinelt Exp $
  *
  * plugin for /proc/net/dev parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_netdev.c,v $
+ * Revision 1.8  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.7  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -196,8 +200,8 @@ static void my_netdev_fast(RESULT *result, RESULT *arg1, RESULT *arg2)
 
 int plugin_init_netdev (void)
 {
-  AddFunction ("netdev", 2, my_netdev);
-  AddFunction ("netdev_fast", 2, my_netdev_fast);
+  AddFunction ("netdev",       2, my_netdev);
+  AddFunction ("netdev::fast", 2, my_netdev_fast);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.16 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.17 2004/05/27 03:39:47 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.17  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.16  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -901,9 +905,9 @@ int drv_CF_init (char *section)
   widget_register(&wc);
   
   // register plugins
-  AddFunction ("contrast",  -1, plugin_contrast);
-  AddFunction ("backlight", -1, plugin_backlight);
-  AddFunction ("fan_pwm",   -1, plugin_fan_pwm);
+  AddFunction ("LCD::contrast",  -1, plugin_contrast);
+  AddFunction ("LCD::backlight", -1, plugin_backlight);
+  AddFunction ("LCD::fan_pwm",   -1, plugin_fan_pwm);
   
   return 0;
 }

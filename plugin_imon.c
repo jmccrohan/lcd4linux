@@ -1,4 +1,4 @@
-/* $Id: plugin_imon.c,v 1.6 2004/03/13 14:58:15 nicowallmeier Exp $
+/* $Id: plugin_imon.c,v 1.7 2004/05/27 03:39:47 reinelt Exp $
  *
  * imond/telmond data processing
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_imon.c,v $
+ * Revision 1.7  2004/05/27 03:39:47  reinelt
+ *
+ * changed function naming scheme to plugin::function
+ *
  * Revision 1.6  2004/03/13 14:58:15  nicowallmeier
  * Added clean termination of imond-connection (now correctly)
  *
@@ -441,12 +445,13 @@ int plugin_init_imon (void){
  strcpy(ipass,s);
  free(s);
 	
- if (telmon=='\1') AddFunction ("telmon", 1, my_telmon);
  if (imon=='\1'){
-   AddFunction ("imon", 1, my_imon);
-   AddFunction ("version", 0, my_imon_version);
-   AddFunction ("rates", 2, my_imon_rates);
+   AddFunction ("imon",          1, my_imon);
+   AddFunction ("imon::version", 0, my_imon_version);
+   AddFunction ("imon::rates",   2, my_imon_rates);
  }
+
+ if (telmon=='\1') AddFunction ("imon::telmon", 1, my_telmon);
 
  return 0;
 }
