@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.12 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: hash.c,v 1.13 2004/02/27 06:07:55 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.13  2004/02/27 06:07:55  reinelt
+ * hash improvements from Martin
+ *
  * Revision 1.12  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -181,9 +184,10 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
 
   Item=&(Hash->Items[Hash->nItems-1]);
   
-  Item->key   = strdup(key);
-  Item->val   = strdup(val);
-  Item->Slot  = NULL;
+  Item->key  = strdup(key);
+  Item->val  = strdup(val);
+  Item->root = 0;
+  Item->Slot = NULL;
 
  hash_got_string:
   // set timestamps
@@ -213,16 +217,23 @@ void hash_set_delta (HASH *Hash, char *key, char *val)
   
   // allocate delta table
   if (Item->Slot==NULL) {
+    Item->root = 0;
     Item->Slot  = malloc(DELTA_SLOTS*sizeof(HASH_SLOT));
     memset(Item->Slot, 0, DELTA_SLOTS*sizeof(HASH_SLOT));
   }
   
   // shift delta table
-  memmove (Item->Slot+1, Item->Slot, (DELTA_SLOTS-1)*sizeof(HASH_SLOT));
+  // <--- don't move 63 bytes just to insert one byte - this is _very_
+  // slow on my Elan SC520 or GEODE SC1100
+  //memmove (Item->Slot+1, Item->Slot, (DELTA_SLOTS-1)*sizeof(HASH_SLOT));
+
+  // move the pointer to the next free slot (wrapping around if necessary
+  if (--Item->root < 0) Item->root = DELTA_SLOTS-1;
 
   // set first entry
-  gettimeofday(&(Item->Slot[0].time), NULL);
-  Item->Slot[0].val=number;
+  gettimeofday(&(Item->Slot[Item->root].time), NULL);
+  Item->Slot[Item->root].val=number;
+
 }
 
 
@@ -270,6 +281,7 @@ double hash_get_delta (HASH *Hash, char *key, int delay)
   timeval now, end;
   int i;
   double dv, dt;
+  HASH_SLOT *pSlot;  
   
   // lookup item
   Item=hash_lookup(Hash, key, 1);
@@ -277,33 +289,38 @@ double hash_get_delta (HASH *Hash, char *key, int delay)
   if (Item->Slot==NULL) return 0.0;
   
   // if delay is zero, return absolute value
-  if (delay==0) return Item->Slot[0].val;
+  if (delay==0) return Item->Slot[Item->root].val;
     
   // prepare timing values
-  now=Item->Slot[0].time;
+  now=Item->Slot[Item->root].time;
   end.tv_sec  = now.tv_sec;
   end.tv_usec = now.tv_usec-1000*delay;
   if (end.tv_usec<0) {
     end.tv_sec--;
     end.tv_usec += 1000000;
   }
-  
-  // search delta slot
-  for (i=1; i<DELTA_SLOTS; i++) {
-    if (Item->Slot[i].time.tv_sec==0) break;
-    if (timercmp(&Item->Slot[i].time, &end, <)) break;
-    dt = (now.tv_sec - Item->Slot[i].time.tv_sec) + (now.tv_usec - Item->Slot[i].time.tv_usec)/1000000.0; 
-  }
 
+  // search delta slot
+  for (i=1; i<DELTA_SLOTS; i++) {   
+    pSlot = &(Item->Slot[(Item->root+i) % DELTA_SLOTS]);
+    if (pSlot->time.tv_sec==0) break;
+    if (timercmp(&(pSlot->time), &end, <)) break;
+    dt = (now.tv_sec - pSlot->time.tv_sec) + (now.tv_usec - pSlot->time.tv_usec)/1000000.0; 
+  }
+  
+  
   // empty slot => use the one before
-  if (Item->Slot[i].time.tv_sec==0) i--;
+  if (pSlot->time.tv_sec==0) {
+    i--;
+    pSlot = &(Item->Slot[(Item->root+i) % DELTA_SLOTS]);
+  }
   
   // not enough slots available...
   if (i==0) return 0.0;
 
   // delta value, delta time
-  dv = Item->Slot[0].val - Item->Slot[i].val; 
-  dt = (now.tv_sec - Item->Slot[i].time.tv_sec) + (now.tv_usec - Item->Slot[i].time.tv_usec)/1000000.0; 
+  dv = Item->Slot[Item->root].val - pSlot->val; 
+  dt = (now.tv_sec - pSlot->time.tv_sec) + (now.tv_usec - pSlot->time.tv_usec)/1000000.0; 
 
   if (dt > 0.0 && dv >= 0.0) return dv/dt;
   return 0.0;
@@ -360,4 +377,3 @@ void hash_destroy (HASH *Hash)
   Hash->sorted=0;
   Hash->Items=NULL;
 }
-

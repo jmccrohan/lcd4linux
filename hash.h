@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.7 2004/01/21 14:29:03 reinelt Exp $
+/* $Id: hash.h,v 1.8 2004/02/27 06:07:55 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.8  2004/02/27 06:07:55  reinelt
+ * hash improvements from Martin
+ *
  * Revision 1.7  2004/01/21 14:29:03  reinelt
  * new helper 'hash_get_regex' which delivers the sum over regex matched items
  * new function 'disk()' which uses this regex matching
@@ -72,6 +75,7 @@ typedef struct {
   char      *key;
   char      *val;
   timeval   time;
+  int       root;
   HASH_SLOT *Slot;
 } HASH_ITEM;
 
@@ -91,5 +95,4 @@ char  *hash_get       (HASH *Hash, char *key);
 double hash_get_delta (HASH *Hash, char *key, int delay);
 double hash_get_regex (HASH *Hash, char *key, int delay);
 void   hash_destroy   (HASH *Hash);
-
 #endif
