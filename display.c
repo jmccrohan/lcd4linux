@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: display.c,v 1.3 2000/03/10 10:49:53 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.3  2000/03/10 10:49:53  reinelt
+ *
+ * MatrixOrbital driver finished
+ *
  * Revision 1.2  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -30,6 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "config.h"
 #include "display.h"
 
 extern DISPLAY MatrixOrbital[];
@@ -59,27 +64,25 @@ int lcd_init (char *display)
 
 int lcd_clear (void)
 {
-  return 0;
+  return Display->clear();
 }
 
-int lcd_put (int x, int y, char *text)
+int lcd_put (int row, int col, char *text)
 {
-  return 0;
+  if (row<1 || row>Display->rows) return -1;
+  if (col<1 || col>Display->cols) return -1;
+  return Display->put(row-1, col-1, text);
 }
 
-int lcd_bar (int type, int x, int y, int max, int len1, int len2)
+int lcd_bar (int type, int row, int col, int max, int len1, int len2)
 {
-  return 0;
+  if (row<1 || row>Display->rows) return -1;
+  if (col<1 || col>Display->cols) return -1;
+  return Display->bar(type, row-1, col-1, max, len1, len2);
 }
 
 int lcd_flush (void)
 {
-  return 0;
+  return Display->flush();
 }
 
-void main (void) {
-  
-  lcd_init ("junk");
-  lcd_init ("LCD2041");
-
-}

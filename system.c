@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.3 2000/03/07 11:01:34 reinelt Exp $
+/* $Id: system.c,v 1.4 2000/03/10 10:49:53 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.4  2000/03/10 10:49:53  reinelt
+ *
+ * MatrixOrbital driver finished
+ *
  * Revision 1.3  2000/03/07 11:01:34  reinelt
  *
  * system.c cleanup
@@ -424,56 +428,3 @@ int Sensor (int index, double *val, double *min, double *max)
   *val=value;
   return 0;
 }
-
-
-#ifdef STANDALONE
-
-int tick, tack, tau;
-
-void main (void)
-{
-  char *cfg_file="./lcd4linux.conf.sample";
-  double load1, load2, load3;
-  double user, nice, system, idle;
-  int r, w;
-  int rx, tx;
-  double val, min, max;
-
-  if (cfg_read (cfg_file)==-1)
-    exit (1);
-
-  tick=atoi(cfg_get("tick"));
-  tack=atoi(cfg_get("tack"));
-  tau=atoi(cfg_get("tau"));
-
-  printf ("System    : %s\n", System());
-  printf ("Release   : %s\n", Release ());
-  printf ("Processor : %s\n", Processor ());
-  printf ("Memory    : %d MB\n", Memory ());
-
-  while (1) {
-    
-    Load (&load1, &load2, &load3);
-    printf ("Load      : %f %f %f\n", load1, load2, load3);
-    
-    Busy (&user, &nice, &system, &idle);
-    printf ("Busy      : %f %f %f %f\n", user, nice, system, idle);
-
-    Disk (&r, &w);
-    printf ("Disk      : %d %d\n", r, w);
-
-    Net (&rx, &tx);
-    printf ("Net       : %d %d\n", rx, tx);
-    
-    Sensor (1, &val, &min, &max);
-    printf ("Sensor 1  : %f %f %f\n", val, min, max);
-    
-    Sensor (2, &val, &min, &max);
-    printf ("Sensor 2  : %f %f %f\n", val, min, max);
-    
-    usleep(tack*1000);
-  }
-
-}
-
-#endif

@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.3 2000/03/06 06:04:06 reinelt Exp $
+/* $Id: display.h,v 1.4 2000/03/10 10:49:53 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.4  2000/03/10 10:49:53  reinelt
+ *
+ * MatrixOrbital driver finished
+ *
  * Revision 1.3  2000/03/06 06:04:06  reinelt
  *
  * minor cleanups
@@ -60,8 +64,8 @@ typedef struct {
 
 int lcd_init (char *display);
 int lcd_clear (void);
-int lcd_put (int x, int y, char *text);
-int lcd_bar (int type, int x, int y, int max, int len1, int len2);
+int lcd_put (int row, int col, char *text);
+int lcd_bar (int type, int row, int col, int max, int len1, int len2);
 int lcd_flush (void);
 
 #endif
