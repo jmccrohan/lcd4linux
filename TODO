@@ -91,10 +91,19 @@ at the moment the sum of all eth* devices is calculated
 2001-03-24 Brian Cleven <lcleven@home.com>
 support 40x4 displays with two HD44780 chips on it
 we need another 'Enable' line for this
-this way one could connect two displays to on e parallel port, too
+this way one could connect two displays to one parallel port, too
 
 // 2001-05-25 Jens Garthe <outline@xslan.de>
 // detect wether curses.h and libncurses is installed, and
 // don't include the 'Text'-driver if not.
 // _should_ work now 2001-05-31 -lt
 
+2001-09-11 Michael Reinelt <reinelt@eunet.at>
+use new extended tokens to split up several data sources
+(CPU, Net, Disk, ISDN, ...)
+e.g. '%nw'  is 'network transmit' for _all_ devices
+     '%n0w' is 'network transmit' for eth0
+     '%n1w' for eth1
+
+2001-09-11 Michael Reinelt <reinelt@eunet.at>
+remove bar code from drivers and create a common bar library
