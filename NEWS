@@ -41,6 +41,8 @@ lcd4linux-0.98
 
 - simple web-server driver (see README.Webinterface)
 
+- uses new (kernel 2.4) ppdev system to access parallel port via ioctl()
+
 - mail suport for pop3 and imap4, token 'u1' ..'u9' show unseen mail
   (which is propably incorrect for normal mbox)
 

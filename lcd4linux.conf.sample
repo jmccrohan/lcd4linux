@@ -1,11 +1,12 @@
-Display LCD2041
-Port /dev/ttyS2
-Speed 19200
-Contrast 160
+#Display LCD2041
+#Port /dev/ttyS2
+#Speed 19200
+#Contrast 160
 
-#Display HD44780
-#Port 0x278
-#Size 24x2
+Display HD44780
+#Port 0x378
+Port /dev/parports/1
+Size 24x2
 #Delay 503
 
 #Display BLC100x

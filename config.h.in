@@ -117,6 +117,12 @@
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
 
+/* Define if you have the <linux/parport.h> header file.  */
+#undef HAVE_LINUX_PARPORT_H
+
+/* Define if you have the <linux/ppdev.h> header file.  */
+#undef HAVE_LINUX_PPDEV_H
+
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
 

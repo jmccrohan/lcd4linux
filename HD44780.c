@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.14 2001/03/12 13:44:58 reinelt Exp $
+/* $Id: HD44780.c,v 1.15 2001/03/14 15:14:59 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.15  2001/03/14 15:14:59  reinelt
+ * added ppdev parallel port access
+ *
  * Revision 1.14  2001/03/12 13:44:58  reinelt
  *
  * new udelay() using Time Stamp Counters
@@ -109,16 +112,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/ioctl.h>
+
 #ifdef HAVE_SYS_IO_H
 #include <sys/io.h>
+#define WITH_OUTB
 #else
 #ifdef HAVE_ASM_IO_H
 #include <asm/io.h>
-#else
-#error "neither sys/io.h nor asm/io.h found!"
+#define WITH_OUTB
 #endif
+#endif
+
+#if defined (HAVE_LINUX_PARPORT_H) && defined (HAVE_LINUX_PPDEV_H)
+#define WITH_PPDEV
+#include <linux/parport.h>
+#include <linux/ppdev.h>
+#endif
+
+#if !defined(WITH_OUTB) && !defined(WITH_PPDEV)
+#error neither outb() nor ppdev() possible
+#error cannot compile HD44780 driver
 #endif
 
 #include "debug.h"
@@ -147,7 +164,16 @@ typedef struct {
 } SEGMENT;
 
 static LCD Lcd;
+
+
+#ifdef WITH_OUTB
 static unsigned short Port=0;
+#endif
+
+#ifdef WITH_PPDEV
+static char *PPdev=NULL;
+static int   PPfd=-1;
+#endif
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -157,43 +183,142 @@ static int nSegment=2;
 static SEGMENT Segment[128] = {{ len1:0,   len2:0,   type:255, used:0, ascii:32 },
 			       { len1:255, len2:255, type:255, used:0, ascii:255 }};
 
+#ifdef WITH_PPDEV
+static void HD_toggle (int bit)
+{
+  struct ppdev_frob_struct frob;
+
+  frob.mask=bit;
+  frob.val=0; // rise (inverted!)
+  ioctl (PPfd, PPFCONTROL, &frob);
+  udelay(1);
+  frob.val=bit; // lower (inverted!)
+  ioctl (PPfd, PPFCONTROL, &frob);
+}
+#endif
+
 static void HD_command (unsigned char cmd, int delay)
 {
-  outb (cmd, Port);    // put data on DB1..DB8
-  outb (0x02, Port+2); // set Enable = bit 0 invertet
-  udelay (1);
-  outb (0x03, Port+2); // clear Enable
-  udelay (delay);
+  if (PPdev) {
+
+#ifdef WITH_PPDEV
+    struct ppdev_frob_struct frob;
+
+    // clear RS (inverted)
+    frob.mask=PARPORT_CONTROL_AUTOFD;
+    frob.val=PARPORT_CONTROL_AUTOFD;
+    ioctl (PPfd, PPFCONTROL, &frob);
+    
+    // put data on DB1..DB8
+    ioctl(PPfd, PPWDATA, &cmd);
+    
+    // send command
+    HD_toggle(PARPORT_CONTROL_STROBE);
+
+    // wait
+    udelay(delay);
+#endif
+
+  } else {
+
+#ifdef WITH_OUTB
+    outb (cmd, Port);    // put data on DB1..DB8
+    outb (0x02, Port+2); // set Enable = bit 0 invertet
+    udelay (1);
+    outb (0x03, Port+2); // clear Enable
+    udelay (delay);
+#endif
+
+  }
 }
 
 static void HD_write (char *string, int len, int delay)
 {
-  while (len--) {
-    outb (*string++, Port); // put data on DB1..DB8
-    outb (0x00, Port+2);    // set Enable = bit 0 invertet
-    udelay (1);
-    outb (0x01, Port+2);    // clear Enable
-    udelay (delay);
+  if (PPdev) {
+
+    struct ppdev_frob_struct frob;
+
+    // set RS (inverted)
+    frob.mask=PARPORT_CONTROL_AUTOFD;
+    frob.val=0;
+    ioctl (PPfd, PPFCONTROL, &frob);
+    
+    while (len--) {
+
+      // put data on DB1..DB8
+      ioctl(PPfd, PPWDATA, string++);
+      
+      udelay(1);
+      // send command
+      HD_toggle(PARPORT_CONTROL_STROBE);
+
+      // wait
+      udelay(delay);
+    }
+    
+  } else {
+
+    while (len--) {
+      outb (*string++, Port); // put data on DB1..DB8
+      outb (0x00, Port+2);    // set Enable = bit 0 invertet
+      udelay (1);
+      outb (0x01, Port+2);    // clear Enable
+      udelay (delay);
+    }
+
   }
 }
-
 static void HD_setGPO (int bits)
 {
+  
   if (Lcd.gpos>0) {
-    outb (bits, Port);    // put data on DB1..DB8
-    outb (0x05, Port+2);  // set INIT = bit 2 invertet
-    udelay (1);
-    outb (0x03, Port+2);  // clear INIT
-    udelay (1);
+
+    if (PPdev) {
+
+      // put data on DB1..DB8
+      ioctl(PPfd, PPWDATA, &bits);
+      
+      // toggle INIT
+      HD_toggle(PARPORT_CONTROL_INIT);
+
+    } else {
+      outb (bits, Port);    // put data on DB1..DB8
+      outb (0x05, Port+2);  // set INIT = bit 2 invertet
+      udelay (1);
+      outb (0x03, Port+2);  // clear INIT
+      udelay (1);
+    }
   }
 }
 
 static int HD_open (void)
 {
-  debug ("using port 0x%x", Port);
-  if (ioperm(Port, 3, 1)!=0) {
-    error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
-    return -1;
+
+  if (PPdev) {
+    debug ("using ppdev %s", PPdev);
+    PPfd=open(PPdev, O_RDWR);
+    if (PPfd==-1) {
+      error ("open(%s) failed: %s", PPdev, strerror(errno));
+      return -1;
+    }
+#if 0
+    if (ioctl(PPfd, PPEXCL)) {
+      error ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
+      return -1;
+    }
+#endif
+    if (ioctl(PPfd, PPCLAIM)) {
+      error ("ioctl(%s, PPCLAIM) failed: %s", PPdev, strerror(errno));
+      return -1;
+    }
+  } else {
+
+    debug ("using raw port 0x%x", Port);
+    if (ioperm(Port, 3, 1)!=0) {
+      error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
+      return -1;
+    }
+
   }
 
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
@@ -402,11 +527,17 @@ int HD_init (LCD *Self)
     error ("HD44780: no 'Port' entry in %s", cfg_file());
     return -1;
   }
+  PPdev=NULL;
   if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
+#if 0
     error ("HD44780: bad port '%s' in %s", s, cfg_file());
     return -1;
+#endif
+    // use PPdev
+    Port=0;
+    PPdev=s;
   }    
-
+  
 #ifdef USE_OLD_UDELAY
   s=cfg_get ("Delay");
   if (s==NULL || *s=='\0') {
@@ -598,10 +729,18 @@ int HD_flush (void)
 
 int HD_quit (void)
 {
-  debug ("closing port 0x%x", Port);
-  if (ioperm(Port, 3, 0)!=0) {
-    error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
-    return -1;
+  if (PPdev) {
+    debug ("closing ppdev %s", PPdev);
+    if (close(PPfd)==-1) {
+      error ("close(%s) failed: %s", PPdev, strerror(errno));
+      return -1;
+    }
+  } else {
+    debug ("closing raw port 0x%x", Port);
+    if (ioperm(Port, 3, 0)!=0) {
+      error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
+      return -1;
+    }
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #
-# $Id: README.HD44780,v 1.2 2000/04/19 04:44:20 reinelt Exp $
+# $Id: README.HD44780,v 1.3 2001/03/14 15:14:59 reinelt Exp $
 #
 
 This is the README file for the HD44780 display driver for lcd4linux
@@ -7,14 +7,31 @@ This is the README file for the HD44780 display driver for lcd4linux
 This driver supports all display modules based on the Hitachi HD44780 chip.
 These displays are made by different manufactures, and come in various sizes.
 
-The following types are known to work:
+At least the following types are known to work:
 
 DataVision DV16244: 2 lines by 16 characters
 Nan Ya NLC 08x2x06: 2 lines by  8 characters 
 
 The displays are connected to the parallel board (see Wiring below), and are quite timing-critical.
 There's no way to delay a usermode program under Linux for e.g. 40 usec, so we have to do 
-busy-waiting. This is done in a delay loop, which has to be calibrated (see Configuration below).
+busy-waiting. This is done in a delay loop, which had to be calibrated (see Configuration below).
+Since 0.98 there are two new delay loops, one based on the processor's TSC (Time Stamp Counter),
+one based on gettimeofday(). lcd4linux decides automatically which one to use (it prefers the
+TSC method, but falls back to gettimeofday() if neither the tsc flag nor the MHz value is set 
+in /proc/cpuinfo).
+
+The driver knows of two ways of controlling the parallel port: The (old, ugly and unportable) raw
+programming of ports, and the new, cool, great ppdev() style. You decide which one to use by 
+specifying either a hexadecimal value or a device file with the 'Port' entry in the config file.
+
+Note that the old port programming only works with standard ports (0x3f8, 2f8,...), but not 
+with PCI parallel port cards.
+
+ppdev requires kernel 2.4. The configure script detects if you have the required include files, 
+and deactivates ppdev if they are not there.
+
+You should use ppdev whenever possible. Raw port access may be dropped someday. 
+
 
 The driver supports vertical, horizontal and split bars (two independent bars in one line),
 all bar types can be used simultanously. As the displays only have 8 user-defined characters,
@@ -29,9 +46,17 @@ Configuration:
 The driver needs the following entries in lcd4linux.conf:
 
 Display: HD44780
-Port: the hexadecimal address of the parallel port (e.g. 0x378)
+
+Port: either the hexadecimal address of the parallel port (e.g. 0x378)
+      or a ppdev device (e.g. /dev/parports/0)
+
 Size: [columns]x[rows] e.g. "16x2"
+
+
+#ifdef USE_OLD_UDELAY
+
 Delay: calibration of the delay loop, loops per microsecond
+       THIS IS NO LONGER NECESSARY!
 
 It is very important to use a correct delay value, otherwise you will get only junk on the
 display. lcd4linux has a switch '-d' where it helps you to find the correct value. Run
@@ -43,10 +68,13 @@ The delay value is defined by your CPU model and clock frequency (it looks like 
 'BogoMips' value divided by 2, because we use a similar delay loop than the kernel does). 
 Here are some examples:
 
-Pentium MMX, 133 MHz, 106 BogoMips:   54
-Pentium MMX, 166 MHz, 333 BogoMips:  166
-Celeron,     333 MHz, 333 BogoMips:  166
-Pentium III, 600 MHz, 600 BogoMips:  300
+Pentium MMX, 133 MHz,  106 BogoMips:   54
+Pentium MMX, 166 MHz,  333 BogoMips:  166
+Celeron,     333 MHz,  333 BogoMips:  166
+Pentium III, 600 MHz,  600 BogoMips:  300
+AMD Athlon  1010 MHz, 2012 BogoMips:  505 
+
+#endif
 
 
 Wiring:

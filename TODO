@@ -47,13 +47,14 @@ will be done with the big config-rework
 // replace T_EXTENDED with a Flag similar to 'bar'
 // rejected, T_EXTENDED does a good job  -mr
 
-2001-03-07 Michael Reinelt <reinelt@eunet.at>
-use ppdev instead of ugly outb()
+// 2001-03-07 Michael Reinelt <reinelt@eunet.at>
+// use ppdev instead of ugly outb()
+// done 2001-03-14 -mr
 
 // 2001-03-09 Michael Reinelt <reinelt@eunet.at>
 // replace udelay() assembly loop with rdtsc (read time stamp counter)
 // at least try to....
-// done -mr
+// done 2001-03-14 -mr
 
 2001-03-09 Leo Tötsch <lt@toetsch.at>
 read configuration file earlier (before forking) so that specific drivers
@@ -64,8 +65,8 @@ There's a reason for forking that early, but I forgot...
 remove USE_OLD_UDELAY after wide testing of new udelay code
 
 // 2001-03-12 Michael Reinelt <reinelt@eunet.at>
-// crate a NEWS file with changes/enhancements of every release
-// done -mr
+// create a NEWS file with changes/enhancements of every release
+// done 2001-03-13 -mr
 
 2001-03-14 Leopold Toetsch <lt@toetsch.at>
 improve unseen for mbox (check Status:)
