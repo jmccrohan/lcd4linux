@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.7 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: cfg.h,v 1.8 2004/01/10 20:22:33 reinelt Exp $
  *
  * config file stuff
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.8  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.7  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -57,6 +63,7 @@
 extern int   (*cfg_init)   (char *source);
 extern char *(*cfg_source) (void);
 extern int   (*cfg_cmd)    (char *arg);
+extern char *(*cfg_list)   (char *section);
 extern char *(*cfg_get)    (char *section, char *key, char *defval);
 extern int   (*cfg_number) (char *section, char *key, int   defval, 
 			    int min, int max, int *value);
@@ -64,6 +71,7 @@ extern int   (*cfg_number) (char *section, char *key, int   defval,
 int   l4l_cfg_init   (char *file);
 char *l4l_cfg_source (void);
 int   l4l_cfg_cmd    (char *arg);
+char *l4l_cfg_list   (char *section);
 char *l4l_cfg_get    (char *section, char *key, char *defval);
 int   l4l_cfg_number (char *section, char *key, int   defval, 
 		      int min, int max, int *value);

@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.1 2004/01/09 17:03:07 reinelt Exp $
+/* $Id: drv.h,v 1.2 2004/01/10 20:22:33 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.2  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.1  2004/01/09 17:03:07  reinelt
  * initiated transfer to new driver architecture
  * new file 'drv.c' will someday replace 'display.c'
@@ -38,7 +44,7 @@
 typedef struct DRIVER {
   char *name;
   int (*list)  (void);
-  int (*init)  (struct DRIVER *Self);
+  int (*init)  (char *section);
   int (*quit)  (void);
 } DRIVER;
 

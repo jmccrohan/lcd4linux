@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.57 2004/01/10 17:45:26 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.58 2004/01/10 20:22:33 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.58  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.57  2004/01/10 17:45:26  reinelt
  * changed initialization order so cfg() gets initialized before plugins.
  * This way a plugin's init() can use cfg_get().
@@ -290,6 +296,7 @@
 #include "display.h"  // Fixme: remove me...
 #include "drv.h"
 #include "processor.h"
+#include "layout.h"
 #include "plugin.h"
 
 #define PIDFILE "/var/run/lcd4linux.pid"
@@ -307,9 +314,6 @@ static void usage(void)
   printf ("%s\n", release);
   printf ("usage: lcd4linux [-h]\n");
   printf ("       lcd4linux [-l]\n");
-#ifdef USE_OLD_UDELAY
-  printf ("       lcd4linux [-d]\n");
-#endif
   printf ("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
   printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
@@ -352,25 +356,6 @@ int hello (void)
 }
 
 
-#ifdef USE_OLD_UDELAY
-void calibrate (void)
-{
-  int i;
-  unsigned long max=0;
-
-  printf ("%s\n", release);
-  printf ("calibrating delay loop:");
-  fflush(stdout);
-  for (i=0; i<10; i++) {
-    udelay_calibrate();
-    if (loops_per_usec>max)
-      max=loops_per_usec;
-  }
-  printf (" Delay=%ld\n", max);
-}
-#endif
-
-
 void handler (int signal)
 {
   debug ("got signal %d", signal);
@@ -381,7 +366,7 @@ void handler (int signal)
 int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
-  char *display, *driver;
+  char *display, *driver, *layout;
   char  section[32];
   int c;
   int quiet=0;
@@ -397,11 +382,8 @@ int main (int argc, char *argv[])
   running_foreground=0;
   running_background=0;
   
-#ifdef USE_OLD_UDELAY
-  while ((c=getopt (argc, argv, "c:dFf:hilo:qv"))!=EOF) {
-#else
   while ((c=getopt (argc, argv, "c:Ff:hilo:qv"))!=EOF) {
-#endif
+
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
@@ -409,11 +391,6 @@ int main (int argc, char *argv[])
 	exit(2);
       }
       break;
-#ifdef USE_OLD_UDELAY
-    case 'd':
-      calibrate();
-      exit(0);
-#endif
     case 'F':
       running_foreground++;
       break;
@@ -460,7 +437,7 @@ int main (int argc, char *argv[])
   if (!running_foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
     info ("invoked without full path; restart may not work!");
   }
-  
+
   if (cfg_init(cfg)==-1)
     exit (1);
   
@@ -479,6 +456,9 @@ int main (int argc, char *argv[])
 #if 0
     error ("missing '%s.Driver' entry in %s!", section, cfg_source());
     exit (1);
+#else
+    // Fixme: compatibility only...
+    driver=NULL;
 #endif
   }
   
@@ -548,9 +528,26 @@ int main (int argc, char *argv[])
       exit (1);
     }
   }
-
-  // process_init sets global vars tick, tack
-  process_init();
+  
+  // check for new-style layout
+  layout=cfg_get(NULL, "Layout", NULL);
+  if (layout==NULL || *layout=='\0') {
+#if 0
+    error ("missing 'Layout' entry in %s!", cfg_source());
+    exit (1);
+#else
+    layout=NULL;
+    info ("using old-style layout!");
+#endif
+  }
+  
+  // Fixme: compatibility only...
+  if (layout==NULL) {
+    // process_init sets global vars tick, tack
+    process_init();
+  } else {
+    layout_init(layout);
+  }
 
   // maybe go into interactive mode
   if (interactive) {
@@ -571,8 +568,13 @@ int main (int argc, char *argv[])
       printf("eval> ");
     }
     printf ("\n");
-    lcd_clear(1);
-    lcd_quit();
+    // Fixme: compatibility only...
+    if (layout==NULL) {
+      lcd_clear(1);
+      lcd_quit();
+    } else {
+      drv_quit();
+    }
     pid_exit(PIDFILE);
     exit (0);
   }
@@ -582,11 +584,16 @@ int main (int argc, char *argv[])
     quiet = atoi(cfg_get(NULL, "Quiet", "0"));
   }
   
-  if (!quiet && hello()) {
-    sleep (3);
-    lcd_clear(1);
+  // Fixme: compatibility only...
+  if (layout==NULL) {
+    if (!quiet && hello()) {
+      sleep (3);
+      lcd_clear(1);
+    }
+  } else {
+    // Fixme: how to hello() with new layout?
   }
-  
+
   debug ("starting main loop");
   
   // now install our own signal handler
@@ -595,17 +602,24 @@ int main (int argc, char *argv[])
   signal(SIGQUIT, handler);
   signal(SIGTERM, handler);
   
-  while (got_signal==0) {
-    process ();
-    usleep(tack*1000);
+  // Fixme: compatibility only...
+  if (layout==NULL) {
+    while (got_signal==0) {
+      process ();
+      usleep(tack*1000);
+    }
   }
   
   debug ("leaving main loop");
   
-  lcd_clear(1);
-  if (!quiet) hello();
-  lcd_quit();
-  
+  // Fixme: compatibility only...
+  if (layout==NULL) {
+    lcd_clear(1);
+    if (!quiet) hello();
+    lcd_quit();
+  } else {
+    drv_quit();
+  }
   pid_exit(PIDFILE);
   
   if (got_signal==SIGHUP) {
@@ -623,3 +637,4 @@ int main (int argc, char *argv[])
   }
   exit (0);
 }
+  

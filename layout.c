@@ -1,8 +1,8 @@
-/* $Id: widget.h,v 1.4 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: layout.c,v 1.1 2004/01/10 20:22:33 reinelt Exp $
  *
- * generic widget handling
+ * new layouter framework
  *
- * Copyright 2003,2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 1999-2003 Michael Reinelt <reinelt@eunet.at>
  * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
@@ -22,50 +22,54 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * $Log: widget.h,v $
- * Revision 1.4  2004/01/10 20:22:33  reinelt
+ * $Log: layout.c,v $
+ * Revision 1.1  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
  * added widget_text.c (will be the first and most important widget)
  * modified lcd4linux.c so that old-style configs should work, too
  *
- * Revision 1.3  2004/01/10 17:34:40  reinelt
- * further matrixOrbital changes
- * widgets initialized
+ */
+
+/* 
+ * exported functions:
  *
- * Revision 1.2  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
- *
- * Revision 1.1  2003/09/19 03:51:29  reinelt
- * minor fixes, widget.c added
+ * layout_init (char *section)
+ *    initializes the layouter
  *
  */
 
+#include "config.h"
 
-#ifndef _WIDGET_H_
-#define _WIDGET_H_
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-
-struct WIDGET; // forward declaration
-
-typedef struct WIDGET_CLASS {
-  char *name;
-  int (*init)   (struct WIDGET *Self);
-  int (*update) (struct WIDGET *Self);
-  int (*render) (struct WIDGET *Self);
-  int (*quit)   (struct WIDGET *Self);
-} WIDGET_CLASS;
-
-typedef struct WIDGET{
-  char *name;
-  WIDGET_CLASS *class;
-} WIDGET;
+#include "debug.h"
+#include "cfg.h"
+#include "layout.h"
 
 
-int widget_register (WIDGET_CLASS *widget);
+#define MAX_ROWS 32
+#define MAX_COLS 80
 
+int layout_init (char *layout)
+{
+  char *section, *widget;
+  char  buffer[15];
+  int row, col;
+  
+  info ("initializing layout '%s'", layout);
+  
+  // prepare config section
+  // strlen("Layout:")=7, +1=8
+  section=malloc(strlen(layout)+8);
+  strcpy(section, "Layout:");
+  strcat(section, layout);
 
-// some basic widgets
-WIDGET_CLASS Widget_Text;
+  cfg_list(section);
 
-#endif
+  
+  return 0;
+}
+

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.3 2004/01/10 17:34:40 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.4 2004/01/10 20:22:33 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.4  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.3  2004/01/10 17:34:40  reinelt
  * further matrixOrbital changes
  * widgets initialized
@@ -62,17 +68,21 @@
 #include "drv.h"
 #include "bar.h"
 #include "icon.h"
+#include "widget.h"
 
+
+// these values are hardcoded
+#define XRES 5
+#define YRES 8
+#define CHARS 8
 
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
 static int Model;
 
-static int ROWS, COLS;
-static int XRES, YRES;
-static int CHARS, ICONS, GPOS;
-static int PROTOCOL;
+static int ROWS, COLS, GPOS;
+static int ICONS, PROTOCOL;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -201,15 +211,15 @@ static void drv_MO_write (char *string, int len)
 }
 
 
-static int drv_MO_contrast (void)
+static int drv_MO_contrast (int contrast)
 {
   char buffer[4];
-  int  contrast;
-
-  if (cfg_number(NULL, "Contrast", 160, 0, 255, &contrast)<0) return -1;
+  
+  if (contrast<0  ) contrast=0;
+  if (contrast>255) contrast=255;
   snprintf (buffer, 4, "\376P%c", contrast);
   drv_MO_write (buffer, 3);
-  return 0;
+  return contrast;
 }
 
 
@@ -223,19 +233,19 @@ static void drv_MO_define_char (int ascii, char *buffer)
 }
 
 
-static int drv_MO_clear (int protocol)
+static int drv_MO_clear (int full)
 {
   int gpo;
   
   memset (FrameBuffer1, ' ', ROWS*COLS*sizeof(char));
-
+  
   icon_clear();
   bar_clear();
   memset(GPO, 0, sizeof(GPO));
 
-  if (protocol) {
+  if (full) {
     memset (FrameBuffer2, ' ', ROWS*COLS*sizeof(char));
-    switch (protocol) {
+    switch (PROTOCOL) {
     case 1:
       drv_MO_write ("\014",  1);  // Clear Screen
       drv_MO_write ("\376V", 2);  // GPO off
@@ -304,7 +314,142 @@ static int drv_MO_gpo (int num, int val)
 }
 
 
-static int drv_MO_flush (int protocol)
+// start display
+static int drv_MO_start (char *section)
+{
+  int i;  
+  char *port, buffer[256];
+  char *model;
+  
+  if (Port) {
+    free (Port);
+    Port=NULL;
+  }
+
+  model=cfg_get(section, "Model", NULL);
+  if (model!=NULL && *model!='\0') {
+    for (i=0; Models[i].type!=0xff; i++) {
+      if (strcasecmp(Models[i].name, model)==0) break;
+    }
+    if (Models[i].type==0xff) {
+      error ("MatrixOrbital: %s.Model '%s' is unknown from %s", section, model, cfg_source());
+      return -1;
+    }
+    Model=i;
+    info ("MatrixOrbital: using model '%s'", Models[Model].name);
+  } else {
+    info ("MatrixOrbital: no '%s.Model' entry from %s, auto-dedecting", section, cfg_source());
+    Model=-1;
+  }
+  
+  
+  port=cfg_get(section, "Port", NULL);
+  if (port==NULL || *port=='\0') {
+    error ("MatrixOrbital: no '%s.Port' entry from %s", section, cfg_source());
+    return -1;
+  }
+  Port=strdup(port);
+
+  if (cfg_number(section, "Speed", 19200, 1200, 19200, &i)<0) return -1;
+  switch (i) {
+  case 1200:
+    Speed=B1200;
+    break;
+  case 2400:
+    Speed=B2400;
+    break;
+  case 9600:
+    Speed=B9600;
+    break;
+  case 19200:
+    Speed=B19200;
+    break;
+  default:
+    error ("MatrixOrbital: unsupported speed '%d' from %s", i, cfg_source());
+    return -1;
+  }    
+  
+  info ("MatrixOrbital: using port '%s' at %d baud", Port, i);
+  
+  Device=drv_MO_open();
+  if (Device==-1) return -1;
+
+  // read module type
+  drv_MO_write ("\3767", 2);
+  usleep(1000);
+  drv_MO_read (buffer, 1);
+  for (i=0; Models[i].type!=0xff; i++) {
+    if (Models[i].type == (int)*buffer) break;
+  }
+  info ("MatrixOrbital: Display identifies itself as a '%s' (type 0x%02x)", 
+	Models[i].name, Models[i].type);
+  
+  // auto-dedection
+  if (Model==-1) Model=i;
+  
+  // auto-dedection matches specified model?
+  if (Model!=i) {
+    error ("MatrixOrbital: %s.Model '%s' from %s does not match dedected Model '%s'", 
+	   section, model, cfg_source(), Models[i].name);
+    return -1;
+  }
+
+  // read serial number
+  drv_MO_write ("\3765", 2);
+  usleep(100000);
+  drv_MO_read (buffer, 2);
+  info ("MatrixOrbital: Display reports Serial Number 0x%x", *(short*)buffer);
+  
+  // read version number
+  drv_MO_write ("\3766", 2);
+  usleep(100000);
+  drv_MO_read (buffer, 1);
+  info ("MatrixOrbital: Display reports Firmware Version 0x%x", *buffer);
+
+  
+  // initialize global variables
+  ROWS     = Models[Model].rows;
+  COLS     = Models[Model].cols;
+  GPOS     = Models[Model].gpos;
+  PROTOCOL = Models[Model].protocol;
+
+
+  // init the framebuffers
+  FrameBuffer1 = (char*)malloc(COLS*ROWS*sizeof(char));
+  FrameBuffer2 = (char*)malloc(COLS*ROWS*sizeof(char));
+  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
+    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
+    return -1;
+  }
+  
+  // init Icons
+  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
+  if (ICONS>0) {
+    debug ("reserving %d of %d user-defined characters for icons", ICONS, CHARS);
+    icon_init(ROWS, COLS, XRES, YRES, CHARS, ICONS, drv_MO_define_char);
+  }
+  
+  // init Bars
+  bar_init(ROWS, COLS, XRES, YRES, CHARS-ICONS);
+  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
+  bar_add_segment(255,255,255,255); // ASCII 255 = block
+  
+  
+  drv_MO_clear(1);
+  // Fixme: where to init contrast?
+  drv_MO_contrast(160);
+
+  drv_MO_write ("\376B", 3);  // backlight on
+  drv_MO_write ("\376K", 2);  // cursor off
+  drv_MO_write ("\376T", 2);  // blink off
+  drv_MO_write ("\376D", 2);  // line wrapping off
+  drv_MO_write ("\376R", 2);  // auto scroll off
+
+  return 0;
+}
+
+
+static int drv_MO_flush (void)
 {
   int row, col, pos1, pos2;
   int c, equal;
@@ -339,7 +484,7 @@ static int drv_MO_flush (int protocol)
   
   memcpy (FrameBuffer2, FrameBuffer1, ROWS*COLS*sizeof(char));
   
-  switch (protocol) {
+  switch (PROTOCOL) {
   case 1:
     if (GPO[0]) {
       drv_MO_write ("\376W", 2);  // GPO on
@@ -371,7 +516,7 @@ static void plugin_contrast (RESULT *result, RESULT *arg1)
 {
   char buffer[4];
   double contrast;
-
+  
   contrast=R2N(arg1);
   if (contrast<0  ) contrast=0;
   if (contrast>255) contrast=255;
@@ -408,8 +553,6 @@ static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
   int num;
   double val;
   char cmd[3]="\376";
-  // Fixme
-  int protocol=2;
   
   num=R2N(arg1);
   val=R2N(arg2);
@@ -423,7 +566,7 @@ static void plugin_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
     val=0.0;
   }
   
-  switch (protocol) {
+  switch (PROTOCOL) {
   case 1:
     if (num==0) {
       if (val>=1.0) {
@@ -523,133 +666,25 @@ int drv_MO_list (void)
 // initialize driver & display
 int drv_MO_init (char *section)
 {
-  int i;  
-  char *port, buffer[256];
-  char *model;
+  WIDGET_CLASS wc;
+  int ret;  
   
-  if (Port) {
-    free (Port);
-    Port=NULL;
-  }
-
-  model=cfg_get(section, "Model", NULL);
-  if (model!=NULL && *model!='\0') {
-    for (i=0; Models[i].type!=0xff; i++) {
-      if (strcasecmp(Models[i].name, model)==0) break;
-    }
-    if (Models[i].type==0xff) {
-      error ("MatrixOrbital: %s.Model '%s' is unknown from %s", section, model, cfg_source());
-      return -1;
-    }
-    Model=i;
-    info ("MatrixOrbital: using model '%s'", Models[Model].name);
-  } else {
-    info ("MatrixOrbital: no '%s.Model' entry from %s, auto-dedecting", section, cfg_source());
-    Model=-1;
-  }
+  // start display
+  if ((ret=drv_MO_start (section))!=0)
+    return ret;
   
+  // register text widget
+  wc=Widget_Text;
+  wc.render=NULL;
+  widget_register(&wc);
   
-  port=cfg_get(section, "Port", NULL);
-  if (port==NULL || *port=='\0') {
-    error ("MatrixOrbital: no '%s.Port' entry from %s", section, cfg_source());
-    return -1;
-  }
-  Port=strdup(port);
-
-  if (cfg_number(section, "Speed", 19200, 1200, 19200, &i)<0) return -1;
-  switch (i) {
-  case 1200:
-    Speed=B1200;
-    break;
-  case 2400:
-    Speed=B2400;
-    break;
-  case 9600:
-    Speed=B9600;
-    break;
-  case 19200:
-    Speed=B19200;
-    break;
-  default:
-    error ("MatrixOrbital: unsupported speed '%d' from %s", i, cfg_source());
-    return -1;
-  }    
-  
-  info ("MatrixOrbital: using port '%s' at %d baud", Port, i);
-  
-  Device=drv_MO_open();
-  if (Device==-1) return -1;
-
-  // read module type
-  drv_MO_write ("\3767", 2);
-  usleep(1000);
-  drv_MO_read (buffer, 1);
-  for (i=0; Models[i].type!=0xff; i++) {
-    if (Models[i].type == (int)*buffer) break;
-  }
-  info ("MatrixOrbital: Display identifies itself as a '%s' (type 0x%02x)", 
-	Models[i].name, Models[i].type);
-  
-  // auto-dedection
-  if (Model==-1) Model=i;
-  
-  // auto-dedection matches specified model?
-  if (Model!=i) {
-    error ("MatrixOrbital: %s.Model '%s' from %s does not match dedected Model '%s'", 
-	   section, model, cfg_source(), Models[i].name);
-    return -1;
-  }
-
-  // read serial number
-  drv_MO_write ("\3765", 2);
-  usleep(100000);
-  drv_MO_read (buffer, 2);
-  info ("MatrixOrbital: Display reports Serial Number 0x%x", *(short*)buffer);
-  
-  // read version number
-  drv_MO_write ("\3766", 2);
-  usleep(100000);
-  drv_MO_read (buffer, 1);
-  info ("MatrixOrbital: Display reports Firmware Version 0x%x", *buffer);
-
-
-  // Init the framebuffers
-  FrameBuffer1 = (char*)malloc(COLS*ROWS*sizeof(char));
-  FrameBuffer2 = (char*)malloc(COLS*ROWS*sizeof(char));
-  if (FrameBuffer1==NULL || FrameBuffer2==NULL) {
-    error ("MatrixOrbital: framebuffer could not be allocated: malloc() failed");
-    return -1;
-  }
-
-  // init Icons
-  if (cfg_number(NULL, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
-  if (ICONS>0) {
-    debug ("reserving %d of %d user-defined characters for icons", ICONS, CHARS);
-    icon_init(ROWS, COLS, XRES, YRES, CHARS, ICONS, drv_MO_define_char);
-  }
-  
-  // init Bars
-  bar_init(ROWS, COLS, XRES, YRES, CHARS-ICONS);
-  bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
-  bar_add_segment(255,255,255,255); // ASCII 255 = block
-
-
-  drv_MO_clear(PROTOCOL);
-  drv_MO_contrast();
-
-  drv_MO_write ("\376B", 3);  // backlight on
-  drv_MO_write ("\376K", 2);  // cursor off
-  drv_MO_write ("\376T", 2);  // blink off
-  drv_MO_write ("\376D", 2);  // line wrapping off
-  drv_MO_write ("\376R", 2);  // auto scroll off
-
   // register plugins
   AddFunction ("contrast",  1, plugin_contrast);
   AddFunction ("backlight", 1, plugin_backlight);
   AddFunction ("gpo",       2, plugin_gpo);
   AddFunction ("pwm",       2, plugin_pwm);
   AddFunction ("rpm",       1, plugin_rpm);
-
+  
   return 0;
 }
 

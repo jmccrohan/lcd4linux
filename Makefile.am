@@ -17,12 +17,15 @@ lcd4linux.c \
 pid.c pid.h \
 parser.c parser.h \
 processor.c processor.h \
+layout.c layout.h \
 evaluator.c evaluator.h \
 plugin.c plugin.h \
 plugin_math.c \
 plugin_string.c \
 plugin_xmms.c \
 plugin_i2c_sensors.c \
+widget.c widget.h \
+widget_text.c widget_text.h \
 system.c system.h \
 isdn.c isdn.h \
 wifi.c wifi.h \
@@ -31,7 +34,6 @@ seti.c seti.h \
 battery.c battery.h \
 dvb.c dvb.h \
 filter.c filter.h \
-widget.c widget.h \
 exec.c exec.h \
 expr.c expr.h \
 mail2.c \

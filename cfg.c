@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.23 2004/01/09 04:16:06 reinelt Exp $^
+/* $Id: cfg.c,v 1.24 2004/01/10 20:22:33 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,12 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.24  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.23  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -314,6 +320,30 @@ int l4l_cfg_cmd (char *arg)
 }
 
 
+char *l4l_cfg_list (char *section)
+{
+  int i, len;
+  char *key;
+  
+  // calculate key length
+  len=strlen(section)+1;
+
+  // prepare search key
+  key=malloc(len+1);
+  strcpy (key, section);
+  strcat (key, ".");
+  
+  // search matching entries
+  for (i=0; i<nConfig; i++) {
+    if (strncasecmp(Config[i].key, key, len)==0) {
+      debug ("found list: %s", Config[i].key);
+    }
+  }
+  
+  return NULL;
+}
+
+
 char *l4l_cfg_get (char *section, char *key, char *defval)
 {
   int len;
@@ -579,7 +609,7 @@ static void cfg_plugin (RESULT *result, int argc, RESULT *argv[])
   for (i=0; i<argc; i++) {
     len+=strlen(R2S(argv[i]))+1;
   }
-
+  
   // allocate key buffer
   buffer=malloc(len+1);
   
@@ -632,6 +662,7 @@ char *l4l_cfg_source (void)
 int   (*cfg_init)   (char *source)                           = l4l_cfg_init;
 char *(*cfg_source) (void)                                   = l4l_cfg_source;
 int   (*cfg_cmd)    (char *arg)                              = l4l_cfg_cmd;
+char *(*cfg_list)   (char *section)                          = l4l_cfg_list;
 char *(*cfg_get)    (char *section, char *key, char *defval) = l4l_cfg_get;
 int   (*cfg_number) (char *section, char *key, int   defval, 
 		     int min, int max, int *value)           = l4l_cfg_number;

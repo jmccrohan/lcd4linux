@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.7 2004/01/10 17:45:26 reinelt Exp $
+/* $Id: plugin.c,v 1.8 2004/01/10 20:22:33 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,12 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.8  2004/01/10 20:22:33  reinelt
+ * added new function 'cfg_list()' (not finished yet)
+ * added layout.c (will replace processor.c someday)
+ * added widget_text.c (will be the first and most important widget)
+ * modified lcd4linux.c so that old-style configs should work, too
+ *
  * Revision 1.7  2004/01/10 17:45:26  reinelt
  * changed initialization order so cfg() gets initialized before plugins.
  * This way a plugin's init() can use cfg_get().
@@ -96,7 +102,8 @@ int plugin_init (void)
   plugin_init_math();
   plugin_init_string();
   plugin_init_xmms();
-  plugin_init_i2c_sensors();
+  // MR: segfaults here
+  // plugin_init_i2c_sensors();
   
   return 0;
 }
