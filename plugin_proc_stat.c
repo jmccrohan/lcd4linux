@@ -1,4 +1,4 @@
-/* $Id: plugin_proc_stat.c,v 1.1 2004/01/16 05:04:53 reinelt Exp $
+/* $Id: plugin_proc_stat.c,v 1.2 2004/01/16 07:26:25 reinelt Exp $
  *
  * plugin for /proc/stat parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_proc_stat.c,v $
+ * Revision 1.2  2004/01/16 07:26:25  reinelt
+ * moved various /proc parsing to own functions
+ * made some progress with /proc/stat parsing
+ *
  * Revision 1.1  2004/01/16 05:04:53  reinelt
  * started plugin proc_stat which should parse /proc/stat
  * which again is a paint in the a**
@@ -75,6 +79,16 @@ static int renew(int msec)
 }
 
 
+static void my_hash_set (char *key1, char *key2, char *val) 
+{
+  char key[16];
+  
+  snprintf (key, sizeof(key), "%s.%s", key1, key2);
+  debug ("Michi: hash_set(%s, %s)", key, val);
+  hash_set (&Stat, key, val);
+}
+
+
 static int parse_proc_stat (void)
 {
   FILE *stream;
@@ -82,9 +96,6 @@ static int parse_proc_stat (void)
   // update every 10 msec
   if (!renew(10)) return 0;
   
-  // destroy previous hash table
-  hash_destroy (&Stat);
-
   stream=fopen("/proc/stat", "r");
   if (stream==NULL) {
     error ("fopen(/proc/stat) failed: %s", strerror(errno));
@@ -94,13 +105,14 @@ static int parse_proc_stat (void)
   while (!feof(stream)) {
     char buffer[256];
     fgets (buffer, sizeof(buffer), stream);
-
+    
     if (strncmp(buffer, "cpu", 3)==0) {
-      unsigned long v1, v2, v3, v4;
-      debug ("Michi: buffer=<%s>", buffer);
-      if (sscanf(buffer+4, " %lu %lu %lu %lu", &v1, &v2, &v3, &v4)==4) {
-	debug ("Michi: v1=<%ld> v2=<%ld> v3=<%ld> v4=<%ld>", v1, v2, v3, v4);
-      }
+      char *cpu;
+      cpu=strtok(buffer, " \t");
+      my_hash_set (cpu, "user",   strtok(NULL, " \t"));
+      my_hash_set (cpu, "nice",   strtok(NULL, " \t"));
+      my_hash_set (cpu, "system", strtok(NULL, " \t"));
+      my_hash_set (cpu, "idle",   strtok(NULL, " \t"));
     } 
     else if (strncmp(buffer, "page ", 5)==0) {
       
@@ -129,12 +141,16 @@ static void my_proc_stat (RESULT *result, RESULT *arg1)
 {
   char *key, *val;
   
-  parse_proc_stat();
+  if (parse_proc_stat()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
+  }
 
   key=R2S(arg1);
-  val="";
-  
-  SetResult(&result, R_STRING, ""); 
+  val=hash_get(&Stat, key);
+  if (val==NULL) val="";
+
+  SetResult(&result, R_STRING, val); 
 }
 
 

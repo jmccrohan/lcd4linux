@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.2 2004/01/16 05:04:53 reinelt Exp $
+/* $Id: hash.h,v 1.3 2004/01/16 07:26:25 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.3  2004/01/16 07:26:25  reinelt
+ * moved various /proc parsing to own functions
+ * made some progress with /proc/stat parsing
+ *
  * Revision 1.2  2004/01/16 05:04:53  reinelt
  * started plugin proc_stat which should parse /proc/stat
  * which again is a paint in the a**
@@ -62,18 +66,8 @@ typedef struct {
   FILTER_SLOT *Slots;
 } FILTER_ITEM;
 
-typedef struct {
-  int         sorted;
-  int         nItems;
-  FILTER_ITEM *Items;
-} FILTER;
-
 void  hash_set     (HASH *Hash, char *key, char *val);
 char *hash_get     (HASH *Hash, char *key);
 void  hash_destroy (HASH *Hash);
-
-void   filter_set     (FILTER *Filter, char *key, double val);
-double filter_get     (FILTER *Filter, char *key);
-void   filter_destroy (FILTER *Filter);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: plugin_cpuinfo.c,v 1.3 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: plugin_cpuinfo.c,v 1.4 2004/01/16 07:26:25 reinelt Exp $
  *
  * plugin for /proc/cpuinfo parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_cpuinfo.c,v $
+ * Revision 1.4  2004/01/16 07:26:25  reinelt
+ * moved various /proc parsing to own functions
+ * made some progress with /proc/stat parsing
+ *
  * Revision 1.3  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -61,56 +65,64 @@
 #include "hash.h"
 
 
+static HASH CPUinfo = { 0, 0, NULL };
+
+
+static int parse_cpuinfo (void)
+{
+  static time_t now=0;
+  FILE *stream;
+
+  // reread every second only
+  if (time(NULL)==now) return 0;
+  time(&now);
+  
+    
+  stream=fopen("/proc/cpuinfo", "r");
+  if (stream==NULL) {
+    error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
+    return -1;
+  }
+    
+  while (!feof(stream)) {
+    char buffer[256];
+    char *c, *key, *val;
+    fgets (buffer, sizeof(buffer), stream);
+    c=strchr(buffer, ':');
+    if (c==NULL) continue;
+    key=buffer; val=c+1;
+    // strip leading blanks from key
+    while (isspace(*key)) *key++='\0';
+    // strip trailing blanks from key
+    do *c='\0'; while (isspace(*--c));
+    // strip leading blanks from value
+    while (isspace(*val)) *val++='\0';
+    // strip trailing blanks from value
+    for (c=val; *c!='\0';c++);
+    while (isspace(*--c)) *c='\0';
+      
+    // add entry to hash table
+    hash_set (&CPUinfo, key, val);
+      
+  }
+  fclose (stream);
+  return 0;
+}
+  
+
 static void my_cpuinfo (RESULT *result, RESULT *arg1)
 {
-  static HASH CPUinfo = { 0, 0, NULL };
-  
-  static time_t now=0;
   char *key, *val;
   
-  // reread every second only
-  if (time(NULL)!=now) {
-    FILE *stream;
-    
-    // destroy previous hash table
-    hash_destroy (&CPUinfo);
-
-    stream=fopen("/proc/cpuinfo", "r");
-    if (stream==NULL) {
-      error ("fopen(/proc/cpuinfo) failed: %s", strerror(errno));
-      SetResult(&result, R_STRING, ""); 
-      return;
-    }
-    
-    while (!feof(stream)) {
-      char buffer[256];
-      char *c;
-      fgets (buffer, sizeof(buffer), stream);
-      c=strchr(buffer, ':');
-      if (c==NULL) continue;
-      key=buffer; val=c+1;
-      // strip leading blanks from key
-      while (isspace(*key)) *key++='\0';
-      // strip trailing blanks from key
-      do *c='\0'; while (isspace(*--c));
-      // strip leading blanks from value
-      while (isspace(*val)) *val++='\0';
-      // strip trailing blanks from value
-      for (c=val; *c!='\0';c++);
-      while (isspace(*--c)) *c='\0';
-      
-      // add entry to hash table
-      hash_set (&CPUinfo, key, val);
-      
-    }
-    fclose (stream);
-    time(&now);
+  if (parse_cpuinfo()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
   }
   
   key=R2S(arg1);
   val=hash_get(&CPUinfo, key);
   if (val==NULL) val="";
-
+  
   SetResult(&result, R_STRING, val); 
 }
 

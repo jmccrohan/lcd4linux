@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.1 2004/01/15 04:29:45 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.2 2004/01/16 07:26:25 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.2  2004/01/16 07:26:25  reinelt
+ * moved various /proc parsing to own functions
+ * made some progress with /proc/stat parsing
+ *
  * Revision 1.1  2004/01/15 04:29:45  reinelt
  * moved lcd4linux.conf.sample to *.old
  * lcd4linux.conf.sample with new layout
@@ -49,64 +53,71 @@
 
 #include "debug.h"
 #include "plugin.h"
+
 #include "hash.h"
 
 
-static void my_meminfo (RESULT *result, RESULT *arg1)
+static HASH MemInfo = { 0, 0, NULL };
+
+
+static int parse_meminfo (void)
 {
-  static HASH MemInfo = { 0, 0, NULL };
-  
   static time_t now=0;
-  char *key, *val;
+  FILE *stream;
   int line;
   
   // reread every second only
-  if (time(NULL)!=now) {
-    FILE *stream;
+  if (time(NULL)==now) return 0;
+  time(&now);
+  
+  stream=fopen("/proc/meminfo", "r");
+  if (stream==NULL) {
+    error ("fopen(/proc/meminfo) failed: %s", strerror(errno));
+    return -1;
+  }
     
-    // destroy previous hash table
-    hash_destroy (&MemInfo);
+  line=0;
+  while (!feof(stream)) {
+    char buffer[256];
+    char *c, *key, *val;
+    fgets (buffer, sizeof(buffer), stream);
+    c=strchr(buffer, ':');
+    if (c==NULL) continue;
+    key=buffer; val=c+1;
+    // strip leading blanks from key
+    while (isspace(*key)) *key++='\0';
+    // strip trailing blanks from key
+    do *c='\0'; while (isspace(*--c));
+    // strip leading blanks from value
+    while (isspace(*val)) *val++='\0';
+    // strip trailing blanks from value
+    for (c=val; *c!='\0';c++);
+    while (isspace(*--c)) *c='\0';
+    // skip lines that do not end with " kB"
+    if (*c=='B' && *(c-1)=='k' && *(c-2)==' ') {
+      // strip trailing " kB" from value
+      *(c-2)='\0';
+      // add entry to hash table
+      hash_set (&MemInfo, key, val);
+    }
+  }
+  fclose (stream);
+  return 0;
+}  
 
-    stream=fopen("/proc/meminfo", "r");
-    if (stream==NULL) {
-      error ("fopen(/proc/meminfo) failed: %s", strerror(errno));
-      SetResult(&result, R_STRING, ""); 
-      return;
-    }
-    
-    line=0;
-    while (!feof(stream)) {
-      char buffer[256];
-      char *c;
-      fgets (buffer, sizeof(buffer), stream);
-      c=strchr(buffer, ':');
-      if (c==NULL) continue;
-      key=buffer; val=c+1;
-      // strip leading blanks from key
-      while (isspace(*key)) *key++='\0';
-      // strip trailing blanks from key
-      do *c='\0'; while (isspace(*--c));
-      // strip leading blanks from value
-      while (isspace(*val)) *val++='\0';
-      // strip trailing blanks from value
-      for (c=val; *c!='\0';c++);
-      while (isspace(*--c)) *c='\0';
-      // skip lines that do not end with " kB"
-      if (*c=='B' && *(c-1)=='k' && *(c-2)==' ') {
-	// strip trailing " kB" from value
-	*(c-2)='\0';
-	// add entry to hash table
-	hash_set (&MemInfo, key, val);
-      }
-    }
-    fclose (stream);
-    time(&now);
+static void my_meminfo (RESULT *result, RESULT *arg1)
+{
+  char *key, *val;
+  
+  if (parse_meminfo()<0) {
+    SetResult(&result, R_STRING, ""); 
+    return;
   }
   
   key=R2S(arg1);
   val=hash_get(&MemInfo, key);
   if (val==NULL) val="";
-
+  
   SetResult(&result, R_STRING, val); 
 }
 
