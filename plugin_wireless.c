@@ -1,4 +1,4 @@
-/* $Id: plugin_wireless.c,v 1.1 2004/04/07 08:29:05 hejl Exp $
+/* $Id: plugin_wireless.c,v 1.2 2004/04/17 13:05:58 nicowallmeier Exp $
  *
  * Wireless Extension plugin
  *
@@ -28,6 +28,9 @@
  *
  *
  * $Log: plugin_wireless.c,v $
+ * Revision 1.2  2004/04/17 13:05:58  nicowallmeier
+ * minor bugfix
+ *
  * Revision 1.1  2004/04/07 08:29:05  hejl
  * New plugin for wireless info
  *
@@ -514,8 +517,8 @@ static int check_socket() {
 
 static void save_result(RESULT *result, char* dev, char* key, int res) {
   char key_buffer[64];
-  qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev,key);
   char* val=NULL;
+  qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev,key);
   
   if (res<0) {
     SetResult(&result, R_STRING, ""); 

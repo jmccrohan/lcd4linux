@@ -1,4 +1,4 @@
-/* $Id: plugin_pop3.c,v 1.1 2004/04/08 11:59:26 reinelt Exp $
+/* $Id: plugin_pop3.c,v 1.2 2004/04/17 13:03:34 nicowallmeier Exp $
  *
  * Plugin to check POP3 mail accounts
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.2  2004/04/17 13:03:34  nicowallmeier
+ * minor bugfix
+ *
  * Revision 1.1  2004/04/08 11:59:26  reinelt
  * added plugin_pop3 from Javi
  *
@@ -118,12 +121,13 @@ static int getConfig (void)
 	
  	for (i =1;i <= MAX_NUM_ACCOUNTS; i++)
 	{
+		char *x;
 		sprintf(user,"user%d",i);
 		sprintf(password,"password%d",i);
 		sprintf(server,"server%d",i);
 		sprintf(port,"port%d",i);
 	
-		char *x = cfg_get (Section, server, "");
+		x = cfg_get (Section, server, "");
 		if (*x=='\0') 
 		{
 			info ("[POP3] No '%s.%s' entry from %s, disabling POP3 account #%d", Section, server, cfg_source(),i);
