@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.47 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: processor.c,v 1.48 2003/10/12 04:46:19 reinelt Exp $
  *
  * main data processing
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.48  2003/10/12 04:46:19  reinelt
+ *
+ *
+ * first try to integrate the Evaluator into a display driver (MatrixOrbital here)
+ * small warning in processor.c fixed (thanks to Zachary Giles)
+ * workaround for udelay() on alpha (no msr.h avaliable) (thanks to Zachary Giles)
+ *
  * Revision 1.47  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -584,7 +591,7 @@ static void print_token (int token, char **p, char *start)
 
   case T_EXEC:
     i = (token>>8)-'0';
-    *p+=sprintf (*p, "%.*s",cols-(*p-start), exec[i].s);
+    *p+=sprintf (*p, "%.*s",cols-(int)(*p-start), exec[i].s);
     break;
     
   default:

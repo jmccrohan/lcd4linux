@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.45 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.46 2003/10/12 04:46:19 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.46  2003/10/12 04:46:19  reinelt
+ *
+ *
+ * first try to integrate the Evaluator into a display driver (MatrixOrbital here)
+ * small warning in processor.c fixed (thanks to Zachary Giles)
+ * workaround for udelay() on alpha (no msr.h avaliable) (thanks to Zachary Giles)
+ *
  * Revision 1.45  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -214,6 +221,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "client.h"
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
@@ -403,6 +411,89 @@ int MO_clear2 (int full)
 }
 
 
+static void client_contrast (RESULT *result, RESULT *arg1)
+{
+  char buffer[4];
+  double contrast;
+
+  contrast=R2N(arg1);
+  if (contrast<0  ) contrast=0;
+  if (contrast>255) contrast=255;
+  snprintf (buffer, 4, "\376P%c", (int)contrast);
+  MO_write (buffer, 3);
+  
+  SetResult(&result, R_NUMBER, &contrast); 
+}
+
+
+static void client_backlight (RESULT *result, RESULT *arg1)
+{
+  char buffer[4];
+  double backlight;
+
+  backlight=R2N(arg1);
+  if (backlight<-1  ) backlight=-1;
+  if (backlight>255) backlight=255;
+  if (backlight<0) {
+    // backlight off
+    snprintf (buffer, 3, "\376F");
+    MO_write (buffer, 2);
+  } else {
+    // backlight on for n minutes
+    snprintf (buffer, 4, "\376B%c", (int)backlight);
+    MO_write (buffer, 3);
+  }
+  SetResult(&result, R_NUMBER, &backlight); 
+}
+
+
+static void client_gpo (RESULT *result, RESULT *arg1, RESULT *arg2)
+{
+  int num;
+  double val;
+  char cmd[3]="\376";
+  // Fixme
+  int protocol=2;
+  
+  num=R2N(arg1);
+  val=R2N(arg2);
+  
+  if (num<0.0) num=0.0;
+  if (val<0.0) val=0.0;
+  
+  switch (protocol) {
+  case 1:
+    if (num==0) {
+      if (val>=1.0) {
+	val=1.0;
+	MO_write ("\376W", 2);  // GPO on
+      } else {
+	val=0.0;
+	MO_write ("\376V", 2);  // GPO off
+      }
+    } else {
+      error("Fixme");
+      val=-1.0;
+    }
+    break;
+    
+  case 2:
+    if (val>=1.0) {
+      val=1.0;
+      cmd[1]='W';  // GPO on
+    } else {
+      val=0.0;
+      cmd[1]='V';  // GPO off
+    }
+    cmd[2]=(char)num;
+    MO_write (cmd, 3);
+    break;
+  }
+
+  SetResult(&result, R_NUMBER, &val); 
+}
+
+
 static int MO_init (LCD *Self, int protocol)
 {
   int i;  
@@ -498,6 +589,11 @@ static int MO_init (LCD *Self, int protocol)
   MO_write ("\376D", 2);  // line wrapping off
   MO_write ("\376R", 2);  // auto scroll off
 
+  // register as a client
+  AddFunction ("contrast",  1, client_contrast);
+  AddFunction ("backlight", 1, client_backlight);
+  AddFunction ("gpo",       2, client_gpo);
+
   return 0;
 }
 
@@ -565,7 +661,7 @@ static int MO_flush (int protocol)
   int row, col, pos1, pos2;
   int c, equal;
   int gpo;
-
+  
   bar_process(MO_define_char);
   
   for (row=0; row<Lcd.rows; row++) {
@@ -594,7 +690,7 @@ static int MO_flush (int protocol)
   }
   
   memcpy (FrameBuffer2, FrameBuffer1, Lcd.rows*Lcd.cols*sizeof(char));
-
+  
   switch (protocol) {
   case 1:
     if (GPO[0]) {
@@ -612,7 +708,7 @@ static int MO_flush (int protocol)
     }
     break;
   }
-
+  
   return 0;
 }
 
@@ -639,12 +735,12 @@ int MO_quit (void)
     free(FrameBuffer1);
     FrameBuffer1=NULL;
   }
-
+  
   if (FrameBuffer2) {
     free(FrameBuffer2);
     FrameBuffer2=NULL;
   }
-
+  
   return (0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.13 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: udelay.c,v 1.14 2003/10/12 04:46:19 reinelt Exp $
  *
  * short delays
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.14  2003/10/12 04:46:19  reinelt
+ *
+ *
+ * first try to integrate the Evaluator into a display driver (MatrixOrbital here)
+ * small warning in processor.c fixed (thanks to Zachary Giles)
+ * workaround for udelay() on alpha (no msr.h avaliable) (thanks to Zachary Giles)
+ *
  * Revision 1.13  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -120,12 +127,8 @@
 
 #ifdef HAVE_ASM_MSR_H
 #include <asm/msr.h>
-#else
-#warning asm/msr.h not found.
-#warning using hard-coded definition.
-#define rdtscl(low) \
-     __asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
 #endif
+
 #endif
 
 
@@ -231,15 +234,21 @@ static void getCPUinfo (int *hasTSC, double *MHz)
 
 void udelay_init (void)
 {
+#ifdef HAVE_ASM_MSR_H
+  
   int tsc;
   double mhz;
-  
+
   getCPUinfo (&tsc, &mhz);
   
   if (tsc && mhz>0.0) {
     ticks_per_usec=ceil(mhz);
     debug ("using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
-  } else {
+  } else
+
+#endif
+
+ {
     ticks_per_usec=0;
     debug ("using gettimeofday() delay loop");
   }
@@ -248,6 +257,8 @@ void udelay_init (void)
 
 void ndelay (unsigned long nsec)
 {
+
+#ifdef HAVE_ASM_MSR_H
 
   if (ticks_per_usec) {
 
@@ -261,8 +272,11 @@ void ndelay (unsigned long nsec)
       rdtscl(t2);
     } while ((t2-t1)<nsec);
     
-  } else {
-    
+  } else
+
+#endif
+
+ {    
     struct timeval now, end;
     
     gettimeofday (&end, NULL);
