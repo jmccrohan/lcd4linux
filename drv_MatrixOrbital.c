@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.13 2004/01/20 14:25:12 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.14 2004/01/20 15:32:49 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.14  2004/01/20 15:32:49  reinelt
+ * first version of Next Generation HD44780 (untested! but it compiles...)
+ * some cleanup in the other drivers
+ *
  * Revision 1.13  2004/01/20 14:25:12  reinelt
  * some reorganization
  * moved drv_generic to drv_generic_serial
@@ -100,8 +104,8 @@
 #include "widget_text.h"
 #include "widget_bar.h"
 #include "drv.h"
-#include "drv_generic_serial.h"
 #include "drv_generic_text.h"
+#include "drv_generic_serial.h"
 
 
 static char Name[]="MatrixOrbital";

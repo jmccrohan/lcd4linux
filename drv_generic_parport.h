@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.1 2004/01/20 14:35:38 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.2 2004/01/20 15:32:49 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.2  2004/01/20 15:32:49  reinelt
+ * first version of Next Generation HD44780 (untested! but it compiles...)
+ * some cleanup in the other drivers
+ *
  * Revision 1.1  2004/01/20 14:35:38  reinelt
  * drv_generic_parport added, code from parport.c
  *
@@ -73,7 +77,7 @@
 #ifndef _DRV_GENERIC_PARPORT_H_
 #define _DRV_GENERIC_PARPORT_H_
 
-int           drv_generic_parport_open       (void);
+int           drv_generic_parport_open       (char *section, char *driver);
 int           drv_generic_parport_close      (void);
 unsigned char drv_generic_parport_wire_ctrl  (char *name, unsigned char *deflt);
 unsigned char drv_generic_parport_wire_data  (char *name, unsigned char *deflt);

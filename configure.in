@@ -159,8 +159,8 @@ fi
 
 if test "$HD44780" = "yes"; then
    PARPORT="yes"
-#  DRIVERS="$DRIVERS HD44780.lo"
-   DRIVERS="$DRIVERS HD44780.o"
+#  DRIVERS="$DRIVERS HD44780.lo drv_HD44780.lo"
+   DRIVERS="$DRIVERS HD44780.o  drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[junk])
 fi
 
@@ -186,7 +186,7 @@ fi
 
 if test "$MATRIXORBITAL" = "yes"; then
 #  DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
-   DRIVERS="$DRIVERS MatrixOrbital.o drv_MatrixOrbital.o"
+   DRIVERS="$DRIVERS MatrixOrbital.o  drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[junk])
 fi
 

@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.2 2004/01/10 10:20:22 reinelt Exp $
+/* $Id: drv.c,v 1.3 2004/01/20 15:32:49 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.3  2004/01/20 15:32:49  reinelt
+ * first version of Next Generation HD44780 (untested! but it compiles...)
+ * some cleanup in the other drivers
+ *
  * Revision 1.2  2004/01/10 10:20:22  reinelt
  * new MatrixOrbital changes
  *
@@ -112,9 +116,11 @@ DRIVER *Driver[] = {
      #ifdef WITH_CWLINUX
      &Cwlinux,
      #endif
-     #ifdef WITH_HD44780
-     &HD44780,
-     #endif
+  */
+#ifdef WITH_HD44780
+  &drv_HD44780,
+#endif
+  /* Fixme
      #ifdef WITH_M50530
      &M50530,
      #endif

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.1 2004/01/20 14:35:38 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.2 2004/01/20 15:32:49 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.2  2004/01/20 15:32:49  reinelt
+ * first version of Next Generation HD44780 (untested! but it compiles...)
+ * some cleanup in the other drivers
+ *
  * Revision 1.1  2004/01/20 14:35:38  reinelt
  * drv_generic_parport added, code from parport.c
  *
@@ -83,6 +87,8 @@
 #include "drv_generic_parport.h"
 
 
+static char *Driver="";
+static char *Section="";
 static unsigned short Port=0;
 static char *PPdev=NULL;
 
@@ -94,19 +100,18 @@ static int PPfd=-1;
 #endif
 
 
-int drv_generic_parport_open (void)
+int drv_generic_parport_open (char *section, char *driver)
 {
   char *s, *e;
   
-#ifdef USE_OLD_UDELAY
-  if (cfg_number(NULL, "Delay", 0, 1, 1000000000, &loops_per_usec)<0) return -1;
-#else
-  udelay_init();
-#endif
+  Section=section;
+  Driver=driver;
   
-  s=cfg_get (NULL, "Port", NULL);
+  udelay_init();
+  
+  s=cfg_get (Section, "Port", NULL);
   if (s==NULL || *s=='\0') {
-    error ("parport: no 'Port' entry in %s", cfg_source());
+    error ("%s: no '%s.Port' entry from %s", Driver, Section, cfg_source());
     return -1;
   }
   PPdev=NULL;
@@ -115,7 +120,7 @@ int drv_generic_parport_open (void)
     Port=0;
     PPdev=s;
 #else
-    error ("parport: bad Port '%s' in %s", s, cfg_source());
+    error ("%s: bad %s.Port '%s' from %s", Driver, Section, s, cfg_source());
     return -1;
 #endif
   }
@@ -127,7 +132,7 @@ int drv_generic_parport_open (void)
     debug ("using ppdev %s", PPdev);
     PPfd=open(PPdev, O_RDWR);
     if (PPfd==-1) {
-      error ("parport: open(%s) failed: %s", PPdev, strerror(errno));
+      error ("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
       return -1;
     }
     
@@ -141,7 +146,7 @@ int drv_generic_parport_open (void)
 #endif
     
     if (ioctl(PPfd, PPCLAIM)) {
-      error ("parport: ioctl(%s, PPCLAIM) failed: %d %s", PPdev, errno, strerror(errno));
+      error ("%s: ioctl(%s, PPCLAIM) failed: %d %s", Driver, PPdev, errno, strerror(errno));
       return -1;
     }
   } else
@@ -152,12 +157,12 @@ int drv_generic_parport_open (void)
       debug ("using raw port 0x%x", Port);
       if ((Port+3)<=0x3ff) {
 	if (ioperm(Port, 3, 1)!=0) {
-	  error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
+	  error ("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
 	  return -1;
 	}
       } else {
 	if (iopl(3)!=0) {
-	  error ("parport: iopl(1) failed: %s", strerror(errno));
+	  error ("%s: iopl(1) failed: %s", Driver, strerror(errno));
 	  return -1;
 	}
       }
@@ -172,10 +177,10 @@ int drv_generic_parport_close (void)
   if (PPdev) {
     debug ("closing ppdev %s", PPdev);
     if (ioctl(PPfd, PPRELEASE)) {
-      error ("parport: ioctl(%s, PPRELEASE) failed: %s", PPdev, strerror(errno));
+      error ("%s: ioctl(%s, PPRELEASE) failed: %s", Driver, PPdev, strerror(errno));
     }
     if (close(PPfd)==-1) {
-      error ("parport: close(%s) failed: %s", PPdev, strerror(errno));
+      error ("%s: close(%s) failed: %s", Driver, PPdev, strerror(errno));
       return -1;
     }
   } else 
@@ -184,12 +189,12 @@ int drv_generic_parport_close (void)
       debug ("closing raw port 0x%x", Port);
       if ((Port+3)<=0x3ff) {
 	if (ioperm(Port, 3, 0)!=0) {
-	  error ("parport: ioperm(0x%x) failed: %s", Port, strerror(errno));
+	  error ("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
 	  return -1;
 	} 
       } else {
 	if (iopl(0)!=0) {
-	  error ("parport: iopl(0) failed: %s", strerror(errno));
+	  error ("%s: iopl(0) failed: %s", Driver, strerror(errno));
 	  return -1;
 	}
       }
@@ -205,7 +210,7 @@ unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
   char *s;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (NULL, wire, deflt);
+  s=cfg_get (Section, wire, deflt);
   if (strcasecmp(s,"STROBE")==0) {
     w=PARPORT_CONTROL_STROBE;
   } else if(strcasecmp(s,"AUTOFD")==0) {
@@ -217,25 +222,25 @@ unsigned char drv_generic_parport_wire_ctrl (char *name, unsigned char *deflt)
   } else if(strcasecmp(s,"GND")==0) {
     w=0;
   } else {
-    error ("parport: unknown signal <%s> for wire <%s>", s, name);
-    error ("         should be STROBE, AUTOFD, INIT, SELECT or GND");
+    error ("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
+    error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
     return 0xff;
   }
 
   if (w&PARPORT_CONTROL_STROBE) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", Driver, name);
   }
   if (w&PARPORT_CONTROL_AUTOFD) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", Driver, name);
   }
   if (w&PARPORT_CONTROL_INIT) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", Driver, name);
   }
   if (w&PARPORT_CONTROL_SELECT) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", Driver, name);
   }
   if (w==0) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:GND]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   }
   
   return w;
@@ -249,21 +254,21 @@ unsigned char drv_generic_parport_wire_data (char *name, unsigned char *deflt)
   char *s;
   
   snprintf (wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (NULL, wire, deflt);
+  s=cfg_get (Section, wire, deflt);
   if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
     w=s[2]-'0';
   } else if(strcasecmp(s,"GND")==0) {
     w=0;
   } else {
-    error ("parport: unknown signal <%s> for wire <%s>", s, name);
-    error ("         should be DB0..7 or GND");
+    error ("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
+    error ("%s: should be DB0..7 or GND", Driver);
     return 0xff;
   }
   
   if (w==0) {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:GND]", name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
-    info ("wiring: [DISPLAY:%s]<==>[PARPORT:DB%d]", name, w);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d]", Driver, name, w);
   }
   
   w=1<<w;

@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.2 2004/01/10 20:22:33 reinelt Exp $
+/* $Id: drv.h,v 1.3 2004/01/20 15:32:49 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.3  2004/01/20 15:32:49  reinelt
+ * first version of Next Generation HD44780 (untested! but it compiles...)
+ * some cleanup in the other drivers
+ *
  * Revision 1.2  2004/01/10 20:22:33  reinelt
  * added new function 'cfg_list()' (not finished yet)
  * added layout.c (will replace processor.c someday)
@@ -57,15 +61,5 @@ extern char *output;
 int drv_list  (void);
 int drv_init  (char *section, char *driver);
 int drv_quit  (void);
-
-/*
-  int drv_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons, int *gpos);
-  int drv_clear (int full);
-  int drv_put   (int row, int col, char *text);
-  int drv_bar   (int type, int row, int col, int max, int len1, int le2);
-  int drv_icon  (int num, int seq, int row, int col);
-  int drv_gpo   (int num, int val);
-  int drv_flush (void);
-*/
 
 #endif
