@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.6 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: parser.h,v 1.7 2001/02/16 08:23:09 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.7  2001/02/16 08:23:09  reinelt
+ *
+ * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
+ *
  * Revision 1.6  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -65,7 +69,7 @@ typedef enum {
   T_DISK_READ, T_DISK_WRITE, T_DISK_TOTAL, T_DISK_MAX,
   T_ETH_RX, T_ETH_TX, T_ETH_TOTAL, T_ETH_MAX,
   T_PPP_RX, T_PPP_TX, T_PPP_TOTAL, T_PPP_MAX,
-  T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
+  T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX, T_ISDN_CONNECT,
   T_SENSOR_1, T_SENSOR_2, T_SENSOR_3, T_SENSOR_4, T_SENSOR_5, 
   T_SENSOR_6, T_SENSOR_7, T_SENSOR_8, T_SENSOR_9
 } TOKEN;

@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.8 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: parser.c,v 1.9 2001/02/16 08:23:09 reinelt Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.9  2001/02/16 08:23:09  reinelt
+ *
+ * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
+ *
  * Revision 1.8  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -129,6 +133,7 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "io", T_ISDN_OUT,   C_ISDN,    1 },
 			  { "it", T_ISDN_TOTAL, C_ISDN,    1 },
 			  { "im", T_ISDN_MAX,   C_ISDN,    1 },
+			  { "ic", T_ISDN_CONNECT, C_ISDN,    0 },
 			  { "ti", T_PPP_RX,     C_PPP,     1 },
 			  { "to", T_PPP_TX,     C_PPP,     1 },
 			  { "tt", T_PPP_TOTAL,  C_PPP,     1 },

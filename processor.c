@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.11 2001/02/14 07:40:16 reinelt Exp $
+/* $Id: processor.c,v 1.12 2001/02/16 08:23:09 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.12  2001/02/16 08:23:09  reinelt
+ *
+ * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
+ *
  * Revision 1.11  2001/02/14 07:40:16  reinelt
  *
  * first (incomplete) GPO implementation
@@ -181,6 +185,8 @@ static double query (int token)
     return isdn.total;
   case T_ISDN_MAX:
     return isdn.max;
+  case T_ISDN_CONNECT:
+    return isdn.usage;
 
   case T_PPP_RX:
     return ppp.rx;
@@ -348,6 +354,12 @@ static void print_token (int token, char **p)
       *p+=sprintf (*p, "%5.0f", query(token));
     else
       *p+=sprintf (*p, " ----");
+    break;
+  case T_ISDN_CONNECT:
+    if (isdn.usage)
+      *p+=sprintf (*p, "*",);
+    else
+      *p+=sprintf (*p, " ");
     break;
   default:
       *p+=sprintf (*p, "%5.0f", query(token));

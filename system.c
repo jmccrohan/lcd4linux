@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.18 2000/11/17 10:36:23 reinelt Exp $
+/* $Id: system.c,v 1.19 2001/02/16 08:23:09 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.19  2001/02/16 08:23:09  reinelt
+ *
+ * new token 'ic' (ISDN connected) by Carsten Nau <info@cnau.de>
+ *
  * Revision 1.18  2000/11/17 10:36:23  reinelt
  *
  * fixed parsing of /proc/net/dev for 2.0 kernels
@@ -665,7 +669,9 @@ int PPP (int unit, int *rx, int *tx)
   static int fd=-2;
   struct ifpppstatsreq req;
   char buffer[16];
-  
+
+  static double junk=0;
+
   *rx=0;
   *tx=0;
 
@@ -689,9 +695,10 @@ int PPP (int unit, int *rx, int *tx)
   
   snprintf (buffer, sizeof(buffer), "ppp%d_rx", unit);
   *rx=smooth(buffer, 500, req.stats.p.ppp_ibytes);
-
   snprintf (buffer, sizeof(buffer), "ppp%d_tx", unit);
   *tx=smooth(buffer, 500, req.stats.p.ppp_obytes);
+  debug ("ppp_tx=%f smooth=%f", (double)(req.stats.p.ppp_obytes-junk), (double)*tx);
+  junk=req.stats.p.ppp_obytes;
 
   return 0;
 }

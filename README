@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.10 2000/11/28 16:46:11 reinelt Exp $
+# $Id: README,v 1.11 2001/02/16 08:23:09 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -171,6 +171,7 @@ Tokens:
   'io', ISDN bytes sent
   'it', ISDN bytes total (received+send)
   'im', ISDN bytes max (received, send)
+  'ic', ISDN connected (0=offline, 1=online)
   'ti', PPP bytes received
   'to', PPP bytes sent
   'tt', PPP bytes total (received+send)
