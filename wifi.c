@@ -1,4 +1,4 @@
-/* $Id: wifi.c,v 1.2 2003/11/28 18:34:55 nicowallmeier Exp $
+/* $Id: wifi.c,v 1.3 2003/12/01 07:08:51 reinelt Exp $
  *
  * WIFI specific functions
  *
@@ -25,6 +25,13 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.3  2003/12/01 07:08:51  reinelt
+ *
+ * Patches from Xavier:
+ *  - WiFi: make interface configurable
+ *  - "quiet" as an option from the config file
+ *  - ignore missing "MemShared" on Linux 2.6
+ *
  * Revision 1.2  2003/11/28 18:34:55  nicowallmeier
  * Minor bugfixes
  *
@@ -56,12 +63,7 @@
 #include "debug.h"
 #include "wifi.h"
 #include "filter.h"
-
-typedef struct {
-  int signal;
-  int link;
-  int noise;
-} CPS;
+#include "cfg.h"
 
 int Wifi (int *signal, int *link, int *noise)
 {
@@ -69,14 +71,18 @@ int Wifi (int *signal, int *link, int *noise)
   static int fd=-2;
   char buffer[4096];  
   char *p;
+
+  char *interface=cfg_get("Wifi.Interface","wlan0");
+
   *signal=0;
   *link=0;
   *noise=0;
+
   if (fd==-1) return -1;	
 	
   if (fd==-2) {
     fd = open("/proc/net/wireless", O_RDONLY);   // the real procfs file
-    // fd = open("/wireless", O_RDONLY);         // a fake file for testing
+    //fd = open("/wireless", O_RDONLY);         // a fake file for testing
     if (fd==-1) {
       error ("open(/proc/net/wireless) failed: %s", strerror(errno));
       return -1;
@@ -96,8 +102,9 @@ int Wifi (int *signal, int *link, int *noise)
     return -1;
   }
   
-  p=strstr(buffer, "wlan0");
+  p=strstr(buffer, interface);
   if (p!=NULL) {
+  // TODO : size of interface ?? 
     if (sscanf(p+13, "%d", &wl)!=1) { 
       error ("parse(/proc/net/wireless) failed: unknown format");
       fd=-1;

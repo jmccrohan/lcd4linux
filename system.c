@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.30 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: system.c,v 1.31 2003/12/01 07:08:51 reinelt Exp $
  *
  * system status retreivement
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.31  2003/12/01 07:08:51  reinelt
+ *
+ * Patches from Xavier:
+ *  - WiFi: make interface configurable
+ *  - "quiet" as an option from the config file
+ *  - ignore missing "MemShared" on Linux 2.6
+ *
  * Revision 1.30  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -412,8 +419,13 @@ int Ram (int *total, int *free, int *shared, int *buffered, int *cached)
     return -1;
   }
   if ((v3=parse_meminfo ("MemShared:", buffer))<0) {
+    // The "MemShared" entriy disappeared in Kernel 2.6...
+#if 0
     fd=-1;
     return -1;
+#else
+    v3=0;
+#endif
   }
   if ((v4=parse_meminfo ("Buffers:", buffer))<0) {
     fd=-1;

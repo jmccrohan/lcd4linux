@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.51 2003/11/16 09:45:49 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.52 2003/12/01 07:08:50 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.52  2003/12/01 07:08:50  reinelt
+ *
+ * Patches from Xavier:
+ *  - WiFi: make interface configurable
+ *  - "quiet" as an option from the config file
+ *  - ignore missing "MemShared" on Linux 2.6
+ *
  * Revision 1.51  2003/11/16 09:45:49  reinelt
  * Crystalfontz changes, small glitch in getopt() fixed
  *
@@ -524,6 +531,11 @@ int main (int argc, char *argv[])
     lcd_quit();
     pid_exit(PIDFILE);
     exit (0);
+  }
+
+  // check the conf to see if quiet startup is wanted 
+  if (!quiet) {
+    quiet = atoi(cfg_get("Quiet", "0"));
   }
   
   if (!quiet && hello()) {
