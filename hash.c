@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.9 2004/01/22 07:57:45 reinelt Exp $
+/* $Id: hash.c,v 1.10 2004/01/27 04:48:57 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.10  2004/01/27 04:48:57  reinelt
+ * bug with hash_age() fixed (thanks to Markus Keil for pointing this out)
+ *
  * Revision 1.9  2004/01/22 07:57:45  reinelt
  * several bugs fixed where segfaulting on layout>display
  * Crystalfontz driver optimized, 632 display already works
@@ -155,8 +158,7 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
   if (Item!=NULL) {
     if (Item->val) free (Item->val);
     Item->val = strdup(val);
-    gettimeofday(&(Item->time), NULL);
-    return Item;
+    goto hash_got_string;
   }
 
   // add entry
@@ -170,6 +172,7 @@ static HASH_ITEM* hash_set_string (HASH *Hash, char *key, char *val)
   Item->val   = strdup(val);
   Item->Slot  = NULL;
 
+ hash_got_string:
   // set timestamps
   gettimeofday(&Hash->time, NULL);
   Item->time=Hash->time;
