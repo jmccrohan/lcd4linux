@@ -1,4 +1,4 @@
-/* $Id: plugin_pop3.c,v 1.2 2004/04/17 13:03:34 nicowallmeier Exp $
+/* $Id: plugin_pop3.c,v 1.3 2004/05/20 07:14:46 reinelt Exp $
  *
  * Plugin to check POP3 mail accounts
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.3  2004/05/20 07:14:46  reinelt
+ * made all local functions static
+ *
  * Revision 1.2  2004/04/17 13:03:34  nicowallmeier
  * minor bugfix
  *
@@ -66,7 +69,7 @@
 #define MAX_NUM_ACCOUNTS	3
 //
 
-static struct check {
+struct check {
 	int	id;
 	char	*username;
 	char	*password;
@@ -79,13 +82,13 @@ static struct check {
 // ************************ PROTOTYPES  ********************************
 // list
 static struct check *check_node_alloc(void);
-void check_node_add(struct check **head, struct check *new_check);
-void check_destroy(struct check **head);
+static void check_node_add(struct check **head, struct check *new_check);
+static void check_destroy(struct check **head);
 // pop3
-void pop3_check_messages(struct check *hi,int verbose);
-void pop3_recv_crlf_terminated(int sockfd, char *buf, int size);
+static void pop3_check_messages(struct check *hi,int verbose);
+static void pop3_recv_crlf_terminated(int sockfd, char *buf, int size);
 // socket 
-int tcp_connect(struct check *hi);
+static int tcp_connect(struct check *hi);
 // ************************ GLOBAL ***********************************
 static char Section[] = "Plugin:POP3";
 static struct check	*head = NULL;
@@ -200,13 +203,13 @@ static struct check *check_node_alloc(void)
 	return new_check;
 }
 
- void check_node_add(struct check **head, struct check *new_check)
+static void check_node_add(struct check **head, struct check *new_check)
 {
 	new_check->next = *head ;
 	*head = new_check;
 }
 
-void check_destroy(struct check **head)
+static void check_destroy(struct check **head)
 {	
 	struct check *iter;
 	while (*head)
@@ -222,7 +225,7 @@ void check_destroy(struct check **head)
 }
 
 // ************************ POP3  ********************************
-void pop3_check_messages(struct check *hi,int verbose)
+static void pop3_check_messages(struct check *hi,int verbose)
 {
 	char				buf[BUFSIZE];
 	int					sockfd;
@@ -291,7 +294,7 @@ void pop3_check_messages(struct check *hi,int verbose)
 	close(sockfd);
 }
 
-void pop3_recv_crlf_terminated(int sockfd, char *buf, int size)
+static void pop3_recv_crlf_terminated(int sockfd, char *buf, int size)
 {
 /* receive one line server responses terminated with CRLF */
 	char			*pos;
@@ -303,7 +306,7 @@ void pop3_recv_crlf_terminated(int sockfd, char *buf, int size)
 }
 
 // ************************ SOCKET  ********************************
-int tcp_connect(struct check *hi)
+static int tcp_connect(struct check *hi)
 {
 	struct sockaddr_in		addr;
 	struct hostent			*he = gethostbyname(hi->server);
