@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.26 2004/04/08 11:59:26 reinelt Exp $
+/* $Id: plugin.c,v 1.27 2004/04/09 06:09:55 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,8 +22,8 @@
  *
  *
  * $Log: plugin.c,v $
- * Revision 1.26  2004/04/08 11:59:26  reinelt
- * added plugin_pop3 from Javi
+ * Revision 1.27  2004/04/09 06:09:55  reinelt
+ * big configure rework from Xavier
  *
  * Revision 1.25  2004/04/07 08:29:05  hejl
  * New plugin for wireless info
@@ -161,97 +161,167 @@
 
 
 // Prototypes
-int plugin_init_math (void);
-int plugin_init_string (void);
-int plugin_init_cfg (void);
-int plugin_init_uname (void);
-int plugin_init_loadavg (void);
-int plugin_init_proc_stat (void);
-int plugin_init_cpuinfo (void);
-int plugin_init_meminfo (void);
-int plugin_init_netdev (void);
-int plugin_init_ppp (void);
-int plugin_init_dvb (void);
-int plugin_init_apm (void);
-int plugin_init_i2c_sensors (void);
-int plugin_init_exec (void);
-int plugin_init_xmms (void);
-int plugin_init_imon(void);
-int plugin_init_mysql(void);
-int plugin_init_seti(void);
-int plugin_init_wireless(void);
-int plugin_init_pop3(void);
-
-
-void plugin_exit_math (void);
+int  plugin_init_math   (void);
+void plugin_exit_math   (void);
+int  plugin_init_string (void);
 void plugin_exit_string (void);
-void plugin_exit_cfg (void);
-void plugin_exit_uname (void);
-void plugin_exit_loadavg (void);
-void plugin_exit_proc_stat (void);
-void plugin_exit_cpuinfo (void);
-void plugin_exit_meminfo (void);
-void plugin_exit_netdev (void);
-void plugin_exit_ppp (void);
-void plugin_exit_dvb (void);
+int  plugin_init_cfg    (void);
+void plugin_exit_cfg    (void);
+
+int  plugin_init_apm (void);
 void plugin_exit_apm (void);
-void plugin_exit_i2c_sensors (void);
+int  plugin_init_cpuinfo (void);
+void plugin_exit_cpuinfo (void);
+int  plugin_init_dvb (void);
+void plugin_exit_dvb (void);
+int  plugin_init_exec (void);
 void plugin_exit_exec (void);
-void plugin_exit_xmms (void);
+int  plugin_init_i2c_sensors (void);
+void plugin_exit_i2c_sensors (void);
+int  plugin_init_imon(void);
 void plugin_exit_imon(void);
+int  plugin_init_loadavg (void);
+void plugin_exit_loadavg (void);
+int  plugin_init_meminfo (void);
+void plugin_exit_meminfo (void);
+int  plugin_init_mysql(void);
 void plugin_exit_mysql(void);
+int  plugin_init_netdev (void);
+void plugin_exit_netdev (void);
+int  plugin_init_pop3 (void);
+void plugin_exit_pop3 (void);
+int  plugin_init_ppp (void);
+void plugin_exit_ppp (void);
+int  plugin_init_proc_stat (void);
+void plugin_exit_proc_stat (void);
+int  plugin_init_seti(void);
 void plugin_exit_seti(void);
+int  plugin_init_uname (void);
+void plugin_exit_uname (void);
+int  plugin_init_wireless(void);
 void plugin_exit_wireless(void);
-void plugin_exit_pop3(void);
+int  plugin_init_xmms (void);
+void plugin_exit_xmms (void);
+
 
 int plugin_init (void)
 {
   plugin_init_math();
   plugin_init_string();
   plugin_init_cfg();
-  plugin_init_uname();
-  plugin_init_loadavg();
-  plugin_init_proc_stat();
-  plugin_init_cpuinfo();
-  plugin_init_meminfo();
-  plugin_init_netdev();
-  plugin_init_ppp();
-  plugin_init_dvb();
-  plugin_init_apm();
-  plugin_init_i2c_sensors();
-  plugin_init_exec();
-  plugin_init_xmms();
-  plugin_init_imon();
-  plugin_init_mysql();
-  plugin_init_seti();
-  plugin_init_wireless();
-  plugin_init_pop3();
   
+#ifdef PLUGIN_APM
+  plugin_init_apm();
+#endif
+#ifdef PLUGIN_CPUINFO
+  plugin_init_cpuinfo();
+#endif
+#ifdef PLUGIN_DVB
+  plugin_init_dvb();
+#endif
+#ifdef PLUGIN_EXEC
+  plugin_init_exec();
+#endif
+#ifdef PLUGIN_I2C_SENSORS
+  plugin_init_i2c_sensors();
+#endif
+#ifdef PLUGIN_IMON
+  plugin_init_imon();
+#endif
+#ifdef PLUGIN_LOADAVG
+  plugin_init_loadavg();
+#endif
+#ifdef PLUGIN_MEMINFO
+  plugin_init_meminfo();
+#endif
+#ifdef PLUGIN_MYSQL
+  plugin_init_mysql();
+#endif
+#ifdef PLUGIN_NETDEV
+  plugin_init_netdev();
+#endif
+#ifdef PLUGIN_POP3
+  plugin_init_pop3();
+#endif
+#ifdef PLUGIN_PPP
+  plugin_init_ppp();
+#endif
+#ifdef PLUGIN_PROC_STAT
+  plugin_init_proc_stat();
+#endif
+#ifdef PLUGIN_SETI
+  plugin_init_seti();
+#endif
+#ifdef PLUGIN_UNAME
+  plugin_init_uname();
+#endif
+#ifdef PLUGIN_WIRELESS
+  plugin_init_wireless();
+#endif
+#ifdef PLUGIN_XMMS
+  plugin_init_xmms();
+#endif
   return 0;
 }
 
 void plugin_exit(void) {
-  plugin_exit_math();
-  plugin_exit_string();
-  plugin_exit_cfg();
-  plugin_exit_uname();
-  plugin_exit_loadavg();
-  plugin_exit_proc_stat();
-  plugin_exit_cpuinfo();
-  plugin_exit_meminfo();
-  plugin_exit_netdev();
-  plugin_exit_ppp();
-  plugin_exit_dvb();
+#ifdef PLUGIN_APM
   plugin_exit_apm();
-  plugin_exit_i2c_sensors();
+#endif
+#ifdef PLUGIN_CPUINFO
+  plugin_exit_cpuinfo();
+#endif
+#ifdef PLUGIN_DVB
+  plugin_exit_dvb();
+#endif
+#ifdef PLUGIN_EXEC
   plugin_exit_exec();
-  plugin_exit_xmms();
-  plugin_exit_imon();	
-  plugin_exit_mysql();	
-  plugin_exit_seti();	
-  plugin_exit_wireless();
+#endif
+#ifdef PLUGIN_I2C_SENSORS
+  plugin_exit_i2c_sensors();
+#endif
+#ifdef PLUGIN_IMON
+  plugin_exit_imon();
+#endif
+#ifdef PLUGIN_LOADAVG
+  plugin_exit_loadavg();
+#endif
+#ifdef PLUGIN_MEMINFO
+  plugin_exit_meminfo();
+#endif
+#ifdef PLUGIN_MYSQL
+  plugin_exit_mysql();
+#endif
+#ifdef PLUGIN_NETDEV
+  plugin_exit_netdev();
+#endif
+#ifdef PLUGIN_POP3
   plugin_exit_pop3();
-  
+#endif
+#ifdef PLUGIN_PPP
+  plugin_exit_ppp();
+#endif
+#ifdef PLUGIN_PROC_STAT
+  plugin_exit_proc_stat();
+#endif
+#ifdef PLUGIN_SETI
+  plugin_exit_seti();
+#endif
+#ifdef PLUGIN_UNAME
+  plugin_exit_uname();
+#endif
+#ifdef PLUGIN_WIRELESS
+  plugin_exit_wireless();
+#endif
+#ifdef PLUGIN_XMMS
+  plugin_exit_xmms();
+#endif
+
+  plugin_exit_cfg();
+  plugin_exit_string();
+  plugin_exit_math();
+
+
   DeleteFunctions();
   DeleteVariables();
 }

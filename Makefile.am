@@ -3,6 +3,7 @@
 AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
 DRIVERS=@DRIVERS@
+PLUGINS=@PLUGINS@
 
 bin_PROGRAMS = lcd4linux
 #lib_LTLIBRARIES = liblcd4linux.la
@@ -10,10 +11,10 @@ bin_PROGRAMS = lcd4linux
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
 
 lcd4linux_LDFLAGS = $(X_LIBS)
-lcd4linux_LDADD   = @DRIVERS@ @DRVLIBS@
+lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 #lcd4linux_LDADD  = liblcd4linux.la @DRVLIBS@ 
 #remove next line for liblcd4linux
-lcd4linux_DEPENDENCIES = @DRIVERS@
+lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 
 lcd4linux_SOURCES =         \
 lcd4linux.c                 \
@@ -38,24 +39,7 @@ widget_icon.c widget_icon.h \
 plugin.c      plugin.h      \
 plugin_math.c               \
 plugin_string.c             \
-plugin_cfg.c                \
-plugin_uname.c              \
-plugin_loadavg.c            \
-plugin_proc_stat.c          \
-plugin_cpuinfo.c            \
-plugin_meminfo.c            \
-plugin_netdev.c             \
-plugin_ppp.c                \
-plugin_dvb.c                \
-plugin_apm.c                \
-plugin_i2c_sensors.c        \
-plugin_imon.c               \
-plugin_exec.c               \
-plugin_xmms.c               \
-plugin_mysql.c              \
-plugin_wireless.c           \
-plugin_seti.c               \
-plugin_pop3.c
+plugin_cfg.c
 
 #liblcd4linux_la_DEPENDENCIES = @DRIVERS@
 #liblcd4linux_la_LDFLAGS = -version-info 9:12:9
@@ -63,42 +47,66 @@ plugin_pop3.c
 
 #liblcd4linux_la_SOURCES =
 
-EXTRA_lcd4linux_SOURCES= \
-drv_generic_text.c    drv_generic_text.h \
-drv_generic_graphic.c drv_generic_graphic.h \
-drv_generic_serial.c  drv_generic_serial.h \
-drv_generic_parport.c drv_generic_parport.h \
-BeckmannEgle.c \
-drv_Crystalfontz.c \
-drv_Cwlinux.c \
-drv_HD44780.c \
-drv_M50530.c \
-drv_T6963.c \
-drv_USBLCD.c \
-drv_MatrixOrbital.c \
-MilfordInstruments.c \
-PalmPilot.c \
-Raster.c \
-drv_X11.c \
-Text.c \
-font_6x8.h
+EXTRA_lcd4linux_SOURCES=    \
+drv_generic_text.c          \
+drv_generic_text.h          \
+drv_generic_graphic.c       \
+drv_generic_graphic.h       \
+drv_generic_serial.c        \
+drv_generic_serial.h        \
+drv_generic_parport.c       \
+drv_generic_parport.h       \
+BeckmannEgle.c              \
+drv_Crystalfontz.c          \
+drv_Cwlinux.c               \
+drv_HD44780.c               \
+drv_M50530.c                \
+drv_T6963.c                 \
+drv_USBLCD.c                \
+drv_MatrixOrbital.c         \
+MilfordInstruments.c        \
+PalmPilot.c                 \
+Raster.c                    \
+drv_X11.c                   \
+Text.c                      \
+font_6x8.h                  \
+                            \
+plugin_apm.c                \
+plugin_cpuinfo.c            \
+plugin_dvb.c                \
+plugin_exec.c               \
+plugin_i2c_sensors.c        \
+plugin_imon.c               \
+plugin_loadavg.c            \
+plugin_meminfo.c            \
+plugin_mysql.c              \
+plugin_netdev.c             \
+plugin_pop3.c               \
+plugin_ppp.c                \
+plugin_proc_stat.c          \
+plugin_seti.c               \
+plugin_uname.c              \
+plugin_wireless.c           \
+plugin_xmms.c
 
-EXTRA_DIST = \
-lcd4linux.conf.sample \
-lcd4kde.conf \
-lcd4linux.kdelnk \
-lcd4linux.xpm \
-lcd4linux.lsm \
-curses.m4 \
-AUTHORS \
-CREDITS \
-FAQ \
-NEWS \
-TODO \
-README \
-README.Rows \
-README.Tokens \
-README.Drivers \
-README.Plugins \
-README.KDE \
+
+EXTRA_DIST =                \
+lcd4linux.conf.sample       \
+lcd4kde.conf                \
+lcd4linux.kdelnk            \
+lcd4linux.xpm               \
+lcd4linux.lsm               \
+curses.m4                   \
+AUTHORS                     \
+CREDITS                     \
+FAQ                         \
+NEWS                        \
+TODO                        \
+README                      \
+README.Rows                 \
+README.Tokens               \
+README.Drivers              \
+README.Plugins              \
+README.KDE                  \
 plugin_sample.c
+

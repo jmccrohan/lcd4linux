@@ -58,9 +58,6 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
-/* Define to 1 if you have the `memmove' function. */
-#undef HAVE_MEMMOVE
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -229,6 +226,57 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* apm plugin */
+#undef PLUGIN_APM
+
+/* cpuinfo plugin */
+#undef PLUGIN_CPUINFO
+
+/* dvb plugin */
+#undef PLUGIN_DVB
+
+/* exec plugin */
+#undef PLUGIN_EXEC
+
+/* i2c sensors plugin */
+#undef PLUGIN_I2C_SENSORS
+
+/* imon plugin */
+#undef PLUGIN_IMON
+
+/* loadavg plugin */
+#undef PLUGIN_LOADAVG
+
+/* meminfo plugin */
+#undef PLUGIN_MEMINFO
+
+/* mysql plugin */
+#undef PLUGIN_MYSQL
+
+/* netdev plugin */
+#undef PLUGIN_NETDEV
+
+/* POP3 plugin */
+#undef PLUGIN_POP3
+
+/* ppp plugin */
+#undef PLUGIN_PPP
+
+/* proc_stat plugin */
+#undef PLUGIN_PROC_STAT
+
+/* seti plugin */
+#undef PLUGIN_SETI
+
+/* uname plugin */
+#undef PLUGIN_UNAME
+
+/* wireless plugin */
+#undef PLUGIN_WIRELESS
+
+/* xmms plugin */
+#undef PLUGIN_XMMS
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
