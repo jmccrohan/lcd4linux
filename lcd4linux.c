@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.42 2003/08/14 03:47:40 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.43 2003/08/17 16:37:39 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.43  2003/08/17 16:37:39  reinelt
+ * more icon framework
+ *
  * Revision 1.42  2003/08/14 03:47:40  reinelt
  * remove PID file if driver initialisation fails
  *
@@ -263,7 +266,7 @@ int hello (void)
 		    "(c) M.Reinelt",
 		    NULL };
   
-  lcd_query (&y, &x, NULL, NULL, NULL, NULL);
+  lcd_query (&y, &x, NULL, NULL, NULL, NULL, NULL);
   
   flag=0;
   for (i=0; line1[i]; i++) {

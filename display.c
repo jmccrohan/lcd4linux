@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.36 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: display.c,v 1.37 2003/08/17 16:37:39 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.37  2003/08/17 16:37:39  reinelt
+ * more icon framework
+ *
  * Revision 1.36  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -305,17 +308,18 @@ int lcd_init (char *driver)
   return -1;
 }
 
-int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos)
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons, int *gpos)
 {
   if (Lcd==NULL)
     return -1;
   
-  if (rows) *rows=Lcd->rows;
-  if (cols) *cols=Lcd->cols;
-  if (xres) *xres=Lcd->xres;
-  if (yres) *yres=Lcd->yres;
-  if (bars) *bars=Lcd->bars;
-  if (gpos) *gpos=Lcd->gpos;
+  if (rows)  *rows=Lcd->rows;
+  if (cols)  *cols=Lcd->cols;
+  if (xres)  *xres=Lcd->xres;
+  if (yres)  *yres=Lcd->yres;
+  if (bars)  *bars=Lcd->bars;
+  if (icons) *icons=Lcd->icons;
+  if (gpos)  *gpos=Lcd->gpos;
 
   return 0;
 }

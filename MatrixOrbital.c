@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.29 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.30 2003/08/17 16:37:39 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.30  2003/08/17 16:37:39  reinelt
+ * more icon framework
+ *
  * Revision 1.29  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -173,6 +176,7 @@ static LCD Lcd;
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
+static int Icons;
 static int GPO;
 
 static char *FrameBuffer1=NULL;
@@ -292,7 +296,7 @@ int MO_clear2 (int full)
 static int MO_init (LCD *Self, int protocol)
 {
   char *port;
-  char *speed;
+  char *s, *e;
 
   Lcd=*Self;
 
@@ -316,9 +320,9 @@ static int MO_init (LCD *Self, int protocol)
   }
   Port=strdup(port);
 
-  speed=cfg_get("Speed","19200");
+  s=cfg_get("Speed","19200");
   
-  switch (atoi(speed)) {
+  switch (atoi(s)) {
   case 1200:
     Speed=B1200;
     break;
@@ -332,16 +336,27 @@ static int MO_init (LCD *Self, int protocol)
     Speed=B19200;
     break;
   default:
-    error ("MatrixOrbital: unsupported speed '%s' in %s", speed, cfg_file());
+    error ("MatrixOrbital: unsupported speed '%s' in %s", s, cfg_file());
     return -1;
   }    
 
-  debug ("using port %s at %d baud", Port, atoi(speed));
+  debug ("using port %s at %d baud", Port, atoi(s));
 
   Device=MO_open();
   if (Device==-1) return -1;
 
-  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+  s=cfg_get("Icons", "0");
+  if ((Icons=strtol(s, &e, 0))==0 || *e!='\0' || (Icons<0 && Icons>8)) {
+    error ("MatrixOrbital: bad Iconss '%s' in %s, must be between 0 and 8", s, cfg_file());
+    return -1;
+  }    
+  if (Icons>0) {
+    info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+
+  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
@@ -392,6 +407,13 @@ int MO_put (int row, int col, char *text)
 int MO_bar (int type, int row, int col, int max, int len1, int len2)
 {
   return bar_draw (type, row, col, max, len1, len2);
+}
+
+
+int MO_icon (int num, int row, int col, unsigned char *bitmap)
+{
+  // Fixme: ToDo!!
+  return 0;
 }
 
 
@@ -504,11 +526,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  1,
     init:  MO_init1,
     clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush1,
     quit:  MO_quit 
@@ -519,11 +543,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  1,
     init:  MO_init1,
     clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush1,
     quit:  MO_quit 
@@ -534,11 +560,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  1,
     init:  MO_init1,
     clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush1,
     quit:  MO_quit 
@@ -549,11 +577,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  1,
     init:  MO_init1,
     clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush1,
     quit:  MO_quit 
@@ -564,11 +594,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  1,
     init:  MO_init1,
     clear: MO_clear1,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush1,
     quit:  MO_quit 
@@ -579,11 +611,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  6,
     init:  MO_init2,
     clear: MO_clear2,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush2,
     quit:  MO_quit 
@@ -594,11 +628,13 @@ LCD MatrixOrbital[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  6,
     init:  MO_init2,
     clear: MO_clear2,
     put:   MO_put,
     bar:   MO_bar,
+    icon:  MO_icon,
     gpo:   MO_gpo,
     flush: MO_flush2,
     quit:  MO_quit 

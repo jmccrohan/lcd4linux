@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.17 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: display.h,v 1.18 2003/08/17 16:37:39 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.18  2003/08/17 16:37:39  reinelt
+ * more icon framework
+ *
  * Revision 1.17  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -119,7 +122,7 @@ typedef struct {
 
 int lcd_list  (void);
 int lcd_init  (char *driver);
-int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos);
+int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *icons, int *gpos);
 int lcd_clear (int full);
 int lcd_put   (int row, int col, char *text);
 int lcd_bar   (int type, int row, int col, int max, int len1, int le2);

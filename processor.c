@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.35 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: processor.c,v 1.36 2003/08/17 16:37:39 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.36  2003/08/17 16:37:39  reinelt
+ * more icon framework
+ *
  * Revision 1.35  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -193,11 +196,12 @@
 #include "exec.h"
 
 #define ROWS 64
+#define ICONS 8
 #define GPOS 16
 
 static char *row[ROWS+1];
 static int   gpo[GPOS+1];
-static int   rows, cols, xres, yres, supported_bars, gpos;
+static int   rows, cols, xres, yres, supported_bars, icons, gpos;
 static int   lines, scroll, turn;
 static int   token_usage[256]={0,};
 
@@ -729,16 +733,20 @@ void process_init (void)
   load.overload=atof(cfg_get("overload","2.0"));
 
 
-  lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &gpos);
+  lcd_query (&rows, &cols, &xres, &yres, &supported_bars, &icons, &gpos);
   if (rows>ROWS) {
     error ("%d rows exceeds limit, reducing to %d rows", rows, ROWS);
     rows=ROWS;
+  }
+  if (icons>ICONS) {
+    error ("%d icons exceeds limit, reducing to %d icons", icons, ICONS);
+    icons=ICONS;
   }
   if (gpos>GPOS) {
     error ("%d gpos exceeds limit, reducing to %d gpos", gpos, GPOS);
     gpos=GPOS;
   }
-  debug ("Display: %d rows, %d columns, %dx%d pixels, %d GPOs", rows, cols, xres, yres, gpos);
+  debug ("Display: %d rows, %d columns, %dx%d pixels, %d icons, %d GPOs", rows, cols, xres, yres, icons, gpos);
 
 
   lines=atoi(cfg_get("Rows","1"));
