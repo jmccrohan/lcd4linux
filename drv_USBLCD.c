@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.17 2004/10/02 09:31:58 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.18 2004/12/22 20:24:02 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.18  2004/12/22 20:24:02  reinelt
+ * T6963 fix for displays > 8 rows
+ *
  * Revision 1.17  2004/10/02 09:31:58  reinelt
  * USBLCD driver modified to use libusb
  *
@@ -197,8 +200,8 @@ static int drv_UL_open (void)
 
   for (bus = busses; bus; bus = bus->next) {
     for (dev = bus->devices; dev; dev = dev->next) {
-      if (((dev->descriptor.idVendor  == USBLCD_VENDOR) ||
-	   (dev->descriptor.idVendor  == USBLCD_VENDOR2)) &&
+      if (((dev->descriptor.idVendor == USBLCD_VENDOR) ||
+	   (dev->descriptor.idVendor == USBLCD_VENDOR2)) &&
 	  (dev->descriptor.idProduct == USBLCD_DEVICE)) {
 	
 	unsigned int v = dev->descriptor.bcdDevice;
@@ -244,7 +247,7 @@ static void drv_UL_send ()
   
   if (use_libusb) {
 #ifdef HAVE_USB_H
-    // Fixme: ep?
+    // Fixme: Endpoint hardcoded to 1 ???
     usb_bulk_write(lcd, 1, Buffer, BufPtr-Buffer, 1000);
 #endif
   } else {

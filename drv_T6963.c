@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.12 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.13 2004/12/22 20:24:02 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.13  2004/12/22 20:24:02  reinelt
+ * T6963 fix for displays > 8 rows
+ *
  * Revision 1.12  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -354,35 +357,60 @@ static void drv_T6_blit(const int row, const int col, const int height, const in
   int i, j, e, m;
   int r, c;
 
-  for (r=row; r<row+height; r++) {
-    for (c=col; c<col+width; c++) {
-      unsigned char mask = 1<<(XRES-1-c%XRES);
-      if (drv_generic_graphic_FB[r*LCOLS+c]) {
+  for (r = row; r < row + height; r++) {
+    for (c = col; c < col + width; c++) {
+      unsigned char mask = 1 << (XRES - 1 - c % XRES);
+      if (drv_generic_graphic_FB[r * LCOLS + c]) {
 	/* set bit */
-	Buffer1[(r*DCOLS+c)/XRES] |=  mask;
+	Buffer1[(r * DCOLS + c) / XRES] |=  mask;
       } else {
 	/* clear bit */
-	Buffer1[(r*DCOLS+c)/XRES] &= ~mask;
+	Buffer1[(r * DCOLS + c) / XRES] &= ~mask;
       }
     }
   }
   
+  /* upper half */
+
   /* max address */
-  m=((row+height-1)*DCOLS+col+width)/XRES;
-  
-  for (i=(row*DCOLS+col)/XRES; i<=m; i++) {
-    if (Buffer1[i]==Buffer2[i]) continue;
-    for (j=i, e=0; i<=m; i++) {
-      if (Buffer1[i]==Buffer2[i]) {
-	if (++e>4) break;
+  if (row + height - 1 < 64) {
+    m = ((row + height - 1) * DCOLS + col + width) / XRES;
+  } else {
+    m = (                64 * DCOLS + col + width) / XRES;
+  }
+
+  for (i = (row * DCOLS + col) / XRES; i <= m; i++) {
+    if (Buffer1[i] == Buffer2[i]) continue;
+    for (j = i, e = 0; i <= m; i++) {
+      if (Buffer1[i] == Buffer2[i]) {
+	if (++e > 4) break;
       } else {
-	e=0;
+	e = 0;
       }
     }
-    memcpy (Buffer2+j, Buffer1+j, i-j-e+1);
-    drv_T6_copy (j, Buffer1+j, i-j-e+1);
+    memcpy (Buffer2 + j, Buffer1 + j, i - j - e + 1);
+    drv_T6_copy (j, Buffer1 + j, i - j - e + 1);
+  }
+  
+  /* lower half */
+
+  /* max address */
+  m = ((row + height - 1) * DCOLS + col + width) / XRES;
+
+  for (i = (64 * DCOLS + col) / XRES; i <= m; i++) {
+    if (Buffer1[i] == Buffer2[i]) continue;
+    for (j = i, e = 0; i <= m; i++) {
+      if (Buffer1[i] == Buffer2[i]) {
+	if (++e > 4) break;
+      } else {
+	e = 0;
+      }
+    }
+    memcpy (Buffer2 + j, Buffer1 + j, i - j - e + 1);
+    drv_T6_copy (j, Buffer1 + j, i - j - e + 1);
   }
 }
+
 
 static int drv_T6_start (const char *section)
 {
