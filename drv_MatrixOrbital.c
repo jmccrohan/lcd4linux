@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.37 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.38 2005/01/22 12:44:41 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.38  2005/01/22 12:44:41  reinelt
+ * MatrixOrbital backlight micro-fix
+ *
  * Revision 1.37  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -336,7 +339,7 @@ static int drv_MO_backlight (int backlight)
   if (backlight > 255) backlight = 255;
   Backlight = backlight;
 
-  if (backlight < 0) {
+  if (backlight <= 0) {
     /* backlight off */
     drv_generic_serial_write ("\376F", 2);
   } else {
@@ -357,7 +360,7 @@ static int drv_MO_gpo (int num, int val)
   if (num < 1) num = 1;
   if (num > 6) num = 6;
 
-  /* -1 is used to query the current PWM */
+  /* -1 is used to query the current GPO */
   if (val == -1) return GPO[num-1];
 
   if (val < 0) val = 0;
