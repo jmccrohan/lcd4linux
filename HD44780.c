@@ -1,8 +1,12 @@
-/* $Id: HD44780.c,v 1.29 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: HD44780.c,v 1.30 2003/08/12 05:10:31 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
  * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * Modification for 4-Bit mode
+ * 2003 Martin Hejl (martin@hejl.de)
+ *
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +24,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.30  2003/08/12 05:10:31  reinelt
+ * first version of HD44780 4Bit-Mode patch
+ *
  * Revision 1.29  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -158,7 +165,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -171,6 +177,20 @@
 #define YRES 8
 #define CHARS 8
 
+
+
+/* low level communication timings [nanoseconds]
+ * as these values differ from spec to spec,
+ * we use the worst-case values.
+ */
+
+#define T_CYCLE 600 // Enable cycle time
+#define T_PW    400 // Enable pulse width
+#define T_AS     20 // Address setup time
+#define T_H      40 // Data hold time
+// Fixme: hejl: genau verdreht??
+
+
 static LCD Lcd;
 
 static char Txt[4][40];
@@ -180,6 +200,41 @@ static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_RS;
 static unsigned char SIGNAL_ENABLE;
 static unsigned char SIGNAL_GPO;
+
+
+static void HD_nibble(unsigned char nibble)
+{
+
+  // clear ENABLE
+  // put data on DB1..DB4
+  // nibble already contains RS bit!
+  parport_data(nibble);
+
+  // Address set-up time
+  ndelay(T_AS);
+  
+  // rise ENABLE
+  parport_data(nibble | SIGNAL_ENABLE);
+  
+  // Enable pulse width
+  ndelay(T_PW);
+
+  // lower ENABLE
+  parport_data(nibble);
+}
+
+
+static void HD_byte (unsigned char data, unsigned char RS)
+{
+  // send high nibble of the data
+  HD_nibble (((data>>4)&0x0f)|RS);
+
+  // Make sure we honour T_CYCLE
+  ndelay(T_CYCLE-T_AS-T_PW);
+
+  // send low nibble of the data
+  HD_nibble((data&0x0f)|RS);
+}
 
 
 static void HD_command (unsigned char cmd, int delay)
@@ -192,11 +247,10 @@ static void HD_command (unsigned char cmd, int delay)
   parport_control (SIGNAL_RW | SIGNAL_RS, 0);
     
   // Address set-up time
-  ndelay(40);
+  ndelay(T_AS);
 
   // send command
-  // Enable cycle time = 230ns
-  parport_toggle (SIGNAL_ENABLE, 1, 230);
+  parport_toggle (SIGNAL_ENABLE, 1, T_PW);
     
   // wait for command completion
   udelay(delay);
@@ -413,6 +467,7 @@ int HD_flush (void)
 
 int HD_quit (void)
 {
+  info("HD44780: shutting down.");
   return parport_close();
 }
 
