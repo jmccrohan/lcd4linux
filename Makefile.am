@@ -27,6 +27,7 @@ pixmap.c pixmap.h \
 fontmap.c fontmap.h \
 Skeleton.c \
 MatrixOrbital.c \
+BeckmannEgle.c \
 HD44780.c \
 Raster.c \
 XWindow.c

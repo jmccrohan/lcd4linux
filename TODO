@@ -1,11 +1,16 @@
 ToDo-List / Wishlist for lcd4linux
 
-2000-04-04 reinelt
+2000-04-04 Michael Reinelt <reinelt@eunet.at>
 implement some sort of 'graphs', similar to bars, but with a time axis
 can be filled (made up of bars) or not (needs raster graphics)
 
-2000-04-04 reinelt
+2000-04-04 Michael Reinelt <reinelt@eunet.at>
 write a driver for PNG. This should be the first step towards a WWW-driver.
 
+2000-04-15 Thomas Skyt Jessen <thskyt@foni.net>
+show partition information (used, free, ...)
 
-$Id: TODO,v 1.1 2000/04/05 04:12:00 reinelt Exp $
+2000-04-25 Michael Mueller <m.mueller@netsystec.de>
+show process information            
+
+$Id: TODO,v 1.2 2000/04/28 05:19:55 reinelt Exp $

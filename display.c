@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.15 2000/04/12 08:05:45 reinelt Exp $
+/* $Id: display.c,v 1.16 2000/04/28 05:19:55 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.16  2000/04/28 05:19:55  reinelt
+ *
+ * first release of the Beckmann+Egle driver
+ *
  * Revision 1.15  2000/04/12 08:05:45  reinelt
  *
  * first version of the HD44780 driver
@@ -123,6 +127,7 @@
 
 extern LCD Skeleton[];
 extern LCD MatrixOrbital[];
+extern LCD BeckmannEgle[];
 extern LCD HD44780[];
 extern LCD Raster[];
 extern LCD XWindow[];
@@ -130,7 +135,8 @@ extern LCD XWindow[];
 FAMILY Driver[] = {
   { "Skeleton",        Skeleton },
   { "Matrix Orbital",  MatrixOrbital },
-  { "Parallel port",   HD44780 },
+  { "Beckmann+Egle",   BeckmannEgle },
+  { "HD 44780 based",  HD44780 },
   { "Raster",          Raster },
 #ifndef X_DISPLAY_MISSING
   { "X Window System", XWindow },
