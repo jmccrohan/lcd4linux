@@ -294,6 +294,22 @@ Widget Squirrel {
     }
 }
 
+Widget Lightning {
+    class 'icon'
+    speed 100
+    visible cpu('busy', 500)-50
+    bitmap {
+        row1 '...***'
+        row2 '..***.'
+        row3 '.***..'
+        row4 '.****.'
+        row5 '..**..'
+        row6 '.**...'
+        row7 '**....'
+        row8 '*.....'
+    }
+}
+
 Widget Test {
     class 'Text'
     expression '1234567890123456789012345678901234567890'
