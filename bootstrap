@@ -1,5 +1,5 @@
 aclocal && \
-libtoolize --copy --force && \
+# libtoolize --copy --force && \
 autoheader && \
 automake --add-missing --copy --foreign && \
 autoconf

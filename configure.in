@@ -9,14 +9,8 @@ AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_CPP
-AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-# Using `AC_PROG_RANLIB' is rendered 
-# obsolete by `AC_PROG_LIBTOOL' :-(
-AC_PROG_RANLIB
-#AC_PROG_LIBTOOL
 
 # dmalloc
 AM_WITH_DMALLOC
@@ -41,10 +35,9 @@ sinclude(drivers.m4)
 sinclude(plugins.m4)
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_HEADER_DIRENT
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
+AC_HEADER_STDC
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS(sys/io.h asm/io.h)
 AC_CHECK_HEADERS(linux/parport.h linux/ppdev.h)
 AC_CHECK_HEADERS(asm/msr.h)
@@ -71,12 +64,11 @@ AC_PROG_GCC_TRADITIONAL
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
 
-AC_FUNC_MEMCMP
-AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
+AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([dup2 gethostbyname gettimeofday memset pow putenv regcomp select socket sqrt strcasecmp strchr strdup strerror strncasecmp strndup strpbrk strrchr strstr strtol uname])
+AC_CHECK_FUNCS([dup2 floor gethostbyname gettimeofday memset pow putenv regcomp socket sqrt strcasecmp strchr strdup strerror strncasecmp strndup strpbrk strrchr strstr strtol uname])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -62,7 +62,6 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
-CPP = @CPP@
 CURSES_INCLUDEDIR = @CURSES_INCLUDEDIR@
 CURSES_LIBS = @CURSES_LIBS@
 DRVLIBS = @DRVLIBS@
@@ -73,7 +72,6 @@ LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 PLUGINLIBS = @PLUGINLIBS@
-RANLIB = @RANLIB@
 VERSION = @VERSION@
 
 AUTOMAKE_OPTIONS = gnu
@@ -131,8 +129,7 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS TODO aclocal.m4 config.guess config.h.in \
-config.sub configure configure.in install-sh ltmain.sh missing \
-mkinstalldirs
+config.sub configure configure.in install-sh missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
