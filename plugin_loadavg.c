@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.4 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.5 2004/03/08 18:46:21 hejl Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.5  2004/03/08 18:46:21  hejl
+ * Fixed bug introduced with "caching" the loadavg values
+ *
  * Revision 1.4  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -112,7 +115,7 @@ int getloadavg (double loadavg[], int nelem)
 
 static void my_loadavg (RESULT *result, RESULT *arg1)
 {
-  static int nelem;
+  static int nelem=-1;
   int index,age;
   static double loadavg[3];
   static struct timeval last_value;
@@ -122,7 +125,7 @@ static void my_loadavg (RESULT *result, RESULT *arg1)
   
   age = (now.tv_sec - last_value.tv_sec)*1000 + (now.tv_usec - last_value.tv_usec)/1000;
   // reread every 10 msec only
-  if (age==0 || age>10) {
+  if (nelem==-1 || age==0 || age>10) {
   
     nelem=getloadavg(loadavg, 3);
     if (nelem<0) {
