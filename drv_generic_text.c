@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.8 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.9 2004/02/07 13:45:23 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.9  2004/02/07 13:45:23  reinelt
+ * icon visibility patch #2 from Xavier
+ *
  * Revision 1.8  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -241,6 +244,7 @@ int drv_generic_text_icon_draw (WIDGET *W)
   static int icon_counter=0;
   WIDGET_ICON *Icon = W->data;
   int row, col;
+  char ascii;
   
   row = W->row;
   col = W->col;
@@ -267,12 +271,15 @@ int drv_generic_text_icon_draw (WIDGET *W)
     drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap+YRES*Icon->curmap);
   }
 
+  // use blank if invisible
+  ascii=Icon->visible?Icon->ascii:' ';
+
   // transfer icon into layout buffer
-  LayoutFB[row*LCOLS+col]=Icon->ascii;
-  
+  LayoutFB[row*LCOLS+col]=ascii;
+
   // maybe send icon to the display
-  if (DisplayFB[row*DCOLS+col]!=Icon->ascii) {
-    DisplayFB[row*DCOLS+col]=Icon->ascii;
+  if (DisplayFB[row*DCOLS+col]!=ascii) {
+    DisplayFB[row*DCOLS+col]=ascii;
     drv_generic_text_real_goto (row, col);
     drv_generic_text_real_write (DisplayFB+row*DCOLS+col, 1);
   }

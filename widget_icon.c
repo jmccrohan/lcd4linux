@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.5 2004/02/04 19:11:44 reinelt Exp $
+/* $Id: widget_icon.c,v 1.6 2004/02/07 13:45:23 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.6  2004/02/07 13:45:23  reinelt
+ * icon visibility patch #2 from Xavier
+ *
  * Revision 1.5  2004/02/04 19:11:44  reinelt
  * icon visibility patch from Xavier
  *
@@ -128,14 +131,10 @@ void widget_icon_update (void *Self)
     DelResult(&result);
   }  
   
-  if (Icon->visible) {  
   // rotate icon bitmap
   Icon->curmap++;
   if (Icon->curmap >= Icon->maxmap)
     Icon->curmap=0;
-  } else {
-    Icon->curmap=0;     // FIXME : put an emply map here !
-  }
   
   // finally, draw it!
   if (W->class->draw)
@@ -174,10 +173,6 @@ int widget_icon_init (WIDGET *Self)
     error ("Icon %s has no speed, using '100'", Self->name);
     Icon->speed_expr="100";
   }
-  if (Icon->visible_expr==NULL || *Icon->visible_expr=='\0') {
-    error ("Icon %s has no visible atribute, using '1'", Self->name);
-    Icon->visible_expr="1";
-  }  
   
   // read bitmap
   widget_icon_read_bitmap (section, Icon);
