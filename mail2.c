@@ -1,4 +1,4 @@
-/* $Id: mail2.c,v 1.1 2001/03/14 13:19:29 ltoetsch Exp $
+/* $Id: mail2.c,v 1.2 2001/03/15 11:10:53 ltoetsch Exp $
  *
  * mail: pop3, imap functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: mail2.c,v $
+ * Revision 1.2  2001/03/15 11:10:53  ltoetsch
+ * added quit/logout to pop/imap
+ *
  * Revision 1.1  2001/03/14 13:19:29  ltoetsch
  * Added pop3/imap4 mail support
  *
@@ -203,6 +206,8 @@ static int check_imap4(char *user, char *pass, char *machine,
     close(fd);
     return -1;
   }
+  strcpy(buf,". LOGOUT\r\n");
+  wr_rd(fd, buf, "", "LOGOUT", machine, port);
   close(fd);
   return 0;
 }
@@ -248,6 +253,8 @@ static int check_pop3(char *user, char *pass, char *machine,
     sscanf(buf, "+OK %d", unseen);
     *unseen = *total - *unseen;
   }
+  strcpy(buf, "QUIT\r\n");
+  wr_rd(fd, buf, "+OK", "Quit", machine, port);
   close(fd);
   return 0;
 }
