@@ -228,7 +228,7 @@ AC_DEFUN([AC_NCURSES], [
 ])
 
 AC_DEFUN([AC_SEARCH_NCURSES], [
-    AC_CHECKING("location of ncurses.h file")
+    AC_CHECKING(location of ncurses.h file)
 
     AC_NCURSES(/usr/include, ncurses.h, -lncurses,, "ncurses on /usr/include")
     AC_NCURSES(/usr/include/ncurses, ncurses.h, -lncurses, -I/usr/include/ncurses, "ncurses on /usr/include/ncurses")

@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.9 2002/08/21 06:09:53 reinelt Exp $
+/* $Id: udelay.c,v 1.10 2003/02/27 07:43:11 reinelt Exp $
  *
  * short delays
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.10  2003/02/27 07:43:11  reinelt
+ *
+ * asm/msr.h: included hard-coded definition of rdtscl() if msr.h cannot be found.
+ *
+ * autoconf/automake/autoanything: switched back to 1.4. Hope it works again.
+ *
  * Revision 1.9  2002/08/21 06:09:53  reinelt
  * some T6963 fixes, ndelay wrap
  *
@@ -100,10 +106,15 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/time.h>
+
 #ifdef HAVE_ASM_MSR_H
 #include <asm/msr.h>
+#else
+#warning asm/msr.h not found.
+#warning using hard-coded definition.
+#define rdtscl(low) \
+     __asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
 #endif
-
 #endif
 
 
@@ -206,12 +217,8 @@ static void getCPUinfo (int *hasTSC, double *MHz)
 
 }
 
-
 void udelay_init (void)
 {
-
-#ifdef HAVE_ASM_MSR_H
-  
   int tsc;
   double mhz;
   
@@ -224,20 +231,10 @@ void udelay_init (void)
     ticks_per_usec=0;
     debug ("using gettimeofday() delay loop");
   }
-
-#else
-  
-  debug ("lcd4linux has been compiled without asm/msr.h");
-  debug ("using gettimeofday() delay loop");
-  
-#endif
-  
 }
 
 void ndelay (unsigned long nsec)
 {
-
-#ifdef HAVE_ASM_MSR_H
 
   if (ticks_per_usec) {
 
@@ -255,26 +252,22 @@ void ndelay (unsigned long nsec)
       }
     } while ((t2-t1)<nsec);
     
-  } else
+  } else {
     
-#endif
-
-    {
-
-      struct timeval now, end;
+    struct timeval now, end;
     
-      gettimeofday (&end, NULL);
-      end.tv_usec+=(nsec+999)/1000;
-      while (end.tv_usec>1000000) {
-	end.tv_usec-=1000000;
-	end.tv_sec++;
-      }
-    
-      do {
-	rep_nop();
-	gettimeofday(&now, NULL);
-      } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
+    gettimeofday (&end, NULL);
+    end.tv_usec+=(nsec+999)/1000;
+    while (end.tv_usec>1000000) {
+      end.tv_usec-=1000000;
+      end.tv_sec++;
     }
+    
+    do {
+      rep_nop();
+      gettimeofday(&now, NULL);
+    } while (now.tv_sec==end.tv_sec?now.tv_usec<end.tv_usec:now.tv_sec<end.tv_sec);
+  }
 }
 
 #endif
