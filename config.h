@@ -1,3 +1,38 @@
-int  read_cfg (char *file);
-char *get_cfg (char *key);
-void  set_cfg (char *key, char *value);
+/* $Id: config.h,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+ *
+ * config file stuff
+ *
+ * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: config.h,v $
+ * Revision 1.2  2000/03/06 06:04:06  reinelt
+ *
+ * minor cleanups
+ *
+ *
+ */
+
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+void  cfg_set (char *key, char *value);
+char *cfg_get (char *key);
+int   cfg_read (char *file);
+char *cfg_file (void);
+
+#endif

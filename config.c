@@ -1,3 +1,54 @@
+/* $Id: config.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+ *
+ * config file stuff
+ *
+ * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: config.c,v $
+ * Revision 1.2  2000/03/06 06:04:06  reinelt
+ *
+ * minor cleanups
+ *
+ *
+ */
+
+/* 
+ * exported functions:
+ *
+ * cfg_set (key, value)
+ *   pre-set key's value
+ *   should be called before cfg_read()
+ *   so we can specify 'default values'
+ *
+ * cfg_get (key) 
+ *   return the a value for a given key 
+ *   or NULL if key does not exist
+ *
+ * cfg_read (file)
+ *   read configuration from file   
+ *   returns  0 if successful
+ *   returns -1 in case of an error
+ * 
+ * cfg_file (void)
+ *   returns the file the configuration was read from
+ * 
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,8 +61,10 @@ typedef struct {
   char *val;
 } ENTRY;
 
+static char  *Config_File=NULL;
 static ENTRY *Config=NULL;
 static int   nConfig=0;
+
 
 static char *strip (char *s)
 {
@@ -30,7 +83,8 @@ static char *strip (char *s)
   return s;
 }
 
-void set_cfg (char *key, char *val)
+
+void cfg_set (char *key, char *val)
 {
   int i;
   
@@ -47,7 +101,8 @@ void set_cfg (char *key, char *val)
   Config[i].val=strdup(val);
 }
 
-char *get_cfg (char *key)
+
+char *cfg_get (char *key)
 {
   int i;
 
@@ -60,7 +115,7 @@ char *get_cfg (char *key)
 }
 
 
-int read_cfg (char *file)
+int cfg_read (char *file)
 {
   FILE *stream;
   char buffer[256];
@@ -71,6 +126,10 @@ int read_cfg (char *file)
     fprintf (stderr, "open(%s) failed: %s\n", file, strerror(errno));
     return-1;
   }
+
+  if (Config_File) free (Config_File);
+  Config_File=strdup(file);
+    
   while ((line=fgets(buffer,256,stream))!=NULL) {
     if (*(line=strip(line))=='\0') continue;
     for (p=line; *p; p++) {
@@ -96,3 +155,11 @@ int read_cfg (char *file)
   return 0;
 }
 
+
+char *cfg_file (void)
+{
+  if (Config_File)
+    return Config_File;
+  else
+    return "";
+}

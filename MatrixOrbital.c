@@ -6,12 +6,41 @@
 #include <string.h>
 #include <errno.h>
 
+#include "config.h"
 #include "display.h"
 
+static DISPLAY Display;
+static char *Device=NULL;
 
-int MO_init (void)
+int MO_init (DISPLAY *Self)
 {
+  char *port;
+  
   printf ("initializing MatrixOrbital...\n");
+
+  if (Device) {
+    free (Device);
+    Device=NULL;
+  }
+
+  port=cfg_get ("port");
+  if (port==NULL || *port=='\0') {
+    fprintf (stderr, "MatrixOrbital: no 'port' entry in %s\n", cfg_file());
+    return -1;
+  }
+  Device=strdup(port);
+  
+  lcd=lcd_open();
+  if (lcd==-1) return -1;
+  
+  lcd_clear();
+  lcd_write ("\376B", 3);  // backlight on
+  lcd_write ("\376K", 2);  // cursor off
+  lcd_write ("\376T", 2);  // blink off
+  lcd_write ("\376D", 2);  // line wrapping off
+  lcd_write ("\376R", 2);  // auto scroll off
+  lcd_write ("\376V", 2);  // GPO off
+
   return 0;
 }
 

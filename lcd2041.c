@@ -295,12 +295,12 @@ int lcd_init (char *device)
   if (lcd==-1) return -1;
   
   lcd_clear();
-  lcd_write ("\376B", 3); // backlight on
-  lcd_write ("\376K", 2);   // cursor off
-  lcd_write ("\376T", 2);   // blink off
-  lcd_write ("\376D", 2);   // line wrapping off
-  lcd_write ("\376R", 2);   // auto scroll off
-  lcd_write ("\376V", 2);   // GPO off
+  lcd_write ("\376B", 3);  // backlight on
+  lcd_write ("\376K", 2);  // cursor off
+  lcd_write ("\376T", 2);  // blink off
+  lcd_write ("\376D", 2);  // line wrapping off
+  lcd_write ("\376R", 2);  // auto scroll off
+  lcd_write ("\376V", 2);  // GPO off
 
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.2 2000/01/16 16:58:50 reinelt Exp $
+/* $Id: display.h,v 1.3 2000/03/06 06:04:06 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.3  2000/03/06 06:04:06  reinelt
+ *
+ * minor cleanups
+ *
  * Revision 1.2  2000/01/16 16:58:50  reinelt
  * *** empty log message ***
  *
@@ -35,14 +39,14 @@
 #define BAR_D 8
 #define BAR_S 256
 
-typedef struct {
+typedef struct DISPLAY {
   char name[16];
   int rows;
   int cols;
   int xres;
   int yres;
   int bars;
-  int (*init) (void);
+  int (*init) (struct DISPLAY *Self);
   int (*clear) (void);
   int (*put) (int x, int y, char *text);
   int (*bar) (int type, int x, int y, int max, int len1, int len2);

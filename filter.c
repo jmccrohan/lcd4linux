@@ -1,13 +1,59 @@
+/* $Id: filter.c,v 1.2 2000/03/06 06:04:06 reinelt Exp $
+ *
+ *  smooth and damp functions
+ *
+ * Copyright 1999, 2000 by Michael Reinelt (reinelt@eunet.at)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * $Log: filter.c,v $
+ * Revision 1.2  2000/03/06 06:04:06  reinelt
+ *
+ * minor cleanups
+ *
+ *
+ */
+
+/* 
+ *
+ * exported fuctions:
+ *
+ * smooth (name, period, value)
+ *   returns an average value over a given period
+ *   uses global variable "tick"
+ *
+ * damp (name, value)
+ *   damps a value with exp(-t/tau) 
+ *   uses global variable "tau"
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
 
-#include "lcd4linux.h"
 #include "filter.h"
 
+extern int tick;
+extern int tau;
+
 #define SLOTS 64
+#define SECONDS(x) (x.tv_sec+x.tv_usec/1000000.0)
 
 typedef struct {
   char *name;
@@ -16,7 +62,6 @@ typedef struct {
   double *value;
 } FILTER;
 
-#define SECONDS(x) (x.tv_sec+x.tv_usec/1000000.0)
 
 double smooth(char *name, int period, double value)
 {
@@ -68,6 +113,7 @@ double smooth(char *name, int period, double value)
     return v/t;
 }
 
+
 double damp(char *name, double value)
 {
   static FILTER *Filter=NULL;
@@ -75,6 +121,9 @@ double damp(char *name, double value)
   struct timeval now;
   double max;
   int i, j;
+  
+  if (tau==0.0)
+    return value;
   
   gettimeofday (&now, NULL);
   
