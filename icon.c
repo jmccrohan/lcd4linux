@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.1 2003/08/24 04:31:56 reinelt Exp $
+/* $Id: icon.c,v 1.2 2003/08/24 05:17:58 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.2  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.1  2003/08/24 04:31:56  reinelt
  * icon.c icon.h added
  *
@@ -28,9 +31,11 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 
-#include "icon.h"
 #include "debug.h"
+#include "cfg.h"
+#include "icon.h"
 
 
 static int ROWS=0;
@@ -42,6 +47,7 @@ static int ICONS=0;
 static int *Screen;
 
 
+#if 0
 static int icon_get_bitmap (int num)
 {
   int row, col;
@@ -53,6 +59,7 @@ static int icon_get_bitmap (int num)
     val=cfg_get(key);
   }
 }
+#endif
 
 
 int icon_init (int rows, int cols, int xres, int yres, int icons)

@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.11 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: SIN.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.12  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.11  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -193,7 +196,7 @@ int SIN_init (LCD *Self)
 
   port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
-    error ("SIN: no 'Port' entry in %s", cfg_file());
+    error ("SIN: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);

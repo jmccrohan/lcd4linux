@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.18 2003/08/17 16:37:39 reinelt Exp $
+/* $Id: display.h,v 1.19 2003/08/24 05:17:58 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.19  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.18  2003/08/17 16:37:39  reinelt
  * more icon framework
  *
@@ -119,6 +122,12 @@ typedef struct {
   char *name;
   LCD *Model;
 } FAMILY;
+
+
+// output file for Raster driver
+// has to be defined here because it's referenced
+// even if the raster driver is not included!
+extern char *output;
 
 int lcd_list  (void);
 int lcd_init  (char *driver);

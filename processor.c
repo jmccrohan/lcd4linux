@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.36 2003/08/17 16:37:39 reinelt Exp $
+/* $Id: processor.c,v 1.37 2003/08/24 05:17:58 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.37  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.36  2003/08/17 16:37:39  reinelt
  * more icon framework
  *
@@ -751,7 +754,7 @@ void process_init (void)
 
   lines=atoi(cfg_get("Rows","1"));
   if (lines<1) {
-    error ("bad 'Rows' entry in %s, ignoring.", cfg_file());
+    error ("bad 'Rows' entry in %s, ignoring.", cfg_source());
     lines=1;
   }
   if (lines>ROWS) {
@@ -761,16 +764,16 @@ void process_init (void)
   if (lines>rows) {
     scroll=atoi(cfg_get("Scroll","1"));
     if (scroll<1) {
-      error ("bad 'Scroll' entry in %s, ignoring and using '1'", cfg_file());
+      error ("bad 'Scroll' entry in %s, ignoring and using '1'", cfg_source());
       scroll=1;
     }
     if (scroll>rows) {
-      error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_file(), scroll, rows);
+      error ("'Scroll' entry in %s is %d, > %d display rows.", cfg_source(), scroll, rows);
       error ("This may lead to unexpected results!");
     }
     turn=atoi(cfg_get("Turn","1000"));
     if (turn<1) {
-      error ("bad 'Turn' entry in %s, ignoring and using '1000'", cfg_file());
+      error ("bad 'Turn' entry in %s, ignoring and using '1000'", cfg_source());
       turn=1;
     }
     debug ("Virtual: %d rows, scroll %d lines every %d msec", lines, scroll, turn);

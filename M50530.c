@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: M50530.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.12  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.11  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -180,7 +183,7 @@ int M5_init (LCD *Self)
   
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
-    error ("M50530: no 'Size' entry in %s", cfg_file());
+    error ("M50530: no 'Size' entry in %s", cfg_source());
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
@@ -194,7 +197,7 @@ int M5_init (LCD *Self)
   } else {
     gpos=strtol(s, &e, 0);
     if (*e!='\0' || gpos<0 || gpos>8) {
-      error ("M50530: bad GPOs '%s' in %s", s, cfg_file());
+      error ("M50530: bad GPOs '%s' in %s", s, cfg_source());
       return -1;
     }    
   }

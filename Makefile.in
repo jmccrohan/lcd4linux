@@ -79,9 +79,13 @@ bin_PROGRAMS = lcd4linux
 noinst_LIBRARIES = liblcd4linux.a
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
+
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@
+
+liblcd4linux_a_LIBADD = @DRIVERS@
+liblcd4linux_a_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h pid.c pid.h parser.c parser.h processor.c processor.h system.c system.h isdn.c isdn.h mail.c mail.h seti.c seti.h battery.c battery.h dvb.c dvb.h filter.c filter.h udelay.c udelay.h display.c display.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h exec.c exec.h mail2.c socket.c socket.h
 
@@ -89,7 +93,7 @@ lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h pid.c
 EXTRA_lcd4linux_SOURCES =  parport.c parport.h BeckmannEgle.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
 
 
-liblcd4linux_a_SOURCES =  parport.c parport.h BeckmannEgle.c Crystalfontz.c Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
+liblcd4linux_a_SOURCES =  display.c display.h debug.c debug.h cfg.c cfg.h lock.c lock.h pixmap.c pixmap.h bar.c bar.h icon.c icon.h fontmap.c fontmap.h parport.c parport.h udelay.c udelay.h
 
 
 EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm curses.m4 AUTHORS CREDITS FAQ NEWS TODO README README.Drivers README.KDE
@@ -109,10 +113,8 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-liblcd4linux_a_LIBADD = 
-liblcd4linux_a_OBJECTS =  parport.o BeckmannEgle.o Crystalfontz.o \
-Cwlinux.o HD44780.o M50530.o T6963.o USBLCD.o MatrixOrbital.o \
-PalmPilot.o Raster.o SIN.o Skeleton.o XWindow.o Text.o
+liblcd4linux_a_OBJECTS =  display.o debug.o cfg.o lock.o pixmap.o bar.o \
+icon.o fontmap.o parport.o udelay.o
 AR = ar
 PROGRAMS =  $(bin_PROGRAMS)
 

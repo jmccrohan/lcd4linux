@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.43 2003/08/17 16:37:39 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.44 2003/08/24 05:17:58 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.44  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.43  2003/08/17 16:37:39  reinelt
  * more icon framework
  *
@@ -235,12 +238,11 @@
 
 char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
 char **my_argv;
-char *output=NULL;
 int got_signal=0;
-int debugging=0;
-int foreground=0;
-int background=0;
 int tick, tack;
+
+extern char* output;
+
 
 static void usage(void)
 {
@@ -327,6 +329,9 @@ int main (int argc, char *argv[])
   }
   my_argv[c]=NULL;
 
+  running_foreground=0;
+  running_background=0;
+
 #ifdef USE_OLD_UDELAY
   while ((c=getopt (argc, argv, "c:dFf:hlo:qv"))!=EOF) {
 #else
@@ -348,7 +353,7 @@ int main (int argc, char *argv[])
       exit(1);
 #endif
     case 'F':
-      foreground++;
+      running_foreground++;
       break;
     case 'f':
       cfg=optarg;
@@ -367,7 +372,7 @@ int main (int argc, char *argv[])
       quiet++;
       break;
     case 'v':
-      debugging++;
+      verbose_level++;
       break;
     default:
       exit(2);
@@ -380,26 +385,20 @@ int main (int argc, char *argv[])
   }
 
   info ("Version " VERSION " starting");
-  if (!foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
+  if (!running_foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
     info ("invoked without full path; restart may not work!");
   }
   
-  // set default values
-  cfg_set ("row1", "*** %o %v ***");
-  cfg_set ("row2", "%p CPU  %r MB RAM");
-  cfg_set ("row3", "Busy %cu%% $r10cu");
-  cfg_set ("row4", "Load %l1%L$r10l1");
-
-  if (cfg_read (cfg)==-1)
+  if (cfg_init (cfg)==-1)
     exit (1);
   
   driver=cfg_get("display",NULL);
   if (driver==NULL || *driver=='\0') {
-    error ("missing 'display' entry in %s!", cfg_file());
+    error ("missing 'display' entry in %s!", cfg_source());
     exit (1);
   }
   
-  if (!foreground) {
+  if (!running_foreground) {
     pid_t i;
     int fd;
     debug ("going background...");
@@ -448,7 +447,7 @@ int main (int argc, char *argv[])
     }
 
     // now we are a daemon
-    background=1;
+    running_background=1;
   }
   
   debug ("initializing driver %s", driver);

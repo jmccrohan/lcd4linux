@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.4 2003/08/08 06:58:06 reinelt Exp $
+/* $Id: debug.c,v 1.5 2003/08/24 05:17:58 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.5  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.4  2003/08/08 06:58:06  reinelt
  * improved forking
  *
@@ -58,22 +61,24 @@
 
 #include "debug.h"
 
+int running_foreground = 0;
+int running_background = 0;
+
+int verbose_level = 0;
+
 void message (int level, const char *format, ...)
 {
   va_list ap;
   char buffer[256];
   static int log_open=0;
-  extern int debugging;
-  extern int foreground;
-  extern int background;
 
-  if (level>debugging) return;
+  if (level>verbose_level) return;
 
   va_start(ap, format);
   (void) vsnprintf(buffer, sizeof(buffer), format, ap);
   va_end(ap);
   
-  if (!background) {
+  if (!running_background) {
 #ifdef WITH_TEXT
     extern int curs_err(char *);
     if (!curs_err(buffer))
@@ -81,7 +86,7 @@ void message (int level, const char *format, ...)
       fprintf (level?stdout:stderr, "%s\n", buffer);
   }
   
-  if (foreground)
+  if (running_foreground)
     return;
   
   if (!log_open) {

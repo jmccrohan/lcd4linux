@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.28 2003/06/26 05:31:16 reinelt Exp $
+/* $Id: system.c,v 1.29 2003/08/24 05:17:58 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.29  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.28  2003/06/26 05:31:16  reinelt
  * bug in /proc/net/dev parsing fixed
  *
@@ -774,7 +777,7 @@ int Sensor (int index, double *val, double *min, double *max)
     snprintf(buffer, 32, "Sensor%d", index);
     sensor[index]=cfg_get(buffer, NULL);
     if (sensor[index]==NULL || *sensor[index]=='\0') {
-      error ("no entry for '%s' in %s", buffer, cfg_file());
+      error ("no entry for '%s' in %s", buffer, cfg_source());
       fd[index]=-1;
       return -1;
     }

@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.12 2003/08/19 04:28:41 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.13 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.13  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.12  2003/08/19 04:28:41  reinelt
  * more Icon stuff, minor glitches fixed
  *
@@ -208,7 +211,7 @@ static int CF_init (LCD *Self)
 
   port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
-    error ("Crystalfontz: no 'Port' entry in %s", cfg_file());
+    error ("Crystalfontz: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
@@ -229,7 +232,7 @@ static int CF_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    error ("Crystalfontz: unsupported speed '%s' in %s", speed, cfg_file());
+    error ("Crystalfontz: unsupported speed '%s' in %s", speed, cfg_source());
     return -1;
   }    
 

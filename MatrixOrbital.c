@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.33 2003/08/24 04:31:56 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.34 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.34  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.33  2003/08/24 04:31:56  reinelt
  * icon.c icon.h added
  *
@@ -326,7 +329,7 @@ static int MO_init (LCD *Self, int protocol)
 
   port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
-    error ("MatrixOrbital: no 'Port' entry in %s", cfg_file());
+    error ("MatrixOrbital: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
@@ -347,7 +350,7 @@ static int MO_init (LCD *Self, int protocol)
     Speed=B19200;
     break;
   default:
-    error ("MatrixOrbital: unsupported speed '%s' in %s", s, cfg_file());
+    error ("MatrixOrbital: unsupported speed '%s' in %s", s, cfg_source());
     return -1;
   }    
 
@@ -360,7 +363,7 @@ static int MO_init (LCD *Self, int protocol)
   Icons=strtol(s, &e, 0);
   if (*e!='\0' || Icons<0 || Icons>8) {
     debug ("Icons=%d e=<%s>", Icons, e);
-    error ("MatrixOrbital: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_file());
+    error ("MatrixOrbital: bad Icons '%s' in %s, must be between 0 and 8", s, cfg_source());
     return -1;
   }    
   if (Icons>0) {

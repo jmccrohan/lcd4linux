@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.9 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: Text.c,v 1.10 2003/08/24 05:17:58 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.10  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.9  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
 #include "display.h"
 #include "bar.h"
 
-extern int foreground;
+extern int running_foreground;
 
 static LCD Lcd;
 static WINDOW *w, *err_win;
@@ -121,7 +124,7 @@ int Text_init (LCD *Self)
   int cols=-1, rows=-1;
   int scr_cols, scr_rows;
   char *s;
-  if (!foreground) {
+  if (!running_foreground) {
     error("Text: you want me to display on /dev/null: sorry, I can't");
     error("Text: Maybe you want me to run in foreground? Try '-F'");
     return -1;

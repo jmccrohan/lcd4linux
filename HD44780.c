@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.35 2003/08/22 03:45:08 reinelt Exp $
+/* $Id: HD44780.c,v 1.36 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.36  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.35  2003/08/22 03:45:08  reinelt
  * bug in parallel port code fixed, more icons stuff
  *
@@ -401,7 +404,7 @@ int HD_init (LCD *Self)
   
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
-    error ("HD44780: no 'Size' entry in %s", cfg_file());
+    error ("HD44780: no 'Size' entry in %s", cfg_source());
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {
@@ -416,7 +419,7 @@ int HD_init (LCD *Self)
   else {
     gpos=strtol(s, &e, 0);
     if (*e!='\0' || gpos<0 || gpos>8) {
-      error ("HD44780: bad GPOs '%s' in %s", s, cfg_file());
+      error ("HD44780: bad GPOs '%s' in %s", s, cfg_source());
       return -1;
     }    
   }
@@ -424,7 +427,7 @@ int HD_init (LCD *Self)
   s=cfg_get("Controllers", "1");
   Controllers=strtol(s, &e, 0);
   if (*e!='\0' || Controllers<1 || Controllers>2) {
-    error ("HD44780: bad Controllers '%s' in %s, should be '1' or '2'", s, cfg_file());
+    error ("HD44780: bad Controllers '%s' in %s, should be '1' or '2'", s, cfg_source());
     return -1;
   }    
   info ("wiring: using display with %d controllers", Controllers);
@@ -448,7 +451,7 @@ int HD_init (LCD *Self)
   s=cfg_get("Bits", "8");
   Bits=strtol(s, &e, 0);
   if (*e!='\0' || (Bits!=4 && Bits!=8)) {
-    error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_file());
+    error ("HD44780: bad Bits '%s' in %s, should be '4' or '8'", s, cfg_source());
     return -1;
   }    
   info ("wiring: using %d bit mode", Bits);

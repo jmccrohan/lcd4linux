@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.10 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.11 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.11  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.10  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -222,7 +225,7 @@ int Palm_init (LCD *Self)
 
   port=cfg_get ("Port",NULL);
   if (port==NULL || *port=='\0') {
-    error ("PalmPilot: no 'Port' entry in %s", cfg_file());
+    error ("PalmPilot: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
@@ -246,7 +249,7 @@ int Palm_init (LCD *Self)
     Speed=B19200;
     break;
   default:
-    error ("PalmPilot: unsupported speed '%s' in %s", speed, cfg_file());
+    error ("PalmPilot: unsupported speed '%s' in %s", speed, cfg_source());
     return -1;
   }    
 

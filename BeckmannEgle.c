@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.14 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.15 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.15  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.14  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -229,14 +232,14 @@ int BE_init (LCD *Self)
 
   port=cfg_get ("Port", NULL);
   if (port==NULL || *port=='\0') {
-    error ("BeckmannEgle: no 'Port' entry in %s", cfg_file());
+    error ("BeckmannEgle: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port=strdup(port);
 
   s=cfg_get("Type", NULL);
   if (s==NULL || *s=='\0') {
-    error ("BeckmannEgle: no 'Type' entry in %s", cfg_file());
+    error ("BeckmannEgle: no 'Type' entry in %s", cfg_source());
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {

@@ -7,9 +7,13 @@ bin_PROGRAMS = lcd4linux
 noinst_LIBRARIES = liblcd4linux.a
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall
+
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD = @DRIVERS@ @DRVLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@
+
+liblcd4linux_a_LIBADD = @DRIVERS@
+liblcd4linux_a_DEPENDENCIES = @DRIVERS@
 
 lcd4linux_SOURCES = \
 lcd4linux.c \
@@ -54,21 +58,16 @@ XWindow.c \
 Text.c
 
 liblcd4linux_a_SOURCES = \
+display.c display.h \
+debug.c debug.h \
+cfg.c cfg.h \
+lock.c lock.h \
+pixmap.c pixmap.h \
+bar.c bar.h \
+icon.c icon.h \
+fontmap.c fontmap.h \
 parport.c parport.h \
-BeckmannEgle.c \
-Crystalfontz.c \
-Cwlinux.c \
-HD44780.c \
-M50530.c \
-T6963.c \
-USBLCD.c \
-MatrixOrbital.c \
-PalmPilot.c \
-Raster.c \
-SIN.c \
-Skeleton.c \
-XWindow.c \
-Text.c
+udelay.c udelay.h
 
 EXTRA_DIST = \
 lcd4linux.conf.sample \

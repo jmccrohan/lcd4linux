@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.12  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.11  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -285,7 +288,7 @@ int CW_init(LCD * Self)
 
   port = cfg_get("Port",NULL);
   if (port == NULL || *port == '\0') {
-    error("Cwlinux: no 'Port' entry in %s", cfg_file());
+    error("Cwlinux: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   Port = strdup(port);
@@ -300,7 +303,7 @@ int CW_init(LCD * Self)
     Speed = B19200;
     break;
   default:
-    error("Cwlinux: unsupported speed '%s' in %s", speed, cfg_file());
+    error("Cwlinux: unsupported speed '%s' in %s", speed, cfg_source());
     return -1;
   }
 

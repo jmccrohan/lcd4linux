@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.14 2003/08/14 03:47:40 reinelt Exp $
+/* $Id: cfg.c,v 1.15 2003/08/24 05:17:58 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.15  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.14  2003/08/14 03:47:40  reinelt
  * remove PID file if driver initialisation fails
  *
@@ -91,6 +94,14 @@
 /* 
  * exported functions:
  *
+ * cfg_init (source)
+ *   read configuration from source
+ *   returns  0 if successful
+ *   returns -1 in case of an error
+ * 
+ * cfg_source (void)
+ *   returns the file the configuration was read from
+ * 
  * cfg_cmd (arg)
  *   allows us to overwrite entries in the 
  *   config-file from the command line.
@@ -98,23 +109,10 @@
  *   cfg_cmd can be called _before_ cfg_read()
  *   returns 0 if ok, -1 if arg cannot be parsed
  *
- * cfg_set (key, value)
- *   pre-set key's value
- *   should be called before cfg_read()
- *   so we can specify 'default values'
- *
  * cfg_get (key, defval) 
  *   return the a value for a given key 
  *   or <defval> if key does not exist
  *
- * cfg_read (file)
- *   read configuration from file   
- *   returns  0 if successful
- *   returns -1 in case of an error
- * 
- * cfg_file (void)
- *   returns the file the configuration was read from
- * 
  */
 
 
@@ -193,7 +191,7 @@ static void cfg_add (char *key, char *val, int lock)
   Config[i].lock=lock;
 }
 
-int cfg_cmd (char *arg)
+int l4l_cfg_cmd (char *arg)
 {
   char *key, *val;
   char buffer[256];
@@ -211,12 +209,7 @@ int cfg_cmd (char *arg)
   return 0;
 }
 
-void cfg_set (char *key, char *val)
-{
-  cfg_add (key, val, 0);
-}
-
-char *cfg_get (char *key, char *defval)
+char *l4l_cfg_get (char *key, char *defval)
 {
   int i;
 
@@ -228,7 +221,7 @@ char *cfg_get (char *key, char *defval)
   return defval;
 }
 
-static int check_cfg_file(char *file)
+static int check_cfg_source(char *file)
 {
   /* as passwords and commands are stored in the config file,
    * we will check that:
@@ -268,13 +261,13 @@ static int check_cfg_file(char *file)
   return error;
 }
 
-int cfg_read (char *file)
+int l4l_cfg_init (char *file)
 {
   FILE *stream;
   char buffer[256];
   char *line, *p, *s;
 
-  if (check_cfg_file(file) == -1) {
+  if (check_cfg_source(file) == -1) {
     error("config file '%s' is insecure, aborting", file);
     return -1;
   }
@@ -307,16 +300,23 @@ int cfg_read (char *file)
       *s='\0';
       p++;
     }
-    cfg_set (line, p);
+    cfg_add (line, p, 0);
   }
   fclose (stream);
   return 0;
 }
 
-char *cfg_file (void)
+char *l4l_cfg_source (void)
 {
   if (Config_File)
     return Config_File;
   else
     return "";
 }
+
+
+int   (*cfg_init)   (char *source)            = l4l_cfg_init;
+char *(*cfg_source) (void)                    = l4l_cfg_source;
+int   (*cfg_cmd)    (char *arg)               = l4l_cfg_cmd;
+char *(*cfg_get)    (char *key, char *defval) = l4l_cfg_get;
+

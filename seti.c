@@ -1,4 +1,4 @@
-/* $Id: seti.c,v 1.8 2003/06/13 05:11:11 reinelt Exp $
+/* $Id: seti.c,v 1.9 2003/08/24 05:17:58 reinelt Exp $
  *
  * seti@home specific functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: seti.c,v $
+ * Revision 1.9  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.8  2003/06/13 05:11:11  reinelt
  * error message cosmetics
  *
@@ -102,12 +105,12 @@ int Seti (double *perc, double *cput)
   if (fd==-2) {
     char *dir=cfg_get("SetiDir",NULL);
     if (dir==NULL || *dir=='\0') {
-      error ("no 'SetiDir' entry in %s!\n", cfg_file());
+      error ("no 'SetiDir' entry in %s!\n", cfg_source());
       fd=-1;
       return -1;
     }
     if (strlen(dir)>sizeof(fn)-sizeof(STATEFILE)-2) {
-      error ("entry 'SetiDir' too long in %s!\n", cfg_file());
+      error ("entry 'SetiDir' too long in %s!\n", cfg_source());
       fd=-1;
       return -1;
     }

@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.4 2001/09/12 05:37:22 reinelt Exp $
+/* $Id: debug.h,v 1.5 2003/08/24 05:17:58 reinelt Exp $
  *
  * debug messages
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.5  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.4  2001/09/12 05:37:22  reinelt
  *
  * fixed a bug in seti.c (file was never closed, lcd4linux run out of fd's
@@ -45,6 +48,10 @@
 
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
+
+extern int running_foreground;
+extern int running_background;
+extern int verbose_level;
 
 void message (int level, const char *format, ...);
 

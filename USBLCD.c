@@ -1,4 +1,4 @@
-/* $Id: USBLCD.c,v 1.11 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: USBLCD.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
  *
  * Driver for USBLCD ( see http://www.usblcd.de )
  * This Driver is based on HD44780.c
@@ -22,6 +22,9 @@
  *
  *
  * $Log: USBLCD.c,v $
+ * Revision 1.12  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.11  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -221,7 +224,7 @@ int USBLCD_init (LCD *Self)
     Port=NULL;
   }
   if ((port=cfg_get("Port",NULL))==NULL || *port=='\0') {
-    error ("USBLCD: no 'Port' entry in %s", cfg_file());
+    error ("USBLCD: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   if (port[0]=='/') {
@@ -235,7 +238,7 @@ int USBLCD_init (LCD *Self)
 
   s=cfg_get("Size",NULL);
   if (s==NULL || *s=='\0') {
-    error ("USBLCD: no 'Size' entry in %s", cfg_file());
+    error ("USBLCD: no 'Size' entry in %s", cfg_source());
     return -1;
   }
   if (sscanf(s,"%dx%d",&cols,&rows)!=2 || rows<1 || cols<1) {

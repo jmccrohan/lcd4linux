@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.38 2003/08/24 04:31:56 reinelt Exp $
+/* $Id: display.c,v 1.39 2003/08/24 05:17:58 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.39  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.38  2003/08/24 04:31:56  reinelt
  * icon.c icon.h added
  *
@@ -229,6 +232,11 @@ extern LCD SIN[];
 extern LCD Skeleton[];
 extern LCD XWindow[];
 extern LCD Text[];
+
+// output file for Raster driver
+// has to be defined here because it's referenced
+// even if the raster driver is not included!
+char *output=NULL;
 
 FAMILY Driver[] = {
 #ifdef WITH_BECKMANNEGLE

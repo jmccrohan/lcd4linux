@@ -1,4 +1,4 @@
-/* $Id: parport.c,v 1.6 2003/08/22 03:45:09 reinelt Exp $
+/* $Id: parport.c,v 1.7 2003/08/24 05:17:58 reinelt Exp $
  *
  * generic parallel port handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parport.c,v $
+ * Revision 1.7  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.6  2003/08/22 03:45:09  reinelt
  * bug in parallel port code fixed, more icons stuff
  *
@@ -144,11 +147,11 @@ int parport_open (void)
 #ifdef USE_OLD_UDELAY
   s=cfg_get ("Delay",NULL);
   if (s==NULL || *s=='\0') {
-    error ("parport: no 'Delay' entry in %s", cfg_file());
+    error ("parport: no 'Delay' entry in %s", cfg_source());
     return -1;
   }
   if ((loops_per_usec=strtol(s, &e, 0))==0 || *e!='\0') {
-    error ("parport: bad delay '%s' in %s", s, cfg_file());
+    error ("parport: bad delay '%s' in %s", s, cfg_source());
     return -1;
   }    
 #else
@@ -157,7 +160,7 @@ int parport_open (void)
   
   s=cfg_get ("Port",NULL);
   if (s==NULL || *s=='\0') {
-    error ("parport: no 'Port' entry in %s", cfg_file());
+    error ("parport: no 'Port' entry in %s", cfg_source());
     return -1;
   }
   PPdev=NULL;
@@ -166,7 +169,7 @@ int parport_open (void)
     Port=0;
     PPdev=s;
 #else
-    error ("parport: bad Port '%s' in %s", s, cfg_file());
+    error ("parport: bad Port '%s' in %s", s, cfg_source());
     return -1;
 #endif
   }

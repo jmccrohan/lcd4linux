@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.24 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: Raster.c,v 1.25 2003/08/24 05:17:58 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.25  2003/08/24 05:17:58  reinelt
+ * liblcd4linux patch from Patrick Schemitz
+ *
  * Revision 1.24  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -165,8 +168,6 @@ static int border=0;
 static unsigned int foreground=0;
 static unsigned int halfground=0;
 static unsigned int background=0;
-
-extern char* output;
 
 
 #ifdef WITH_PPM
