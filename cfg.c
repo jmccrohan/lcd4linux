@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.31 2004/01/29 04:40:02 reinelt Exp $^
+/* $Id: cfg.c,v 1.32 2004/01/30 20:57:55 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.32  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.31  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -219,6 +223,10 @@
 #include "evaluator.h"
 #include "cfg.h"
 
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
+
 typedef struct {
   char *key;
   char *val;
@@ -335,7 +343,7 @@ static void cfg_add (char *section, char *key, char *val, int lock)
   
   nConfig++;
   Config=realloc(Config, nConfig*sizeof(ENTRY));
-  Config[nConfig-1].key=strdup(buffer);
+  Config[nConfig-1].key=buffer;
   Config[nConfig-1].val=dequote(strdup(val));
   Config[nConfig-1].lock=lock;
 
@@ -700,6 +708,29 @@ char *l4l_cfg_source (void)
 }
 
 
+int l4l_cfg_exit (void)
+{
+  int i;
+  
+  for (i=0; i<nConfig; i++) {
+    if (Config[i].key) free (Config[i].key);
+    if (Config[i].val) free (Config[i].val);
+  }
+  
+  if (Config) {
+    free (Config);
+    Config=NULL;
+  }
+
+  if (Config_File) {
+    free (Config_File);
+    Config_File=NULL;
+  }
+  
+  return 0;
+}
+
+
 int   (*cfg_init)    (char *source)                           = l4l_cfg_init;
 char *(*cfg_source)  (void)                                   = l4l_cfg_source;
 int   (*cfg_cmd)     (char *arg)                              = l4l_cfg_cmd;
@@ -708,3 +739,4 @@ char *(*cfg_get_raw) (char *section, char *key, char *defval) = l4l_cfg_get_raw;
 char *(*cfg_get)     (char *section, char *key, char *defval) = l4l_cfg_get;
 int   (*cfg_number)  (char *section, char *key, int   defval, 
 		      int min, int max, int *value)           = l4l_cfg_number;
+int   (*cfg_exit)    (void)                                   = l4l_cfg_exit;

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.7 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.8 2004/01/30 20:57:56 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.8  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.7  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -77,6 +81,10 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 typedef struct {

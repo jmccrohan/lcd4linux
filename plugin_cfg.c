@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.3 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.4  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.3  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -57,6 +61,10 @@
 #include "evaluator.h"
 #include "plugin.h"
 #include "cfg.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 static void load_variables (void)

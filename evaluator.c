@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.10 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: evaluator.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
  *
  * expression evaluation
  *
@@ -10,6 +10,10 @@
  * FIXME: GPL or not GPL????
  *
  * $Log: evaluator.c,v $
+ * Revision 1.11  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.10  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -131,6 +135,10 @@
 
 #include "debug.h"
 #include "evaluator.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 // Token types
@@ -871,6 +879,10 @@ int Eval (char* expression, RESULT *result)
   
   if ((err=setjmp(jb))) {
     error ("Evaluator: %s in expression <%s>", ErrMsg[err], expression);
+    if (Token) {
+      free (Token);
+      Token=NULL;
+    }
     return -1;
   }
   
@@ -892,5 +904,8 @@ int Eval (char* expression, RESULT *result)
   if (*Token=='\0') ERROR (E_EMPTY);
   Level01(result);
   if (*Token!='\0') ERROR (E_SYNTAX);
+  free (Token);
+  Token=NULL;
+  
   return 0;
 }

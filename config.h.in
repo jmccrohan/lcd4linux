@@ -281,6 +281,9 @@
 /* junk */
 #undef WITH_CWLINUX
 
+/* Define if using the dmalloc debugging malloc package */
+#undef WITH_DMALLOC
+
 /* junk */
 #undef WITH_HD44780
 

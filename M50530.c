@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.17 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: M50530.c,v 1.18 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.18  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.17  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -99,6 +103,10 @@
 #include "icon.h"
 #include "parport.h"
 #include "udelay.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 #define XRES 5
 #define YRES 8

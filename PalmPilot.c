@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.16 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.17 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.17  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.16  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -110,6 +114,10 @@
 #include "bar.h"
 #include "icon.h"
 #include "pixmap.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 static LCD Lcd;

@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.6 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: layout.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.7  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.6  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -68,6 +72,10 @@
 #include "cfg.h"
 #include "widget.h"
 #include "layout.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 int layout_addItem (char *name, int row, int col)

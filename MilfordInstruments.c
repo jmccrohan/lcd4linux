@@ -1,4 +1,4 @@
-/* $Id: MilfordInstruments.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: MilfordInstruments.c,v 1.7 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -24,6 +24,10 @@
  *
  *
  * $Log: MilfordInstruments.c,v $
+ * Revision 1.7  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.6  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -65,6 +69,10 @@
 #include "display.h"
 #include "bar.h"
 #include "icon.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 #define XRES 5
 #define YRES 8

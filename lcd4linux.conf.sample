@@ -25,6 +25,14 @@ Display CF632 {
     Speed 19200
 }
 
+Display CF633 {
+    Icons 1
+    Driver 'Crystalfontz'
+    Model '633'
+    Port '/dev/tts/0'
+    Speed 19200
+}
+
 Display HD44780-20x4 {
     Driver 'HD44780'
     Port '/dev/parports/0'	
@@ -247,9 +255,10 @@ Layout L16x2 {
 }
 
 #Display 'LK204'
-Display 'HD44780-20x4'
-#Display 'CF632'
+#Display 'HD44780-20x4'
 #Display 'CF631'
+#Display 'CF632'
+Display 'CF633'
 
 #Layout  'Default'
 Layout  'L16x2'

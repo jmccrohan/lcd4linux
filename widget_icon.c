@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.3 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: widget_icon.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.4  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.3  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -54,6 +58,10 @@
 #include "timer.h"
 #include "widget.h"
 #include "widget_icon.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 // icons always are 8 pixels high 
 #define YRES 8

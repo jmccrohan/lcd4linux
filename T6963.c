@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.14 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: T6963.c,v 1.15 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.15  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.14  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -92,6 +96,10 @@
 #include "parport.h"
 #include "udelay.h"
 #include "pixmap.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 #define XRES 6

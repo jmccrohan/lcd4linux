@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.13 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: icon.c,v 1.14 2004/01/30 20:57:56 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.14  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.13  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -92,6 +96,10 @@
 #include "debug.h"
 #include "cfg.h"
 #include "icon.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 typedef struct BITMAP {

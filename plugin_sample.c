@@ -1,4 +1,4 @@
-/* $Id: plugin_sample.c,v 1.3 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.4 2004/01/30 20:57:56 reinelt Exp $
  *
  * plugin template
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.4  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.3  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -56,6 +60,10 @@
 // these should always be included
 #include "debug.h"
 #include "plugin.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 

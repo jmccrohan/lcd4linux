@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.10 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: widget.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.11  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.10  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -79,6 +83,10 @@
 #include "debug.h"
 #include "cfg.h"
 #include "widget.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 // we use a static array of widgets and not realloc()

@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.6 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: widget_bar.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.7  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.6  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -66,6 +70,10 @@
 #include "timer.h"
 #include "widget.h"
 #include "widget_bar.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 void widget_bar_update (void *Self)

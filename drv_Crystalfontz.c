@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.6 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.7  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.6  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -109,6 +113,52 @@ static MODEL Models[] = {
 // ***  hardware dependant functions    ***
 // ****************************************
 
+// x^0 + x^5 + x^12
+#define CRCPOLY 0x8408 
+
+static unsigned short CRC=0xffff;
+
+static unsigned short CRC16 (unsigned short crc, unsigned char *p, size_t len)
+{
+  int i;
+  while (len--) {
+    crc ^= *p++;
+    for (i = 0; i < 8; i++)
+      crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY : 0);
+  }
+  return ~crc;
+}
+
+
+static void drv_CF_write_crc (char *string, int len)
+{
+  unsigned char buffer[16+2];
+  
+  if (len>sizeof(buffer)-2) {
+    error ("%s: internal error: packet length %d exceeds buffer size %d", Name, len, sizeof(buffer)-2);
+    len=sizeof(buffer)-1;
+  }
+  
+  strcpy (buffer, string);
+  CRC = CRC16(CRC, buffer, len);
+  buffer[len]   = (CRC >> 8);
+  buffer[len+1] =  CRC & 0xff;
+}
+
+
+static void drv_CF_write (char *string, int len)
+{
+  switch (Protocol) {
+  case 1:
+    drv_generic_serial_write (string, len);
+    break;
+  case 2:
+    drv_CF_write_crc (string, len);
+    break;
+  }
+}
+
+
 static void drv_CF_goto (int row, int col)
 {
   char cmd[3]="\021xy"; // set cursor position
@@ -151,20 +201,22 @@ static int drv_CF_start (char *section)
     }
     Model=i;
     info ("%s: using model '%s'", Name, Models[Model].name);
+    Protocol = Models[Model].protocol;
   } else {
     info ("%s: no '%s.Model' entry from %s, auto-dedecting", Name, section, cfg_source());
     Model=-1;
+    Protocol=2; //auto-dedect only newer displays
   }
   
   // open serial port
   if (drv_generic_serial_open(section, Name)<0) return -1;
-
+  
   // MR: why such a large delay?
   usleep(350*1000);
-
+  
   // read display type
   memset(buffer, 0, sizeof(buffer));
-  drv_generic_serial_write ("\1", 2);
+  drv_CF_write ("\1", 2);
   usleep(250*1000);
 #if 1
   {

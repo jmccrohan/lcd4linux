@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.6 2004/01/30 07:12:35 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.7  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.6  2004/01/30 07:12:35  reinelt
  * HD44780 busy-flag support from Martin Hejl
  * loadavg() uClibc replacement from Martin Heyl
@@ -84,6 +88,10 @@
 #include "plugin.h"
 #include "cfg.h"
 #include "hash.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 static char *path=NULL;
 static HASH I2Csensors = { 0, };

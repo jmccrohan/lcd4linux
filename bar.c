@@ -1,4 +1,4 @@
-/* $Id: bar.c,v 1.10 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: bar.c,v 1.11 2004/01/30 20:57:55 reinelt Exp $
  *
  * generic bar handling
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: bar.c,v $
+ * Revision 1.11  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.10  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -79,6 +83,10 @@
 
 #include "bar.h"
 #include "debug.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 static int ROWS=0;

@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.9 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: cfg.h,v 1.10 2004/01/30 20:57:55 reinelt Exp $
  *
  * config file stuff
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.10  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.9  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -73,6 +77,7 @@ extern char *(*cfg_get_raw) (char *section, char *key, char *defval);
 extern char *(*cfg_get)     (char *section, char *key, char *defval);
 extern int   (*cfg_number)  (char *section, char *key, int   defval, 
 			     int min, int max, int *value);
+extern int   (*cfg_exit)    (void);
 
 int   l4l_cfg_init    (char *file);
 char *l4l_cfg_source  (void);
@@ -82,5 +87,6 @@ char *l4l_cfg_get_raw (char *section, char *key, char *defval);
 char *l4l_cfg_get     (char *section, char *key, char *defval);
 int   l4l_cfg_number  (char *section, char *key, int   defval, 
 		       int min, int max, int *value);
+int   l4l_cfg_exit    (void);
 
 #endif

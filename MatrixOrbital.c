@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.51 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.52 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.52  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.51  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -243,6 +247,10 @@
 #include "display.h"
 #include "bar.h"
 #include "icon.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 #define XRES 5
 #define YRES 8

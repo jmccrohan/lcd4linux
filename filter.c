@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.11 2004/01/29 04:40:02 reinelt Exp $
+/* $Id: filter.c,v 1.12 2004/01/30 20:57:56 reinelt Exp $
  *
  *  smooth and damp functions
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: filter.c,v $
+ * Revision 1.12  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.11  2004/01/29 04:40:02  reinelt
  * every .c file includes "config.h" now
  *
@@ -86,6 +90,10 @@
 
 #include "cfg.h"
 #include "filter.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 extern int tick;
 

@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.10 2004/01/29 04:40:03 reinelt Exp $
+/* $Id: widget_text.c,v 1.11 2004/01/30 20:57:56 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.11  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.10  2004/01/29 04:40:03  reinelt
  * every .c file includes "config.h" now
  *
@@ -89,6 +93,10 @@
 #include "timer.h"
 #include "widget.h"
 #include "widget_text.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 void widget_text_scroll (void *Self)

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.61 2004/01/14 11:33:00 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.62 2004/01/30 20:57:56 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.62  2004/01/30 20:57:56  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.61  2004/01/14 11:33:00  reinelt
  * new plugin 'uname' which does what it's called
  * text widget nearly finished
@@ -313,6 +317,10 @@
 #include "layout.h"
 #include "plugin.h"
 
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
+
 #define PIDFILE "/var/run/lcd4linux.pid"
 
 static char *release="LCD4Linux " VERSION " (c) 2003 Michael Reinelt <reinelt@eunet.at>";
@@ -591,6 +599,7 @@ int main (int argc, char *argv[])
       drv_quit();
     }
     pid_exit(PIDFILE);
+    cfg_exit();
     exit (0);
   }
 
@@ -641,8 +650,10 @@ int main (int argc, char *argv[])
   } else {
     drv_quit();
   }
+
   pid_exit(PIDFILE);
-  
+  cfg_exit();
+    
   if (got_signal==SIGHUP) {
     long fd;
     debug ("restarting...");

@@ -19,6 +19,9 @@ AC_PROG_MAKE_SET
 #AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 
+# dmalloc
+AM_WITH_DMALLOC
+
 # Checks for libraries.
 AC_CHECK_LIB(m, log)
 

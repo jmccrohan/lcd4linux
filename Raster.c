@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.29 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: Raster.c,v 1.30 2004/01/30 20:57:55 reinelt Exp $
  *
  * driver for raster formats
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.30  2004/01/30 20:57:55  reinelt
+ * HD44780 patch from Martin Hejl
+ * dmalloc integrated
+ *
  * Revision 1.29  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -171,6 +175,10 @@
 #include "bar.h"
 #include "icon.h"
 #include "pixmap.h"
+
+#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif
 
 static LCD Lcd;
 
