@@ -1,4 +1,4 @@
-/* $Id: mail.c,v 1.2 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: mail.c,v 1.3 2001/02/21 04:48:13 reinelt Exp $
  *
  * email specific functions
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: mail.c,v $
+ * Revision 1.3  2001/02/21 04:48:13  reinelt
+ *
+ * big mailbox patch from Axel Ehnert
+ * thanks to herp for his idea to check mtime of mailbox
+ *
  * Revision 1.2  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -50,6 +55,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #include "cfg.h"
 #include "debug.h"
@@ -59,90 +65,79 @@ int Mail (int index, int *num)
 {
   FILE *fstr;
   char buffer[32];
-  static time_t cntfreq[MAILBOXES+1];     // Time of last calculation
-  static int cfgmbx[MAILBOXES+1]={[0 ... MAILBOXES]=TRUE,};
+  static int cfgmbx[MAILBOXES+1]={[0 ... MAILBOXES]=TRUE,}; // Mailbox #index configured?
+  static time_t mbxlt[MAILBOXES+1]={[0 ... MAILBOXES]=0,};  // mtime of Mailbox #index
+  static int mbxnum[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last calculated # of mails
+  static time_t now[MAILBOXES+1]={[0 ... MAILBOXES]=0,};    // Last call to procedure at 
+                                                            // for Mailbox #index
   char *fnp1;
   int v1=0;
   int last_line_blank1;                   // Was the last line blank?
-  int interv=-1;                          // Interval in sec.
-  char *cinterv;
+  struct stat fst;
+  int rc;
 
   char *txt;
   char txt1[100];
 
   if (index<1 || index>MAILBOXES) return -1;
-  /*
-    Interval set?
-  */  
-  if (interv < 0) {
-    cinterv = cfg_get("pollintmail");
-    if ( cinterv == NULL ) {
-      interv=DEFMAILPOLLEXT;
-    }
-    else {
-      interv = atoi(cinterv);  
-    }
-  }
-  /*
-    Is it time to look into the files?
-  */
-  if (time(NULL)>cntfreq[index]+interv-1) {
-    cntfreq[index]=time(NULL);
-  }
-  else {
-    return 0;
-  }
-  /*
-    Reread pollext, because it could be changed due to reading a new conf file
-  */
-  cinterv = cfg_get("pollintmail");
-  if ( cinterv == NULL ) {
-    interv=DEFMAILPOLLEXT;
-  }
-  else {
-    interv = atoi(cinterv);  
-  }
+
+  if (time(NULL)==now[index]) return 0;   // More then 1 second after last check
+  time(&now[index]);                      // for Mailbox #index
   /*
     Build the filename from the config
   */
   snprintf(buffer, 32, "Mailbox%d", index);
   fnp1=cfg_get(buffer);
   if (fnp1==NULL || *fnp1=='\0') {
-    cfgmbx[index]=FALSE;
+    cfgmbx[index]=FALSE;                  // There is now entry for Mailbox #index
   }
-  v1=0;
+  v1=mbxnum[index];
   /*
     Open the file
   */
   if (cfgmbx[index]==TRUE) {
-    fstr=fopen(fnp1,"r");
+  /*
+    Check the last touch of mailbox. Changed?
+  */
+    rc=stat(fnp1, &fst);
+    if ( rc != 0 ) {
+      error ("Error getting stat of Mailbox%d", index );
+      return (-1);
+    }
+    if ( mbxlt[index] != fst.st_mtime ) {
+      mbxlt[index]=fst.st_mtime;
 
-    if (fstr != NULL) {
-      txt=&txt1[0];
-      last_line_blank1=TRUE;
+      fstr=fopen(fnp1,"r");
 
-      while ( ( fgets ( txt1, 100, fstr ) ) != NULL ) {
-        txt1[strlen(txt1)-1]='\0';                 // cut the newline
-	/*
-	  Is there a "From ..." line. Count only, if a blank line was directly before this
-	*/
-        if ( strncmp (txt1, "From ", 5 ) == 0 ) {
-          if ( last_line_blank1 == TRUE ) {
-            v1++;
-            debug ("mailbox%d found mail %d",index, v1);
-            last_line_blank1 = FALSE;
+      if (fstr != NULL) {
+        txt=&txt1[0];
+        last_line_blank1=TRUE;
+        v1=0;
+
+        while ( ( fgets ( txt1, 100, fstr ) ) != NULL ) {
+          txt1[strlen(txt1)-1]='\0';                 // cut the newline
+       	  /*
+	    Is there a "From ..." line. Count only, if a blank line was directly before this
+	  */
+          if ( strncmp (txt1, "From ", 5 ) == 0 ) {
+            if ( last_line_blank1 == TRUE ) {
+              v1++;
+              debug ("mailbox%d found mail %d",index, v1);
+              last_line_blank1 = FALSE;
+            }
+          }
+          if ( strlen (txt1) == 0 ) {
+  	    last_line_blank1 = TRUE;
+          }
+          else {
+  	    last_line_blank1 = FALSE;
           }
         }
-        if ( strlen (txt1) == 0 ) {
-	  last_line_blank1 = TRUE;
-        }
-        else {
-	  last_line_blank1 = FALSE;
-        }
+        fclose (fstr);
       }
     }
-    fclose (fstr);
   }
+  mbxnum[index]=v1;
   *num=v1;
   return (0);
 }
