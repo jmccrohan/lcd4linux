@@ -35,7 +35,7 @@
 
 #define XRES	6
 #define YRES	8
-#define BARS	( BAR_L | BAR_R )
+#define BARS	( BAR_L | BAR_R | BAR_H2 )
 
 static LCD Lcd;
 static char *Port=NULL;
