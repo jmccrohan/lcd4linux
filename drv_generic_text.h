@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.15 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.16 2004/11/28 15:50:24 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.16  2004/11/28 15:50:24  reinelt
+ * Cwlinux fixes (invalidation of user-defined chars)
+ *
  * Revision 1.15  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -100,9 +103,10 @@
 extern int DROWS, DCOLS; /* display size */
 extern int LROWS, LCOLS; /* layout size */
 extern int XRES,  YRES;  /* pixel width/height of one char  */
-extern int GOTO_COST;    /* number of bytes a goto command requires */
 extern int CHARS, CHAR0; /* number of user-defineable characters, ASCII of first char */
 extern int ICONS;        /* number of user-defineable characters reserved for icons */
+extern int GOTO_COST;    /* number of bytes a goto command requires */
+extern int INVALIDATE;   /* re-send a modified userdefined char? */
 
 /* these functions must be implemented by the real driver */
 void (*drv_generic_text_real_write)(const int row, const int col, const char *data, const int len);

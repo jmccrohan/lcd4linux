@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.14 2004/06/26 12:05:00 reinelt Exp $
+/* $Id: widget_icon.c,v 1.15 2004/11/28 15:50:24 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.15  2004/11/28 15:50:24  reinelt
+ * Cwlinux fixes (invalidation of user-defined chars)
+ *
  * Revision 1.14  2004/06/26 12:05:00  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -181,15 +184,12 @@ void widget_icon_update (void *Self)
   /* rotate icon bitmap */
   Icon->curmap++;
   if (Icon->curmap >= Icon->maxmap)
-    Icon->curmap=0;
+    Icon->curmap = 0;
   
   /* finally, draw it! */
   if (W->class->draw)
     W->class->draw(W);
 
-  /* store currently visible bitmap */
-  Icon->prvmap=Icon->curmap;
-  
   /* add a new one-shot timer */
   timer_add (widget_icon_update, Self, Icon->speed, 1);
   

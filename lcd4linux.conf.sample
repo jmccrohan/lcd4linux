@@ -32,16 +32,16 @@ Display CF631 {
     Port '/dev/tts/USB0'
     Speed 115200
     Contrast 95
-    Backlight 100
+    Backlight 255
     Icons 1
 }
 
 Display CF632 {
-    Icons 7
     Driver 'Crystalfontz'
     Model '632'
     Port '/dev/tts/0'
     Speed 19200
+    Icons 1
 }
 
 Display CF633 {
@@ -687,14 +687,14 @@ Layout testMySQL {
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
-#Display 'CF632'
+Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
-Display 'USBLCD'
+#Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
 

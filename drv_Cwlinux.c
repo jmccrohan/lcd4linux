@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.19 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.20 2004/11/28 15:50:24 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.20  2004/11/28 15:50:24  reinelt
+ * Cwlinux fixes (invalidation of user-defined chars)
+ *
  * Revision 1.19  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -160,6 +163,7 @@ typedef struct {
   int protocol;
 } MODEL;
 
+
 /* Fixme: number of gpo's should be verified */
 
 static MODEL Models[] = {
@@ -173,15 +177,21 @@ static MODEL Models[] = {
 /***  hardware dependant functions    ***/
 /****************************************/
 
+static void drv_CW_send (const char *string, const int len)
+{
+  drv_generic_serial_write (string, len);
+  usleep (20);
+}
+
+
 static void drv_CW_write (const int row, const int col, const char *data, const int len)
 {
   char cmd[6]="\376Gxy\375";
   
   cmd[2]=(char)col;
   cmd[3]=(char)row;
-  drv_generic_serial_write (cmd, 5);
-
-  drv_generic_serial_write (data, len);
+  drv_CW_send (cmd, 5);
+  drv_CW_send (data, len);
 }
 
 
@@ -195,8 +205,7 @@ static void drv_CW1602_defchar (const int ascii, const unsigned char *buffer)
   for (i=0; i<8; i++) {
     cmd[3+i] = buffer[i] & 0x1f;
   }
-  drv_generic_serial_write(cmd,12);
-  usleep(20);  /* delay for cw1602 to settle the character defined! */
+  drv_CW_send(cmd,12);
 }
 
 
@@ -218,22 +227,20 @@ static void drv_CW12232_defchar (const int ascii, const unsigned char *buffer)
       }
     }
   }
-  drv_generic_serial_write (cmd, 10);
+  drv_CW_send (cmd, 10);
 }
 
 
 static void drv_CW_clear (void)
 {
-#if 0
-  drv_generic_serial_write("\376X\375",3); /* Clear Display */
+#if 1
+  drv_CW_send("\376X\375",3); /* Clear Display */
+  usleep(500000);
 #else
   /* for some mysterious reason, we have to sleep after  */
   /* the command _and_ after the CMD_END... */
-  usleep(20);
-  drv_generic_serial_write("\376X",2); /* Clear Display */
-  usleep(20);
-  drv_generic_serial_write("\375",1);  /* Command End */
-  usleep(20);
+  drv_CW_send("\376X",2); /* Clear Display */
+  drv_CW_send("\375",1);  /* Command End */
 #endif
 }
 
@@ -253,16 +260,16 @@ static int drv_CW_brightness (int brightness)
   switch (Brightness) {
   case 0:
     /* backlight off */
-    drv_generic_serial_write ("\376F\375", 3);
+    drv_CW_send ("\376F\375", 3);
     break;
   case 8:
     /* backlight on */
-    drv_generic_serial_write ("\376B\375", 3);
+    drv_CW_send ("\376B\375", 3);
     break;
   default:
     /* backlight level */
     cmd[2] = (char)Brightness;
-    drv_generic_serial_write (cmd, 4);
+    drv_CW_send (cmd, 4);
     break;
   }
 
@@ -318,10 +325,10 @@ static int drv_CW_start (const char *section)
 
   drv_CW_clear();
 
-  drv_generic_serial_write ("\376D\375", 3); /* auto line wrap off */
-  drv_generic_serial_write ("\376R\375", 3); /* auto scroll off */
-  drv_generic_serial_write ("\376K\375", 3); /* underline cursor off */
-  drv_generic_serial_write ("\376B\375", 3); /* backlight on */
+  drv_CW_send ("\376D\375", 3); /* auto line wrap off */
+  drv_CW_send ("\376R\375", 3); /* auto scroll off */
+  drv_CW_send ("\376K\375", 3); /* underline cursor off */
+  drv_CW_send ("\376B\375", 3); /* backlight on */
 
   /* set brightness */
   if (cfg_number(section, "Brightness", 0, 0, 8, &i) > 0) {
@@ -394,7 +401,8 @@ int drv_CW_init (const char *section, const int quiet)
   YRES  = 8;      /* pixel height of one char  */
   CHARS = 16;     /* number of user-defineable characters */
   CHAR0 = 1;      /* ASCII of first user-defineable char */
-  GOTO_COST = 3;  /* number of bytes a goto command requires */
+  GOTO_COST  = 3; /* number of bytes a goto command requires */
+  INVALIDATE = 1; /* re-defined chars must be re-sent to the display */
 
   /* start display */
   if ((ret=drv_CW_start (section))!=0)
@@ -464,7 +472,7 @@ int drv_CW_quit (const int quiet) {
   info("%s: shutting down.", Name);
   drv_generic_text_quit();
 
-  /* clear *both* displays */
+  /* clear display */
   drv_CW_clear();
   
   /* say goodbye... */

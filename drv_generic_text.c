@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.21 2004/06/26 12:04:59 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.22 2004/11/28 15:50:24 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.22  2004/11/28 15:50:24  reinelt
+ * Cwlinux fixes (invalidation of user-defined chars)
+ *
  * Revision 1.21  2004/06/26 12:04:59  reinelt
  *
  * uh-oh... the last CVS log message messed up things a lot...
@@ -125,9 +128,10 @@
  * extern int DROWS, DCOLS;    display size
  * extern int LROWS, LCOLS;    layout size
  * extern int XRES,  YRES;     pixel width/height of one char
- * extern int GOTO_COST;       number of bytes a goto command requires
  * extern int CHARS, CHAR0;    number of user-defineable characters, ASCII of first char
  * extern int ICONS;           number of user-defineable characters reserved for icons
+ * extern int GOTO_COST;       number of bytes a goto command requires
+ * extern int INVALIDATE;      re-send a modified userdefined char?
  *
  *
  * these functions must be implemented by the real driver:
@@ -200,6 +204,7 @@ typedef struct {
   int val2;
   DIRECTION dir;
   int segment;
+  int invalid;
 } BAR;
 
 typedef struct {
@@ -214,12 +219,18 @@ static char *Section=NULL;
 static char *Driver=NULL;
 
 
-int DROWS, DCOLS; /* display size */
-int LROWS, LCOLS; /* layout size */
-int XRES,  YRES;  /* pixels of one char cell */
-int GOTO_COST;    /* number of bytes a goto command requires */
-int CHARS, CHAR0; /* number of user-defineable characters, ASCII of first char */
-int ICONS;        /* number of user-defineable characters reserved for icons */
+int DROWS = 20;     /* display size: rows */
+int DCOLS =  4;     /* display size: columns */
+int LROWS = 20;     /* layout size: rows */
+int LCOLS =  4;     /* layout size: columns */
+int XRES  =  6;     /* pixels of one char cell */
+int YRES  =  8;     /* pixels of one char cell */
+int CHARS =  0;     /* number of user-defineable characters */
+int CHAR0 =  0;     /* ASCII of first user-defineable char */
+int ICONS =  0;     /* number of user-defineable characters reserved for icons */
+
+int GOTO_COST =  0; /* number of bytes a goto command requires */
+int INVALIDATE = 0; /* re-send a modified userdefined char? */
 
 
 static char *LayoutFB    = NULL;
@@ -245,22 +256,22 @@ static void drv_generic_text_resizeFB (int rows, int cols)
   int i, row, col;
   
   /* Layout FB is large enough */
-  if (rows<=LROWS && cols<=LCOLS)
+  if (rows <= LROWS && cols <= LCOLS)
     return;
   
   /* get maximum values */
-  if (rows<LROWS) rows=LROWS;
-  if (cols<LCOLS) cols=LCOLS;
+  if (rows < LROWS) rows = LROWS;
+  if (cols < LCOLS) cols = LCOLS;
   
   /* allocate new Layout FB */
-  newFB=malloc(cols*rows*sizeof(char));
-  memset (newFB, ' ', rows*cols*sizeof(char));
+  newFB = malloc(cols * rows * sizeof(char));
+  memset (newFB, ' ', rows * cols * sizeof(char));
 
   /* transfer contents */
-  if (LayoutFB!=NULL) {
-    for (row=0; row<LROWS; row++) {
-      for (col=0; col<LCOLS; col++) {
-	newFB[row*cols+col]=LayoutFB[row*LCOLS+col];
+  if (LayoutFB != NULL) {
+    for (row = 0; row < LROWS; row++) {
+      for (col = 0; col < LCOLS; col++) {
+	newFB[row * cols + col] = LayoutFB[row * LCOLS + col];
       }
     }
     free (LayoutFB);
@@ -271,28 +282,29 @@ static void drv_generic_text_resizeFB (int rows, int cols)
   /* resize Bar buffer */
   if (BarFB) {
 
-    newBar=malloc (rows*cols*sizeof(BAR));
+    newBar = malloc (rows * cols * sizeof(BAR));
 
-    for (i=0; i<rows*cols; i++) {
+    for (i = 0; i < rows * cols; i++) {
       newBar[i].val1    = -1;
       newBar[i].val2    = -1;
       newBar[i].dir     =  0;
       newBar[i].segment = -1;
+      newBar[i].invalid =  0;
     }
     
     /* transfer contents */
-    for (row=0; row<LROWS; row++) {
-      for (col=0; col<LCOLS; col++) {
-	newBar[row*cols+col]=BarFB[row*LCOLS+col];
+    for (row = 0; row < LROWS; row++) {
+      for (col = 0; col < LCOLS; col++) {
+	newBar[row * cols + col] = BarFB[row * LCOLS + col];
       }
     }
 
     free (BarFB);
-    BarFB=newBar;
+    BarFB = newBar;
   }
   
-  LCOLS    = cols;
-  LROWS    = rows;
+  LCOLS = cols;
+  LROWS = rows;
 }
 
 
@@ -307,17 +319,17 @@ int drv_generic_text_init (const char *section, const char *driver)
   Driver  = (char*)driver;
 
   /* init display framebuffer */
-  DisplayFB = (char*)malloc(DCOLS*DROWS*sizeof(char));
-  memset (DisplayFB, ' ', DROWS*DCOLS*sizeof(char));
+  DisplayFB = (char*)malloc(DCOLS * DROWS * sizeof(char));
+  memset (DisplayFB, ' ', DROWS * DCOLS * sizeof(char));
   
   /* init layout framebuffer */
   LROWS = 0;
   LCOLS = 0;
-  LayoutFB=NULL;
+  LayoutFB = NULL;
   drv_generic_text_resizeFB (DROWS, DCOLS);
   
   /* sanity check */
-  if (LayoutFB==NULL || DisplayFB==NULL) {
+  if (LayoutFB == NULL || DisplayFB == NULL) {
     error ("%s: framebuffer could not be allocated: malloc() failed", Driver);
     return -1;
   }
@@ -348,7 +360,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
   
   for (i = 0; line1[i]; i++) {
     if (strlen(line1[i]) <= (unsigned)DCOLS) {
-      drv_generic_text_real_write (0, (DCOLS-strlen(line1[i]))/2, line1[i], strlen(line1[i]));
+      drv_generic_text_real_write (0, (DCOLS - strlen(line1[i])) / 2, line1[i], strlen(line1[i]));
       flag = 1;
       break;
     }
@@ -357,7 +369,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
   if (DROWS >= 2) {
     for (i = 0; line2[i]; i++) {
       if (strlen(line2[i]) <= (unsigned)DCOLS) {
-	drv_generic_text_real_write (1, (DCOLS-strlen(line2[i]))/2, line2[i], strlen(line2[i]));
+	drv_generic_text_real_write (1, (DCOLS - strlen(line2[i])) / 2, line2[i], strlen(line2[i]));
 	flag = 1;
 	break;
       }
@@ -367,7 +379,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
   if (msg1 && DROWS >= 3) {
     int len = strlen(msg1);
     if ( len <= DCOLS) {
-      drv_generic_text_real_write (2, (DCOLS-len)/2, msg1, len);
+      drv_generic_text_real_write (2, (DCOLS-len) / 2, msg1, len);
       flag = 1;
     }
   }
@@ -375,7 +387,7 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
   if (msg2 && DROWS >= 4) {
     int len = strlen(msg2);
     if ( len <= DCOLS) {
-      drv_generic_text_real_write (3, (DCOLS-len)/2, msg2, len);
+      drv_generic_text_real_write (3, (DCOLS-len) / 2, msg2, len);
       flag = 1;
     }
   }
@@ -386,15 +398,15 @@ int drv_generic_text_greet (const char *msg1, const char *msg2)
 
 int drv_generic_text_draw (WIDGET *W)
 {
-  WIDGET_TEXT *Text=W->data;
+  WIDGET_TEXT *Text = W->data;
   char *txt, *fb1, *fb2;
   int row, col, col0, len, end;
   
-  row=W->row;
-  col=W->col;
-  txt=Text->buffer;
-  len=strlen(txt);
-  end=col+len;
+  row = W->row;
+  col = W->col;
+  txt = Text->buffer;
+  len = strlen(txt);
+  end = col + len;
   
   /* maybe grow layout framebuffer */
   drv_generic_text_resizeFB (row+1, col+len);
@@ -403,21 +415,21 @@ int drv_generic_text_draw (WIDGET *W)
   fb2 = DisplayFB + row*DCOLS;
   
   /* transfer new text into layout buffer */
-  memcpy (fb1+col, txt, len);
+  memcpy (fb1 + col, txt, len);
   
   if (row<DROWS) {
-    for (; col<=end && col<DCOLS; col++) {
+    for (; col <= end && col < DCOLS; col++) {
       int pos1, pos2, equal;
-      if (fb1[col]==fb2[col]) continue;
+      if (fb1[col] == fb2[col]) continue;
       col0 = col;
-      for (pos1=col, pos2=pos1, col++, equal=0; col<=end && col<DCOLS; col++) {
-	if (fb1[col]==fb2[col]) {
+      for (pos1 = col, pos2 = pos1, col++, equal = 0; col <= end && col < DCOLS; col++) {
+	if (fb1[col] == fb2[col]) {
 	  /* If we find just one equal byte, we don't break, because this  */
 	  /* would require a goto, which takes several bytes, too. */
-	  if (++equal>GOTO_COST) break;
+	  if (++equal > GOTO_COST) break;
 	} else {
-	  pos2=col;
-	  equal=0;
+	  pos2 = col;
+	  equal = 0;
 	}
       }
       memcpy                      (           fb2+pos1, fb1+pos1, pos2-pos1+1);
@@ -433,17 +445,17 @@ int drv_generic_text_quit (void) {
   
   if (LayoutFB) {
     free(LayoutFB);
-    LayoutFB=NULL;
+    LayoutFB = NULL;
   }
   
   if (DisplayFB) {
     free(DisplayFB);
-    DisplayFB=NULL;
+    DisplayFB = NULL;
   }
   
   if (BarFB) {
     free (BarFB);
-    BarFB=NULL;
+    BarFB = NULL;
   }
   widget_unregister();
 
@@ -457,7 +469,7 @@ int drv_generic_text_quit (void) {
 
 int drv_generic_text_icon_init (void)
 {
-  if (cfg_number(Section, "Icons", 0, 0, CHARS, &ICONS)<0) return -1;
+  if (cfg_number(Section, "Icons", 0, 0, CHARS, &ICONS) < 0) return -1;
   if (ICONS>0) {
     info ("%s: reserving %d of %d user-defined characters for icons", Driver, ICONS, CHARS);
   }
@@ -467,9 +479,11 @@ int drv_generic_text_icon_init (void)
 
 int drv_generic_text_icon_draw (WIDGET *W)
 {
-  static int icon_counter=0;
+  static int icon_counter = 0;
   WIDGET_ICON *Icon = W->data;
   int row, col;
+  int l_idx, d_idx;
+  int invalidate = 0;
   unsigned char ascii;
   
   row = W->row;
@@ -479,34 +493,40 @@ int drv_generic_text_icon_draw (WIDGET *W)
   drv_generic_text_resizeFB (row+1, col+1);
   
   /* icon deactivated? */
-  if (Icon->ascii==-2) return 0;
+  if (Icon->ascii == -2) return 0;
   
   /* ASCII already assigned? */
-  if (Icon->ascii==-1) {
-    if (icon_counter>=ICONS) {
+  if (Icon->ascii == -1) {
+    if (icon_counter >= ICONS) {
       error ("cannot process icon '%s': out of icons", W->name);
-      Icon->ascii=-2;
+      Icon->ascii = -2;
       return -1;
     }
     icon_counter++;
-    Icon->ascii=CHAR0+CHARS-icon_counter;
+    Icon->ascii = CHAR0 + CHARS - icon_counter;
   }
 
   /* maybe redefine icon */
-  if (Icon->curmap!=Icon->prvmap) {
-    drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap+YRES*Icon->curmap);
+  if (Icon->curmap != Icon->prvmap && Icon->visible) {
+    Icon->prvmap = Icon->curmap;
+    drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap + YRES * Icon->curmap);
+    invalidate = INVALIDATE;
   }
 
   /* use blank if invisible */
-  ascii=Icon->visible?Icon->ascii:' ';
+  ascii = Icon->visible ? Icon->ascii : ' ';
 
+  /* index into the two framebuffers */
+  l_idx = row * LCOLS + col;
+  d_idx = row * DCOLS + col;
+  
   /* transfer icon into layout buffer */
-  LayoutFB[row*LCOLS+col]=ascii;
+  LayoutFB[l_idx] = ascii;
 
   /* maybe send icon to the display */
-  if (row < DROWS && col < DCOLS && DisplayFB[row*DCOLS+col] != ascii) {
-    DisplayFB[row*DCOLS+col]=ascii;
-    drv_generic_text_real_write (row, col, DisplayFB+row*DCOLS+col, 1);
+  if (row < DROWS && col < DCOLS && (DisplayFB[d_idx] != ascii || invalidate)) {
+    DisplayFB[d_idx] = ascii;
+    drv_generic_text_real_write (row, col, DisplayFB + d_idx, 1);
   }
   
   return 0;
@@ -522,14 +542,15 @@ static void drv_generic_text_bar_clear(void)
 {
   int i;
   
-  for (i=0; i<LROWS*LCOLS; i++) {
+  for (i = 0; i < LROWS*LCOLS; i++) {
     BarFB[i].val1    = -1;
     BarFB[i].val2    = -1;
     BarFB[i].dir     =  0;
     BarFB[i].segment = -1;
+    BarFB[i].invalid =  0;
   }
 
-  for (i=0; i<nSegment;i++) {
+  for (i = 0; i < nSegment; i++) {
     Segment[i].used = 0;
   }
 }
@@ -539,15 +560,15 @@ int drv_generic_text_bar_init (const int single_segments)
 {
   if (BarFB) free (BarFB);
   
-  if ((BarFB=malloc (LROWS*LCOLS*sizeof(BAR)))==NULL) {
+  if ((BarFB = malloc (LROWS * LCOLS * sizeof(BAR))) == NULL) {
     error ("bar buffer allocation failed: out of memory");
     return -1;
   }
   
   Single_Segments = single_segments;
   
-  nSegment=0;
-  fSegment=0;
+  nSegment = 0;
+  fSegment = 0;
   
   drv_generic_text_bar_clear();
   
@@ -557,20 +578,20 @@ int drv_generic_text_bar_init (const int single_segments)
 
 void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRECTION dir, const int ascii)
 {
-  Segment[fSegment].val1=val1;
-  Segment[fSegment].val2=val2;
-  Segment[fSegment].dir=dir;
-  Segment[fSegment].used=0;
-  Segment[fSegment].ascii=ascii;
+  Segment[fSegment].val1  = val1;
+  Segment[fSegment].val2  = val2;
+  Segment[fSegment].dir   = dir;
+  Segment[fSegment].used  = 0;
+  Segment[fSegment].ascii = ascii;
   
   fSegment++;
-  nSegment=fSegment;
+  nSegment = fSegment;
 }
 
 
 static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION dir, int len, int val1, int val2)
 {
-  int rev=0;
+  int rev = 0;
 
   switch (dir) {
   case DIR_WEST:
@@ -580,20 +601,20 @@ static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION d
     
   case DIR_EAST:
     while (len > 0 && col < LCOLS) {
-      BarFB[row*LCOLS+col].dir=dir;
-      BarFB[row*LCOLS+col].segment=-1;
+      BarFB[row*LCOLS+col].dir = dir;
+      BarFB[row*LCOLS+col].segment = -1;
       if (val1 >= XRES) {
-	BarFB[row*LCOLS+col].val1 = rev?0:XRES;
+	BarFB[row*LCOLS+col].val1 = rev ? 0 : XRES;
 	val1 -= XRES;
       } else {
-	BarFB[row*LCOLS+col].val1 = rev?XRES-val1:val1;
+	BarFB[row*LCOLS+col].val1 = rev ? XRES-val1 : val1;
 	val1 = 0;
       }
       if (val2 >= XRES) {
-	BarFB[row*LCOLS+col].val2 = rev?0:XRES;
+	BarFB[row*LCOLS+col].val2 = rev ? 0 : XRES;
 	val2 -= XRES;
       } else {
-	BarFB[row*LCOLS+col].val2 = rev?XRES-val2:val2;
+	BarFB[row*LCOLS+col].val2 = rev ? XRES-val2 : val2;
 	val2 = 0;
       }
       len--;
@@ -608,27 +629,26 @@ static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION d
     
   case DIR_NORTH:
     while (len > 0 && row < LROWS) {
-      BarFB[row*LCOLS+col].dir=dir;
-      BarFB[row*LCOLS+col].segment=-1;
+      BarFB[row*LCOLS+col].dir = dir;
+      BarFB[row*LCOLS+col].segment = -1;
       if (val1 >= YRES) {
-	BarFB[row*LCOLS+col].val1 = rev?0:YRES;
+	BarFB[row*LCOLS+col].val1 = rev ? 0 : YRES;
 	val1 -= YRES;
       } else {
-	BarFB[row*LCOLS+col].val1 = rev?YRES-val1:val1;
+	BarFB[row*LCOLS+col].val1 = rev ? YRES-val1 : val1;
 	val1 = 0;
       }
       if (val2 >= YRES) {
-	BarFB[row*LCOLS+col].val2 = rev?0:YRES;
+	BarFB[row*LCOLS+col].val2 = rev ? 0 : YRES;
 	val2 -= YRES;
       } else {
-	BarFB[row*LCOLS+col].val2 = rev?YRES-val2:val2;
+	BarFB[row*LCOLS+col].val2 = rev ? YRES - val2 : val2;
 	val2 = 0;
       }
       len--;
       row++;
     }
     break;
-    
   }
 }
 
@@ -639,35 +659,35 @@ static void drv_generic_text_bar_create_segments (void)
   int res, l1, l2;
   
   /* find first unused segment */
-  for (i=fSegment; i<nSegment && Segment[i].used; i++);
+  for (i = fSegment; i < nSegment && Segment[i].used; i++);
   
   /* pack unused segments */
-  for (j=i+1; j<nSegment; j++) {
+  for (j = i+1; j < nSegment; j++) {
     if (Segment[j].used)
-      Segment[i++]=Segment[j];
+      Segment[i++] = Segment[j];
   }
-  nSegment=i;
+  nSegment = i;
   
   /* create needed segments */
-  for (n=0; n<LROWS*LCOLS; n++) {
-    if (BarFB[n].dir==0) continue;
-    res=BarFB[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
-    for (i=0; i<nSegment; i++) {
+  for (n = 0; n < LROWS*LCOLS; n++) {
+    if (BarFB[n].dir == 0) continue;
+    res = BarFB[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
+    for (i = 0; i < nSegment; i++) {
       if (Segment[i].dir & BarFB[n].dir) {
-	l1 = Segment[i].val1; if (l1>res) l1=res;
-	l2 = Segment[i].val2; if (l2>res) l2=res;
+	l1 = Segment[i].val1; if (l1 > res) l1=res;
+	l2 = Segment[i].val2; if (l2 > res) l2=res;
 	if (l1 == BarFB[n].val1 && l2 == BarFB[n].val2) break;
       }
     }
-    if (i==nSegment) {
+    if (i == nSegment) {
       nSegment++;
-      Segment[i].val1=BarFB[n].val1;
-      Segment[i].val2=BarFB[n].val2;
-      Segment[i].dir=BarFB[n].dir;
-      Segment[i].used=0;
-      Segment[i].ascii=-1;
+      Segment[i].val1  = BarFB[n].val1;
+      Segment[i].val2  = BarFB[n].val2;
+      Segment[i].dir   = BarFB[n].dir;
+      Segment[i].used  =  0;
+      Segment[i].ascii = -1;
     }
-    BarFB[n].segment=i;
+    BarFB[n].segment = i;
   }
 }
 
@@ -677,25 +697,25 @@ static int drv_generic_text_bar_segment_error (const int i, const int j)
   int res;
   int i1, i2, j1, j2;
   
-  if (i==j) return 65535;
+  if (i == j) return 65535;
   if (!(Segment[i].dir & Segment[j].dir)) return 65535;
   
   res = Segment[i].dir&(DIR_EAST|DIR_WEST) ? XRES:YRES;
   
-  i1=Segment[i].val1; if (i1>res) i1=res;
-  i2=Segment[i].val2; if (i2>res) i2=res;
-  j1=Segment[j].val1; if (j1>res) j1=res;
-  j2=Segment[j].val2; if (j2>res) j2=res;
+  i1 = Segment[i].val1; if (i1 > res) i1 = res;
+  i2 = Segment[i].val2; if (i2 > res) i2 = res;
+  j1 = Segment[j].val1; if (j1 > res) j1 = res;
+  j2 = Segment[j].val2; if (j2 > res) j2 = res;
   
-  if (i1==0   && j1!=0)  return 65535;
-  if (i2==0   && j2!=0)  return 65535;
-  if (i1==res && j1<res) return 65535;
-  if (i2==res && j2<res) return 65535;
-  if (i1==1   && j1!=1 && i2 > 0)  return 65535;
-  if (i2==1   && j2!=1 && j1 > 0)  return 65535;
-  if (i1==i2  && j1!=j2) return 65535;
+  if (i1 == 0   && j1 != 0)  return 65535;
+  if (i2 == 0   && j2 != 0)  return 65535;
+  if (i1 == res && j1 < res) return 65535;
+  if (i2 == res && j2 < res) return 65535;
+  if (i1 == 1   && j1 != 1 && i2 > 0)  return 65535;
+  if (i2 == 1   && j2 != 1 && j1 > 0)  return 65535;
+  if (i1 == i2  && j1 != j2) return 65535;
   
-  return (i1-j1)*(i1-j1)+(i2-j2)*(i2-j2);
+  return (i1-j1)*(i1-j1) + (i2-j2)*(i2-j2);
 }
 
 
@@ -710,30 +730,30 @@ static void drv_generic_text_bar_pack_segments (void)
     return;
   }
   
-  for (i=0; i<nSegment; i++) {
-    for (j=0; j<nSegment; j++) {
-      error[i][j]=drv_generic_text_bar_segment_error(i,j);
+  for (i = 0; i < nSegment; i++) {
+    for (j = 0; j < nSegment; j++) {
+      error[i][j] = drv_generic_text_bar_segment_error(i, j);
     }
   }
   
-  while (nSegment>fSegment+CHARS-ICONS) {
+  while (nSegment > fSegment + CHARS - ICONS) {
     
-    min=65535;
-    pack_i=-1;
-    pack_j=-1;
-    for (i=fSegment; i<nSegment; i++) {
+    min = 65535;
+    pack_i = -1;
+    pack_j = -1;
+    for (i = fSegment; i < nSegment; i++) {
       if (pass1 && Segment[i].used) continue;
-       for (j=0; j<nSegment; j++) {
-	if (error[i][j]<min) {
-	  min=error[i][j];
-	  pack_i=i;
-	  pack_j=j;
+       for (j = 0; j < nSegment; j++) {
+	if (error[i][j] < min) {
+	  min = error[i][j];
+	  pack_i = i;
+	  pack_j = j;
 	}
       }
     }
-    if (pack_i==-1) {
+    if (pack_i == -1) {
       if (pass1) {
-	pass1=0;
+	pass1 = 0;
 	continue;
       } else {
 	error ("unable to compact bar characters");
@@ -741,7 +761,7 @@ static void drv_generic_text_bar_pack_segments (void)
 	error ("Segment[0].val1=%d val2=%d", Segment[0].val1, Segment[0].val2);
 	error ("Segment[1].val1=%d val2=%d", Segment[1].val1, Segment[1].val2);
 	error ("Segment[2].val1=%d val2=%d", Segment[2].val1, Segment[2].val2);
-	nSegment=CHARS-ICONS;
+	nSegment = CHARS - ICONS;
 	break;
       }
     } 
@@ -754,16 +774,16 @@ static void drv_generic_text_bar_pack_segments (void)
 #endif
     
     nSegment--;
-    Segment[pack_i]=Segment[nSegment];
+    Segment[pack_i] = Segment[nSegment];
     
-    for (i=0; i<nSegment; i++) {
-      error[pack_i][i]=error[nSegment][i];
-      error[i][pack_i]=error[i][nSegment];
+    for (i = 0; i < nSegment; i++) {
+      error[pack_i][i] = error[nSegment][i];
+      error[i][pack_i] = error[i][nSegment];
     }
     
-    for (n=0; n<LROWS*LCOLS; n++) {
-      if (BarFB[n].segment==pack_i)   BarFB[n].segment=pack_j;
-      if (BarFB[n].segment==nSegment) BarFB[n].segment=pack_i;
+    for (n = 0; n < LROWS * LCOLS; n++) {
+      if (BarFB[n].segment == pack_i)   BarFB[n].segment = pack_j;
+      if (BarFB[n].segment == nSegment) BarFB[n].segment = pack_i;
     }
   }
 }
@@ -774,47 +794,56 @@ static void drv_generic_text_bar_define_chars(void)
   int c, i, j;
   unsigned char buffer[8];
   
-  for (i=fSegment; i<nSegment; i++) {
+  for (i = fSegment; i < nSegment; i++) {
     if (Segment[i].used) continue;
-    if (Segment[i].ascii!=-1) continue;
-    for (c=0; c<CHARS-ICONS; c++) {
-      for (j=fSegment; j<nSegment; j++) {
-	if (Segment[j].ascii==c) break;
+    if (Segment[i].ascii != -1) continue;
+    for (c = 0; c < CHARS - ICONS; c++) {
+      for (j = fSegment; j < nSegment; j++) {
+	if (Segment[j].ascii == c) break;
       }
-      if (j==nSegment) break;
+      if (j == nSegment) break;
     }
-    Segment[i].ascii=c;
+    Segment[i].ascii = c;
     switch (Segment[i].dir) {
     case DIR_WEST:
-      for (j=0; j<4; j++) {
-	buffer[j  ]=(1<<Segment[i].val1)-1;
-	buffer[j+4]=(1<<Segment[i].val2)-1;
+      for (j = 0; j < 4; j++) {
+	buffer[j  ] = (1<<Segment[i].val1)-1;
+	buffer[j+4] = (1<<Segment[i].val2)-1;
       }
       break;
     case DIR_EAST:
-      for (j=0; j<4; j++) {
-	buffer[j  ]=255<<(XRES-Segment[i].val1);
-	buffer[j+4]=255<<(XRES-Segment[i].val2);
+      for (j = 0; j < 4; j++) {
+	buffer[j  ] = 255<<(XRES-Segment[i].val1);
+	buffer[j+4] = 255<<(XRES-Segment[i].val2);
       }
       break;
     case DIR_NORTH:
-      for (j=0; j<Segment[i].val1; j++) {
-	buffer[7-j]=(1<<XRES)-1;
+      for (j = 0; j < Segment[i].val1; j++) {
+	buffer[7-j] = (1<<XRES)-1;
       }
-      for (; j<YRES; j++) {
-	buffer[7-j]=0;
+      for (; j < YRES; j++) {
+	buffer[7-j] = 0;
       }
       break;
     case DIR_SOUTH:
-      for (j=0; j<Segment[i].val1; j++) {
-	buffer[j]=(1<<XRES)-1;
+      for (j = 0; j < Segment[i].val1; j++) {
+	buffer[j] = (1<<XRES)-1;
       }
-      for (; j<YRES; j++) {
-	buffer[j]=0;
+      for (; j < YRES; j++) {
+	buffer[j] = 0;
       }
       break;
     }
     drv_generic_text_real_defchar(CHAR0+c, buffer);
+    
+    /* maybe invalidate framebuffer */
+    if (INVALIDATE) {
+      for (j = 0; j < LROWS*LCOLS; j++) {
+	if (BarFB[j].segment == i) {
+	  BarFB[j].invalid = 1;
+	}
+      }
+    }
   }
 }
 
@@ -861,40 +890,47 @@ int drv_generic_text_bar_draw (WIDGET *W)
   drv_generic_text_bar_define_chars();
   
   /* reset usage flags */
-  for (s=0; s<nSegment; s++) {
-    Segment[s].used=0;
+  for (s = 0; s < nSegment; s++) {
+    Segment[s].used = 0;
   }
   
   /* set usage flags */
-  for (n=0; n<LROWS*LCOLS; n++) {
-    if ((s=BarFB[n].segment)!=-1) Segment[s].used=1;
+  for (n = 0; n < LROWS*LCOLS; n++) {
+    if ((s = BarFB[n].segment) != -1) Segment[s].used = 1;
   }
 
   /* transfer bars into layout buffer */
-  for (n=0; n<LCOLS*LROWS; n++) {
-    s=BarFB[n].segment;
-    if (s==-1) continue;
-    c=Segment[s].ascii;
-    if (c==-1) continue;
-    if (s>=fSegment) c+=CHAR0; /* ascii offset for user-defineable chars */
-    if(c==LayoutFB[n]) continue;
-    LayoutFB[n]=c;
+  for (row = 0; row < LROWS; row++) {
+    for (col = 0; col < LCOLS; col++) {
+      n = row*LCOLS+col;
+      s = BarFB[n].segment;
+      if (s == -1) continue;
+      c = Segment[s].ascii;
+      if (c == -1) continue;
+      if (s >= fSegment) c += CHAR0; /* ascii offset for user-defineable chars */
+      LayoutFB[n] = c;
+      /* maybe invalidate display framebuffer */
+      if (BarFB[n].invalid) {
+	BarFB[n].invalid = 0;
+	DisplayFB[row*DCOLS+col] = ~LayoutFB[n];
+      }
+    }
   }
   
   /* transfer differences to the display */
-  for (row=0; row<DROWS; row++) {
-    for (col=0; col<DCOLS; col++) {
+  for (row = 0; row < DROWS; row++) {
+    for (col = 0; col < DCOLS; col++) {
       int pos1, pos2, equal;
-      if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) continue;
+      if (LayoutFB[row*LCOLS+col] == DisplayFB[row*DCOLS+col]) continue;
       col0 = col;
-      for (pos1=col, pos2=pos1, col++, equal=0; col<DCOLS; col++) {
-	if (LayoutFB[row*LCOLS+col]==DisplayFB[row*DCOLS+col]) {
+      for (pos1 = col, pos2 = pos1, col++, equal = 0; col < DCOLS; col++) {
+	if (LayoutFB[row*LCOLS+col] == DisplayFB[row*DCOLS+col]) {
 	  /* If we find just one equal byte, we don't break, because this  */
 	  /* would require a goto, which takes several bytes, too. */
-	  if (++equal>GOTO_COST) break;
+	  if (++equal > GOTO_COST) break;
 	} else {
-	  pos2=col;
-	  equal=0;
+	  pos2 = col;
+	  equal = 0;
 	}
       }
       memcpy                      (           DisplayFB+row*DCOLS+pos1, LayoutFB+row*LCOLS+pos1, pos2-pos1+1);
