@@ -1,4 +1,4 @@
-/* $Id: M50530.c,v 1.14 2003/09/10 03:48:22 reinelt Exp $
+/* $Id: M50530.c,v 1.15 2003/09/11 04:09:53 reinelt Exp $
  *
  * driver for display modules based on the M50530 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: M50530.c,v $
+ * Revision 1.15  2003/09/11 04:09:53  reinelt
+ * minor cleanups
+ *
  * Revision 1.14  2003/09/10 03:48:22  reinelt
  * Icons for M50530, new processing scheme (Ticks.Text...)
  *
@@ -238,7 +241,7 @@ int M5_init (LCD *Self)
   
   if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
   if (Icons>0) {
-    info ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
     icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, M5_define_char);
     Self->icons=Icons;
     Lcd.icons=Icons;

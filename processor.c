@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.44 2003/09/10 15:59:39 reinelt Exp $
+/* $Id: processor.c,v 1.45 2003/09/11 04:09:53 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.45  2003/09/11 04:09:53  reinelt
+ * minor cleanups
+ *
  * Revision 1.44  2003/09/10 15:59:39  reinelt
  * minor cleanups
  *
@@ -705,8 +708,10 @@ static char *process_row (char *data, int row, int len)
       }
       
     } else if (*s=='&') {
-      lcd_icon(*(++s)-'0', 0, row, p-buffer+1);
-      *p++='\t';
+      if (lcd_icon(*(++s)-'0', 0, row, p-buffer+1)<0)
+	*p++='*'; // error
+      else
+	*p++='\t'; // all ok
       
     } else {
       *p++=*s;
@@ -841,7 +846,16 @@ void process_init (void)
   tack=tick;
   if (tack>tick_icon) tack=tick_icon;
 
-  debug ("using tick=%d msec, tack=%d msec", tick, tack);
+  debug ("========================");
+  debug ("Timings:");
+  debug ("%3d msec Text updates", tick_text);
+  debug ("%3d msec Bar  updates", tick_bar );
+  debug ("%3d msec Icon updates", tick_icon);
+  debug ("%3d msec GPO  updates", tick_gpo );
+  debug ("------------------------");
+  debug ("%3d msec data collection", tick);
+  debug ("%3d msec data processing", tack);
+  debug ("========================");
 
   for (i=1; i<=lines; i++) {
     char buffer[8], *p;

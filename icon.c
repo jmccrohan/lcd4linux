@@ -1,4 +1,4 @@
-/* $Id: icon.c,v 1.6 2003/09/10 14:01:53 reinelt Exp $
+/* $Id: icon.c,v 1.7 2003/09/11 04:09:53 reinelt Exp $
  *
  * generic icon and heartbeat handling
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: icon.c,v $
+ * Revision 1.7  2003/09/11 04:09:53  reinelt
+ * minor cleanups
+ *
  * Revision 1.6  2003/09/10 14:01:53  reinelt
  * icons nearly finished\!
  *
@@ -208,5 +211,8 @@ int icon_draw (int num, int seq, int row, int col)
 
 int icon_peek (int row, int col)
 {
-  return Screen[row*COLS+col];
+  if (Screen) 
+    return Screen[row*COLS+col];
+  else
+    return -1;
 }
