@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.15 2001/03/14 15:14:59 reinelt Exp $
+/* $Id: HD44780.c,v 1.16 2001/03/14 15:30:53 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.16  2001/03/14 15:30:53  reinelt
+ *
+ * make ppdev compatible to earlier kernels
+ *
  * Revision 1.15  2001/03/14 15:14:59  reinelt
  * added ppdev parallel port access
  *
@@ -133,6 +137,7 @@
 #include <linux/ppdev.h>
 #endif
 
+
 #if !defined(WITH_OUTB) && !defined(WITH_PPDEV)
 #error neither outb() nor ppdev() possible
 #error cannot compile HD44780 driver
@@ -166,14 +171,10 @@ typedef struct {
 static LCD Lcd;
 
 
-#ifdef WITH_OUTB
 static unsigned short Port=0;
-#endif
 
-#ifdef WITH_PPDEV
 static char *PPdev=NULL;
 static int   PPfd=-1;
-#endif
 
 static char Txt[4][40];
 static BAR  Bar[4][40];
@@ -199,11 +200,11 @@ static void HD_toggle (int bit)
 
 static void HD_command (unsigned char cmd, int delay)
 {
+#ifdef WITH_PPDEV
   if (PPdev) {
 
-#ifdef WITH_PPDEV
     struct ppdev_frob_struct frob;
-
+    
     // clear RS (inverted)
     frob.mask=PARPORT_CONTROL_AUTOFD;
     frob.val=PARPORT_CONTROL_AUTOFD;
@@ -214,26 +215,28 @@ static void HD_command (unsigned char cmd, int delay)
     
     // send command
     HD_toggle(PARPORT_CONTROL_STROBE);
-
+    
     // wait
     udelay(delay);
-#endif
 
   } else {
 
-#ifdef WITH_OUTB
+#endif
+
     outb (cmd, Port);    // put data on DB1..DB8
     outb (0x02, Port+2); // set Enable = bit 0 invertet
     udelay (1);
     outb (0x03, Port+2); // clear Enable
     udelay (delay);
-#endif
-
+    
+#ifdef WITH_PPDEV
   }
+#endif
 }
 
 static void HD_write (char *string, int len, int delay)
 {
+#ifdef WITH_PPDEV
   if (PPdev) {
 
     struct ppdev_frob_struct frob;
@@ -258,6 +261,8 @@ static void HD_write (char *string, int len, int delay)
     
   } else {
 
+#endif
+
     while (len--) {
       outb (*string++, Port); // put data on DB1..DB8
       outb (0x00, Port+2);    // set Enable = bit 0 invertet
@@ -265,14 +270,15 @@ static void HD_write (char *string, int len, int delay)
       outb (0x01, Port+2);    // clear Enable
       udelay (delay);
     }
-
+#ifdef WITH_PPDEV
   }
+#endif
 }
 static void HD_setGPO (int bits)
 {
-  
   if (Lcd.gpos>0) {
 
+#ifdef WITH_PPDEV
     if (PPdev) {
 
       // put data on DB1..DB8
@@ -282,18 +288,24 @@ static void HD_setGPO (int bits)
       HD_toggle(PARPORT_CONTROL_INIT);
 
     } else {
+#endif
+
       outb (bits, Port);    // put data on DB1..DB8
       outb (0x05, Port+2);  // set INIT = bit 2 invertet
       udelay (1);
       outb (0x03, Port+2);  // clear INIT
       udelay (1);
+
+#ifdef WITH_PPDEV
     }
+#endif
   }
 }
 
 static int HD_open (void)
 {
 
+#ifdef WITH_PPDEV
   if (PPdev) {
     debug ("using ppdev %s", PPdev);
     PPfd=open(PPdev, O_RDWR);
@@ -312,14 +324,15 @@ static int HD_open (void)
       return -1;
     }
   } else {
-
+#endif
     debug ("using raw port 0x%x", Port);
     if (ioperm(Port, 3, 1)!=0) {
       error ("HD44780: ioperm(0x%x) failed: %s", Port, strerror(errno));
       return -1;
     }
-
+#ifdef WITH_PPDEV
   }
+#endif
 
   HD_command (0x30, 4100); // 8 Bit mode, wait 4.1 ms
   HD_command (0x30, 100);  // 8 Bit mode, wait 100 us
@@ -529,14 +542,14 @@ int HD_init (LCD *Self)
   }
   PPdev=NULL;
   if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
-#if 0
+#ifdef WITH_PPDEV
+    Port=0;
+    PPdev=s;
+#else
     error ("HD44780: bad port '%s' in %s", s, cfg_file());
     return -1;
 #endif
-    // use PPdev
-    Port=0;
-    PPdev=s;
-  }    
+  }
   
 #ifdef USE_OLD_UDELAY
   s=cfg_get ("Delay");
