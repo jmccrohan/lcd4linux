@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.1 2004/05/25 14:27:21 reinelt Exp $
+/* $Id: drv_Image.c,v 1.2 2004/05/29 23:30:20 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.2  2004/05/29 23:30:20  reinelt
+ *
+ * fixed a compiler issue with drv_Image.c (thanks to Frank Stratmann)
+ *
  * Revision 1.1  2004/05/25 14:27:21  reinelt
  *
  * added drv_Image.c (this time really!)
@@ -267,12 +271,16 @@ static int drv_IMG_flush_PNG (void)
 static void drv_IMG_flush (void)
 {
   switch (Format) {
+#ifdef WITH_PPM
   case PPM:
     drv_IMG_flush_PPM();
     break;
+#endif
+#ifdef WITH_PNG
   case PNG:
     drv_IMG_flush_PNG();
     break;
+#endif
   }
 }
 
