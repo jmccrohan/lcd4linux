@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.44 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: display.c,v 1.45 2004/01/09 17:03:07 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.45  2004/01/09 17:03:07  reinelt
+ * initiated transfer to new driver architecture
+ * new file 'drv.c' will someday replace 'display.c'
+ * new file 'drv_MatrixOrbital.c' will replace 'MatrixOrbital.c'
+ * due to this 'soft' transfer lcd4linux should stay usable during the switch
+ * (at least I hope so)
+ *
  * Revision 1.44  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -250,18 +257,18 @@ extern LCD MilfordInstruments[];
 extern LCD PalmPilot[];
 extern LCD Raster[];
 extern LCD SIN[];
-extern LCD Skeleton[];
 extern LCD XWindow[];
 extern LCD Text[];
 
 // output file for Raster driver
 // has to be defined here because it's referenced
 // even if the raster driver is not included!
-char *output=NULL;
+// Fixme: has gone to new drv.c
+// char *output=NULL;
 
-FAMILY Driver[] = {
+FAMILY oldDriver[] = {
 #ifdef WITH_BECKMANNEGLE
-  { "Beckmann+Egle", BeckmannEgle },
+  { "BeckmannEgle", BeckmannEgle },
 #endif
 #ifdef WITH_CRYSTALFONTZ
   { "Crystalfontz", Crystalfontz },
@@ -270,40 +277,34 @@ FAMILY Driver[] = {
   { "Cwlinux", Cwlinux },
 #endif
 #ifdef WITH_HD44780
-  { "HD 44780 based", HD44780 },
+  { "HD44780", HD44780 },
 #endif
 #ifdef WITH_M50530
-  { "M50530 based", M50530 },
+  { "M50530", M50530 },
 #endif
 #ifdef WITH_T6963
-  { "T6963 based", T6963 },
+  { "T6963", T6963 },
 #endif
 #ifdef WITH_USBLCD
   { "USBLCD", USBLCD },
 #endif
 #ifdef WITH_MATRIXORBITAL
-  { "Matrix Orbital", MatrixOrbital },
+  { "MatrixOrbital", MatrixOrbital },
 #endif
 #ifdef WITH_MILINST
-  { "Milford Instruments", MilfordInstruments },
+  { "MilfordInstruments", MilfordInstruments },
 #endif
 #ifdef WITH_PALMPILOT
-  { "3Com Palm Pilot", PalmPilot },
+  { "PalmPilot", PalmPilot },
 #endif
 #if defined (WITH_PNG) || defined(WITH_PPM)
   { "Raster", Raster },
 #endif
-#ifdef WITH_SIN
-  { "SIN Router", SIN },
-#endif
-#ifdef WITH_SKELETON
-  { "Skeleton", Skeleton },
-#endif
 #ifdef WITH_X11
-  { "X Window System", XWindow },
+  { "X11", XWindow },
 #endif
 #ifdef WITH_TEXT
-  { "ncurses Text", Text },
+  { "Text", Text },
 #endif
   { NULL }
 };
@@ -316,12 +317,12 @@ int lcd_list (void)
 {
   int i, j;
 
-  printf ("available display drivers:");
+  printf ("available *old* display drivers and models:");
   
-  for (i=0; Driver[i].name; i++) {
-    printf ("\n   %-20s:", Driver[i].name);
-    for (j=0; Driver[i].Model[j].name; j++) {
-      printf (" %s", Driver[i].Model[j].name);
+  for (i=0; oldDriver[i].driver; i++) {
+    printf ("\n   %-20s:", oldDriver[i].driver);
+    for (j=0; oldDriver[i].Model[j].name; j++) {
+      printf (" %s", oldDriver[i].Model[j].name);
     }
   }
   printf ("\n");
@@ -332,10 +333,10 @@ int lcd_list (void)
 int lcd_init (char *driver)
 {
   int i, j;
-  for (i=0; Driver[i].name; i++) {
-    for (j=0; Driver[i].Model[j].name; j++) {
-      if (strcmp (Driver[i].Model[j].name, driver)==0) {
-	Lcd=&Driver[i].Model[j];
+  for (i=0; oldDriver[i].driver; i++) {
+    for (j=0; oldDriver[i].Model[j].name; j++) {
+      if (strcmp (oldDriver[i].Model[j].name, driver)==0) {
+	Lcd=&oldDriver[i].Model[j];
 	if (Lcd->init==NULL) return 0;
 	return Lcd->init(Lcd);
       }

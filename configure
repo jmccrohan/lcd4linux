@@ -21013,7 +21013,7 @@ _ACEOF
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
-   DRIVERS="$DRIVERS MatrixOrbital.lo"
+   DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MATRIXORBITAL 1

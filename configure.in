@@ -178,7 +178,7 @@ if test "$USBLCD" = "yes"; then
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
-   DRIVERS="$DRIVERS MatrixOrbital.lo"
+   DRIVERS="$DRIVERS MatrixOrbital.lo drv_MatrixOrbital.lo"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[junk])
 fi
 

@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.55 2004/01/09 04:16:06 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.56 2004/01/09 17:03:07 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.56  2004/01/09 17:03:07  reinelt
+ * initiated transfer to new driver architecture
+ * new file 'drv.c' will someday replace 'display.c'
+ * new file 'drv_MatrixOrbital.c' will replace 'MatrixOrbital.c'
+ * due to this 'soft' transfer lcd4linux should stay usable during the switch
+ * (at least I hope so)
+ *
  * Revision 1.55  2004/01/09 04:16:06  reinelt
  * added 'section' argument to cfg_get(), but NULLed it on all calls by now.
  *
@@ -275,7 +282,8 @@
 #include "debug.h"
 #include "pid.h"
 #include "udelay.h"
-#include "display.h"
+#include "display.h"  // Fixme: remove me...
+#include "drv.h"
 #include "processor.h"
 #include "plugin.h"
 
@@ -368,7 +376,8 @@ void handler (int signal)
 int main (int argc, char *argv[])
 {
   char *cfg="/etc/lcd4linux.conf";
-  char *driver;
+  char *display, *driver;
+  char  section[32];
   int c;
   int quiet=0;
   int interactive=0;
@@ -414,6 +423,8 @@ int main (int argc, char *argv[])
       break;
     case 'l':
       printf ("%s\n", release);
+      drv_list();
+      printf ("\n");
       lcd_list();
       exit(0);
     case 'o':
@@ -451,10 +462,19 @@ int main (int argc, char *argv[])
   if (cfg_init(cfg)==-1)
     exit (1);
   
-  driver=cfg_get(NULL, "display", NULL);
-  if (driver==NULL || *driver=='\0') {
-    error ("missing 'display' entry in %s!", cfg_source());
+  display=cfg_get(NULL, "Display", NULL);
+  if (display==NULL || *display=='\0') {
+    error ("missing 'Display' entry in %s!", cfg_source());
     exit (1);
+  }
+  
+  snprintf (section, sizeof(section), "Display:%s", display);
+  driver=cfg_get(section, "Driver", NULL);
+  if (driver==NULL || *driver=='\0') {
+#if 0
+    error ("missing '%s.Driver' entry in %s!", section, cfg_source());
+    exit (1);
+#endif
   }
   
   if (!running_foreground) {
@@ -509,10 +529,19 @@ int main (int argc, char *argv[])
     running_background=1;
   }
   
-  debug ("initializing driver %s", driver);
-  if (lcd_init(driver)==-1) {
-    pid_exit(PIDFILE);
-    exit (1);
+  // Fixme: Compatibility only...
+  if (driver!=NULL) {
+    debug ("initializing driver %s", driver);
+    if (drv_init(section, driver)==-1) {
+      pid_exit(PIDFILE);
+      exit (1);
+    }
+  } else {
+    debug ("initializing old-style driver %s", display);
+    if (lcd_init(display)==-1) {
+      pid_exit(PIDFILE);
+      exit (1);
+    }
   }
 
   // process_init sets global vars tick, tack

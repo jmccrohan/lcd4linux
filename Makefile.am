@@ -43,6 +43,7 @@ liblcd4linux_la_LIBADD = @DRIVERS@
 
 liblcd4linux_la_SOURCES = \
 display.c display.h \
+drv.c drv.h \
 debug.c debug.h \
 cfg.c cfg.h \
 lock.c lock.h \
@@ -61,7 +62,7 @@ HD44780.c \
 M50530.c \
 T6963.c \
 USBLCD.c \
-MatrixOrbital.c \
+drv_MatrixOrbital.c MatrixOrbital.c \
 MilfordInstruments.c \
 PalmPilot.c \
 Raster.c \

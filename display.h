@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.22 2003/10/05 17:58:50 reinelt Exp $
+/* $Id: display.h,v 1.23 2004/01/09 17:03:07 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -22,6 +22,13 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.23  2004/01/09 17:03:07  reinelt
+ * initiated transfer to new driver architecture
+ * new file 'drv.c' will someday replace 'display.c'
+ * new file 'drv_MatrixOrbital.c' will replace 'MatrixOrbital.c'
+ * due to this 'soft' transfer lcd4linux should stay usable during the switch
+ * (at least I hope so)
+ *
  * Revision 1.22  2003/10/05 17:58:50  reinelt
  * libtool junk; copyright messages cleaned up
  *
@@ -130,8 +137,8 @@ typedef struct LCD {
 } LCD;
 
 typedef struct {
-  char *name;
-  LCD *Model;
+  char *driver;
+  LCD  *Model;
 } FAMILY;
 
 
