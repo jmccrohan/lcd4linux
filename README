@@ -1,5 +1,5 @@
 #
-# $Id: README,v 1.1 2000/03/19 08:41:28 reinelt Exp $
+# $Id: README,v 1.2 2000/03/26 19:03:52 reinelt Exp $
 #
 
 This is the README file for lcd4linux
@@ -37,6 +37,8 @@ The configuration file (default: /etc/lcd4linux.conf) has a very simple format:
 Every line consists of a key and a value, seperated by whitespace (blanks or tabs). 
 Values can contain whitespace, and can be enclosed in single or double quotes.
 A key must not contain whitespace. Keys are NOT case-sensitive. Order doesn't matter.
+Empty lines and all text on a line after a '#' will be ignored. If you want to
+use '#' in a value (think of X11-colors), you have to quote it with a backslash.
 
 The configuration file contains information for different modules of lcd4linux: 
 

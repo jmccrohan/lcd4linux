@@ -1,4 +1,4 @@
-/* $Id: XWindow.c,v 1.5 2000/03/26 18:46:28 reinelt Exp $
+/* $Id: XWindow.c,v 1.6 2000/03/26 19:03:52 reinelt Exp $
  *
  * driver for X11
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: XWindow.c,v $
+ * Revision 1.6  2000/03/26 19:03:52  reinelt
+ *
+ * more Pixmap renaming
+ * quoting of '#' in config file
+ *
  * Revision 1.5  2000/03/26 18:46:28  reinelt
  *
  * bug in pixmap.c that leaded to empty bars fixed
@@ -99,7 +104,7 @@ int X_flush (void)
       int a, b;
       for (a=0; a<pixel; a++)
 	for (b=0; b<pixel; b++)
-	  buffer[y*xsize+x+a*xsize+b]=Pixmap[row*Lcd.cols*Lcd.xres+col]+1;
+	  buffer[y*xsize+x+a*xsize+b]=LCDpixmap[row*Lcd.cols*Lcd.xres+col]+1;
     }
   }
   

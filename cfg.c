@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.2 2000/03/10 17:36:02 reinelt Exp $
+/* $Id: cfg.c,v 1.3 2000/03/26 19:03:52 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,11 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.3  2000/03/26 19:03:52  reinelt
+ *
+ * more Pixmap renaming
+ * quoting of '#' in config file
+ *
  * Revision 1.2  2000/03/10 17:36:02  reinelt
  *
  * first unstable but running release
@@ -84,7 +89,8 @@ static char *strip (char *s)
   for (p=s; *p; p++) {
     if (*p=='"') do p++; while (*p && *p!='\n' && *p!='"');
     if (*p=='\'') do p++; while (*p && *p!='\n' && *p!='\'');
-    if (*p=='#' || *p=='\n') {
+    if (p>s && *(p-1)=='\\' && *p=='#')
+    if (*p=='\n' || (*p=='#' && (p==s || *(p-1)!='\\'))) {
       *p='\0';
       break;
     }
