@@ -1,4 +1,4 @@
-/* $Id: wifi.c,v 1.1 2003/11/14 05:59:37 reinelt Exp $
+/* $Id: wifi.c,v 1.2 2003/11/28 18:34:55 nicowallmeier Exp $
  *
  * WIFI specific functions
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: wifi.c,v $
+ * Revision 1.2  2003/11/28 18:34:55  nicowallmeier
+ * Minor bugfixes
+ *
  * Revision 1.1  2003/11/14 05:59:37  reinelt
  * added wifi.c wifi.h which have been forgotten at the last checkin
  *
@@ -62,13 +65,13 @@ typedef struct {
 
 int Wifi (int *signal, int *link, int *noise)
 {
-  *signal=0;
-  *link=0;
-  *noise=0;
   int ws, wl, wn;
   static int fd=-2;
   char buffer[4096];  
   char *p;
+  *signal=0;
+  *link=0;
+  *noise=0;
   if (fd==-1) return -1;	
 	
   if (fd==-2) {
