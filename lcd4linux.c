@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.53 2003/12/19 05:35:14 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.54 2004/01/08 05:28:12 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.54  2004/01/08 05:28:12  reinelt
+ * Luk Claes added to AUTHORS
+ * cfg: group handling ('{}') added
+ *
  * Revision 1.53  2003/12/19 05:35:14  reinelt
  * renamed 'client' to 'plugin'
  *
@@ -384,7 +388,7 @@ int main (int argc, char *argv[])
     switch (c) {
     case 'c':
       if (cfg_cmd (optarg)<0) {
-	fprintf (stderr, "%s: illegal argument -c %s\n", argv[0], optarg);
+	fprintf (stderr, "%s: illegal argument -c '%s'\n", argv[0], optarg);
 	exit(2);
       }
       break;

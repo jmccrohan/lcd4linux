@@ -1,8 +1,9 @@
-/* $Id: cfg.c,v 1.20 2004/01/07 10:15:41 reinelt Exp $^
+/* $Id: cfg.c,v 1.21 2004/01/08 05:28:12 reinelt Exp $^
  *
  * config file stuff
  *
  * Copyright 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -22,6 +23,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.21  2004/01/08 05:28:12  reinelt
+ * Luk Claes added to AUTHORS
+ * cfg: group handling ('{}') added
+ *
  * Revision 1.20  2004/01/07 10:15:41  reinelt
  * small glitch in evaluator fixed
  * made config table sorted and access with bsearch(),
@@ -184,13 +189,14 @@ static int c_sort (const void *a, const void *b)
 }
 
 
+// remove leading and trailing whitespace
 static char *strip (char *s, int strip_comments)
 {
   char *p;
   
   while (isblank(*s)) s++;
   for (p=s; *p; p++) {
-    if (*p=='"') do p++; while (*p && *p!='\n' && *p!='"');
+    if (*p=='"')  do p++; while (*p && *p!='\n' && *p!='"');
     if (*p=='\'') do p++; while (*p && *p!='\n' && *p!='\'');
     if (*p=='\n' || (strip_comments && *p=='#' && (p==s || *(p-1)!='\\'))) {
       *p='\0';
@@ -202,6 +208,7 @@ static char *strip (char *s, int strip_comments)
 }
 
 
+// unquote a string
 static char *dequote (char *string)
 {
   char *s=string;
@@ -219,11 +226,38 @@ static char *dequote (char *string)
 }
 
 
-static void cfg_add (char *key, char *val, int lock)
+// which if a string contains only valid chars
+// i.e. start with a char and contains chars and nums
+static int validchars (char *string)
 {
-  ENTRY *entry;
+  char *c;
 
-  entry=bsearch(key, Config, nConfig, sizeof(ENTRY), c_lookup);
+  for (c=string; *c; c++) {
+    if ((*c>='A' && *c<='Z') || (*c>='a' && *c<='z') || *c=='_') continue;
+    if ((*c>='0' && *c<='9') && (c>string)) continue;
+    return 0;
+  }
+  return 1;
+}
+
+
+static void cfg_add (char *group, char *key, char *val, int lock)
+{
+  char *buffer;
+  ENTRY *entry;
+  
+  // allocate buffer 
+  buffer=malloc(strlen(group)+strlen(key)+2);
+  *buffer='\0';
+  
+  // prepare group:key
+  if (*group!='\0') {
+    strcpy(buffer, group);
+    strcat(buffer, ".");
+  }
+  strcat (buffer, key);
+  
+  entry=bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
   
   if (entry!=NULL) {
     if (entry->lock>lock) return;
@@ -234,7 +268,7 @@ static void cfg_add (char *key, char *val, int lock)
   
   nConfig++;
   Config=realloc(Config, nConfig*sizeof(ENTRY));
-  Config[nConfig-1].key=strdup(key);
+  Config[nConfig-1].key=strdup(buffer);
   Config[nConfig-1].val=dequote(strdup(val));
   Config[nConfig-1].lock=lock;
 
@@ -257,7 +291,8 @@ int l4l_cfg_cmd (char *arg)
     }
   }
   if (*key=='\0' || *val=='\0') return -1;
-  cfg_add (key, val, 1);
+  if (!validchars(key)) return -1;
+  cfg_add ("", key, val, 1);
   return 0;
 }
 
@@ -306,7 +341,7 @@ int l4l_cfg_number (char *key, int defval, int min, int max, int *value)
 }
 
 
-static int check_cfg_source(char *file)
+static int cfg_check_source(char *file)
 {
   /* as passwords and commands are stored in the config file,
    * we will check that:
@@ -347,6 +382,154 @@ static int check_cfg_source(char *file)
 }
 
 
+static int cfg_read (char *file)
+{
+  FILE *stream;
+  char buffer[256];
+  char group[256];
+  char *line, *key, *val, *end;
+  int group_open, group_close;
+  int error, lineno;
+  
+  stream=fopen (file, "r");
+  if (stream==NULL) {
+    error ("open(%s) failed: %s", file, strerror(errno));
+    return -1;
+  }
+
+  // start with empty group
+  strcpy(group, "");
+  
+  error=0;
+  lineno=0;
+  while ((line=fgets(buffer,256,stream))!=NULL) {
+
+    // increment line number
+    lineno++;
+  
+    // skip empty lines
+    if (*(line=strip(line, 1))=='\0') continue;
+
+    // reset group flags
+    group_open=0;
+    group_close=0;
+    
+    // key is first word
+    key=line;
+    
+    // search first blank between key and value
+    for (val=line; *val; val++) {
+      if (isblank(*val)) {
+	*val++='\0';
+	break;
+      }
+    }
+
+    // strip value
+    val=strip(val, 1);
+
+    // search end of value
+    if (*val) for (end=val; *(end+1); end++);
+    else end=val;
+
+    // if last char is '{', a group has been opened
+    if (*end=='{') {
+      group_open=1;
+      *end='\0';
+      val=strip(val, 0);
+    }
+
+    // provess "value" in double-quotes
+    if (*val=='"' && *end=='"') {
+      *end='\0';
+      val++;
+    }
+
+    // provess 'value' in single-quotes
+    else if (*val=='\'' && *end=='\'') {
+      *end='\0';
+      val++;
+    }
+    
+    // if key is '}', a group has been closed
+    if (strcmp(key, "}")==0) {
+      group_close=1;
+      *key='\0';
+    }
+
+    // sanity check: '}' should be the only char in a line
+    if (group_close && (group_open || *val!='\0')) {
+      error ("error in config file '%s' line %d: garbage after '}'", file, lineno);
+      error=1;
+      break;
+    }
+    
+    // check key for valid chars
+    if (!validchars(key)) {
+      error ("error in config file '%s' line %d: key '%s' is invalid", file, lineno, key);
+      error=1;
+      break;
+    }
+
+    // on group-open, check value for valid chars
+    if (group_open && !validchars(val)) {
+      error ("error in config file '%s' line %d: group '%s' is invalid", file, lineno, val);
+      error=1;
+      break;
+    }
+
+    // on group-open, append new group name
+    if (group_open) {
+      // is the group[] array big enough?
+      if (strlen(group)+strlen(key)+3 > sizeof(group)) {
+	error ("error in config file '%s' line %d: group buffer overflow", file, lineno);
+	error=1;
+	break;
+      }
+      if (*group!='\0') strcat (group, ".");
+      strcat (group, key);
+      strcat (group, ":");
+      strcat (group, val);
+      debug ("Michi: group-open=<%s>", group);
+      continue;
+    }
+
+    // on group-close, remove last group name
+    if (group_close) {
+      // sanity check: group already empty?
+      if (*group=='\0') {
+	error ("error in config file '%s' line %d: unmatched closing brace", file, lineno);
+	error=1;
+	break;
+      }
+	
+      end=strrchr(group, '.');
+      if (end==NULL)
+	*group='\0';
+      else
+	*end='\0';
+      debug ("Michi: group-close1=<%s>", group);
+      continue;
+    }
+
+    // finally: add key
+    debug ("Michi: add key=<%s> val=<%s>", key, val);
+    cfg_add (group, key, val, 0);
+    
+  }
+  
+  // sanity check: are the braces balanced?
+  if (!error && *group!='\0') {
+    error ("error in config file '%s' line %d: unbalanced braces", file, lineno);
+    error=1;
+  }
+
+  fclose (stream);
+
+  return -error;
+}
+
+
 static void cfg_plugin (RESULT *result, RESULT *arg1)
 {
   char *value=cfg_get(R2S(arg1), "");
@@ -356,50 +539,19 @@ static void cfg_plugin (RESULT *result, RESULT *arg1)
 
 int l4l_cfg_init (char *file)
 {
-  FILE *stream;
-  char buffer[256];
-  char *line, *p, *s;
-
-  if (check_cfg_source(file) == -1) {
+  if (cfg_check_source(file) == -1) {
     error("config file '%s' is insecure, aborting", file);
     return -1;
   }
   
-  stream=fopen (file, "r");
-  if (stream==NULL) {
-    error ("open(%s) failed: %s", file, strerror(errno));
-    return -1;
-  }
-
+  if (cfg_read(file)<0) return -1;
+  
   if (Config_File) free (Config_File);
   Config_File=strdup(file);
-    
-  while ((line=fgets(buffer,256,stream))!=NULL) {
-    if (*(line=strip(line, 1))=='\0') continue;
-    for (p=line; *p; p++) {
-      if (isblank(*p)) {
-	*p++='\0';
-	break;
-      }
-    }
-    p=strip(p, 1);
-    if (*p) for (s=p; *(s+1); s++);
-    else s=p;
-    if (*p=='"' && *s=='"') {
-      *s='\0';
-      p++;
-    }
-    else if (*p=='\'' && *s=='\'') {
-      *s='\0';
-      p++;
-    }
-    cfg_add (line, p, 0);
-  }
-  fclose (stream);
-
+  
   // register as a plugin
   AddFunction ("cfg", 1, cfg_plugin);
-
+  
   return 0;
 }
 
