@@ -100,7 +100,7 @@ Overload 2.0
 Battwarning 10
 
 SetiDir /etc/setiathome
-Mailbox1 /var/spool/mail/michii
+Mailbox1 /var/spool/mail/michi
 
 Sensor1 /proc/sys/dev/sensors/as99127f-i2c-0-2d/temp1
 Sensor1_min 30

@@ -29,9 +29,10 @@ we have to use libsensors instead of parsing the proc files directly
 // accept data from external sources (fifo?)
 // Done 2000-03-08, look at %x -lt
 
-2001-02-11 Carsten Nau <info@cnau.de>
-connect a LED to a spare pin of the parallel port and show if ISDN
-is online
+// 2001-02-11 Carsten Nau <info@cnau.de>
+// connect a LED to a spare pin of the parallel port and show if ISDN
+// is online
+// Done with GPO's -mr
 
 // 2001-01-27 Axel Ehnert <axel@ehnert.net>
 // - display numer of emails in a mailbox
@@ -42,5 +43,6 @@ is online
 rename some tokens: %o->%os, %v->%ov, %r->%or, %p->%op,
 will be done with the big config-rework
 
-2001-03-05 Leo Tötsch <lt@toetsch.at>
-replace T_EXTENDED with a Flag similar to 'bar'
+// 2001-03-05 Leo Tötsch <lt@toetsch.at>
+// replace T_EXTENDED with a Flag similar to 'bar'
+// rejected, T_EXTENDED does a good job  -mr

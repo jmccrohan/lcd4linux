@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.20 2001/03/02 20:18:12 reinelt Exp $
+/* $Id: system.c,v 1.21 2001/03/09 12:14:24 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.21  2001/03/09 12:14:24  reinelt
+ *
+ * minor cleanups
+ *
  * Revision 1.20  2001/03/02 20:18:12  reinelt
  *
  * allow compile on systems without net/if_ppp.h
@@ -749,8 +753,11 @@ int Sensor (int index, double *val, double *min, double *max)
 
     snprintf(buffer, 32, "Sensor%d_min", index);
     min_buf[index]=atof(cfg_get(buffer)?:"0");
+    *min=min_buf[index];
+
     snprintf(buffer, 32, "Sensor%d_max", index);
     max_buf[index]=atof(cfg_get(buffer)?:"100");
+    *max=max_buf[index];
     
     fd[index]=open(sensor[index], O_RDONLY);
     if (fd[index]==-1) {

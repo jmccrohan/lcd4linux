@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.11 2001/03/08 15:25:38 ltoetsch Exp $
+/* $Id: cfg.c,v 1.12 2001/03/09 12:14:24 reinelt Exp $
  *
  * config file stuff
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.12  2001/03/09 12:14:24  reinelt
+ *
+ * minor cleanups
+ *
  * Revision 1.11  2001/03/08 15:25:38  ltoetsch
  * improved exec
  *
@@ -228,34 +232,34 @@ static int check_cfg_file(char *file)
    * - file is not accessible by other
    */
 
-  uid_t uid, gid;
-  int res;
   struct stat stbuf;
-  
+  uid_t uid, gid;
+  int error;
+
   uid = geteuid();
   gid = getegid();
   
-  res = stat(file, &stbuf);
-  if (res == -1) {
+  if (stat(file, &stbuf) == -1) {
     error ("stat(%s) failed: %s", file, strerror(errno));
     return -1;
   }
   if (S_ISCHR(stbuf.st_mode) && strcmp(file, "/dev/null") == 0)
     return 0;
   
+  error=0;
   if (!S_ISREG(stbuf.st_mode)) {
-    error ("stat(%s) is not a regular file", file);
-    return -1;
+    error ("security error: '%s' is not a regular file", file);
+    error=-1;
   }
   if (stbuf.st_uid != uid || stbuf.st_gid != gid) {
-    error ("stat(%s) owner and/or group don't match", file);
-    return -1;
+    error ("security error: owner and/or group of '%s' don't match", file);
+    error=-1;
   }
   if (stbuf.st_mode & S_IRWXG || stbuf.st_mode & S_IRWXO) {
-    error ("stat(%s) group or other have access", file);
-    return -1;
+    error ("security error: group or other have access to '%s'", file);
+    error=-1;
   }
-  return 0;
+  return error;
 }
 
 int cfg_read (char *file)
@@ -265,7 +269,7 @@ int cfg_read (char *file)
   char *line, *p, *s;
 
   if (check_cfg_file(file) == -1) {
-    error("open(%s) is insecure, we give up", file);
+    error("config file '%s' is insecure, aborting", file);
     exit(2);
   }
   
