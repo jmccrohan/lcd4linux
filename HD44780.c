@@ -1,4 +1,4 @@
-/* $Id: HD44780.c,v 1.10 2001/02/13 09:00:13 reinelt Exp $
+/* $Id: HD44780.c,v 1.11 2001/02/13 12:43:24 reinelt Exp $
  *
  * driver for display modules based on the HD44780 chip
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: HD44780.c,v $
+ * Revision 1.11  2001/02/13 12:43:24  reinelt
+ *
+ * HD_gpo() was missing
+ *
  * Revision 1.10  2001/02/13 09:00:13  reinelt
  *
  * prepared framework for GPO's (general purpose outputs)
@@ -495,6 +499,11 @@ int HD_bar (int type, int row, int col, int max, int len1, int len2)
     break;
 
   }
+  return 0;
+}
+
+int HD_gpo (int num, int val)
+{
   return 0;
 }
 
