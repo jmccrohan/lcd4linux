@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.35 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin.c,v 1.36 2005/04/03 07:07:51 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.36  2005/04/03 07:07:51  reinelt
+ * added statfs plugin
+ *
  * Revision 1.35  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -237,6 +240,8 @@ int  plugin_init_proc_stat (void);
 void plugin_exit_proc_stat (void);
 int  plugin_init_seti(void);
 void plugin_exit_seti(void);
+int  plugin_init_statfs(void);
+void plugin_exit_statfs(void);
 int  plugin_init_uname (void);
 void plugin_exit_uname (void);
 int  plugin_init_uptime (void);
@@ -303,6 +308,9 @@ int plugin_init (void)
 #ifdef PLUGIN_SETI
   plugin_init_seti();
 #endif
+#ifdef PLUGIN_STATFS
+  plugin_init_statfs();
+#endif
 #ifdef PLUGIN_UNAME
   plugin_init_uname();
 #endif
@@ -368,6 +376,9 @@ void plugin_exit(void) {
 #endif
 #ifdef PLUGIN_SETI
   plugin_exit_seti();
+#endif
+#ifdef PLUGIN_STATFS
+  plugin_exit_statfs();
 #endif
 #ifdef PLUGIN_UNAME
   plugin_exit_uname();

@@ -65,6 +65,7 @@ for plugin in $plugins; do
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
          PLUGIN_SETI="yes"
+         PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
          PLUGIN_UPTIME="yes"
          PLUGIN_WIRELESS="yes"
@@ -117,6 +118,9 @@ for plugin in $plugins; do
          ;;
       seti)
          PLUGIN_SETI=$val
+         ;;
+      statfs)
+         PLUGIN_STATFS=$val
          ;;
       uname)
          PLUGIN_UNAME=$val
@@ -225,6 +229,10 @@ fi
 if test "$PLUGIN_SETI" = "yes"; then
    PLUGINS="$PLUGINS plugin_seti.o"
    AC_DEFINE(PLUGIN_SETI,1,[seti plugin])
+fi
+if test "$PLUGIN_STATFS" = "yes"; then
+   PLUGINS="$PLUGINS plugin_statfs.o"
+   AC_DEFINE(PLUGIN_STATFS,1,[statfs plugin])
 fi
 if test "$PLUGIN_UNAME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uname.o"

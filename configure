@@ -6366,6 +6366,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
          PLUGIN_SETI="yes"
+         PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
          PLUGIN_UPTIME="yes"
          PLUGIN_WIRELESS="yes"
@@ -6418,6 +6419,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       seti)
          PLUGIN_SETI=$val
+         ;;
+      statfs)
+         PLUGIN_STATFS=$val
          ;;
       uname)
          PLUGIN_UNAME=$val
@@ -7267,6 +7271,14 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+if test "$PLUGIN_STATFS" = "yes"; then
+   PLUGINS="$PLUGINS plugin_statfs.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_STATFS 1
+_ACEOF
+
+fi
 if test "$PLUGIN_UNAME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uname.o"
 
@@ -7820,7 +7832,8 @@ fi
 
 
 
-for ac_header in arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h
+
+for ac_header in arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/statfs.h sys/time.h syslog.h termios.h unistd.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then

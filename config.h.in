@@ -175,6 +175,9 @@
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
 
+/* Define to 1 if you have the <sys/statfs.h> header file. */
+#undef HAVE_SYS_STATFS_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -283,6 +286,9 @@
 
 /* seti plugin */
 #undef PLUGIN_SETI
+
+/* statfs plugin */
+#undef PLUGIN_STATFS
 
 /* uname plugin */
 #undef PLUGIN_UNAME
