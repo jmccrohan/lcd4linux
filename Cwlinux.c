@@ -1,4 +1,4 @@
-/* $Id: Cwlinux.c,v 1.13 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: Cwlinux.c,v 1.14 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for Cwlinux serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Cwlinux.c,v $
+ * Revision 1.14  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.13  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -82,6 +85,7 @@
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 
 #define CHARS 8
 
@@ -89,6 +93,7 @@ static LCD Lcd;
 static char *Port = NULL;
 static speed_t Speed;
 static int Device = -1;
+static int Icons;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -220,6 +225,8 @@ int CW_clear(int full)
 {
 
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
 
   if (full) {
@@ -345,7 +352,15 @@ int CW_init(LCD * Self)
   // backlight brightness
   CW_Brightness();
 
-  bar_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, CHARS);
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (Icons>0) {
+    debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, CHARS, Icons, CW12232_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
     
   return 0;
@@ -370,6 +385,12 @@ int CW_bar(int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int CW_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int CW_flush(void)
 {
   int row, col, pos1, pos2;
@@ -378,6 +399,7 @@ int CW_flush(void)
   for (row = 0; row < Lcd.rows; row++) {
     for (col = 0; col < Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	if (c!=32) c++; //blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
@@ -442,35 +464,39 @@ int CW_quit(void)
 
 
 LCD Cwlinux[] = {
-  {name: "CW12232", 
-   rows:  4,
-   cols:  20,
-   xres:  6, 
-   yres:  8,
-   bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
-   gpos:  0,
-   init:  CW_init,
-   clear: CW_clear,
-   put:   CW_put,
-   bar:   CW_bar,
-   gpo:   NULL,
-   flush: CW12232_flush,
-   quit:  CW_quit
+  { name: "CW12232", 
+    rows:  4,
+    cols:  20,
+    xres:  6, 
+    yres:  8,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
+    gpos:  0,
+    init:  CW_init,
+    clear: CW_clear,
+    put:   CW_put,
+    bar:   CW_bar,
+    icon:  CW_icon,
+    gpo:   NULL,
+    flush: CW12232_flush,
+    quit:  CW_quit
   },
-  {name: "CW1602",
-   rows:  2,
-   cols:  16,
-   xres:  5,
-   yres:  8,
-   bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
-   gpos:  0,
-   init:  CW_init,
-   clear: CW_clear,
-   put:   CW_put,
-   bar:   CW_bar,
-   gpo:   NULL,
-   flush: CW1602_flush,
-   quit:  CW_quit
+  { name: "CW1602",
+    rows:  2,
+    cols:  16,
+    xres:  5,
+    yres:  8,
+    bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
+    gpos:  0,
+    init:  CW_init,
+    clear: CW_clear,
+    put:   CW_put,
+    bar:   CW_bar,
+    icon:  CW_icon,
+    gpo:   NULL,
+    flush: CW1602_flush,
+    quit:  CW_quit
   },
   {NULL}
 };

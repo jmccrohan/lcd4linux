@@ -1,4 +1,4 @@
-/* $Id: T6963.c,v 1.10 2003/08/16 07:31:35 reinelt Exp $
+/* $Id: T6963.c,v 1.11 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for display modules based on the Toshiba T6963 chip
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: T6963.c,v $
+ * Revision 1.11  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.10  2003/08/16 07:31:35  reinelt
  * double buffering in all drivers
  *
@@ -74,6 +77,7 @@
 #include "cfg.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "parport.h"
 #include "udelay.h"
 #include "pixmap.h"
@@ -83,6 +87,7 @@
 #define YRES 8
 
 static LCD Lcd;
+static int Icons;
 
 unsigned char *Buffer1, *Buffer2;
 
@@ -336,6 +341,14 @@ int T6_init (LCD *Self)
     return -1;
   }
   
+  if (cfg_number("Icons", 0, 0, 8, &Icons) < 0) return -1;
+  if (Icons>0) {
+    info ("allocating %d icons", Icons);
+    icon_init(Lcd.rows, Lcd.cols, Lcd.xres, Lcd.yres, 8, Icons, pix_icon);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+
   Buffer1=malloc(Lcd.cols*Lcd.rows*Lcd.yres);
   if (Buffer1==NULL) {
     error ("T6963: malloc(%d) failed: %s", Lcd.cols*Lcd.rows*Lcd.yres, strerror(errno));
@@ -397,6 +410,12 @@ int T6_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int T6_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int T6_flush (void)
 {
   int i, j, e;
@@ -441,11 +460,13 @@ LCD T6963[] = {
     xres:  6,
     yres:  8,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  T6_init,
     clear: T6_clear,
     put:   T6_put,
     bar:   T6_bar,
+    icon:  T6_icon,
     gpo:   NULL,
     flush: T6_flush,
     quit:  T6_quit 
@@ -456,11 +477,13 @@ LCD T6963[] = {
     xres:  8,
     yres:  8,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  T6_init,
     clear: T6_clear,
     put:   T6_put,
     bar:   T6_bar,
+    icon:  T6_icon,
     gpo:   NULL,
     flush: T6_flush,
     quit:  T6_quit

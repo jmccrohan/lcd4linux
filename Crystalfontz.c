@@ -1,4 +1,4 @@
-/* $Id: Crystalfontz.c,v 1.14 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: Crystalfontz.c,v 1.15 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for display modules from Crystalfontz
  *
@@ -19,6 +19,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: Crystalfontz.c,v $
+ * Revision 1.15  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.14  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -80,6 +83,7 @@
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 
 #define XRES 5
 #define YRES 8
@@ -89,6 +93,7 @@ static LCD Lcd;
 static char *Port=NULL;
 static speed_t Speed;
 static int Device=-1;
+static int Icons;
 static int GPO;
 
 static char *FrameBuffer1=NULL;
@@ -180,6 +185,8 @@ static void CF_define_char (int ascii, char *buffer)
 static int CF_clear (int full)
 {
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
   GPO=0;
   
@@ -245,7 +252,15 @@ static int CF_init (LCD *Self)
   Device=CF_open();
   if (Device==-1) return -1;
 
-  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS);
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (Icons>0) {
+    debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, CF_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
@@ -297,6 +312,12 @@ int CF_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int CF_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 static int CF_flush (void)
 {
   int row, col, pos1, pos2;
@@ -307,6 +328,7 @@ static int CF_flush (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	if (c!=32) c+=128; //blank
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
@@ -364,11 +386,13 @@ LCD Crystalfontz[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  CF_init,
     clear: CF_clear,
     put:   CF_put,
     bar:   CF_bar,
+    icon:  CF_icon,
     gpo:   NULL,
     flush: CF_flush,
     quit:  CF_quit 
@@ -379,11 +403,13 @@ LCD Crystalfontz[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  CF_init,
     clear: CF_clear,
     put:   CF_put,
     bar:   CF_bar,
+    icon:  CF_icon,
     gpo:   NULL,
     flush: CF_flush,
     quit:  CF_quit 
@@ -394,11 +420,13 @@ LCD Crystalfontz[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  CF_init,
     clear: CF_clear,
     put:   CF_put,
     bar:   CF_bar,
+    icon:  CF_icon,
     gpo:   NULL,
     flush: CF_flush,
     quit:  CF_quit 
@@ -409,11 +437,13 @@ LCD Crystalfontz[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  CF_init,
     clear: CF_clear,
     put:   CF_put,
     bar:   CF_bar,
+    icon:  CF_icon,
     gpo:   NULL,
     flush: CF_flush,
     quit:  CF_quit 

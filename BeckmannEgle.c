@@ -1,4 +1,4 @@
-/* $Id: BeckmannEgle.c,v 1.15 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: BeckmannEgle.c,v 1.16 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: BeckmannEgle.c,v $
+ * Revision 1.16  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.15  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -95,6 +98,7 @@
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 
 #define XRES 5
 #define YRES 8
@@ -110,6 +114,7 @@ static LCD Lcd;
 static char *Port=NULL;
 static int Device=-1;
 static int Type=-1;
+static int Icons;
 
 static char *FrameBuffer1=NULL;
 static char *FrameBuffer2=NULL;
@@ -208,6 +213,8 @@ int BE_clear (int full)
 {
 
   memset (FrameBuffer1, ' ', Lcd.rows*Lcd.cols*sizeof(char));
+
+  icon_clear();
   bar_clear();
 
   if (full) {
@@ -280,7 +287,15 @@ int BE_init (LCD *Self)
   BE_write (buffer, 4);    // select display type
   BE_write ("\033&D", 3);  // cursor off
 
-  bar_init(rows, cols, XRES, YRES, CHARS);
+  if (cfg_number("Icons", 0, 0, CHARS, &Icons)<0) return -1;
+  if (Icons>0) {
+    debug ("reserving %d of %d user-defined characters for icons", Icons, CHARS);
+    icon_init(Lcd.rows, Lcd.cols, XRES, YRES, CHARS, Icons, BE_define_char);
+    Self->icons=Icons;
+    Lcd.icons=Icons;
+  }
+  
+  bar_init(rows, cols, XRES, YRES, CHARS-Icons);
   bar_add_segment(  0,  0,255, 32); // ASCII  32 = blank
   bar_add_segment(255,255,255,255); // ASCII 255 = block
 
@@ -316,6 +331,12 @@ int BE_bar (int type, int row, int col, int max, int len1, int len2)
 }
 
 
+int BE_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
+
 int BE_flush (void)
 {
   int row, col, pos1, pos2;
@@ -326,6 +347,7 @@ int BE_flush (void)
   for (row=0; row<Lcd.rows; row++) {
     for (col=0; col<Lcd.cols; col++) {
       c=bar_peek(row, col);
+      if (c==-1) c=icon_peek(row, col);
       if (c!=-1) {
 	FrameBuffer1[row*Lcd.cols+col]=(char)c;
       }
@@ -382,11 +404,13 @@ LCD BeckmannEgle[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  BE_init,
     clear: BE_clear,
     put:   BE_put,
     bar:   BE_bar,
+    icon:  BE_icon,
     gpo:   NULL,
     flush: BE_flush,
     quit:  BE_quit 

@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.12 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: SIN.c,v 1.13 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.13  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.12  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -291,11 +294,13 @@ LCD SIN[] = {
     xres:  XRES,
     yres:  YRES,
     bars:  BAR_L | BAR_R,
+    icons: 0,
     gpos:  0,
     init:  SIN_init,
     clear: SIN_clear,
     put:   SIN_put,
     bar:   SIN_bar,
+    icon:  NULL,
     gpo:   NULL,
     flush: SIN_flush,
     quit:  SIN_quit },

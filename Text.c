@@ -1,4 +1,4 @@
-/* $Id: Text.c,v 1.10 2003/08/24 05:17:58 reinelt Exp $
+/* $Id: Text.c,v 1.11 2003/09/13 06:45:43 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Text.c,v $
+ * Revision 1.11  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.10  2003/08/24 05:17:58  reinelt
  * liblcd4linux patch from Patrick Schemitz
  *
@@ -255,11 +258,13 @@ LCD Text[] = {
     xres:  1,
     yres:  1,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2,
+    icons: 0,
     gpos:  0,
     init:  Text_init,
     clear: Text_clear,
     put:   Text_put,
     bar:   Text_bar,
+    icon:  NULL,
     gpo:   NULL,
     flush: Text_flush,
     quit:  Text_quit 

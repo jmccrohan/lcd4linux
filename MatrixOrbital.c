@@ -1,4 +1,4 @@
-/* $Id: MatrixOrbital.c,v 1.40 2003/09/11 04:09:53 reinelt Exp $
+/* $Id: MatrixOrbital.c,v 1.41 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for Matrix Orbital serial display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: MatrixOrbital.c,v $
+ * Revision 1.41  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.40  2003/09/11 04:09:53  reinelt
  * minor cleanups
  *
@@ -196,8 +199,8 @@
 #include "cfg.h"
 #include "lock.h"
 #include "display.h"
-#include "icon.h"
 #include "bar.h"
+#include "icon.h"
 
 #define XRES 5
 #define YRES 8
@@ -436,21 +439,6 @@ int MO_put (int row, int col, char *text)
 int MO_bar (int type, int row, int col, int max, int len1, int len2)
 {
   return bar_draw (type, row, col, max, len1, len2);
-}
-
-
-int MO_icon_old (int num, int row, int col, unsigned char *bitmap)
-{
-  // icons use last ascii codes
-  char ascii=CHARS-num;
-
-  MO_define_char (ascii, bitmap);
-  MO_goto(row, col);
-  MO_write(&ascii, 1);
-  FrameBuffer1[row*Lcd.cols+col]=(char)ascii;
-  FrameBuffer2[row*Lcd.cols+col]=(char)ascii;
-
-  return 0;
 }
 
 

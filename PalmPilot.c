@@ -1,4 +1,4 @@
-/* $Id: PalmPilot.c,v 1.12 2003/09/09 06:54:43 reinelt Exp $
+/* $Id: PalmPilot.c,v 1.13 2003/09/13 06:45:43 reinelt Exp $
  *
  * driver for 3Com Palm Pilot
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: PalmPilot.c,v $
+ * Revision 1.13  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.12  2003/09/09 06:54:43  reinelt
  * new function 'cfg_number()'
  *
@@ -92,6 +95,7 @@
 #include "lock.h"
 #include "display.h"
 #include "bar.h"
+#include "icon.h"
 #include "pixmap.h"
 
 
@@ -105,6 +109,7 @@ static int pgap=0;
 static int rgap=0;
 static int cgap=0;
 static int border=0;
+static int icons;
 
 static int Palm_open (void)
 {
@@ -288,10 +293,18 @@ int Palm_init (LCD *Self)
     return -1;
   }
 
+  if (cfg_number("Icons", 0, 0, 8, &icons) < 0) return -1;
+  if (icons>0) {
+    info ("allocating %d icons", icons);
+    icon_init(rows, cols, xres, yres, 8, icons, pix_icon);
+  }
+
+
   Self->rows=rows;
   Self->cols=cols;
   Self->xres=xres;
   Self->yres=yres;
+  Self->icons=icons;
   Lcd=*Self;
 
   // Device=open ("PalmOrb.dat", O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -313,6 +326,11 @@ int Palm_bar (int type, int row, int col, int max, int len1, int len2)
   return pix_bar (type, row, col, max, len1, len2);
 }
 
+int Palm_icon (int num, int seq, int row, int col)
+{
+  return icon_draw (num, seq, row, col);
+}
+
 int Palm_quit (void)
 {
   debug ("closing port %s", Port);
@@ -328,11 +346,13 @@ LCD PalmPilot[] = {
     xres:  0,
     yres:  0,
     bars:  BAR_L | BAR_R | BAR_U | BAR_D | BAR_H2 | BAR_V2 | BAR_T,
+    icons: 0,
     gpos:  0,
     init:  Palm_init,
     clear: Palm_clear,
     put:   Palm_put,
     bar:   Palm_bar,
+    icon:  Palm_icon,
     gpo:   NULL,
     flush: Palm_flush,
     quit:  Palm_quit },

@@ -1,4 +1,4 @@
-/* $Id: Skeleton.c,v 1.10 2003/08/17 12:11:58 reinelt Exp $
+/* $Id: Skeleton.c,v 1.11 2003/09/13 06:45:43 reinelt Exp $
  *
  * skeleton driver for new display modules
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Skeleton.c,v $
+ * Revision 1.11  2003/09/13 06:45:43  reinelt
+ * icons for all remaining drivers
+ *
  * Revision 1.10  2003/08/17 12:11:58  reinelt
  * framework for icons prepared
  *
@@ -107,6 +110,11 @@ int Skel_bar (int type, int row, int col, int max, int len1, int len2)
   return 0;
 }
 
+int Skel_icon (int num, int seq, int row, int col)
+{
+  return 0;
+}
+
 int Skel_gpo (int num, int val)
 {
   return 0;
@@ -131,11 +139,13 @@ LCD Skeleton[] = {
     xres:  5,
     yres:  8,
     bars:  BAR_L|BAR_R,
-    gpo:   0,
+    icons: 0,
+    gpos:  0,
     init:  Skel_init,
     clear: Skel_clear,
     put:   Skel_put,
     bar:   Skel_bar,
+    icon:  Skel_icon,
     gpo:   Skel_gpo,
     flush: Skel_flush, 
     quit:  Skel_quit },
