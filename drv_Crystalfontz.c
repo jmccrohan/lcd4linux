@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.22 2004/06/02 05:56:25 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.23 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.23  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.22  2004/06/02 05:56:25  reinelt
  *
  * extended contrast range for Crystalfontz
@@ -904,7 +908,7 @@ int drv_CF_list (void)
 
 
 // initialize driver & display
-int drv_CF_init (char *section)
+int drv_CF_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

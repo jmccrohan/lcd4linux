@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.15 2004/05/31 16:39:06 reinelt Exp $
+/* $Id: drv.c,v 1.16 2004/06/02 09:41:19 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.16  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.15  2004/05/31 16:39:06  reinelt
  *
  * added NULL display driver (for debugging/profiling purposes)
@@ -203,13 +207,52 @@ DRIVER *Driver[] = {
 static DRIVER *Drv = NULL;
 
 
+// Fixme
+char* drv_hello (int line, int cols)
+{
+  int i;
+  static char *line1[] = { "* LCD4Linux " VERSION " *",
+			   "LCD4Linux " VERSION,
+			   "* LCD4Linux *",
+			   "LCD4Linux",
+			   "L4Linux",
+			   NULL };
+  
+  static char *line2[] = { "http://lcd4linux.sourceforge.net",
+			   "lcd4linux.sourceforge.net",
+			   "http://lcd4linux.sf.net",
+			   "lcd4linux.sf.net",
+			   NULL };
+  
+  
+  switch (line) {
+  case 1:
+    for (i = 0; line1[i]; i++) {
+      if (strlen(line1[i]) <= cols) {
+	return line1[i];
+      }
+    }
+    break;
+  case 2:
+    for (i = 0; line2[i]; i++) {
+      if (strlen(line2[i]) <= cols) {
+	return line2[i];
+      }
+    }
+    break;
+  }
+  
+  return NULL;
+}
+
+
 int drv_list (void)
 {
   int i;
 
   printf ("available display drivers:");
   
-  for (i=0; Driver[i]; i++) {
+  for (i = 0; Driver[i]; i++) {
     printf ("\n   %-20s: ", Driver[i]->name);
     if (Driver[i]->list) Driver[i]->list();
   }
@@ -218,14 +261,14 @@ int drv_list (void)
 }
 
 
-int drv_init (char *section, char *driver)
+int drv_init (char *section, char *driver, int quiet)
 {
   int i;
-  for (i=0; Driver[i]; i++) {
-    if (strcmp (Driver[i]->name, driver)==0) {
-      Drv=Driver[i];
-      if (Drv->init==NULL) return 0;
-      return Drv->init(section);
+  for (i = 0; Driver[i]; i++) {
+    if (strcmp (Driver[i]->name, driver) == 0) {
+      Drv = Driver[i];
+      if (Drv->init == NULL) return 0;
+      return Drv->init(section, quiet);
     }
   }
   error ("drv_init(%s) failed: no such driver", driver);
@@ -235,6 +278,6 @@ int drv_init (char *section, char *driver)
 
 int drv_quit (void)
 {
-  if (Drv->quit==NULL) return 0;
+  if (Drv->quit == NULL) return 0;
   return Drv->quit();
 }

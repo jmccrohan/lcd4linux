@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.70 2004/06/02 05:14:16 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.71 2004/06/02 09:41:19 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.71  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.70  2004/06/02 05:14:16  reinelt
  *
  * fixed models listing for Beckmann+Egle driver
@@ -383,46 +387,6 @@ static void usage(void)
   printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
-#if 0
-// Fixme: how to hello() with new layout?
-int hello (void)
-{
-  int i, x, y, flag;
-  char *line1[] = { "* LCD4Linux " VERSION " *",
-		    "LCD4Linux " VERSION,
-		    "LCD4Linux",
-		    "L4Linux",
-		    NULL };
-  
-  char *line2[] = { "(c) 2003 M.Reinelt",
-		    "(c) M.Reinelt",
-		    NULL };
-  
-  lcd_query (&y, &x, NULL, NULL, NULL, NULL, NULL);
-  
-  flag=0;
-  for (i=0; line1[i]; i++) {
-    if (strlen(line1[i])<=x) {
-      lcd_put (1, (x-strlen(line1[i]))/2+1, line1[i]);
-      flag=1;
-      break;
-    }
-  }
-  
-  for (i=0; line2[i]; i++) {
-    if (strlen(line2[i])<=x) {
-      lcd_put (2, (x-strlen(line2[i]))/2+1, line2[i]);
-      flag=1;
-      break;
-    }
-  }
-  
-  if (flag) lcd_flush();
-  return flag;
-}
-#endif
-
-
 static void interactive_mode (void)
 {
   char line[1024];
@@ -596,7 +560,7 @@ int main (int argc, char *argv[])
 
     // create PID file
     if ((pid = pid_init(PIDFILE)) != 0) {
-      error ("lcd4linux already running as process %d", pid)
+      error ("lcd4linux already running as process %d", pid);
       exit (1);
     }
 
@@ -612,23 +576,18 @@ int main (int argc, char *argv[])
     exit (0);
   }
   
+  // check the conf to see if quiet startup is wanted 
+  if (!quiet) {
+    cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
+  }
+  
   debug ("initializing driver %s", driver);
-  if (drv_init(section, driver)==-1) {
+  if (drv_init(section, driver, quiet)==-1) {
     pid_exit(PIDFILE);
     exit (1);
   }
   free(driver);
   
-  // check for new-style layout
-  layout=cfg_get(NULL, "Layout", NULL);
-  if (layout==NULL || *layout=='\0') {
-    error ("missing 'Layout' entry in %s!", cfg_source());
-    exit (1);
-  }
-  
-  layout_init(layout);
-  free(layout);
-
   // go into interactive mode (display has been initialized)
   if (interactive >= 1) {
     interactive_mode();
@@ -638,18 +597,15 @@ int main (int argc, char *argv[])
     exit (0);
   }
 
-  // check the conf to see if quiet startup is wanted 
-  if (!quiet) {
-    cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
+  // check for new-style layout
+  layout=cfg_get(NULL, "Layout", NULL);
+  if (layout==NULL || *layout=='\0') {
+    error ("missing 'Layout' entry in %s!", cfg_source());
+    exit (1);
   }
   
-#if 0
-  // Fixme: how to hello() with new layout?
-  if (!quiet && hello()) {
-    sleep (3);
-    lcd_clear(1);
-  }
-#endif
+  layout_init(layout);
+  free(layout);
 
   debug ("starting main loop");
   
@@ -667,11 +623,6 @@ int main (int argc, char *argv[])
   
   debug ("leaving main loop");
   
-#if 0
-  // Fixme: how to hello() with new layout?
-  lcd_clear(1);
-  if (!quiet) hello();
-#endif
   drv_quit();
   pid_exit(PIDFILE);
   cfg_exit();

@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.5 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.6 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.6  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.5  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -289,7 +293,7 @@ int drv_UL_list (void)
 
 
 // initialize driver & display
-int drv_UL_init (char *section)
+int drv_UL_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;

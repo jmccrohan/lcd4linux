@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.24 2004/06/01 06:45:29 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.25 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.25  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.24  2004/06/01 06:45:29  reinelt
  *
  * some Fixme's processed
@@ -162,6 +166,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "udelay.h"
+#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -770,7 +775,7 @@ int drv_HD_list (void)
 
 
 // initialize driver & display
-int drv_HD_init (char *section)
+int drv_HD_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int asc255bug;
@@ -831,6 +836,47 @@ int drv_HD_init (char *section)
   // register plugins
   if (Capabilities & CAP_BRIGHTNESS)
     AddFunction ("LCD::brightness", 1, plugin_brightness);
+  
+  return 0;
+}
+
+
+// say hello to the user
+static int drv_HD_greet (int start_stop)
+{
+  int flag = 0;
+  char buffer[40];
+  char *msg;
+  
+  drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  
+  msg = drv_hello (1, DCOLS);
+  if (msg != NULL) {
+    drv_HD_write (0, (DCOLS-strlen(msg))/2, msg, strlen(msg));
+    flag = 1;
+  }
+  
+  if (DROWS >= 2) {
+    msg = drv_hello (2, DCOLS);
+    if (msg != NULL) {
+      drv_HD_write (1, (DCOLS-strlen(msg))/2, msg, strlen(msg));
+      flag = 1;
+    }
+  }
+  
+  if (DROWS >= 3) {
+    qprintf(buffer, sizeof(buffer), "HD44780 %dx%d", DCOLS, DROWS);
+    msg = buffer;
+    if (strlen(msg) <= DCOLS) {
+      drv_HD_write (2, (DCOLS-strlen(msg))/2, msg, strlen(msg));
+      flag = 1;
+    }
+  }
+  
+  if (flag && start_stop) {
+    sleep (3);
+    drv_HD_command (allControllers, 0x01, T_CLEAR); // clear *both* displays
+  }
   
   return 0;
 }

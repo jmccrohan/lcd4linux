@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.1 2004/05/31 16:39:06 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.2 2004/06/02 09:41:19 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.2  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.1  2004/05/31 16:39:06  reinelt
  *
  * added NULL display driver (for debugging/profiling purposes)
@@ -124,7 +128,7 @@ int drv_NULL_list (void)
 
 
 // initialize driver & display
-int drv_NULL_init (char *section)
+int drv_NULL_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

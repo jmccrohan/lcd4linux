@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.3 2004/01/20 15:32:49 reinelt Exp $
+/* $Id: drv.h,v 1.4 2004/06/02 09:41:19 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.4  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.3  2004/01/20 15:32:49  reinelt
  * first version of Next Generation HD44780 (untested! but it compiles...)
  * some cleanup in the other drivers
@@ -48,7 +52,8 @@
 typedef struct DRIVER {
   char *name;
   int (*list)  (void);
-  int (*init)  (char *section);
+  int (*init)  (char *section, int quiet);
+  int (*greet) (int start_stop);
   int (*quit)  (void);
 } DRIVER;
 
@@ -58,8 +63,8 @@ typedef struct DRIVER {
 // even if the raster driver is not included!
 extern char *output;
 
-int drv_list  (void);
-int drv_init  (char *section, char *driver);
-int drv_quit  (void);
+int drv_list (void);
+int drv_init (char *section, char *driver, int quiet);
+int drv_quit (void);
 
 #endif

@@ -544,7 +544,7 @@ Layout testMySQL {
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
-#Display 'HD44780-20x4'
+Display 'HD44780-20x4'
 #Display 'M50530-24x8'
 #Display 'CF631'
 #Display 'CF632'
@@ -553,11 +553,11 @@ Layout testMySQL {
 #Display 'USBLCD'
 #Display 'T6963-240x64'
 #Display 'XWindow'
-Display 'Image'
+#Display 'Image'
 
-#Layout  'Default'
+Layout  'Default'
 #Layout 'L16x2'
-Layout 'L20x2'
+#Layout 'L20x2'
 #Layout 'Test'
 
 

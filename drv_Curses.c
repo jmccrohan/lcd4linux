@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.1 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.2 2004/06/02 09:41:19 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.2  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.1  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -214,7 +218,7 @@ int drv_Curs_list (void)
 
 
 // initialize driver & display
-int drv_Curs_init (char *section)
+int drv_Curs_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

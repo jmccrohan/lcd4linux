@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.5 2004/06/01 06:45:30 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.6 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.6  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.5  2004/06/01 06:45:30  reinelt
  *
  * some Fixme's processed
@@ -512,7 +516,7 @@ int drv_T6_list (void)
 
 
 // initialize driver & display
-int drv_T6_init (char *section)
+int drv_T6_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.10 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: layout.c,v 1.11 2004/06/02 09:41:19 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.11  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.10  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -134,7 +138,7 @@ int layout_init (char *layout)
       if (widget!=NULL && *widget!='\0') {
         layout_addItem (widget, row, col);
       }
-	  free(widget);
+      free(widget);
     }
     // next field
     l=p?p+1:NULL;

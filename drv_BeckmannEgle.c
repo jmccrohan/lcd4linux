@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.3 2004/06/02 05:14:16 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.4 2004/06/02 09:41:19 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,10 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.4  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.3  2004/06/02 05:14:16  reinelt
  *
  * fixed models listing for Beckmann+Egle driver
@@ -206,7 +210,7 @@ int drv_BE_list (void)
 
 
 // initialize driver & display
-int drv_BE_init (char *section)
+int drv_BE_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

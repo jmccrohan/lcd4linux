@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.28 2004/06/01 06:45:29 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.29 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.29  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.28  2004/06/01 06:45:29  reinelt
  *
  * some Fixme's processed
@@ -614,7 +618,7 @@ int drv_MO_list (void)
 
 
 // initialize driver & display
-int drv_MO_init (char *section)
+int drv_MO_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

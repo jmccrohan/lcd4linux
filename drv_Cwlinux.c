@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.11 2004/06/01 06:45:29 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.12 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.12  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.11  2004/06/01 06:45:29  reinelt
  *
  * some Fixme's processed
@@ -341,7 +345,7 @@ int drv_CW_list (void)
 
 
 // initialize driver & display
-int drv_CW_init (char *section)
+int drv_CW_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.3 2004/05/31 06:24:42 reinelt Exp $
+/* $Id: drv_Image.c,v 1.4 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.4  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.3  2004/05/31 06:24:42  reinelt
  *
  * fixed symlink security issue with the image driver
@@ -472,7 +476,7 @@ int drv_IMG_list (void)
 
 
 // initialize driver & display
-int drv_IMG_init (char *section)
+int drv_IMG_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  

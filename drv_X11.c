@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.2 2004/05/25 14:26:29 reinelt Exp $
+/* $Id: drv_X11.c,v 1.3 2004/06/02 09:41:19 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.3  2004/06/02 09:41:19  reinelt
+ *
+ * prepared support for startup splash screen
+ *
  * Revision 1.2  2004/05/25 14:26:29  reinelt
  *
  * added "Image" driver (was: Raster.c) for PPM and PNG creation
@@ -337,7 +341,7 @@ int drv_X11_list (void)
 
 
 // initialize driver & display
-int drv_X11_init (char *section)
+int drv_X11_init (char *section, int quiet)
 {
   WIDGET_CLASS wc;
   int ret;  
