@@ -84,7 +84,7 @@ lcd4linux_SOURCES =  lcd4linux.c debug.c debug.h cfg.c cfg.h lock.c lock.h parse
 EXTRA_lcd4linux_SOURCES =  acconfig.h BeckmannEgle.c Crystalfontz.c Crystalfontz.h Cwlinux.c HD44780.c M50530.c T6963.c USBLCD.c MatrixOrbital.c PalmPilot.c Raster.c SIN.c Skeleton.c XWindow.c Text.c
 
 
-EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ NEWS TODO README.Drivers README.MatrixOrbital README.HD44780 README.HD44780.GPO README.Crystalfontz README.X11 README.KDE README.Raster README.Png README.Webinterface README.Text
+EXTRA_DIST =  lcd4linux.conf.sample lcd4kde.conf lcd4linux.kdelnk lcd4linux.xpm lcd4linux.lsm CREDITS FAQ NEWS TODO README README.Drivers README.MatrixOrbital README.HD44780 README.HD44780.GPO README.Crystalfontz README.X11 README.KDE README.Raster README.Png README.Webinterface README.Text
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

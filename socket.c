@@ -1,4 +1,4 @@
-/* $Id: socket.c,v 1.4 2001/09/12 05:58:16 reinelt Exp $
+/* $Id: socket.c,v 1.5 2002/12/05 19:09:57 reinelt Exp $
  *
  * simple socket functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: socket.c,v $
+ * Revision 1.5  2002/12/05 19:09:57  reinelt
+ * patches for gcc-3.2
+ *
  * Revision 1.4  2001/09/12 05:58:16  reinelt
  * fixed bug in mail2.c
  *
@@ -70,8 +73,9 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>

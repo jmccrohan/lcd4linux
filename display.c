@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.33 2002/09/11 05:16:33 reinelt Exp $
+/* $Id: display.c,v 1.34 2002/12/05 19:09:57 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.34  2002/12/05 19:09:57  reinelt
+ * patches for gcc-3.2
+ *
  * Revision 1.33  2002/09/11 05:16:33  reinelt
  * added Cwlinux driver
  *
@@ -192,6 +195,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "debug.h"

@@ -59,6 +59,7 @@ CREDITS \
 FAQ \
 NEWS \
 TODO \
+README \
 README.Drivers \
 README.MatrixOrbital \
 README.HD44780 \
