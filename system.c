@@ -1,4 +1,4 @@
-/* $Id: system.c,v 1.27 2003/06/13 05:11:10 reinelt Exp $
+/* $Id: system.c,v 1.28 2003/06/26 05:31:16 reinelt Exp $
  *
  * system status retreivement
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: system.c,v $
+ * Revision 1.28  2003/06/26 05:31:16  reinelt
+ * bug in /proc/net/dev parsing fixed
+ *
  * Revision 1.27  2003/06/13 05:11:10  reinelt
  * error message cosmetics
  *
@@ -673,8 +676,8 @@ int Net (int *rx, int *tx, int *bytes)
   p=buffer;
   while ((s=strsep(&p, "\n"))) {
     int n, u;
-    unsigned long v[16];
-    n=sscanf (s, " eth%d: %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld",
+    unsigned long v[16]={0};
+    n=sscanf (s, " eth%d:%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
 	      &u, &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7],
 	      &v[8], &v[9], &v[10], &v[11], &v[12], &v[13], &v[14], &v[15]);
 
