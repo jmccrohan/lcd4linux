@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.32 2003/06/21 05:46:18 reinelt Exp $
+/* $Id: processor.c,v 1.33 2003/07/21 06:10:11 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.33  2003/07/21 06:10:11  reinelt
+ * removed maxlen parameter from process_row()
+ *
  * Revision 1.32  2003/06/21 05:46:18  reinelt
  * DVB client integrated
  *
@@ -382,7 +385,7 @@ static double query_bar (int token)
   return value;
 }
 
-static void print_token (int token, char **p, char *start, int maxlen)
+static void print_token (int token, char **p, char *start)
 {
   double val;
   int i;
@@ -531,12 +534,6 @@ static void print_token (int token, char **p, char *start, int maxlen)
   case T_EXEC:
     i = (token>>8)-'0';
     *p+=sprintf (*p, "%.*s",cols-(*p-start), exec[i].s);
-#if 0
-    // Fixme: this does not really work as it should...
-    // Remove param 'maxlen' sometimes..
-    for (i=*p-start; i<cols && maxlen--; i++) /* clear right of text */
-      *(*p)++=' ';
-#endif
     break;
     
   default:
@@ -628,22 +625,12 @@ static char *process_row (int r)
   char *s=row[r];
   char *p=buffer;
   int token;
-  int len;
-  char *q;
   
   do {
     if (*s=='%') {
       token = *(unsigned char*)++s;
       if (token>T_EXTENDED) token += (*(unsigned char*)++s)<<8;
-#if 0
-      // Fixme: I don't understand this one...
-      if (!s[1]) 
-	len = cols - (s - row[r] - 1);
-      else
-        for (q = s+1, len=0; *q && isspace(*q); q++)
-  	  len++;
-#endif
-      print_token (token, &p, buffer, len);
+      print_token (token, &p, buffer);
 	
     } else if (*s=='$') {
       double val1, val2;
@@ -697,13 +684,18 @@ static int process_gpo (int r)
 
 static int Turn (void)
 {
-  struct timeval now;
   static struct timeval old = {tv_sec:0, tv_usec:0};
   static struct timeval new = {tv_sec:0, tv_usec:0};
+  struct timeval now;
+  int initialized;
   
   if (turn<=0) return 0;
   
   gettimeofday (&now, NULL);
+
+  // first time invocation?
+  initialized=(new.tv_sec>0);
+
   if (now.tv_sec==new.tv_sec ? now.tv_usec>new.tv_usec : now.tv_sec>new.tv_sec) {
     old=now;
     new.tv_sec =old.tv_sec;
@@ -712,7 +704,7 @@ static int Turn (void)
       new.tv_usec-=1000000;
       new.tv_sec++;
     }
-    return 1;
+    return initialized;
   }
   return 0;
 }
@@ -794,14 +786,11 @@ void process (int smooth)
   
   collect_data();
 
-  if (Turn()) {
+  if (smooth==0 && Turn()) {
     offset+=scroll;
     while (offset>=lines) {
       offset-=lines;
     }
-    // Fixme: this is ugly!
-    smooth=1;
-    lcd_clear();
   }
   
   for (i=1; i<=rows; i++) {
@@ -813,9 +802,12 @@ void process (int smooth)
     if (smooth==0)
       lcd_put (i, 1, txt);
   }
+
   for (i=1; i<=gpos; i++) {
     val=process_gpo (i);
     lcd_gpo (i, val);
   }
+
   lcd_flush();
+
 }
