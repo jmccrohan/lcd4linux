@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 AC_INIT([LCD4Linux],[0.9.12],[reinelt@eunet.at])
 AC_CONFIG_SRCDIR([lcd4linux.c])
-AM_INIT_AUTOMAKE(lcd4linux,0.9.12)
+AM_INIT_AUTOMAKE([lcd4linux],0.9.12)
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
@@ -16,7 +16,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 # Using `AC_PROG_RANLIB' is rendered 
 # obsolete by `AC_PROG_LIBTOOL' :-(
-# AC_PROG_RANLIB
+#AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
@@ -261,7 +261,6 @@ if test "$DRIVERS" = ""; then
 fi
    
 # Raster.lo depends on PPM or PNG
-  Raster.lo depends on PPM or NG
 if test "$RASTER" = "yes"; then
 #  DRIVERS="$DRIVERS Raster.lo"
    DRIVERS="$DRIVERS Raster.o"
@@ -278,8 +277,9 @@ AC_SUBST(DRVLIBS)
 
 # Checks for header files.
 AC_HEADER_STDC
+AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h malloc.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS(sys/io.h asm/io.h)
 AC_CHECK_HEADERS(linux/parport.h linux/ppdev.h)
 AC_CHECK_HEADERS(linux/dvb/frontend.h)
@@ -295,9 +295,14 @@ AC_HEADER_TIME
 AC_TYPE_UID_T
 
 # Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_ERROR_AT_LINE
 AC_PROG_GCC_TRADITIONAL
+
+# uClibc has no getloadavg()
+# AC_FUNC_GETLOADAVG sounds promising, but does not really work
+#AC_FUNC_GETLOADAVG
 
 #removed for uClibc compatibility
 #AC_FUNC_MALLOC
@@ -307,7 +312,7 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
-AC_CHECK_FUNCS([atexit dup2 gethostbyname gettimeofday memmove memset pow putenv select socket sqrt strcasecmp strchr strdup strerror strncasecmp strndup strpbrk strstr strtol uname])
+AC_CHECK_FUNCS([atexit dup2 gethostbyname getloadavg gettimeofday memmove memset pow putenv regcomp select socket sqrt strcasecmp strchr strdup strerror strncasecmp strndup strpbrk strrchr strstr strtol uname])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
