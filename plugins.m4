@@ -36,6 +36,7 @@ for plugin in $plugins; do
          PLUGIN_EXEC="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_IMON="yes"
+         PLUGIN_ISDN="yes"
          PLUGIN_LOADAVG="yes"
          PLUGIN_MEMINFO="yes"
          PLUGIN_MYSQL="yes"
@@ -65,6 +66,9 @@ for plugin in $plugins; do
 	 ;;
       imon)
          PLUGIN_IMON=$val
+         ;;
+      isdn)
+         PLUGIN_ISDN=$val
          ;;
       loadavg)
          PLUGIN_LOADAVG=$val
@@ -120,7 +124,7 @@ if test "$PLUGIN_DVB" = "yes"; then
       PLUGINS="$PLUGINS plugin_dvb.o"
       AC_DEFINE(PLUGIN_DVB,1,[dvb plugin])
    else
-      AC_MSG_WARN(linux/dvb/frontend.h header not found: dvb driver disabled)
+      AC_MSG_WARN(linux/dvb/frontend.h header not found: dvb plugin disabled)
    fi   
 fi
 if test "$PLUGIN_EXEC" = "yes"; then
@@ -135,6 +139,14 @@ if test "$PLUGIN_IMON" = "yes"; then
    PLUGINS="$PLUGINS plugin_imon.o"
    AC_DEFINE(PLUGIN_IMON,1,[imon plugin])
 fi
+if test "$PLUGIN_ISDN" = "yes"; then
+   AC_CHECK_HEADERS(linux/isdn.h, [has_isdn_header=true], [has_isdn_header=false])
+   if test "$has_dvb_header" = false; then
+      AC_MSG_WARN(linux/isdn.h header not found: isdn plugin CPS disabled)
+   fi   
+   PLUGINS="$PLUGINS plugin_isdn.o"
+   AC_DEFINE(PLUGIN_ISDN,1,[ISDN plugin])
+fi
 if test "$PLUGIN_LOADAVG" = "yes"; then
    PLUGINS="$PLUGINS plugin_loadavg.o"
    AC_DEFINE(PLUGIN_LOADAVG,1,[loadavg plugin])
@@ -145,17 +157,17 @@ if test "$PLUGIN_MEMINFO" = "yes"; then
 fi
 if test "$PLUGIN_MYSQL" = "yes"; then
    AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header=true], [has_mysql_header=false])
-   if test "$has_mysql_header" = true; then
-      AC_CHECK_LIB(mysqlclient,mysql_init ,[has_mysql_lib=true], [has_mysql_lib=false])
+   if test "$has_mysql_header" = true; then	
+      AC_CHECK_LIB(mysqlclient, mysql_init, [has_mysql_lib=true], [has_mysql_lib=false])
       if test "$has_mysql_lib" = true; then
         PLUGINS="$PLUGINS plugin_mysql.o"
         AC_DEFINE(PLUGIN_MYSQL,1,[mysql plugin])
         PLUGINLIBS="$PLUGINLIBS -lmysqlclient"
       else
-        AC_MSG_WARN(mysqlclient lib not found: mysql driver disabled)
+        AC_MSG_WARN(mysqlclient lib not found: mysql plugin disabled)
       fi
    else
-      AC_MSG_WARN(mysql/mysql.h header not found: mysql driver disabled)
+      AC_MSG_WARN(mysql/mysql.h header not found: mysql plugin disabled)
    fi 
 fi
 if test "$PLUGIN_NETDEV" = "yes"; then
@@ -172,7 +184,7 @@ if test "$PLUGIN_PPP" = "yes"; then
    PLUGINS="$PLUGINS plugin_ppp.o"
    AC_DEFINE(PLUGIN_PPP,1,[ppp plugin])
    else
-      AC_MSG_WARN(net/if_ppp.h header not found: ppp driver disabled)
+      AC_MSG_WARN(net/if_ppp.h header not found: ppp plugin disabled)
    fi 
 fi
 if test "$PLUGIN_PROC_STAT" = "yes"; then

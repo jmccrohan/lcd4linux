@@ -77,6 +77,7 @@ plugin_dvb.c                \
 plugin_exec.c               \
 plugin_i2c_sensors.c        \
 plugin_imon.c               \
+plugin_isdn.c               \
 plugin_loadavg.c            \
 plugin_meminfo.c            \
 plugin_mysql.c              \

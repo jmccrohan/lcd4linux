@@ -49,6 +49,9 @@
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
 
+/* Define to 1 if you have the <linux/isdn.h> header file. */
+#undef HAVE_LINUX_ISDN_H
+
 /* Define to 1 if you have the <linux/parport.h> header file. */
 #undef HAVE_LINUX_PARPORT_H
 
@@ -244,6 +247,9 @@
 
 /* imon plugin */
 #undef PLUGIN_IMON
+
+/* ISDN plugin */
+#undef PLUGIN_ISDN
 
 /* loadavg plugin */
 #undef PLUGIN_LOADAVG

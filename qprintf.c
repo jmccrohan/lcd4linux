@@ -1,4 +1,4 @@
-/* $Id: qprintf.c,v 1.2 2004/04/08 10:48:25 reinelt Exp $
+/* $Id: qprintf.c,v 1.3 2004/04/12 11:12:26 reinelt Exp $
  *
  * simple but quick snprintf() replacement
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: qprintf.c,v $
+ * Revision 1.3  2004/04/12 11:12:26  reinelt
+ * added plugin_isdn, removed old ISDN client
+ * fixed some real bad bugs in the evaluator
+ *
  * Revision 1.2  2004/04/08 10:48:25  reinelt
  * finished plugin_exec
  * modified thread handling
@@ -84,7 +88,29 @@ static char *itoa(char* buffer, size_t size, int value)
 } 
 
 
-static char *itox(char* buffer, size_t size, unsigned int value)
+static char *utoa(char* buffer, size_t size, unsigned int value)
+{
+  char *p;
+ 
+  // sanity checks
+  if (buffer==NULL || size<2) return (NULL);
+  
+  // p points to last char
+  p = buffer+size-1;
+  
+  // set terminating zero
+  *p='\0';
+  
+  do {
+    *--p = value%10 + '0';
+    value = value/10;
+  } while (value!=0 && p>buffer);
+  
+  return p;
+} 
+
+
+static char *utox(char* buffer, size_t size, unsigned int value)
 {
   char *p;
   int digit;
@@ -148,10 +174,19 @@ int qprintf(char *str, size_t size, const char *format, ...) {
 	  *dst++ = *s++;
 	}
 	break;
+      case 'u':
+	src++;
+	u = va_arg(ap, unsigned int);
+	s = utoa (buf, sizeof(buf), u);
+	while (len < size && *s != '\0') {
+	  len++;
+	  *dst++ = *s++;
+	}
+	break;
       case 'x':
 	src++;
 	u = va_arg(ap, unsigned int);
-	s = itox (buf, sizeof(buf), u);
+	s = utox (buf, sizeof(buf), u);
 	while (len < size && *s != '\0') {
 	  len++;
 	  *dst++ = *s++;

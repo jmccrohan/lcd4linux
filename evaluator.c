@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.18 2004/03/11 06:39:58 reinelt Exp $
+/* $Id: evaluator.c,v 1.19 2004/04/12 11:12:25 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.19  2004/04/12 11:12:25  reinelt
+ * added plugin_isdn, removed old ISDN client
+ * fixed some real bad bugs in the evaluator
+ *
  * Revision 1.18  2004/03/11 06:39:58  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -336,7 +340,8 @@ static RESULT* DupResult (RESULT *result)
 RESULT* SetResult (RESULT **result, int type, void *value)
 {
   if (*result == NULL) {
-    if ((*result = NewResult()) == NULL)  return NULL;
+    if ((*result = NewResult()) == NULL) 
+      return NULL;
   } else if (type == R_NUMBER) {
     DelResult(*result);
   }
@@ -347,11 +352,12 @@ RESULT* SetResult (RESULT **result, int type, void *value)
     (*result)->length = -1;
     (*result)->string = NULL;
   } 
+  
   else if (type == R_STRING) {
     int len = strlen((char*)value);
     (*result)->type   = R_STRING;
     (*result)->number = 0.0;
-    if (len > (*result)->length) {
+    if ((*result)->string == NULL || len > (*result)->length) {
       // buffer is either empty or too small
       if ((*result)->string) free((*result)->string);
       // allocate memory in multiples of CHUNK_SIZE
@@ -464,8 +470,8 @@ int SetVariableString (char *name, char *value)
 {
   RESULT result = {0, 0, 0, NULL};
   RESULT *rp = &result;
-  
-  SetResult(&rp, R_STRING, value );
+
+  SetResult(&rp, R_STRING, value);
 
   return SetVariable (name, rp);
 }
@@ -768,7 +774,7 @@ static NODE* Level11 (void)
   
   Root = Level12();
   
-  if (sign == O_SUB || sign == O_NOT) {
+  if (sign == O_SGN || sign == O_NOT) {
     Root = NewNode (Root);
     Root->Token = T_OPERATOR;
     Root->Operator = sign;
@@ -971,6 +977,7 @@ static int EvalTree (NODE *Root)
   int     type   = -1;
   double  number = 0.0;
   double  dummy;
+  int     freeme = 0;
   char   *string = NULL;
   char   *s1, *s2;
   RESULT *param[10];
@@ -1017,7 +1024,7 @@ static int EvalTree (NODE *Root)
       i = Root->Children-1;
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
-      string = strdup(Root->Child[i]->Result->string);
+      string = Root->Child[i]->Result->string;
       break;
 
     case O_SET: // variable assignment
@@ -1025,14 +1032,14 @@ static int EvalTree (NODE *Root)
       Root->Variable->value = DupResult (Root->Child[0]->Result);
       type   = Root->Child[0]->Result->type;
       number = Root->Child[0]->Result->number;
-      string = strdup(Root->Child[0]->Result->string);
+      string = Root->Child[0]->Result->string;
       break;
 
     case O_CND: // conditional expression
       i = 1+(R2N(Root->Child[0]->Result) == 0.0);
       type   = Root->Child[i]->Result->type;
       number = Root->Child[i]->Result->number;
-      string = strdup(Root->Child[i]->Result->string);
+      string = Root->Child[i]->Result->string;
       break;
       
     case O_OR: // logical OR
@@ -1097,6 +1104,7 @@ static int EvalTree (NODE *Root)
       string = malloc(strlen(s1)+strlen(s2)+1);
       strcpy (string, s1);
       strcat (string, s2);
+      freeme = 1;
       break;
 
     case O_MUL: // multiplication
@@ -1148,7 +1156,7 @@ static int EvalTree (NODE *Root)
     }
     if (type==R_STRING) {
       SetResult (&Root->Result, R_STRING, string);
-      if (string) free (string);
+      if (freeme) free (string);
       return 0;
     }
     error ("Evaluator: internal error: unhandled type <%d>", type);

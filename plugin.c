@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.27 2004/04/09 06:09:55 reinelt Exp $
+/* $Id: plugin.c,v 1.28 2004/04/12 11:12:26 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -22,6 +22,10 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.28  2004/04/12 11:12:26  reinelt
+ * added plugin_isdn, removed old ISDN client
+ * fixed some real bad bugs in the evaluator
+ *
  * Revision 1.27  2004/04/09 06:09:55  reinelt
  * big configure rework from Xavier
  *
@@ -180,6 +184,8 @@ int  plugin_init_i2c_sensors (void);
 void plugin_exit_i2c_sensors (void);
 int  plugin_init_imon(void);
 void plugin_exit_imon(void);
+int  plugin_init_isdn(void);
+void plugin_exit_isdn(void);
 int  plugin_init_loadavg (void);
 void plugin_exit_loadavg (void);
 int  plugin_init_meminfo (void);
@@ -227,6 +233,9 @@ int plugin_init (void)
 #endif
 #ifdef PLUGIN_IMON
   plugin_init_imon();
+#endif
+#ifdef PLUGIN_ISDN
+  plugin_init_isdn();
 #endif
 #ifdef PLUGIN_LOADAVG
   plugin_init_loadavg();
@@ -282,6 +291,9 @@ void plugin_exit(void) {
 #endif
 #ifdef PLUGIN_IMON
   plugin_exit_imon();
+#endif
+#ifdef PLUGIN_ISDN
+  plugin_exit_isdn();
 #endif
 #ifdef PLUGIN_LOADAVG
   plugin_exit_loadavg();
