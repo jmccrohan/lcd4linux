@@ -1,4 +1,4 @@
-/* $Id: SIN.c,v 1.3 2000/12/01 07:20:26 reinelt Exp $
+/* $Id: SIN.c,v 1.4 2000/12/01 20:42:37 reinelt Exp $
  *
  * driver for SIN router displays
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: SIN.c,v $
+ * Revision 1.4  2000/12/01 20:42:37  reinelt
+ *
+ * added debugging of SIN driver output, probably found the positioning bug (format %02x instead of %2x)
+ *
  * Revision 1.3  2000/12/01 07:20:26  reinelt
  *
  * modified text positioning: row starts with 0, column is hexadecimal
@@ -45,6 +49,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -99,8 +104,28 @@ static int SIN_open (void)
   return fd;
 }
 
+static void SIN_debug (char *string, int len)
+{
+  char buffer[256];
+  char *p, *c;
+  
+  p=buffer;
+  c=string;
+  while (len-->0) {
+    if (isprint(*c)) {
+      *p++=*c;
+    } else {
+      p+=sprintf(p, "\\%02x", *c);
+    }
+    c++;
+  }
+  *p='\0';
+  debug ("sending '%s'", buffer);
+}
+
 static void SIN_write (char *string, int len)
 {
+  SIN_debug(string, len);
   if (Device==-1) return;
   if (write (Device, string, len)==-1) {
     if (errno==EAGAIN) {
@@ -178,7 +203,7 @@ int SIN_flush (void)
     buffer[3]='0'+row;
     for (col=0; col<Lcd.cols; col++) {
       if (Txt[row][col]=='\t') continue;
-      sprintf (buffer+4, "%2x", col);
+      sprintf (buffer+4, "%02x", col);
       for (p=buffer+6; col<Lcd.cols; col++, p++) {
 	if (Txt[row][col]=='\t') break;
 	*p=Txt[row][col];

@@ -3,13 +3,10 @@
 #Speed 19200
 #Contrast 160
 
-Display HD44780
-Port 0x378
-Size 16x2
-Delay 398
-
-Row1 "Disk%dm $R10dr+dw"
-Row2 "Net %nm $R10nr+nw"
+#Display HD44780
+#Port 0x378
+#Size 16x2
+#Delay 398
 
 #Display BLC100x
 #Port /dev/ttyS2
@@ -43,6 +40,12 @@ Row2 "Net %nm $R10nr+nw"
 #foreground \#102000
 #halfground \#90c000
 #background \#a0d000
+
+Display SIN
+Port /dev/ttyS1
+
+Row1 "Disk%dm $R10dr+dw"
+Row2 "Net %nm $R10nr+nw"
 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
@@ -78,5 +81,3 @@ Sensor2_max 50
 Sensor3 /proc/sys/dev/sensors/w83781d-isa-0290/temp3
 Sensor3_min 30
 Sensor3_max 50
-
-Fifo /var/run/lcd4linux
