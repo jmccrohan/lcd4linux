@@ -1,4 +1,4 @@
-/* $Id: isdn.c,v 1.5 2000/03/13 15:58:24 reinelt Exp $
+/* $Id: isdn.c,v 1.6 2000/04/15 11:56:35 reinelt Exp $
  *
  * ISDN specific functions
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: isdn.c,v $
+ * Revision 1.6  2000/04/15 11:56:35  reinelt
+ *
+ * more debug messages
+ *
  * Revision 1.5  2000/03/13 15:58:24  reinelt
  *
  * release 0.9
@@ -59,6 +63,7 @@
 #include <sys/types.h>
 #include <linux/isdn.h>
 
+#include "debug.h"
 #include "isdn.h"
 #include "filter.h"
 
@@ -128,12 +133,15 @@ int Isdn (int *rx, int *tx, int *usage)
       perror ("open(/dev/isdninfo) failed");
       return -1;
     }
+    debug ("open (/proc/isdninfo)=%d\n", fd);
   }
+
   if (ioctl(fd, IIOCGETCPS, &cps)) {
     perror("ioctl(IIOCGETCPS) failed");
     fd=-1;
     return -1;
   }
+
   cps_i=0;
   cps_o=0;
   for (i=0; i<ISDN_MAX_CHANNELS; i++) {

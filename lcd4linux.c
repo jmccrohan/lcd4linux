@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.20 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.21 2000/04/15 11:56:35 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.21  2000/04/15 11:56:35  reinelt
+ *
+ * more debug messages
+ *
  * Revision 1.20  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -253,6 +257,8 @@ int main (int argc, char *argv[])
     lcd_clear();
   }
   
+  debug ("starting main loop\n");
+
   smooth=0;
   while (1) {
     process (smooth);

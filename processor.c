@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.4 2000/04/15 11:13:54 reinelt Exp $
+/* $Id: processor.c,v 1.5 2000/04/15 11:56:35 reinelt Exp $
  *
  * main data processing
  *
@@ -20,6 +20,10 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.5  2000/04/15 11:56:35  reinelt
+ *
+ * more debug messages
+ *
  * Revision 1.4  2000/04/15 11:13:54  reinelt
  *
  * added '-d' (debugging) switch
@@ -383,14 +387,16 @@ static char *process_row (int r)
 void process_init (void)
 {
   int i;
-  char buffer[8];
 
   load.overload=atof(cfg_get("overload")?:"2.0");
   lcd_query (&rows, &cols, &xres, &yres, &supported_bars);
   debug ("%d rows, %d columns, %dx%d pixels\n", rows, cols, xres, yres);
   for (i=1; i<=rows; i++) {
-    snprintf (buffer, sizeof(buffer), "row%d", i);
-    row[i]=strdup(parse(cfg_get(buffer)?:"", supported_bars, token_usage));
+    char buffer[8], *p;
+    snprintf (buffer, sizeof(buffer), "Row%d", i);
+    p=cfg_get(buffer)?:"";
+    debug ("%s: %s\n", buffer, p);
+    row[i]=strdup(parse(p, supported_bars, token_usage));
   }
 }
 
