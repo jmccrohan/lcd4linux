@@ -68,7 +68,7 @@ CLEANFILES = *~
 AM_CFLAGS = -Wall
 
 bin_PROGRAMS = lcd4linux
-lcd4linux_SOURCES =  	lcd4linux.c 	cfg.c cfg.h 	parser.c parser.h 	processor.c processor.h 	system.c system.h 	isdn.c isdn.h 	filter.c filter.h 	display.c display.h 	Skeleton.c 	MatrixOrbital.c
+lcd4linux_SOURCES =  	lcd4linux.c 	cfg.c cfg.h 	parser.c parser.h 	processor.c processor.h 	system.c system.h 	isdn.c isdn.h 	filter.c filter.h 	display.c display.h 	pixmap.c pixmap.h 	fontmap.c fontmap.h 	Skeleton.c 	MatrixOrbital.c 	XWindow.c
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -81,7 +81,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 lcd4linux_OBJECTS =  lcd4linux.o cfg.o parser.o processor.o system.o \
-isdn.o filter.o display.o Skeleton.o MatrixOrbital.o
+isdn.o filter.o display.o pixmap.o fontmap.o Skeleton.o MatrixOrbital.o \
+XWindow.o
 lcd4linux_LDADD = $(LDADD)
 lcd4linux_DEPENDENCIES = 
 lcd4linux_LDFLAGS = 
@@ -97,9 +98,10 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/MatrixOrbital.P .deps/Skeleton.P .deps/cfg.P \
-.deps/display.P .deps/filter.P .deps/isdn.P .deps/lcd4linux.P \
-.deps/parser.P .deps/processor.P .deps/system.P
+DEP_FILES =  .deps/MatrixOrbital.P .deps/Skeleton.P .deps/XWindow.P \
+.deps/cfg.P .deps/display.P .deps/filter.P .deps/fontmap.P .deps/isdn.P \
+.deps/lcd4linux.P .deps/parser.P .deps/pixmap.P .deps/processor.P \
+.deps/system.P
 SOURCES = $(lcd4linux_SOURCES)
 OBJECTS = $(lcd4linux_OBJECTS)
 

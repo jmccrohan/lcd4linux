@@ -1,4 +1,4 @@
-/* $Id: display.h,v 1.7 2000/03/17 09:21:42 reinelt Exp $
+/* $Id: display.h,v 1.8 2000/03/22 15:36:21 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: display.h,v $
+ * Revision 1.8  2000/03/22 15:36:21  reinelt
+ *
+ * added '-l' switch (list drivers)
+ * generic pixmap driver added
+ * X11 Framework done
+ *
  * Revision 1.7  2000/03/17 09:21:42  reinelt
  *
  * various memory statistics added
@@ -81,6 +87,7 @@ typedef struct {
   DISPLAY *Display;
 } FAMILY;
 
+int lcd_list (void);
 int lcd_init (char *display);
 int lcd_query (int *rows, int *cols, int *xres, int *yres, int *bars);
 int lcd_clear (void);

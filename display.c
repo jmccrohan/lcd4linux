@@ -1,4 +1,4 @@
-/* $Id: display.c,v 1.8 2000/03/19 08:41:28 reinelt Exp $
+/* $Id: display.c,v 1.9 2000/03/22 15:36:21 reinelt Exp $
  *
  * framework for device drivers
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: display.c,v $
+ * Revision 1.9  2000/03/22 15:36:21  reinelt
+ *
+ * added '-l' switch (list drivers)
+ * generic pixmap driver added
+ * X11 Framework done
+ *
  * Revision 1.8  2000/03/19 08:41:28  reinelt
  *
  * documentation available! README, README.MatrixOrbital, README.Drivers
@@ -58,6 +64,9 @@
 /* 
  * exported functions:
  *
+ * lcd_list (void)
+ *   lists all available drivers to stdout
+ *
  * lcd_init (char *display)
  *    initializes the named driver
  *
@@ -87,15 +96,33 @@
 
 extern DISPLAY Skeleton[];
 extern DISPLAY MatrixOrbital[];
+extern DISPLAY XWindow[];
 
 FAMILY Driver[] = {
-  { "Skeleton",      Skeleton },
-  { "MatrixOrbital", MatrixOrbital },
+  { "Skeleton",        Skeleton },
+  { "Matrix Orbital",  MatrixOrbital },
+  { "X Window System", XWindow },
   { "" }
 };
 
 
 static DISPLAY *Display = NULL;
+
+int lcd_list (void)
+{
+  int i, j;
+
+  printf ("available display drivers:");
+  
+  for (i=0; Driver[i].name[0]; i++) {
+    printf ("\n   %-16s:", Driver[i].name);
+    for (j=0; Driver[i].Display[j].name[0]; j++) {
+      printf (" %s", Driver[i].Display[j].name);
+    }
+  }
+  printf ("\n");
+  return 0;
+}
 
 int lcd_init (char *display)
 {

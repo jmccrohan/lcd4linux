@@ -1,8 +1,12 @@
-Display LCD2041
-Port /dev/ttyS2
-Speed 19200
-Contrast 160
+#Display LCD2041
+#Port /dev/ttyS2
+#Speed 19200
+#Contrast 160
 
+Display X11
+rows 2
+columns 20
+ 
 #Row1 "*** %o %v ***"
 #Row2 "%p CPU  %r MB RAM"
 #Row3 "Busy %cu%% $r10cs+cb"

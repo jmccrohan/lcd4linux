@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.8 2000/03/22 07:33:50 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.9 2000/03/22 15:36:21 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,12 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.9  2000/03/22 15:36:21  reinelt
+ *
+ * added '-l' switch (list drivers)
+ * generic pixmap driver added
+ * X11 Framework done
+ *
  * Revision 1.8  2000/03/22 07:33:50  reinelt
  *
  * FAQ added
@@ -67,11 +73,12 @@
 #include "display.h"
 #include "processor.h"
 
+char *release="LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>";
 int tick, tack;
 
 static void usage(void)
 {
-  printf ("LCD4Linux V" VERSION " (c) 2000 Michael Reinelt <reinelt@eunet.at>\n");
+  printf ("%s\n", release);
   printf ("usage: lcd4linux [-h] [-l] [-f config-file]\n");
 }
 
@@ -87,7 +94,8 @@ void main (int argc, char *argv[])
       usage();
       exit(0);
     case 'l':
-      usage();
+      printf ("%s\n", release);
+      lcd_list();
       exit(0);
     case 'f':
       cfg=optarg;
@@ -134,7 +142,7 @@ void main (int argc, char *argv[])
   process_init();
 
   lcd_clear();
-  lcd_put (1, 1, "** LCD4Linux V" VERSION " **");
+  lcd_put (1, 1, "* LCD4Linux V" VERSION " *");
   lcd_put (2, 1, " (c) 2000 M.Reinelt");
   lcd_flush();
   
