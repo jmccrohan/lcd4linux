@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.3 2001/03/12 12:39:36 reinelt Exp $
+/* $Id: debug.c,v 1.4 2003/08/08 06:58:06 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.4  2003/08/08 06:58:06  reinelt
+ * improved forking
+ *
  * Revision 1.3  2001/03/12 12:39:36  reinelt
  *
  * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
@@ -62,6 +65,7 @@ void message (int level, const char *format, ...)
   static int log_open=0;
   extern int debugging;
   extern int foreground;
+  extern int background;
 
   if (level>debugging) return;
 
@@ -69,15 +73,17 @@ void message (int level, const char *format, ...)
   (void) vsnprintf(buffer, sizeof(buffer), format, ap);
   va_end(ap);
   
-  if (foreground) {
+  if (!background) {
 #ifdef WITH_TEXT
     extern int curs_err(char *);
     if (!curs_err(buffer))
 #endif      
-    fprintf (level?stdout:stderr, "%s\n", buffer);
-    return;
+      fprintf (level?stdout:stderr, "%s\n", buffer);
   }
-
+  
+  if (foreground)
+    return;
+  
   if (!log_open) {
     openlog ("LCD4Linux", LOG_PID, LOG_USER);
     log_open=1;

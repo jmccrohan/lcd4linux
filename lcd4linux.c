@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.39 2003/07/24 04:48:09 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.40 2003/08/08 06:58:06 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.40  2003/08/08 06:58:06  reinelt
+ * improved forking
+ *
  * Revision 1.39  2003/07/24 04:48:09  reinelt
  * 'soft clear' needed for virtual rows
  *
@@ -224,6 +227,7 @@ char *output=NULL;
 int got_signal=0;
 int debugging=0;
 int foreground=0;
+int background=0;
 int tick, tack;
 
 static void usage(void)
@@ -363,45 +367,9 @@ int main (int argc, char *argv[])
     exit(2);
   }
 
-  if (!foreground) {
-    pid_t i;
-    int fd;
-    debug ("going background...");
-    i=fork();
-    if (i<0) {
-      error ("fork() failed: %s", strerror(errno));
-      exit (1);
-    }
-    if (i!=0) exit (0);
-    
-    // ignore nasty signals
-    signal(SIGINT,  SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
-    // detach stdin
-    if (freopen("/dev/null", "r", stdin)==NULL) {
-      error ("freopen (/dev/null) failed: %s", strerror(errno));
-      exit (1);
-    }
-    // detach stdout and stderr
-    fd=open("/dev/null", O_WRONLY, 0666);
-    if (fd==-1) {
-      error ("open (/dev/null) failed: %s", strerror(errno));
-      exit (1);
-    }
-    fflush(stdout);
-    fflush(stderr);
-    dup2(fd, STDOUT_FILENO);
-    dup2(fd, STDERR_FILENO);
-    close(fd);
-  }
-  
-  if (foreground) {
-    info ("Version " VERSION " starting");
-  } else {
-    info ("Version " VERSION " starting");
-    if (my_argv[0]==NULL || my_argv[0][0]!='/') {
-      info ("invoked without full path; restart may not work!");
-    }
+  info ("Version " VERSION " starting");
+  if (!foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
+    info ("invoked without full path; restart may not work!");
   }
   
   // set default values
@@ -417,6 +385,50 @@ int main (int argc, char *argv[])
   if (driver==NULL || *driver=='\0') {
     error ("missing 'display' entry in %s!", cfg_file());
     exit (1);
+  }
+  
+  if (!foreground) {
+    pid_t i;
+    int fd;
+    debug ("going background...");
+    i=fork();
+    if (i<0) {
+      error ("fork() failed: %s", strerror(errno));
+      exit (1);
+    }
+    if (i!=0) exit (0);
+    
+    // ignore nasty signals
+    signal(SIGINT,  SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+
+    // chdir("/")
+    if (chdir("/")!=0) {
+      error ("chdir(\"/\") failed: %s", strerror(errno));
+      exit (1);
+    }
+    
+    // we want full control over permissions
+    umask (0);
+    
+    // detach stdin
+    if (freopen("/dev/null", "r", stdin)==NULL) {
+      error ("freopen (/dev/null) failed: %s", strerror(errno));
+      exit (1);
+    }
+
+    // detach stdout and stderr
+    fd=open("/dev/null", O_WRONLY, 0666);
+    if (fd==-1) {
+      error ("open (/dev/null) failed: %s", strerror(errno));
+      exit (1);
+    }
+    fflush(stdout);
+    fflush(stderr);
+    dup2(fd, STDOUT_FILENO);
+    dup2(fd, STDERR_FILENO);
+    close(fd);
+    background=1;
   }
   
   debug ("initializing driver %s", driver);

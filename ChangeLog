@@ -1,3 +1,8 @@
+2003-08-08  Michael Reinelt  <reinelt@lizard.reinelt>
+
+	* ChangeLog, TODO, config.h.in, configure, configure.in, dvb.c, CREDITS:
+	uClibc compatibility issue; small glitch in dvb.c
+
 2003-08-01  Michael Reinelt  <reinelt@lizard.reinelt>
 
 	* Cwlinux.c, Makefile.am, Makefile.in, README, T6963.c:
