@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.23 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.24 2004/06/01 06:45:29 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,11 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.24  2004/06/01 06:45:29  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.23  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -211,7 +216,7 @@ static unsigned char SIGNAL_GPO;
 static int UseBusy = 0;
 
 
-// Fixme
+// Fixme: GPO's not yet implemented
 static int GPOS;
 // static int GPO=0;
 
@@ -556,7 +561,7 @@ static int drv_HD_brightness (int brightness)
 }
 
   
-// Fixme
+// Fixme: GPO's
 #if 0
 static void drv_HD_setGPO (int bits)
 {

@@ -1,4 +1,4 @@
-/* $Id: hash.c,v 1.18 2004/05/31 16:39:06 reinelt Exp $
+/* $Id: hash.c,v 1.19 2004/06/01 06:45:30 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: hash.c,v $
+ * Revision 1.19  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.18  2004/05/31 16:39:06  reinelt
  *
  * added NULL display driver (for debugging/profiling purposes)
@@ -105,8 +110,26 @@
 /* 
  * exported functions:
  *
- * hash_anything
- *   Fixme: document me!
+ * void hash_set (HASH *Hash, char *key, char *val);
+ *   set an entry in the hash
+ *
+ * void hash_set_delta (HASH *Hash, char *key, char *val);
+ *   set a delta entry in the hash
+ *
+ * int hash_age (HASH *Hash, char *key, char **value);
+ *   return time of last hash_set
+ *
+ * char *hash_get (HASH *Hash, char *key);
+ *   fetch an entry from the hash
+ *
+ * double hash_get_delta (HASH *Hash, char *key, int delay);
+ *   fetch a delta antry from the hash
+ *
+ * double hash_get_regex (HASH *Hash, char *key, int delay);
+ *   fetch one or more entries from the hash
+ *
+ * void hash_destroy (HASH *Hash);
+ *   releases hash
  *
  */
 

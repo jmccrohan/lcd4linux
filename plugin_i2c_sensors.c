@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.15 2004/05/31 21:05:13 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.16 2004/06/01 06:45:30 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.16  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.15  2004/05/31 21:05:13  reinelt
  *
  * fixed lots of bugs in the Cwlinux driver
@@ -137,6 +142,7 @@
 #include "plugin.h"
 #include "cfg.h"
 #include "hash.h"
+#include "qprintf.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -160,7 +166,6 @@ static int (*parse_i2c_sensors)(char *key);
 
 static int parse_i2c_sensors_sysfs(char *key)
 {
-  double value;
   char val[32];
   char buffer[32];
   char file[64];
@@ -189,13 +194,9 @@ static int parse_i2c_sensors_sysfs(char *key)
       !strncmp(key, "curr", 4)  ||
       !strncmp(key, "in", 2)    ||
       !strncmp(key, "vid", 3)) {
-    value = strtod(buffer, NULL);
-    // FIXME: any way to do this without converting to double ?		  
-    value /= 1000.0;
-    sprintf(val, "%f", value);   
-		  
+    qprintf(val, sizeof(val), "%f", strtod(buffer, NULL) / 1000.0);   
   } else {
-    sprintf(val, "%s", buffer); 
+    qprintf(val, sizeof(val), "%s", buffer); 
     // we supress this nasty \n at the end
     val[strlen(val)-1]='\0';
   } 
@@ -267,7 +268,7 @@ static int parse_i2c_sensors_procfs(char *key)
       // debug("%s pos %i -> BREAK", file, pos);
       break;
     } else {
-      sprintf (final_key, "%s%s", procfs_tokens[tokens_index][pos], number);
+      qprintf (final_key, sizeof(final_key), "%s%s", procfs_tokens[tokens_index][pos], number);
       // debug ("%s -> %s", final_key, value);
       hash_set (&I2Csensors, final_key, value);
       pos++;

@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.7  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.6  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -54,11 +59,28 @@
 
 /* 
  *
- * exported fuctions:
+ * exported functions:
  *
- * Fixme: document me!
+ * int drv_generic_graphic_init (char *section, char *driver);
+ *   initializes the generic graphic driver
+ *
+ * int drv_generic_graphic_draw (WIDGET *W);
+ *   renders Text widget into framebuffer
+ *   calls drv_generic_graphic_real_blit()
+ *
+ * int drv_generic_graphic_icon_draw (WIDGET *W);
+ *   renders Icon widget into framebuffer
+ *   calls drv_generic_graphic_real_blit()
+ *
+ * int drv_generic_graphic_bar_draw (WIDGET *W);
+ *   renders Bar widget into framebuffer
+ *   calls drv_generic_graphic_real_blit()
+ *
+ * int drv_generic_graphic_quit (void);
+ *   closes generic graphic driver
  *
  */
+
 
 #include "config.h"
 

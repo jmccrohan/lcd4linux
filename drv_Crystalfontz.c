@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.20 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.21 2004/06/01 06:45:28 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.21  2004/06/01 06:45:28  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.20  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -161,7 +166,7 @@ static double Fan_RPM[4] = {0.0,};
 static double Temperature[32] = {0.0,};
 
 
-// Fixme:
+// Fixme: GPO's not yet implemented
 // static int GPO[8];
 static int GPOS;
 
@@ -864,7 +869,7 @@ static void plugin_fan_pwm (RESULT *result, int argc, RESULT *argv[])
   }
 }
 
-// Fixme: other plugins for Fans, Temmperature sensors, ...
+// Fixme: other plugins for Fans, Temperature sensors, ...
 
 
 
@@ -919,13 +924,12 @@ int drv_CF_init (char *section)
     break;
   case 2:
     CHAR0 = 0; // ASCII of first user-defineable char
-    GOTO_COST = 20; // there is no goto on 633
+    GOTO_COST = 999; // there is no goto on 633
     drv_generic_text_real_write   = drv_CF_write2;
     drv_generic_text_real_defchar = drv_CF_defchar23;
     break;
   case 3:
     CHAR0 = 0; // ASCII of first user-defineable char
-    // Fixme: 
     GOTO_COST = 3; // number of bytes a goto command requires
     drv_generic_text_real_write   = drv_CF_write3;
     drv_generic_text_real_defchar = drv_CF_defchar23;

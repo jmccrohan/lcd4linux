@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.11 2004/03/11 06:39:59 reinelt Exp $
+/* $Id: hash.h,v 1.12 2004/06/01 06:45:30 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.12  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.11  2004/03/11 06:39:59  reinelt
  * big patch from Martin:
  * - reuse filehandles
@@ -115,4 +120,5 @@ char  *hash_get       (HASH *Hash, char *key);
 double hash_get_delta (HASH *Hash, char *key, int delay);
 double hash_get_regex (HASH *Hash, char *key, int delay);
 void   hash_destroy   (HASH *Hash);
+
 #endif

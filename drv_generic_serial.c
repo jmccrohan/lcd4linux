@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.10 2004/05/31 21:05:13 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.11 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.11  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.10  2004/05/31 21:05:13  reinelt
  *
  * fixed lots of bugs in the Cwlinux driver
@@ -81,21 +86,21 @@
  *
  * exported fuctions:
  *
- * int  drv_generic_serial_open    (char *driver, char *port, speed_t speed);
+ * int drv_generic_serial_open (char *section, char *driver, unsigned int flags)
  *   opens the serial port
  *
  * int drv_generic_serial_poll (unsigned char *string, int len)
  *   reads from the serial or USB port
  *   without retry
  *
- * int  drv_generic_serial_read    (unsigned char *string, int len);
+ * int drv_generic_serial_read (unsigned char *string, int len);
  *   reads from the serial or USB port
  *   with retry
  *
- * void drv_generic_serial_write   (unsigned char *string, int len);
+ * void drv_generic_serial_write (unsigned char *string, int len);
  *   writes to the serial or USB port
  *
- * int  drv_generic_serial_close   (void);
+ * int drv_generic_serial_close (void);
  *   closes the serial port
  *
  */
@@ -133,7 +138,7 @@ static int     Device=-1;
 // *** generic serial/USB communication ***
 // ****************************************
 
-pid_t drv_generic_serial_lock_port (char *Port)
+static pid_t drv_generic_serial_lock_port (char *Port)
 {
   char lockfile[256];
   char tempfile[256];

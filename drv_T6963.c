@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.4 2004/02/24 05:55:04 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.5 2004/06/01 06:45:30 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.5  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.4  2004/02/24 05:55:04  reinelt
  *
  * X11 driver ported
@@ -98,7 +103,6 @@ static unsigned char SIGNAL_WR;
 
 unsigned char *Buffer1, *Buffer2;
 
-// Fixme:
 static int bug=0;
 
 

@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.6 2004/05/31 05:38:02 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.7 2004/06/01 06:45:29 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.7  2004/06/01 06:45:29  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.6  2004/05/31 05:38:02  reinelt
  *
  * fixed possible bugs with user-defined chars (clear high bits)
@@ -96,7 +101,7 @@ static unsigned char SIGNAL_IOC1;
 static unsigned char SIGNAL_IOC2;
 static unsigned char SIGNAL_GPO;
 
-// Fixme
+// Fixme: GPO's not yet implemented
 static int GPOS;
 // static int GPO=0;
 
@@ -172,7 +177,7 @@ static void drv_M5_defchar (int ascii, unsigned char *matrix)
 }
 
 
-// Fixme
+// Fixme: GPO's
 #if 0
 static void drv_M5_setGPO (int bits)
 {

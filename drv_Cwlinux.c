@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.10 2004/05/31 21:05:13 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.11 2004/06/01 06:45:29 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.11  2004/06/01 06:45:29  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.10  2004/05/31 21:05:13  reinelt
  *
  * fixed lots of bugs in the Cwlinux driver
@@ -103,7 +108,7 @@ static char Name[]="Cwlinux";
 static int Model;
 static int Protocol;
 
-// Fixme:
+// Fixme: GPO's not yet implemented
 // static int GPO[8];
 static int GPOS;
 

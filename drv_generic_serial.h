@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.h,v 1.4 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_generic_serial.h,v 1.5 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_serial.h,v $
+ * Revision 1.5  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.4  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -50,13 +55,6 @@
  *
  */
 
-/* 
- *
- * exported fuctions:
- *
- * Fixme: document me!
- *
- */
 
 #ifndef _DRV_GENERIC_SERIALH_
 #define _DRV_GENERIC_SERIAL_H_

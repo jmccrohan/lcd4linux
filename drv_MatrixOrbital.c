@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.27 2004/05/31 21:23:16 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.28 2004/06/01 06:45:29 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.28  2004/06/01 06:45:29  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.27  2004/05/31 21:23:16  reinelt
  *
  * some cleanups in the MatrixOrbital driver
@@ -169,7 +174,7 @@ static char Name[]="MatrixOrbital";
 static int Model;
 static int Protocol;
 
-// Fixme:
+// Fixme: GPO's not yet implemented
 // static int GPO[8];
 static int GPOS;
 
@@ -379,7 +384,7 @@ static int drv_MO_rpm (int num)
   debug ("rpm: buffer[5]=0x%01x", buffer[5]);
   debug ("rpm: buffer[6]=0x%01x", buffer[6]);
 
-  // Fixme:
+  // Fixme: RPM calculations???
   RPM[num-1] = 42;
 
   return RPM[num-1];

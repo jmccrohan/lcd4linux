@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.2 2004/02/18 06:39:20 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.3 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.3  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.2  2004/02/18 06:39:20  reinelt
  * T6963 driver for graphic displays finished
  *
@@ -34,13 +39,6 @@
  *
  */
 
-/* 
- *
- * exported fuctions:
- *
- * Fixme: document me!
- *
- */
 
 #ifndef _DRV_GENERIC_GRAPHIC_H_
 #define _DRV_GENERIC_GRAPHIC_H_

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.14 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.15 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.15  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.14  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -85,9 +90,53 @@
 
 /* 
  *
+ * exported variables:
+ *
+ * extern int DROWS, DCOLS; // display size
+ * extern int LROWS, LCOLS; // layout size
+ * extern int XRES,  YRES;  // pixel width/height of one char 
+ * extern int GOTO_COST;    // number of bytes a goto command requires
+ * extern int CHARS, CHAR0; // number of user-defineable characters, ASCII of first char
+ * extern int ICONS;        // number of user-defineable characters reserved for icons
+ *
+ *
+ * these functions must be implemented by the real driver:
+ *
+ * void (*drv_generic_text_real_write)(int row, int col, unsigned char *data, int len);
+ *  writes a text of specified length at position (row, col)
+ *
+ * void (*drv_generic_text_real_defchar)(int ascii, unsigned char *buffer);
+ *  defines the bitmap of a user-defined character
+ *
+ *
  * exported fuctions:
  *
- * Fixme: document me!
+ * int drv_generic_text_init (char *section, char *driver);
+ *   initializes the generic text driver
+ *
+ * int drv_generic_text_draw (WIDGET *W);
+ *   renders Text widget into framebuffer
+ *   calls drv_generic_text_real_write()
+ *
+ * int drv_generic_text_icon_init       (void);
+ *   initializes the generic icon driver
+ *   
+ * int drv_generic_text_icon_draw (WIDGET *W);
+ *   renders Icon widget into framebuffer
+ *   calls drv_generic_text_real_write() and drv_generic_text_real_defchar()
+ *
+ * int drv_generic_text_bar_init (int single_segments);
+ *   initializes the generic icon driver
+ *
+ * void drv_generic_text_bar_add_segment (int val1, int val2, DIRECTION dir, int ascii);
+ *   adds a 'fixed' character to the bar-renderer
+ *
+ * int drv_generic_text_bar_draw (WIDGET *W);
+ *   renders Bar widget into framebuffer
+ *   calls drv_generic_text_real_write() and drv_generic_text_real_defchar()
+ *
+ * int drv_generic_text_quit (void);
+ *   closes the generic text driver
  *
  */
 

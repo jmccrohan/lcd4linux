@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.9 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.10 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.10  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.9  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -61,13 +66,6 @@
  *
  */
 
-/* 
- *
- * exported fuctions:
- *
- * Fixme: document me!
- *
- */
 
 #ifndef _DRV_GENERIC_TEXT_H_
 #define _DRV_GENERIC_TEXT_H_

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.3 2004/04/08 10:48:25 reinelt Exp $
+/* $Id: thread.c,v 1.4 2004/06/01 06:45:30 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.4  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.3  2004/04/08 10:48:25  reinelt
  * finished plugin_exec
  * modified thread handling
@@ -43,7 +48,27 @@
 /* 
  * exported functions:
  * 
- * Fixme: document me!
+ * int  mutex_create  (void);
+ *   creates a mutex and treturns its ID
+ * 
+ * void mutex_lock    (int semid);
+ *   try to lock a mutex
+ *
+ * void mutex_unlock  (int semid);
+ *   unlock a mutex
+ *
+ * void mutex_destroy (int semid);
+ *   release a mutex
+ *
+ *
+ * int shm_create    (void **buffer, int size);
+ *   create shared memory segment
+ *
+ * void shm_destroy   (int shmid, void *buffer) ;
+ *   release shared memory segment
+ *
+ * int thread_create (char *name, void (*thread)(void *data), void *data);
+ *   create a new thread
  *
  */
 

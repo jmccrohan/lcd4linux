@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.2 2004/03/03 03:47:04 reinelt Exp $
+/* $Id: timer.h,v 1.3 2004/06/01 06:45:30 reinelt Exp $
  *
  * generic timer handling
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: timer.h,v $
+ * Revision 1.3  2004/06/01 06:45:30  reinelt
+ *
+ * some Fixme's processed
+ * documented some code
+ *
  * Revision 1.2  2004/03/03 03:47:04  reinelt
  * big patch from Martin Hejl:
  * - use qprintf() where appropriate
@@ -43,4 +48,5 @@
 int timer_add (void(*callback)(void *data), void *data, int interval, int one_shot);
 int timer_process (struct timespec *delay);
 void timer_exit();
+
 #endif
