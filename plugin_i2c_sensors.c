@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.7 2004/01/30 20:57:56 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.8 2004/02/14 10:09:50 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.8  2004/02/14 10:09:50  reinelt
+ * I2C Sensors for 2.4 kernels (/proc instead of /sysfs)
+ *
  * Revision 1.7  2004/01/30 20:57:56  reinelt
  * HD44780 patch from Martin Hejl
  * dmalloc integrated
@@ -96,7 +99,10 @@
 static char *path=NULL;
 static HASH I2Csensors = { 0, };
 
-static int parse_i2c_sensors(RESULT *arg)
+	/***********************************************\
+	* Parsing for new 2.6 kernels 'sysfs' interface *
+	\***********************************************/
+static int parse_i2c_sensors_sysfs(RESULT *arg)
 {
   double value;
   char val[32];
@@ -146,7 +152,7 @@ static int parse_i2c_sensors(RESULT *arg)
 
 }  
 
-void my_i2c_sensors (RESULT *result, RESULT *arg)
+void my_i2c_sensors_sysfs(RESULT *result, RESULT *arg)
 {
   int age;
   char *val;
@@ -156,7 +162,7 @@ void my_i2c_sensors (RESULT *result, RESULT *arg)
   // refresh every 100msec
   if (age<0 || age>100)
   {
-    parse_i2c_sensors(arg);
+    parse_i2c_sensors_sysfs(arg);
     val=hash_get(&I2Csensors, key);
   }
   if (val) {
@@ -166,11 +172,107 @@ void my_i2c_sensors (RESULT *result, RESULT *arg)
   }
 }
 
-void my_i2c_sensors_path(void)
+
+	/************************************************\
+	* Parsing for old 2.4 kernels 'procfs' interface *
+	\************************************************/
+
+static int parse_i2c_sensors_procfs(RESULT *arg)
+{
+  char *key=R2S(arg);
+  char file[64];    
+  FILE *stream;
+  char buffer[32];
+
+  char *value;
+  char *running;
+  int pos=0;
+  const char delim[3]= " \n";
+  char final_key[32];
+
+  strcpy(file, path);
+  strcat(file, key);
+
+  stream=fopen(file, "r");
+  if (stream==NULL) {
+    error ("fopen(%s) failed",file);
+    return -1;
+  }
+  fgets (buffer, sizeof(buffer), stream);
+  fclose (stream);
+  
+  if (!buffer) {
+    error ("%s empty ?!",file);	  
+    return -1;
+  }
+  
+  running=strdupa(buffer);
+  while(1) {
+    value = strsep (&running, delim);
+//    debug("%s pos %i -> %s", key, pos , value);
+    if (!value) {
+      break;
+    } else {
+      sprintf (final_key, "%s.%i", key, pos);
+      hash_set (&I2Csensors, final_key, value);
+      pos++;
+    }
+  }
+  return 0;
+}  
+
+void my_i2c_sensors_procfs(RESULT *result, int argc, RESULT *argv[])
+{
+  int age;
+  char *val;
+  char *key;  
+  
+  switch (argc) {
+  case 1:
+    sprintf(key, "%s.0", R2S(argv[0]));
+    break;
+  case 2:
+    sprintf(key, "%s.%s", R2S(argv[0]), R2S(argv[1]));
+    break;
+  default:
+    return;  
+    break;
+  }
+
+  age=hash_age(&I2Csensors, key, &val);
+
+  // refresh every 100msec
+  if (age<0 || age>100)
+  {
+    parse_i2c_sensors_procfs(argv[0]);
+    val=hash_get(&I2Csensors, key);
+  }
+  if (val) {
+    SetResult(&result, R_STRING, val); 
+  } else {
+    SetResult(&result, R_STRING, "??"); 
+  }
+}
+
+	/*****************************************\
+	* Common functions (path search and init) *
+	\*****************************************/
+
+void my_i2c_sensors_path(char *method)
 {
   struct dirent *dir;
   struct dirent *file;
-  const char *base="/sys/bus/i2c/devices/";
+  const char *base;
+	  
+  if (!strcmp(method, "sysfs")) {
+    base="/sys/bus/i2c/devices/";
+  } else if (!strcmp(method, "procfs")) {
+    base="/proc/sys/dev/sensors/";
+    //base="/sensors_2.4/";			// fake dir to test without rebooting 2.4 ;)
+  } else {
+    return; 
+  }
+
   char dname[64];
   DIR *fd1;
   DIR *fd2;
@@ -178,7 +280,11 @@ void my_i2c_sensors_path(void)
   
   fd1 = opendir(base);
   if (!fd1) {
-    error("[i2c_sensors] Impossible to open %s! Is /sys mounted?", base);
+    if (!strcmp(method, "sysfs")) {
+      error("[i2c_sensors] Impossible to open %s! Is /sys mounted?", base);
+    } else if (!strcmp(method, "procfs")) {
+      error("[i2c_sensors] Impossible to open %s! Is i2c_proc loaded ?", base);
+    }
     return;
   }
   
@@ -197,7 +303,7 @@ void my_i2c_sensors_path(void)
     fd2 = opendir(dname);
     done = 0;
     while((file = readdir(fd2))) {
-      if (!strcmp(file->d_name, "temp_input1")) { // FIXME : do all sensors have a temp_input1 ?
+      if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1")) { // FIXME : do all sensors have a temp_input1 ?
 	path = realloc(path, strlen(dname)+1);
 	strcpy(path, dname);			  
 	done=1;
@@ -216,8 +322,11 @@ int plugin_init_i2c_sensors (void)
 
   if (strncmp(path_cfg, "/", 1)) {
     debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()");
-    my_i2c_sensors_path();
-	if (!path) {
+    my_i2c_sensors_path("sysfs");
+    if (!path)
+      my_i2c_sensors_path("procfs");
+
+    if (!path) {
       error("[i2c_sensors] No i2c sensors found via the i2c interface !");
       error("[i2c_sensors] Try to specify the path to the sensors !");
     } else {
@@ -243,7 +352,11 @@ int plugin_init_i2c_sensors (void)
   if (!path) {
   free(path);
   } else {
-  AddFunction ("i2c_sensors", 1, my_i2c_sensors);
+    if (!strncmp(path, "/sys", 4)) {
+    AddFunction ("i2c_sensors", 1, my_i2c_sensors_sysfs);
+    } else if (!strncmp(path, "/proc", 5)) {
+    AddFunction ("i2c_sensors", -1, my_i2c_sensors_procfs);
+    }
   }
  
   return 0;
