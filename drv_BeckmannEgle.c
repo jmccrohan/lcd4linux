@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.5 2004/06/05 06:13:11 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.6 2004/06/05 06:41:39 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,10 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.6  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.5  2004/06/05 06:13:11  reinelt
  *
  * splash screen for all text-based display drivers
@@ -64,7 +68,6 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -75,7 +78,7 @@
 #include "drv_generic_serial.h"
 
 
-static char Name[]="BeckmannEgle";
+static char Name[]="Beckmann+Egle";
 
 typedef struct {
   int type;
@@ -185,9 +188,7 @@ static int drv_BE_start (char *section, int quiet)
   drv_BE_clear();
 
   if (!quiet) {
-    char buffer[40];
-    qprintf(buffer, sizeof(buffer), "B+E %s", Models[Model].name);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (Name, Models[Model].name)) {
       sleep (3);
       drv_BE_clear();
     }
@@ -300,7 +301,7 @@ int drv_BE_quit (void) {
   drv_BE_clear();
 
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   drv_generic_serial_close();
 

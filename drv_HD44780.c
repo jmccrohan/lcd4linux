@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.27 2004/06/05 06:13:11 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.28 2004/06/05 06:41:39 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,10 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.28  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.27  2004/06/05 06:13:11  reinelt
  *
  * splash screen for all text-based display drivers
@@ -746,7 +750,7 @@ static int drv_HD_start (char *section, int quiet)
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (buffer, NULL)) {
       sleep (3);
       drv_HD_clear();
     }
@@ -876,7 +880,7 @@ int drv_HD_quit (void) {
   drv_HD_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   // clear all signals
   if (Bits==8) {

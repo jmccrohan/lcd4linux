@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.3 2004/06/05 06:13:11 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.4 2004/06/05 06:41:39 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.4  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.3  2004/06/05 06:13:11  reinelt
  *
  * splash screen for all text-based display drivers
@@ -198,7 +202,7 @@ static int drv_Curs_start (char *section, int quiet)
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (buffer, NULL)) {
       sleep (3);
       drv_Curs_clear();
     }
@@ -298,7 +302,7 @@ int drv_Curs_quit (void) {
   drv_Curs_clear();
 
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   endwin();
   

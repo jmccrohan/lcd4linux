@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.13 2004/06/05 06:13:11 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.14 2004/06/05 06:41:39 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.14  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.13  2004/06/05 06:13:11  reinelt
  *
  * splash screen for all text-based display drivers
@@ -303,7 +307,7 @@ static int drv_CW_start (char *section, int quiet)
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (buffer, "www.cwlinux.com")) {
       sleep (3);
       drv_CW_clear();
     }
@@ -440,7 +444,7 @@ int drv_CW_quit (void) {
   drv_CW_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   drv_generic_serial_close();
   

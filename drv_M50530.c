@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.9 2004/06/05 06:13:12 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.10 2004/06/05 06:41:39 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.10  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.9  2004/06/05 06:13:12  reinelt
  *
  * splash screen for all text-based display drivers
@@ -277,7 +281,7 @@ static int drv_M5_start (char *section, int quiet)
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (buffer, NULL)) {
       sleep (3);
       drv_M5_clear();
     }
@@ -390,7 +394,7 @@ int drv_M5_quit (void) {
   drv_M5_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   // clear all signals
   drv_generic_parport_control (SIGNAL_EX|SIGNAL_IOC1|SIGNAL_IOC2|SIGNAL_GPO, 0);

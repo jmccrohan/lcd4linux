@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.30 2004/06/05 06:13:12 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.31 2004/06/05 06:41:39 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.31  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.30  2004/06/05 06:13:12  reinelt
  *
  * splash screen for all text-based display drivers
@@ -167,7 +171,6 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -505,9 +508,7 @@ static int drv_MO_start (char *section, int quiet)
   }
 
   if (!quiet) {
-    char buffer[40];
-    qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (Models[Model].name, "MatrixOrbital")) {
       sleep (3);
       drv_MO_clear();
     }
@@ -712,7 +713,7 @@ int drv_MO_quit (void) {
   drv_MO_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   drv_generic_serial_close();
   

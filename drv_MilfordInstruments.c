@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.7 2004/06/05 06:13:12 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.8 2004/06/05 06:41:40 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,10 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.8  2004/06/05 06:41:40  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.7  2004/06/05 06:13:12  reinelt
  *
  * splash screen for all text-based display drivers
@@ -70,7 +74,6 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -174,7 +177,7 @@ static int drv_MI_start (char *section, int quiet)
   drv_generic_serial_write ("\376\014", 2);  // cursor off
 
   if (!quiet) {
-    if (drv_generic_text_greet (Models[Model].name)) {
+    if (drv_generic_text_greet (Models[Model].name, "Milford Instruments")) {
       sleep (3);
       drv_MI_clear();
     }
@@ -288,7 +291,7 @@ int drv_MI_quit (void) {
   drv_MI_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   drv_generic_serial_close();
   

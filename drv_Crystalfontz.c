@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.24 2004/06/05 06:13:11 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.25 2004/06/05 06:41:39 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.25  2004/06/05 06:41:39  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.24  2004/06/05 06:13:11  reinelt
  *
  * splash screen for all text-based display drivers
@@ -973,7 +977,7 @@ int drv_CF_init (char *section, int quiet)
   if (!quiet) {
     char buffer[40];
     qprintf(buffer, sizeof(buffer), "%s %s", Name, Models[Model].name);
-    if (drv_generic_text_greet (buffer)) {
+    if (drv_generic_text_greet (buffer, "www.crystalfontz.com")) {
       sleep (3);
       drv_CF_clear();
     }
@@ -1033,7 +1037,7 @@ int drv_CF_quit (void) {
   drv_CF_clear();
   
   // say goodbye...
-  drv_generic_text_greet ("goodbye!");
+  drv_generic_text_greet ("goodbye!", NULL);
 
   drv_generic_serial_close();
   

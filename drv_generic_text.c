@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.16 2004/06/02 10:09:22 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.17 2004/06/05 06:41:40 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.17  2004/06/05 06:41:40  reinelt
+ *
+ * chancged splash screen again
+ *
  * Revision 1.16  2004/06/02 10:09:22  reinelt
  *
  * splash screen for HD44780
@@ -301,7 +305,7 @@ int drv_generic_text_init (char *section, char *driver)
 
 
 // say hello to the user
-int drv_generic_text_greet (char *message)
+int drv_generic_text_greet (char *msg1, char *msg2)
 {
   int i;
   int flag = 0;
@@ -338,14 +342,22 @@ int drv_generic_text_greet (char *message)
     }
   }
   
-  if (message && DROWS >= 3) {
-    int len = strlen(message);
+  if (msg1 && DROWS >= 3) {
+    int len = strlen(msg1);
     if ( len <= DCOLS) {
-      drv_generic_text_real_write (2, (DCOLS-len)/2, message, len);
+      drv_generic_text_real_write (2, (DCOLS-len)/2, msg1, len);
       flag = 1;
     }
   }
   
+  if (msg2 && DROWS >= 4) {
+    int len = strlen(msg2);
+    if ( len <= DCOLS) {
+      drv_generic_text_real_write (3, (DCOLS-len)/2, msg2, len);
+      flag = 1;
+    }
+  }
+
   return flag;
 }
 
