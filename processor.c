@@ -1,4 +1,4 @@
-/* $Id: processor.c,v 1.14 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: processor.c,v 1.15 2001/03/02 10:18:03 ltoetsch Exp $
  *
  * main data processing
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: processor.c,v $
+ * Revision 1.15  2001/03/02 10:18:03  ltoetsch
+ * added /proc/apm battery stat
+ *
  * Revision 1.14  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -113,6 +116,7 @@
 #include "display.h"
 #include "processor.h"
 #include "mail.h"
+#include "battery.h"
 #include "seti.h"
 
 #define ROWS 16
@@ -130,6 +134,7 @@ struct { int read, write, total, max, peak; } disk;
 struct { int rx, tx, total, max, peak, bytes; } net;
 struct { int usage, in, out, total, max, peak; } isdn;
 struct { int rx, tx, total, max, peak; } ppp;
+struct { int perc, stat; double dur; } batt;
 struct { double perc, cput; } seti;
 struct { int num; } mail[MAILBOXES];
 struct { double val, min, max; } sensor[SENSORS];
@@ -215,6 +220,13 @@ static double query (int token)
   case T_SETI_CPU:
     return seti.cput;
     
+  case T_BATT_PERC:
+    return batt.perc;
+  case T_BATT_STAT:
+    return batt.stat;
+  case T_BATT_DUR:
+    return batt.dur;
+    
   case T_MAIL:
     return mail[(token>>8)-'0'].num;
 
@@ -224,6 +236,7 @@ static double query (int token)
   return 0.0;
 }
 
+/* return a value 0..1 */
 static double query_bar (int token)
 {
   int i;
@@ -275,7 +288,15 @@ static double query_bar (int token)
     
   case T_SETI_PRC:
     return value;
-
+    
+  case T_BATT_PERC:
+    {
+      static int alarm;
+      alarm=(++alarm % 3);
+      if(value < atoi(cfg_get("battwarning")?:"10") && !alarm) /* flash bar */
+	value = 0;
+      return value/100;
+    }
   case T_SENSOR:
     i=(token>>8)-'0';
     return (value-sensor[i].min)/(sensor[i].max-sensor[i].min);
@@ -374,6 +395,41 @@ static void print_token (int token, char **p)
 		 (int)((int)val%86400)/3600,
 		 (int)(((int)val%86400)%3600)/60 );
     break;
+    
+  case T_BATT_PERC:
+    *p+=sprintf(*p, "%3.0f", query(token));
+    break;
+  case T_BATT_STAT:  
+    { int ival = (int) query(token);
+      switch (ival) {
+        case 0: **p = '='; break;
+        case 1: **p = '+'; break;
+        case 2: **p = '-'; break;
+        default: **p = '?'; break;
+      }
+    }
+    (*p)++;
+    break;
+  case T_BATT_DUR:
+    {
+      char eh = 's';
+      val = query(token);
+      if (val > 99) {
+	val /= 60;
+	eh = 'm';
+      }
+      if (val > 99) {
+	val /= 60;
+	eh = 'h';
+      }
+      if (val > 99) {
+	val /= 24;
+	eh = 'd';
+      }
+      *p+=sprintf(*p, "%2.0f%c", val, eh);
+    }
+    break;
+    
   case T_MAIL:
     val=query(token);
     *p+=sprintf (*p, "%3.0f", val);
@@ -431,6 +487,10 @@ static void collect_data (void)
 
   if (token_usage[C_SETI]) {
     Seti (&seti.perc, &seti.cput);
+  }
+
+  if (token_usage[C_BATT]) {
+    Battery (&batt.perc, &batt.stat, &batt.dur);
   }
   
   for (i=1; i<=MAILBOXES; i++) {

@@ -21,6 +21,7 @@ system.c system.h \
 isdn.c isdn.h \
 mail.c mail.h \
 seti.c seti.h \
+battery.c battery.h \
 filter.c filter.h \
 udelay.c udelay.h \
 display.c display.h \

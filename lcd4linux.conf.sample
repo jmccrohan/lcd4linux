@@ -75,6 +75,13 @@ Tau 500
 
 Overload 2.0
 
+# flash bp-Bar if below Battwarning
+# I use Row6 "Bat%bp%bs%bd$r10bp+bp"
+# which gives a nice flash effect
+# default 10
+
+Battwarning 10
+
 SetiDir /etc/setiathome
 Mailbox1 /var/spool/mail/michii
 

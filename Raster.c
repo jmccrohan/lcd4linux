@@ -1,4 +1,4 @@
-/* $Id: Raster.c,v 1.14 2001/03/01 22:33:50 reinelt Exp $
+/* $Id: Raster.c,v 1.15 2001/03/02 10:18:03 ltoetsch Exp $
  *
  * driver for raster formats
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: Raster.c,v $
+ * Revision 1.15  2001/03/02 10:18:03  ltoetsch
+ * added /proc/apm battery stat
+ *
  * Revision 1.14  2001/03/01 22:33:50  reinelt
  *
  * renamed Raster_flush() to PPM_flush()
@@ -102,7 +105,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef WITH_PNG
-#include <gd/gd.h>
+/* #include <gd/gd.h> */
+#include <gd.h>
 #endif
 
 #include "debug.h"

@@ -1,4 +1,4 @@
-/* $Id: parser.c,v 1.10 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: parser.c,v 1.11 2001/03/02 10:18:03 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.c,v $
+ * Revision 1.11  2001/03/02 10:18:03  ltoetsch
+ * added /proc/apm battery stat
+ *
  * Revision 1.10  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -145,6 +148,9 @@ static SYMTAB Symtab[] = {{ "%",  T_PERCENT,    C_GENERIC, 0 },
 			  { "tm", T_PPP_MAX,    C_PPP,     1 },
 			  { "hc", T_SETI_PRC,   C_SETI,    1 },
 			  { "ht", T_SETI_CPU,   C_SETI,    0 },
+			  { "bp", T_BATT_PERC,  C_BATT,    1 },
+			  { "bs", T_BATT_STAT,  C_BATT,    0 },
+			  { "bd", T_BATT_DUR,   C_BATT,    0 },
 			  { "e*", T_MAIL,       C_MAIL,    0 },
 			  { "s*", T_SENSOR,     C_SENSOR,  1 },
 			  { "",  -1,            0 }};

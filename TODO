@@ -4,8 +4,9 @@ ToDo-List / Wishlist for lcd4linux
 implement some sort of 'graphs', similar to bars, but with a time axis
 can be filled (made up of bars) or not (needs raster graphics)
 
-2000-04-04 Michael Reinelt <reinelt@eunet.at>
-write a driver for PNG. This should be the first step towards a WWW-driver.
+// 2000-04-04 Michael Reinelt <reinelt@eunet.at>
+// write a driver for PNG. This should be the first step towards a WWW-driver.
+Done 2001-03-01 -lt.
 
 2000-04-15 Thomas Skyt Jessen <thskyt@foni.net>
 show partition information (used, free, ...)
@@ -30,6 +31,7 @@ accept data from external sources (fifo?)
 connect a LED to a spare pin of the parallel port and show if ISDN
 is online
 
-2001-01-27 Axel Ehnert <axel@ehnert.net>
-- display numer of emails in a mailbox
-- display seti@home values
+// 2001-01-27 Axel Ehnert <axel@ehnert.net>
+// - display numer of emails in a mailbox
+// - display seti@home values
+done.

@@ -1,4 +1,4 @@
-/* $Id: parser.h,v 1.8 2001/02/19 00:15:46 reinelt Exp $
+/* $Id: parser.h,v 1.9 2001/03/02 10:18:03 ltoetsch Exp $
  *
  * row definition parser
  *
@@ -20,6 +20,9 @@
  *
  *
  * $Log: parser.h,v $
+ * Revision 1.9  2001/03/02 10:18:03  ltoetsch
+ * added /proc/apm battery stat
+ *
  * Revision 1.8  2001/02/19 00:15:46  reinelt
  *
  * integrated mail and seti client
@@ -76,13 +79,16 @@ typedef enum {
   T_PPP_RX, T_PPP_TX, T_PPP_TOTAL, T_PPP_MAX,
   T_ISDN_USED, T_ISDN_IN, T_ISDN_OUT, T_ISDN_TOTAL, T_ISDN_MAX,
   T_SETI_PRC, T_SETI_CPU,
+  T_BATT_PERC, T_BATT_STAT, T_BATT_DUR,
   T_EXTENDED,
   T_MAIL,
   T_SENSOR
 } TOKEN;
 
 typedef enum {
-  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, C_MAIL, C_SENSOR
+  C_GENERIC, C_MEM, C_LOAD, C_CPU, C_DISK, C_ETH, C_PPP, C_ISDN, C_SETI, 
+  C_BATT,  
+  C_MAIL, C_SENSOR
 } CLASS;
 
 char *parse_row (char *string, int supported_bars, int usage[]);
