@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.4 2004/05/26 11:37:36 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.5 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,11 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.5  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.4  2004/05/26 11:37:36  reinelt
  *
  * Curses driver ported.
@@ -135,15 +140,15 @@ static void drv_UL_write (int row, int col, unsigned char *data, int len)
   drv_UL_send();
 }
 
-static void drv_UL_defchar (int ascii, unsigned char *buffer)
+static void drv_UL_defchar (int ascii, unsigned char *matrix)
 {
   int i;
   
   drv_UL_command (0x40|8*ascii);
 
   for (i = 0; i < 8; i++) {
-    if(*buffer == 0) *BufPtr++ = 0;
-    *BufPtr++ = *buffer++;
+    if(*matrix == 0) *BufPtr++ = 0;
+    *BufPtr++ = *matrix++ & 0x1f;
   }
 
   drv_UL_send();

@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.7 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.8 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.8  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.7  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -133,7 +138,7 @@ static void drv_CW1602_defchar (int ascii, unsigned char *buffer)
   cmd[2]=(char)(ascii+1);
 
   for (i=0; i<8; i++) {
-    cmd[3+i]=buffer[i];
+    cmd[3+i] = buffer[i] & 0x1f;
   }
   drv_generic_serial_write(cmd,12);
   usleep(20);  // delay for cw1602 to settle the character defined!

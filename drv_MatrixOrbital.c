@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.24 2004/05/28 13:51:42 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.25 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.25  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.24  2004/05/28 13:51:42  reinelt
  *
  * ported driver for Beckmann+Egle Mini-Terminals
@@ -217,13 +222,16 @@ static void drv_MO_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_MO_defchar (int ascii, unsigned char *buffer)
+static void drv_MO_defchar (int ascii, unsigned char *matrix)
 {
-  char cmd[3]="\376N";
+  int i;
+  char cmd[11]="\376N";
 
   cmd[2]=(char)ascii;
-  drv_generic_serial_write (cmd, 3);
-  drv_generic_serial_write (buffer, 8);
+  for (i = 0; i < 8; i++) {
+    cmd[i+3] = matrix[i] & 0x1f;
+  }
+  drv_generic_serial_write (cmd, 11);
 }
 
 

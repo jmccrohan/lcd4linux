@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.19 2004/05/30 08:25:50 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.20 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.20  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.19  2004/05/30 08:25:50  reinelt
  *
  * Crystalfontz 631 driver finished
@@ -413,29 +418,31 @@ static void drv_CF_write3 (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_CF_defchar1 (int ascii, unsigned char *buffer)
+static void drv_CF_defchar1 (int ascii, unsigned char *matrix)
 {
-  char cmd[2]="\031n"; // set custom char bitmap
+  int i;
+  char cmd[10]="\031n"; // set custom char bitmap
   
   // user-defineable chars start at 128, but are defined at 0
   cmd[1]=(char)(ascii-CHAR0); 
-  drv_generic_serial_write (cmd, 2);
-  drv_generic_serial_write (buffer, 8);
+  for (i = 0; i < 8; i++) {
+    cmd[i+2] = matrix[i] & 0x3f;
+  }
+  drv_generic_serial_write (cmd, 10);
 }
 
 
 static void drv_CF_defchar23 (int ascii, unsigned char *matrix)
 {
-  char buffer[9];
   int i;
+  char buffer[9];
   
   // user-defineable chars start at 128, but are defined at 0
   buffer[0] = (char)(ascii-CHAR0); 
-  memcpy(buffer+1, matrix, 8);
-
+  
   // clear bit 6 and 7 of the bitmap (blinking)
   for (i = 0; i < 8; i++) {
-    buffer[1+i] &= 0x3f;
+    buffer[i+1] = matrix[i] & 0x3f;
   }
   
   drv_CF_send (9, 9, buffer);

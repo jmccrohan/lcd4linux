@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.22 2004/05/27 03:39:47 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.23 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -29,6 +29,11 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.23  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.22  2004/05/27 03:39:47  reinelt
  *
  * changed function naming scheme to plugin::function
@@ -518,8 +523,15 @@ static void drv_HD_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_HD_defchar (int ascii, unsigned char *buffer)
+static void drv_HD_defchar (int ascii, unsigned char *matrix)
 {
+  int i;
+  unsigned char buffer[8];
+
+  for (i = 0; i < 8; i++) {
+    buffer[i] = matrix[i] & 0x1f;
+  }
+  
   // define chars on *both* controllers!
   drv_HD_command (allControllers, 0x40|8*ascii, T_EXEC);
   drv_HD_data (allControllers, buffer, 8, T_WRCG);

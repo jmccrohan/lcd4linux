@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.1 2004/05/28 14:36:10 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.2 2004/05/31 05:38:02 reinelt Exp $
  *
  * driver for Beckmann+Egle mini terminals
  * Copyright 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,11 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.2  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.1  2004/05/28 14:36:10  reinelt
  *
  * added drv_BeckmannEgle.c (forgotten at first check in :-)
@@ -102,7 +107,7 @@ static void drv_BE_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_BE_defchar (int ascii, unsigned char *buffer)
+static void drv_BE_defchar (int ascii, unsigned char *matrix)
 {
   int  i;
   char cmd[32];
@@ -111,14 +116,14 @@ static void drv_BE_defchar (int ascii, unsigned char *buffer)
   p = cmd;
   *p++ = '\033';
   *p++ = '&';
-  *p++ = 'T';            // enter transparent mode
-  *p++ = '\0';           // write cmd
-  *p++ = 0x40|8*ascii;   // write CGRAM
+  *p++ = 'T';                  // enter transparent mode
+  *p++ = '\0';                 // write cmd
+  *p++ = 0x40|8*ascii;         // write CGRAM
   for (i = 0; i < YRES; i++) {
-    *p++ = '\1';         // write data
-    *p++ = buffer[i];    // character bitmap
+    *p++ = '\1';               // write data
+    *p++ = matrix[i] & 0x1f;   // character bitmap
   }
-  *p++ = '\377';         // leave transparent mode
+  *p++ = '\377';               // leave transparent mode
 
   drv_generic_serial_write (cmd, p-cmd);
 }

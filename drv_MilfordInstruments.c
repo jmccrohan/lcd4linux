@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.4 2004/05/31 01:31:01 andy-b Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.5 2004/05/31 05:38:02 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,11 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.5  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.4  2004/05/31 01:31:01  andy-b
  *
  *
@@ -108,17 +113,17 @@ static void drv_MI_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_MI_defchar (int ascii, unsigned char *buffer)
+static void drv_MI_defchar (int ascii, unsigned char *matrix)
 {
   int i;
-  char cmd[2]="\376x";
+  char cmd[10]="\376x";
+
   if (ascii<8) {
     cmd[1]=(char)(64+ascii*8);
     for ( i=0; i<8; i++) {
-	buffer[i]&=0x1f;
-	};
-    drv_generic_serial_write (cmd, 2);
-    drv_generic_serial_write (buffer, 8);
+      cmd[i+2] = matrix[i] & 0x1f;
+    };
+    drv_generic_serial_write (cmd, 10);
   }
 }
 
@@ -144,7 +149,7 @@ static int drv_MI_start (char *section)
   Model=i;
   info ("%s: using model '%s'", Name, Models[Model].name);
   
-  if (drv_generic_serial_open(section, Name)<0) return -1;
+  if (drv_generic_serial_open(section, Name, 0) < 0) return -1;
   
   // initialize global variables
   DROWS    = Models[Model].rows;
@@ -221,7 +226,7 @@ int drv_MI_init (char *section)
     return ret;
   
   // initialize generic bar driver
-  if ((ret=drv_generic_text_bar_init())!=0)
+  if ((ret=drv_generic_text_bar_init(0))!=0)
     return ret;
   
   // add fixed chars to the bar driver

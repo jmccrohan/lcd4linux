@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.5 2004/05/29 15:53:28 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.6 2004/05/31 05:38:02 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,11 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.6  2004/05/31 05:38:02  reinelt
+ *
+ * fixed possible bugs with user-defined chars (clear high bits)
+ * thanks to Andy Baxter for debugging the MilfordInstruments driver!
+ *
  * Revision 1.5  2004/05/29 15:53:28  reinelt
  *
  * M50530: reset parport signals on exit
@@ -153,7 +158,7 @@ static void drv_M5_write (int row, int col, unsigned char *data, int len)
 }
 
 
-static void drv_M5_defchar (int ascii, unsigned char *buffer)
+static void drv_M5_defchar (int ascii, unsigned char *matrix)
 {
   int i;
   
@@ -162,7 +167,7 @@ static void drv_M5_defchar (int ascii, unsigned char *buffer)
   // Fixme: looks like the M50530 cannot control the bottom line
   // therefore we have only 7 bytes here
   for (i=0; i<7; i++) {
-    drv_M5_command (0x100|buffer[i], 20);
+    drv_M5_command (0x100|(matrix[i] & 0x3f), 20);
   }
 }
 
