@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.4 2005/02/24 07:06:48 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.5 2005/04/09 07:36:42 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.5  2005/04/09 07:36:42  reinelt
+ * updated LCD-Linux driver to version 0.8.8
+ *
  * Revision 1.4  2005/02/24 07:06:48  reinelt
  * SimpleLCD driver added
  *
@@ -69,25 +72,12 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 
+#include "drv_LCDLinux.h"
 
-static char Name[]   = "LCD-Linux";
-static char Device[] = "/dev/lcd";
 
-#define LCDLINUX_MAJOR 120 
-
-struct lcd_driver {
-  unsigned short io;              /* Parport base address */
-  unsigned short flags;           /* Flags (see Documentation) */
-  unsigned short num_cntr;        /* Number of available controllers */
-  unsigned short cntr_rows;       /* Rows per controller */
-  unsigned short disp_cols;       /* Columns */
-  unsigned short tabstop;         /* Length of tab character */
-};
-
+static char Name[]     = "LCD-Linux";
+static char Device[]   = "/dev/lcd";
 static int lcdlinux_fd = -1;
-
-#define IOCTL_SET_PARAM _IOW(LCDLINUX_MAJOR, 0, struct lcd_driver *)
-#define IOCTL_GET_PARAM _IOR(LCDLINUX_MAJOR, 1, struct lcd_driver *)
 
 
 /****************************************/
