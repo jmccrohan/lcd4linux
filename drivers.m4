@@ -31,7 +31,7 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
   [                        MilfordInstruments, NULL, PNG, PPM, RouterBoard,]
-  [                        SimpleLCD, T6963, USBLCD, X11],
+  [                        SimpleLCD, T6963, Trefon, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -68,6 +68,7 @@ for driver in $drivers; do
          PPM="yes"
 	 ROUTERBOARD="yes"
          T6963="yes"
+         Trefon="yes"
          USBLCD="yes"
          X11="yes"
          SIMPLELCD="yes"
@@ -122,6 +123,9 @@ for driver in $drivers; do
          ;;
       T6963)
          T6963=$val
+         ;;
+      Trefon)
+         Trefon=$val
          ;;
       USBLCD)
          USBLCD=$val
@@ -275,6 +279,17 @@ if test "$T6963" = "yes"; then
    PARPORT="yes"
    DRIVERS="$DRIVERS drv_T6963.o"
    AC_DEFINE(WITH_T6963,1,[T6963 driver])
+fi
+
+if test "$Trefon" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      DRIVERS="$DRIVERS drv_Trefon.o"
+      AC_DEFINE(WITH_TREFON,1,[TREFON driver])
+      DRVLIBS="$DRVLIBS -lusb"
+   else
+      AC_MSG_WARN(usb.h not found: Trefon driver disabled)
+   fi
 fi
 
 if test "$USBLCD" = "yes"; then

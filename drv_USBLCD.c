@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.21 2005/04/02 05:28:58 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.22 2005/04/24 04:33:46 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.22  2005/04/24 04:33:46  reinelt
+ * driver for TREFON USB LCD's added
+ *
  * Revision 1.21  2005/04/02 05:28:58  reinelt
  * fixed gcc4 warnings about signed/unsigned mismatches
  *
@@ -246,7 +249,7 @@ static int drv_UL_close (void)
 #endif
 
 
-static void drv_UL_send ()
+static void drv_UL_send (void)
 {
 
 #if 0

@@ -1,3 +1,9 @@
+Display Trefon {
+    Driver 'TREFON'
+    Size '16x2'
+}
+
+
 Display LCD-Linux {
     Driver 'LCD-Linux'
 }
@@ -744,13 +750,14 @@ Layout testMySQL {
 #Display 'LCDTerm'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-Display 'XWindow'
+#Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
+Display 'Trefon'
 
-Layout  'Default'
-#Layout 'L16x2'
+#Layout  'Default'
+Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
 

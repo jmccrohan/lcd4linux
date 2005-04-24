@@ -383,6 +383,9 @@
 /* T6963 driver */
 #undef WITH_T6963
 
+/* TREFON driver */
+#undef WITH_TREFON
+
 /* USBLCD driver */
 #undef WITH_USBLCD
 

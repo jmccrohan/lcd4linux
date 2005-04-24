@@ -75,6 +75,7 @@ drv_NULL.c                  \
 drv_RouterBoard.c           \
 drv_SimpleLCD.c             \
 drv_T6963.c                 \
+drv_Trefon.c                \
 drv_USBLCD.c                \
 drv_X11.c                   \
                             \

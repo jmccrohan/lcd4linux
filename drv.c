@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.28 2005/02/24 07:06:48 reinelt Exp $
+/* $Id: drv.c,v 1.29 2005/04/24 04:33:46 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.29  2005/04/24 04:33:46  reinelt
+ * driver for TREFON USB LCD's added
+ *
  * Revision 1.28  2005/02/24 07:06:48  reinelt
  * SimpleLCD driver added
  *
@@ -201,6 +204,7 @@ extern DRIVER drv_NULL;
 extern DRIVER drv_RouterBoard;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
+extern DRIVER drv_Trefon;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_X11;
 
@@ -258,6 +262,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_T6963
   &drv_T6963,
+#endif
+#ifdef WITH_TREFON
+  &drv_Trefon,
 #endif
 #ifdef WITH_USBLCD
   &drv_USBLCD,

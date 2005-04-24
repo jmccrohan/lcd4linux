@@ -870,7 +870,7 @@ Optional Packages:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,
                           MilfordInstruments, NULL, PNG, PPM, RouterBoard,
-                          SimpleLCD, T6963, USBLCD, X11
+                          SimpleLCD, T6963, Trefon, USBLCD, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -5569,6 +5569,7 @@ for driver in $drivers; do
          PPM="yes"
 	 ROUTERBOARD="yes"
          T6963="yes"
+         Trefon="yes"
          USBLCD="yes"
          X11="yes"
          SIMPLELCD="yes"
@@ -5623,6 +5624,9 @@ for driver in $drivers; do
          ;;
       T6963)
          T6963=$val
+         ;;
+      Trefon)
+         Trefon=$val
          ;;
       USBLCD)
          USBLCD=$val
@@ -5850,6 +5854,22 @@ cat >>confdefs.h <<\_ACEOF
 #define WITH_T6963 1
 _ACEOF
 
+fi
+
+if test "$Trefon" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      DRIVERS="$DRIVERS drv_Trefon.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_TREFON 1
+_ACEOF
+
+      DRVLIBS="$DRVLIBS -lusb"
+   else
+      { echo "$as_me:$LINENO: WARNING: usb.h not found: Trefon driver disabled" >&5
+echo "$as_me: WARNING: usb.h not found: Trefon driver disabled" >&2;}
+   fi
 fi
 
 if test "$USBLCD" = "yes"; then
