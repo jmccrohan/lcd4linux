@@ -1,4 +1,72 @@
+2005-04-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, drivers.m4, drv.c, drv_Trefon.c, drv_USBLCD.c, lcd4linux.conf.sample:
+	driver for TREFON USB LCD's added
+
+2005-04-20  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_SimpleLCD.c:
+	Changed the code to add some VT100-compatible control sequences (see the comments above).
+	A configfile boolean option 'VT100_Support' (default to 1) indicate if the display in
+	used support these control-sequences or not.
+
+2005-04-09  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_LCDLinux.c, drv_LCDLinux.h:
+	updated LCD-Linux driver to version 0.8.8
+
+2005-04-05  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, plugins.m4, configure: AC_CHECK_HEADERS corrected
+
+	* configure.in, drv_generic_i2c.c, lcd4linux.conf.sample, configure:
+	i2c patch from Paul (still does not work here :-(
+
+	* plugin_math.c: ceil/floor patch from Maxime
+
+2005-04-04  nicowallmeier  <nicowallmeier@merlin.ethnet>
+
+	* plugin_imon.c: to be compatible with gcc 2.95
+
+2005-04-03  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, plugin.c, plugin_statfs.c, plugins.m4, config.h.in, configure, Makefile.am, Makefile.in:
+	added statfs plugin
+
+2005-04-02  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Crystalfontz.c, drv_SimpleLCD.c, drv_USBLCD.c:
+	fixed gcc4 warnings about signed/unsigned mismatches
+
+2005-04-01  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* lcd4linux.conf.sample, plugin_i2c_sensors.c, plugin_imon.c, plugin_mysql.c, plugin_pop3.c:
+	moved plugin init stuff to a seperate function called on first use
+
+2005-03-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* evaluator.c, lcd4linux.c, plugin_cfg.c:
+	Evaluator speedup: use bsearch for finding functions and variables
+
+2005-03-28  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c: HD44780 multiple displays patch from geronet
+
+	* configure.in, drivers.m4, drv_HD44780.c, drv_generic_i2c.c, drv_generic_i2c.h, config.h.in, configure, Makefile.in, Makefile.am:
+	HD44780/I2C patch from Luis merged (still does not work for me)
+
+2005-03-25  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c: HD44780 Backlight fixed (thanks to geronet)
+
+2005-03-23  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Crystalfontz.c:
+	fixed some signed/unsigned char mismatches in the Crystalfontz driver (ticket #12)
+
 2005-02-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* ChangeLog: ChangeLog
 
 	* drivers.m4, drv.c, drv_Crystalfontz.c, drv_LCDLinux.c, drv_SimpleLCD.c, drv_generic_text.c, lcd4linux.conf.sample, config.h.in, configure, Makefile.am, Makefile.in:
 	SimpleLCD driver added
