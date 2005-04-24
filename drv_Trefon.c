@@ -1,4 +1,4 @@
-/* $Id: drv_Trefon.c,v 1.1 2005/04/24 04:33:46 reinelt Exp $
+/* $Id: drv_Trefon.c,v 1.2 2005/04/24 05:27:09 reinelt Exp $
  *
  * driver for TREFON USB LCD displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Trefon.c,v $
+ * Revision 1.2  2005/04/24 05:27:09  reinelt
+ * Trefon Backlight added
+ *
  * Revision 1.1  2005/04/24 04:33:46  reinelt
  * driver for TREFON USB LCD's added
  *
@@ -65,10 +68,11 @@
 #define LCD_USB_VENDOR 0xfff0
 #define LCD_USB_DEVICE 0xfffe
 
-#define PKT_START 0x02
-#define PKT_DATA  0x02
-#define PKT_CTRL  0x06
-#define PKT_END   0xff
+#define PKT_START     0x02
+#define PKT_BACKLIGHT 0x01
+#define PKT_DATA      0x02
+#define PKT_CTRL      0x06
+#define PKT_END       0xff
 
 static char Name[]="TREFON";
 
@@ -211,8 +215,23 @@ static void drv_TF_defchar (const int ascii, const unsigned char *matrix)
 }
 
 
+static int drv_TF_backlight (int backlight)
+{
+  char buffer[4] = { PKT_START, PKT_BACKLIGHT, 0, PKT_END };
+
+  if (backlight < 0) backlight = 0;
+  if (backlight > 1) backlight = 1;
+
+  buffer[2] = backlight;
+  drv_TF_send(buffer, 4);
+
+  return backlight;
+}
+
+  
 static int drv_TF_start (const char *section, const int quiet)
 {
+  int backlight;
   int rows=-1, cols=-1;
   char *s;
 
@@ -235,6 +254,10 @@ static int drv_TF_start (const char *section, const int quiet)
     return -1;
   }
 
+  if (cfg_number(section, "Backlight", 1, 0, 1, &backlight) > 0) {
+    drv_TF_backlight (backlight);
+  }
+
   drv_TF_clear();        /* clear display */
   
   if (!quiet) {
@@ -254,7 +277,13 @@ static int drv_TF_start (const char *section, const int quiet)
 /***            plugins               ***/
 /****************************************/
 
-/* none */
+static void plugin_backlight (RESULT *result, RESULT *arg1)
+{
+  double backlight;
+  
+  backlight = drv_TF_backlight(R2N(arg1));
+  SetResult(&result, R_NUMBER, &backlight); 
+}
 
 
 /****************************************/
@@ -340,7 +369,7 @@ int drv_TF_init (const char *section, const int quiet)
   widget_register(&wc);
   
   /* register plugins */
-  /* none */
+  AddFunction ("LCD::backlight", 1, plugin_backlight);
 
   return 0;
 }

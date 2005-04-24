@@ -1,6 +1,8 @@
 Display Trefon {
     Driver 'TREFON'
     Size '16x2'
+    Backlight 1
+    Icons 1
 }
 
 
