@@ -8,6 +8,7 @@ Display Trefon {
 
 Display LCD-Linux {
     Driver 'LCD-Linux'
+    Size '20x2'
 }
 
 Display LK204 {
@@ -75,8 +76,9 @@ Display Curses {
 Display HD44780-generic {
     Driver 'HD44780'
     Model 'generic'
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
     Size '20x4'
+    asc255bug 1
     Wire {
 	RW      'GND'
 	RS      'AUTOFD'
@@ -737,7 +739,7 @@ Layout testMySQL {
 }
 
 
-#Display 'LCD-Linux'
+Display 'LCD-Linux'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
@@ -756,7 +758,7 @@ Layout testMySQL {
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
-Display 'Trefon'
+#Display 'Trefon'
 
 #Layout  'Default'
 Layout 'L16x2'

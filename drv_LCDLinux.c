@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.5 2005/04/09 07:36:42 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.6 2005/04/30 06:02:09 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.6  2005/04/30 06:02:09  reinelt
+ * LCD-Linux display size set up from lcd4linux.conf
+ *
  * Revision 1.5  2005/04/09 07:36:42  reinelt
  * updated LCD-Linux driver to version 0.8.8
  *
@@ -142,9 +145,22 @@ static void drv_LL_defchar (const int ascii, const unsigned char *matrix)
 }
 
 
-static int drv_LL_start (const int quiet)
+static int drv_LL_start (const char *section, const int quiet)
 {
+  char *s;
+  int rows=-1, cols=-1;
   struct lcd_driver buf;
+
+  /* get size from config file */
+  s=cfg_get(section, "Size", NULL);
+  if (s != NULL || *s != '\0') {
+    if (sscanf(s, "%dx%d",&cols,&rows) != 2 || rows < 1 || cols < 1) {
+      error ("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
+      free (s);
+      return -1;
+    }
+  }
+  free (s);
 
   /* open device */
   lcdlinux_fd = open(Device, O_WRONLY);
@@ -156,11 +172,23 @@ static int drv_LL_start (const int quiet)
   /* get display size */
   memset(&buf, 0, sizeof(buf));
   if (ioctl(lcdlinux_fd, IOCTL_GET_PARAM, &buf) != 0) {
-    error ("%s: ioctl() failed: %s", Name, strerror(errno));
+    error ("%s: ioctl(IOCTL_GET_PARAM) failed: %s", Name, strerror(errno));
     error ("%s: Could not get display geometry!", Name);
     return -1;
   }
-  info("%s: %dx%d display, %d controllers", Name, buf.disp_cols, buf.cntr_rows, buf.num_cntr);
+  info("%s: %dx%d display (%d controllers)", Name, buf.disp_cols, buf.cntr_rows, buf.num_cntr);
+
+  /* overwrite with size from lcd4linux.conf */
+  if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.disp_cols)) {
+    buf.cntr_rows = rows;
+    buf.disp_cols = cols;
+    if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
+      error ("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
+      error ("%s: Could not set display geometry!", Name);
+      return -1;
+    }
+    info("%s: size changed to %dx%d", Name, buf.disp_cols, buf.cntr_rows);
+  }
   
   DROWS = buf.cntr_rows;
   DCOLS = buf.disp_cols;
@@ -231,7 +259,7 @@ int drv_LL_init (const char *section, const int quiet)
 
 
   /* start display */
-  if ((ret=drv_LL_start (quiet))!=0)
+  if ((ret=drv_LL_start (section, quiet))!=0)
     return ret;
   
   /* initialize generic text driver */
