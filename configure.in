@@ -64,6 +64,10 @@ AC_CHECK_HEADERS(linux/compiler.h linux/i2c.h linux/i2c-dev.h,[has_i2c="true"],[
 # endif
 ])
 
+# check for python
+sinclude(python.m4)
+AC_PYTHON_DEVEL
+
 # drivers
 sinclude(drivers.m4)
 

@@ -284,6 +284,9 @@
 /* proc_stat plugin */
 #undef PLUGIN_PROC_STAT
 
+/* python plugin */
+#undef PLUGIN_PYTHON
+
 /* seti plugin */
 #undef PLUGIN_SETI
 

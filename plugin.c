@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.36 2005/04/03 07:07:51 reinelt Exp $
+/* $Id: plugin.c,v 1.37 2005/05/02 10:29:20 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.37  2005/05/02 10:29:20  reinelt
+ * preparations for python bindings and python plugin
+ *
  * Revision 1.36  2005/04/03 07:07:51  reinelt
  * added statfs plugin
  *
@@ -238,6 +241,8 @@ int  plugin_init_ppp (void);
 void plugin_exit_ppp (void);
 int  plugin_init_proc_stat (void);
 void plugin_exit_proc_stat (void);
+int  plugin_init_python (void);
+void plugin_exit_python (void);
 int  plugin_init_seti(void);
 void plugin_exit_seti(void);
 int  plugin_init_statfs(void);
@@ -304,6 +309,9 @@ int plugin_init (void)
 #endif
 #ifdef PLUGIN_PROC_STAT
   plugin_init_proc_stat();
+#endif
+#ifdef PLUGIN_PYTHON
+  plugin_init_python();
 #endif
 #ifdef PLUGIN_SETI
   plugin_init_seti();
@@ -373,6 +381,9 @@ void plugin_exit(void) {
 #endif
 #ifdef PLUGIN_PROC_STAT
   plugin_exit_proc_stat();
+#endif
+#ifdef PLUGIN_PYTHON
+  plugin_exit_python();
 #endif
 #ifdef PLUGIN_SETI
   plugin_exit_seti();

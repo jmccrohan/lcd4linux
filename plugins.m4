@@ -64,6 +64,7 @@ for plugin in $plugins; do
          PLUGIN_POP3="yes"
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
+         PLUGIN_PYTHON="yes"
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
@@ -115,6 +116,9 @@ for plugin in $plugins; do
          ;;
       proc_stat)
          PLUGIN_PROC_STAT=$val
+         ;;
+      python)
+         PLUGIN_PYTHON=$val
          ;;
       seti)
          PLUGIN_SETI=$val
@@ -216,8 +220,8 @@ fi
 if test "$PLUGIN_PPP" = "yes"; then
    AC_CHECK_HEADERS(net/if_ppp.h, [has_ppp_header="true"], [has_ppp_header="false"])
    if test "$has_ppp_header" = "true"; then
-   PLUGINS="$PLUGINS plugin_ppp.o"
-   AC_DEFINE(PLUGIN_PPP,1,[ppp plugin])
+      PLUGINS="$PLUGINS plugin_ppp.o"
+      AC_DEFINE(PLUGIN_PPP,1,[ppp plugin])
    else
       AC_MSG_WARN(net/if_ppp.h header not found: ppp plugin disabled)
    fi 
@@ -225,6 +229,14 @@ fi
 if test "$PLUGIN_PROC_STAT" = "yes"; then
    PLUGINS="$PLUGINS plugin_proc_stat.o"
    AC_DEFINE(PLUGIN_PROC_STAT,1,[proc_stat plugin])
+fi
+if test "$PLUGIN_PYTHON" = "yes"; then
+   if test -z "$python_path"; then
+      AC_MSG_WARN(python headers not found: python plugin disabled)
+   else
+      PLUGINS="$PLUGINS plugin_python.o"
+      AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
+   fi 
 fi
 if test "$PLUGIN_SETI" = "yes"; then
    PLUGINS="$PLUGINS plugin_seti.o"

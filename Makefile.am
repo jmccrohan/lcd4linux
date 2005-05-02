@@ -6,14 +6,11 @@ DRIVERS=@DRIVERS@
 PLUGINS=@PLUGINS@
 
 bin_PROGRAMS = lcd4linux
-#lib_LTLIBRARIES = liblcd4linux.la
 
 AM_CFLAGS = $(X_CFLAGS) -D_GNU_SOURCE -Wall -W
 
 lcd4linux_LDFLAGS = $(X_LIBS)
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
-#lcd4linux_LDADD  = liblcd4linux.la @DRVLIBS@ 
-#remove next line for liblcd4linux
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 
 lcd4linux_SOURCES =         \
@@ -41,12 +38,6 @@ plugin_math.c               \
 plugin_string.c             \
 plugin_test.c               \
 plugin_time.c
-
-#liblcd4linux_la_DEPENDENCIES = @DRIVERS@
-#liblcd4linux_la_LDFLAGS = -version-info 9:12:9
-#liblcd4linux_la_LIBADD = @DRIVERS@
-
-#liblcd4linux_la_SOURCES =
 
 EXTRA_lcd4linux_SOURCES=    \
 drv_generic_text.c          \
@@ -96,6 +87,7 @@ plugin_netdev.c             \
 plugin_pop3.c               \
 plugin_ppp.c                \
 plugin_proc_stat.c          \
+plugin_python.c             \
 plugin_seti.c               \
 plugin_statfs.c             \
 plugin_uname.c              \
