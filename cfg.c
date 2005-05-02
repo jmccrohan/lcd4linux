@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.45 2005/01/18 06:30:21 reinelt Exp $^
+/* $Id: cfg.c,v 1.46 2005/05/02 05:15:46 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.46  2005/05/02 05:15:46  reinelt
+ * make busy-flag checking configurable for LCD-Linux driver
+ *
  * Revision 1.45  2005/01/18 06:30:21  reinelt
  * added (C) to all copyright statements
  *
@@ -583,13 +586,13 @@ int cfg_number (const char *section, const char *key, const int defval, const in
   DelResult(&result);
   
   if (*value<min) {
-    error ("bad %s value '%d' in %s, minimum is %d", key, *value, cfg_source(), min);
+    error ("bad '%s' value '%d' in %s, minimum is %d", key, *value, cfg_source(), min);
     *value=min;
     return -1;
   }
   
   if (max > min && max != -1 && *value > max) {
-    error ("bad %s value '%d' in %s, maximum is %d", key, *value, cfg_source(), max);
+    error ("bad '%s' value '%d' in %s, maximum is %d", key, *value, cfg_source(), max);
     *value=max;
     return -1;
   }

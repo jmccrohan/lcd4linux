@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.6 2005/04/30 06:02:09 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.7 2005/05/02 05:15:46 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.7  2005/05/02 05:15:46  reinelt
+ * make busy-flag checking configurable for LCD-Linux driver
+ *
  * Revision 1.6  2005/04/30 06:02:09  reinelt
  * LCD-Linux display size set up from lcd4linux.conf
  *
@@ -148,8 +151,12 @@ static void drv_LL_defchar (const int ascii, const unsigned char *matrix)
 static int drv_LL_start (const char *section, const int quiet)
 {
   char *s;
-  int rows=-1, cols=-1;
+  int rows = -1, cols = -1;
+  int use_busy = 0;
   struct lcd_driver buf;
+
+  /* emit version information */
+  info ("%s: Version %s", Name, LCD_LINUX_VERSION);
 
   /* get size from config file */
   s=cfg_get(section, "Size", NULL);
@@ -173,13 +180,23 @@ static int drv_LL_start (const char *section, const int quiet)
   memset(&buf, 0, sizeof(buf));
   if (ioctl(lcdlinux_fd, IOCTL_GET_PARAM, &buf) != 0) {
     error ("%s: ioctl(IOCTL_GET_PARAM) failed: %s", Name, strerror(errno));
-    error ("%s: Could not get display geometry!", Name);
+    error ("%s: Could not query display information!", Name);
     return -1;
   }
-  info("%s: %dx%d display (%d controllers)", Name, buf.disp_cols, buf.cntr_rows, buf.num_cntr);
+  info("%s: %dx%d display at 0x%x, %d controllers, flags=0x%02x:",
+       Name, buf.disp_cols, buf.cntr_rows, buf.io, buf.num_cntr, buf.flags);
+
+  info("%s:   /proc support %sabled",      Name, buf.flags & LCD_PROC_ON   ? "en"   : "dis");
+  info("%s:   tty support %sabled",        Name, buf.flags & LCD_ETTY_ON   ? "en"   : "dis");
+  info("%s:   console support %sabled",    Name, buf.flags & LCD_CONSOLE   ? "en"   : "dis");
+  info("%s:   bus width %d bits",          Name, buf.flags & LCD_4BITS_BUS ?  4     :  8);
+  info("%s:   font size %s",               Name, buf.flags & LCD_5X10_FONT ? "5x10" : "5x8");
+  info("%s:   busy-flag checking %sabled", Name, buf.flags & LCD_CHECK_BF  ? "en"   : "dis");
+
 
   /* overwrite with size from lcd4linux.conf */
   if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.disp_cols)) {
+    info("%s: changing size to %dx%d", Name, cols, rows);
     buf.cntr_rows = rows;
     buf.disp_cols = cols;
     if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
@@ -187,11 +204,31 @@ static int drv_LL_start (const char *section, const int quiet)
       error ("%s: Could not set display geometry!", Name);
       return -1;
     }
-    info("%s: size changed to %dx%d", Name, buf.disp_cols, buf.cntr_rows);
   }
   
   DROWS = buf.cntr_rows;
   DCOLS = buf.disp_cols;
+  
+  /* overwrite busy-flag checking from lcd4linux.conf */
+  cfg_number(section, "UseBusy", 0, 0, 1, &use_busy);
+  if (use_busy && !(buf.flags & LCD_CHECK_BF)) {
+    info ("%s: activating busy-flag checking", Name);
+    buf.flags |= LCD_CHECK_BF;
+    if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
+      error ("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
+      error ("%s: Could not activate busy-flag checking!", Name);
+      return -1;
+    }
+  }
+  else if (!use_busy && (buf.flags & LCD_CHECK_BF)) {
+    info ("%s: deactivating busy-flag checking", Name);
+    buf.flags &= ~LCD_CHECK_BF;
+    if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
+      error ("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
+      error ("%s: Could not deactivate busy-flag checking!", Name);
+      return -1;
+    }
+  }
   
   /* initialize display */
   drv_LL_clear(); /* clear display */

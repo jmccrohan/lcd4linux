@@ -9,6 +9,7 @@ Display Trefon {
 Display LCD-Linux {
     Driver 'LCD-Linux'
     Size '20x2'
+    UseBusy 0
 }
 
 Display LK204 {

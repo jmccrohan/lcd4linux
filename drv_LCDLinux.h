@@ -1,6 +1,6 @@
 /* lcd.h
  *
- * $Id: drv_LCDLinux.h,v 1.2 2005/04/30 06:02:09 reinelt Exp $
+ * $Id: drv_LCDLinux.h,v 1.3 2005/05/02 05:15:46 reinelt Exp $
  *
  * LCD driver for HD44780 compatible displays connected to the parallel port.
  * 
@@ -59,6 +59,7 @@ struct lcd_driver {
 #define LCD_CONSOLE	0x0004		/* Enable the console support */
 #define LCD_4BITS_BUS	0x0008		/* Set the bus length to 4 bits */
 #define LCD_5X10_FONT	0x0010		/* Use 5x10 dots fonts */
+#define LCD_CHECK_BF	0x0020		/* Do busy flag checking */
 
 
 
