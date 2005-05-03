@@ -164,8 +164,8 @@ if test "$BWCT" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_BWCT.o"
-      AC_DEFINE(WITH_BWCT,1,[BWCT driver])
       DRVLIBS="$DRVLIBS -lusb"
+      AC_DEFINE(WITH_BWCT,1,[BWCT driver])
    else
       AC_MSG_WARN(usb.h not found: BWCT driver disabled)
    fi
@@ -244,8 +244,8 @@ if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
       IMAGE="yes"
-      AC_DEFINE(WITH_PNG,1,[ driver])
       DRVLIBS="$DRVLIBS -lgd"
+      AC_DEFINE(WITH_PNG,1,[ driver])
    else
       AC_MSG_WARN(gd.h not found: PNG driver disabled)
    fi
@@ -285,8 +285,8 @@ if test "$Trefon" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_Trefon.o"
-      AC_DEFINE(WITH_TREFON,1,[TREFON driver])
       DRVLIBS="$DRVLIBS -lusb"
+      AC_DEFINE(WITH_TREFON,1,[TREFON driver])
    else
       AC_MSG_WARN(usb.h not found: Trefon driver disabled)
    fi
@@ -296,10 +296,10 @@ if test "$USBLCD" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_USBLCD.o"
-   AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
    if test "$has_usb" = "true"; then
       DRVLIBS="$DRVLIBS -lusb"
    fi
+   AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
 fi
 
 if test "$X11" = "yes"; then
@@ -309,6 +309,7 @@ if test "$X11" = "yes"; then
       GRAPHIC="yes"
       DRIVERS="$DRIVERS drv_X11.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
+      CPP_FLAGS="$CPPFLAGS $X_CFLAGS" 
       AC_DEFINE(WITH_X11, 1, [X11 driver])
    fi
 fi
@@ -344,8 +345,8 @@ fi
 # generic i2c driver
 if test "$I2C" = "yes"; then
    if test "$has_i2c" = true; then
-      AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
       DRIVERS="$DRIVERS drv_generic_i2c.o"
+      AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
    else
       I2C="no"
       AC_MSG_WARN(I2C include files not found: I2C bus driver disabled)

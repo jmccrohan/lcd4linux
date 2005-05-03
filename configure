@@ -5921,12 +5921,12 @@ if test "$BWCT" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_BWCT.o"
+      DRVLIBS="$DRVLIBS -lusb"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_BWCT 1
 _ACEOF
 
-      DRVLIBS="$DRVLIBS -lusb"
    else
       { echo "$as_me:$LINENO: WARNING: usb.h not found: BWCT driver disabled" >&5
 echo "$as_me: WARNING: usb.h not found: BWCT driver disabled" >&2;}
@@ -6047,12 +6047,12 @@ if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
       IMAGE="yes"
+      DRVLIBS="$DRVLIBS -lgd"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PNG 1
 _ACEOF
 
-      DRVLIBS="$DRVLIBS -lgd"
    else
       { echo "$as_me:$LINENO: WARNING: gd.h not found: PNG driver disabled" >&5
 echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
@@ -6109,12 +6109,12 @@ if test "$Trefon" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_Trefon.o"
+      DRVLIBS="$DRVLIBS -lusb"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_TREFON 1
 _ACEOF
 
-      DRVLIBS="$DRVLIBS -lusb"
    else
       { echo "$as_me:$LINENO: WARNING: usb.h not found: Trefon driver disabled" >&5
 echo "$as_me: WARNING: usb.h not found: Trefon driver disabled" >&2;}
@@ -6125,14 +6125,14 @@ if test "$USBLCD" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_USBLCD.o"
+   if test "$has_usb" = "true"; then
+      DRVLIBS="$DRVLIBS -lusb"
+   fi
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_USBLCD 1
 _ACEOF
 
-   if test "$has_usb" = "true"; then
-      DRVLIBS="$DRVLIBS -lusb"
-   fi
 fi
 
 if test "$X11" = "yes"; then
@@ -6143,6 +6143,7 @@ echo "$as_me: WARNING: X11 headers or libraries not available: X11 driver disabl
       GRAPHIC="yes"
       DRIVERS="$DRIVERS drv_X11.o"
       DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
+      CPP_FLAGS="$CPPFLAGS $X_CFLAGS"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_X11 1
@@ -6184,12 +6185,12 @@ fi
 # generic i2c driver
 if test "$I2C" = "yes"; then
    if test "$has_i2c" = true; then
+      DRIVERS="$DRIVERS drv_generic_i2c.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_I2C 1
 _ACEOF
 
-      DRIVERS="$DRIVERS drv_generic_i2c.o"
    else
       I2C="no"
       { echo "$as_me:$LINENO: WARNING: I2C include files not found: I2C bus driver disabled" >&5
@@ -6953,12 +6954,12 @@ fi
 
       if test "$has_mysql_lib" = "true"; then
         PLUGINS="$PLUGINS plugin_mysql.o"
+        PLUGINLIBS="$PLUGINLIBS -lmysqlclient"
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_MYSQL 1
 _ACEOF
 
-        PLUGINLIBS="$PLUGINLIBS -lmysqlclient"
       else
         { echo "$as_me:$LINENO: WARNING: mysqlclient lib not found: mysql plugin disabled" >&5
 echo "$as_me: WARNING: mysqlclient lib not found: mysql plugin disabled" >&2;}
@@ -7162,6 +7163,8 @@ if test "$PLUGIN_PYTHON" = "yes"; then
 echo "$as_me: WARNING: python headers not found: python plugin disabled" >&2;}
    else
       PLUGINS="$PLUGINS plugin_python.o"
+      CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+      PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_PYTHON 1

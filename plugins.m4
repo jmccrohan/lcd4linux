@@ -200,8 +200,8 @@ if test "$PLUGIN_MYSQL" = "yes"; then
       AC_CHECK_LIB(mysqlclient, mysql_init, [has_mysql_lib="true"], [has_mysql_lib="false"])
       if test "$has_mysql_lib" = "true"; then
         PLUGINS="$PLUGINS plugin_mysql.o"
-        AC_DEFINE(PLUGIN_MYSQL,1,[mysql plugin])
         PLUGINLIBS="$PLUGINLIBS -lmysqlclient"
+        AC_DEFINE(PLUGIN_MYSQL,1,[mysql plugin])
       else
         AC_MSG_WARN(mysqlclient lib not found: mysql plugin disabled)
       fi
@@ -235,6 +235,8 @@ if test "$PLUGIN_PYTHON" = "yes"; then
       AC_MSG_WARN(python headers not found: python plugin disabled)
    else
       PLUGINS="$PLUGINS plugin_python.o"
+      CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+      PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
       AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
    fi 
 fi
