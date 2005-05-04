@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.13 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.14 2005/05/04 06:13:05 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.14  2005/05/04 06:13:05  reinelt
+ * parport_wire_status() added
+ *
  * Revision 1.13  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -118,6 +121,11 @@
 #define PARPORT_CONTROL_AUTOFD    0x2
 #define PARPORT_CONTROL_INIT      0x4
 #define PARPORT_CONTROL_SELECT    0x8
+#define PARPORT_STATUS_ERROR      0x8
+#define PARPORT_STATUS_SELECT     0x10
+#define PARPORT_STATUS_PAPEROUT   0x20
+#define PARPORT_STATUS_ACK        0x40
+#define PARPORT_STATUS_BUSY       0x80
 #endif
 
 #if !defined(WITH_OUTB) && !defined(WITH_PPDEV)
@@ -266,21 +274,21 @@ static unsigned char drv_generic_parport_signal_ctrl (const char *name, const ch
 
   if (strcasecmp(signal,"STROBE") == 0) {
     wire = PARPORT_CONTROL_STROBE;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE]", Driver, name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE (Pin 1)]", Driver, name);
   } else if(strcasecmp(signal,"AUTOFD") == 0) {
     wire = PARPORT_CONTROL_AUTOFD;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD]", Driver, name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD (Pin 14)]", Driver, name);
   } else if(strcasecmp(signal,"INIT") == 0) {
     wire = PARPORT_CONTROL_INIT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT]", Driver, name);
-  } else if(strcasecmp(signal,"SELECT") == 0) {
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT (Pin 16)]", Driver, name);
+  } else if(strcasecmp(signal,"SELECT") == 0 || strcasecmp(signal,"SLCTIN") == 0) {
     wire = PARPORT_CONTROL_SELECT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT]", Driver, name);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
   } else if(strcasecmp(signal,"GND") == 0) {
     wire = 0;
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
-    error ("%s: unknown signal <%s> for wire <%s>", Driver, signal, name);
+    error ("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
     error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
     return 0xff;
   }
@@ -317,12 +325,61 @@ unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *s
   
   /* maybe warn the user */
   if (*val != '\0' && strcasecmp (signal, val) != 0) {
-    error ("%s: ignoring configured signal <%s> for wire <%s>", Driver, val, name);
+    error ("%s: ignoring configured signal <%s> for control line <%s>", Driver, val, name);
   }
   free (val);
   
   wire = drv_generic_parport_signal_ctrl (name, signal);
   
+  return wire;
+}
+
+
+static unsigned char drv_generic_parport_signal_status (const char *name, const char *signal)
+{
+  unsigned char wire;
+
+  if (strcasecmp(signal,"ERROR") == 0) {
+    wire = PARPORT_STATUS_ERROR;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ERROR (Pin 15)]", Driver, name);
+  } else if(strcasecmp(signal,"SELECT") == 0) {
+    wire = PARPORT_STATUS_SELECT;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT (Pin 13)]", Driver, name);
+  } else if(strcasecmp(signal,"PAPEROUT") == 0) {
+    wire = PARPORT_STATUS_PAPEROUT;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:PAPEROUT (Pin 12)]", Driver, name);
+  } else if(strcasecmp(signal,"ACK") == 0) {
+    wire = PARPORT_STATUS_ACK;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ACK (Pin 10)]", Driver, name);
+  } else if(strcasecmp(signal,"BUSY") == 0) {
+    wire = PARPORT_STATUS_BUSY;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:BUSY (Pin 11)]", Driver, name);
+  } else if(strcasecmp(signal,"GND") == 0) {
+    wire = 0;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+  } else {
+    error ("%s: unknown signal <%s> for status line <%s>", Driver, signal, name);
+    error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
+    return 0xff;
+  }
+  
+  return wire;
+}
+
+
+unsigned char drv_generic_parport_wire_status (const char *name, const char *deflt)
+{
+  unsigned char wire;
+  char key[256];
+  char *val;
+  
+  qprintf(key, sizeof(key), "Wire.%s", name);
+  val = cfg_get (Section, key, deflt);
+  
+  wire = drv_generic_parport_signal_status (name, val);
+  
+  free (val);
+
   return wire;
 }
 
@@ -340,7 +397,7 @@ unsigned char drv_generic_parport_wire_data (const char *name, const char *deflt
   } else if(strcasecmp(s,"GND")==0) {
     w=0;
   } else {
-    error ("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
+    error ("%s: unknown signal <%s> for data line <%s>", Driver, s, name);
     error ("%s: should be DB0..7 or GND", Driver);
     return 0xff;
   }
@@ -348,7 +405,7 @@ unsigned char drv_generic_parport_wire_data (const char *name, const char *deflt
   if (w==0) {
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d]", Driver, name, w);
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d (Pin %d)]", Driver, name, w, w+2);
   }
   
   w=1<<w;

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.9 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.10 2005/05/04 06:13:05 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.10  2005/05/04 06:13:05  reinelt
+ * parport_wire_status() added
+ *
  * Revision 1.9  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -78,9 +81,13 @@
  * unsigned char drv_generic_parport_hardwire_ctrl (char *name)
  *   returns hardwiring for one control signal
  *   same as above, but does not read from config,
- *   but cheks the config and emits a warning that the config
+ *   but checks the config and emits a warning that the config
  *   entry will be ignored
  *   returns DRV_GENERIC_PARPORT_CONTROL_* or 255 on error
+ *
+ * unsigned char drv_generic_parport_wire_status (char *name, char *deflt)
+ *   reads wiring for one status signal from config
+ *   returns DRV_GENERIC_PARPORT_STATUS_* or 255 on error
  *
  * unsigned char drv_generic_parport_wire_data (char *name, char *deflt)
  *   reads wiring for one data signal from config
@@ -117,6 +124,7 @@ int           drv_generic_parport_open          (const char *section, const char
 int           drv_generic_parport_close         (void);
 unsigned char drv_generic_parport_wire_ctrl     (const char *name, const char *deflt);
 unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *deflt);
+unsigned char drv_generic_parport_wire_status   (const char *name, const char *deflt);
 unsigned char drv_generic_parport_wire_data     (const char *name, const char *deflt);
 void          drv_generic_parport_direction     (const int direction);
 unsigned char drv_generic_parport_status        (void);
