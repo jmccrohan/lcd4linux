@@ -869,8 +869,8 @@ Optional Packages:
                           possible drivers are:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,
-                          MilfordInstruments, NULL, PNG, PPM, RouterBoard,
-                          SimpleLCD, T6963, Trefon, USBLCD, X11
+                          MilfordInstruments, Noritake, NULL, PNG, PPM,
+                          RouterBoard, SimpleLCD, T6963, Trefon, USBLCD, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -5813,6 +5813,7 @@ for driver in $drivers; do
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
+         NORITAKE="yes"
          NULL="yes"
          PNG="yes"
          PPM="yes"
@@ -5855,6 +5856,9 @@ for driver in $drivers; do
          ;;
       MilfordInstruments)
          MILINST=$val
+         ;;
+      Noritake)
+         NORITAKE=$val;
          ;;
       NULL)
          NULL=$val;
@@ -6030,6 +6034,18 @@ if test "$MILINST" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_MILINST 1
+_ACEOF
+
+fi
+
+if test "$NORITAKE" = "yes"; then
+   TEXT="yes"
+   GRAPHIC="yes"
+   PARPORT="yes"
+   DRIVERS="$DRIVERS drv_Noritake.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_NORITAKE 1
 _ACEOF
 
 fi

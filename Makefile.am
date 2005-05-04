@@ -62,6 +62,7 @@ drv_LCDTerm.c               \
 drv_M50530.c                \
 drv_MatrixOrbital.c         \
 drv_MilfordInstruments.c    \
+drv_Noritake.c              \
 drv_NULL.c                  \
 drv_RouterBoard.c           \
 drv_SimpleLCD.c             \

@@ -368,6 +368,9 @@
 /* Milford Instruments driver */
 #undef WITH_MILINST
 
+/* Noritake driver */
+#undef WITH_NORITAKE
+
 /* NULL driver */
 #undef WITH_NULL
 

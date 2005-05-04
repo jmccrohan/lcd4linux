@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.29 2005/04/24 04:33:46 reinelt Exp $
+/* $Id: drv.c,v 1.30 2005/05/04 05:42:38 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.30  2005/05/04 05:42:38  reinelt
+ * Noritake driver added
+ *
  * Revision 1.29  2005/04/24 04:33:46  reinelt
  * driver for TREFON USB LCD's added
  *
@@ -200,6 +203,7 @@ extern DRIVER drv_LCDTerm;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
+extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
 extern DRIVER drv_RouterBoard;
 extern DRIVER drv_SimpleLCD;
@@ -250,6 +254,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_MILINST
   &drv_MilfordInstruments,
+#endif
+#ifdef WITH_NORITAKE
+  &drv_Noritake,
 #endif
 #ifdef WITH_NULL
   &drv_NULL,

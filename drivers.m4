@@ -30,8 +30,8 @@ AC_ARG_WITH(
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
-  [                        MilfordInstruments, NULL, PNG, PPM, RouterBoard,]
-  [                        SimpleLCD, T6963, Trefon, USBLCD, X11],
+  [                        MilfordInstruments, Noritake, NULL, PNG, PPM,]
+  [                        RouterBoard, SimpleLCD, T6963, Trefon, USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -63,6 +63,7 @@ for driver in $drivers; do
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
+         NORITAKE="yes" 
          NULL="yes" 
          PNG="yes"
          PPM="yes"
@@ -105,6 +106,9 @@ for driver in $drivers; do
          ;;
       MilfordInstruments)
          MILINST=$val
+         ;;
+      Noritake)
+         NORITAKE=$val;
          ;;
       NULL)
          NULL=$val;
@@ -233,6 +237,14 @@ fi
 if test "$MILINST" = "yes"; then
    DRIVERS="$DRIVERS drv_MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
+fi
+
+if test "$NORITAKE" = "yes"; then
+   TEXT="yes"
+   GRAPHIC="yes"
+   PARPORT="yes"
+   DRIVERS="$DRIVERS drv_Noritake.o"
+   AC_DEFINE(WITH_NORITAKE,1,[Noritake driver])
 fi
 
 if test "$NULL" = "yes"; then
