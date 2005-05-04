@@ -1,4 +1,4 @@
-/* $Id: drv_Noritake.c,v 1.1 2005/05/04 05:42:38 reinelt Exp $
+/* $Id: drv_Noritake.c,v 1.2 2005/05/04 07:18:44 obconseil Exp $
  * 
  * Driver for a Noritake GU128x32-311 graphical display.
  * 
@@ -22,6 +22,15 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_Noritake.c,v $
+ * Revision 1.2  2005/05/04 07:18:44  obconseil
+ * Driver modified according to Michels's recommendations :
+ *
+ * - Suppressed linux/parport.h depandancy. It was not needed anyway.
+ * - Compile-time disable the wait_busy polling function, replaced with a time wait.
+ * - Replaced the hardwire_* calls by their wire_* equivalent, to adapt other wirings.
+ * - Created a "Models" structure, containing parameters for the display.
+ * - Other cleanups, to remove compile-time warnings.
+ *
  * Revision 1.1  2005/05/04 05:42:38  reinelt
  * Noritake driver added
  *
@@ -80,17 +89,34 @@
 #include "udelay.h"
 #include "drv_generic_text.h"
 #include "drv_generic_parport.h"
-#include <linux/parport.h>
-
 
 
 static char Name[]="Noritake";
+
+typedef struct {
+  int type;
+  char *name;
+  int rows;
+  int cols;
+  int xres;
+  int yrex;
+  int goto_cost;
+  int protocol;
+} MODEL;
+
+static int Model,Protocol;
+static MODEL Models[] = {
+  { 0x01, "GU311",            4, 21,  6,  8, 5, 1 },
+  { 0x02, "GU311_Graphic",    4, 21,  6,  8, 6, 1 },
+  { 0xff, "Unknown", -1, -1, -1, -1, -1, -1 }
+};
+
 static unsigned char SIGNAL_CS;    /* Chip select, OUTPUT, negative logic, pport AUTOFEED */
 static unsigned char SIGNAL_WR;    /* Write        OUTPUT, negative logic, pport STOBE */
 static unsigned char SIGNAL_RESET; /* Reset,       OUTPUT, negative logic, pport INIT */
 static unsigned char SIGNAL_BLANK; /* Blank,       OUTPUT , negative logic, pport SELECT-IN */
-static unsigned char SIGNAL_BUSY;  /* Busy,        INPUT , positive logic, pport BUSY,*/
-static unsigned char SIGNAL_FRP;   /* Frame Pulse, INPUT , positive logic, pport ACK, not used */ 
+/* static unsigned char SIGNAL_BUSY;*/  /* Busy,        INPUT , positive logic, pport BUSY, not used */
+/* static unsigned char SIGNAL_FRP;*/   /* Frame Pulse, INPUT , positive logic, pport ACK, not used */ 
 void (*drv_Noritake_clear) (void) ;
 
 /* Data port is positive logic */
@@ -102,6 +128,10 @@ void (*drv_Noritake_clear) (void) ;
 
 /* Low-level parport driving functions */
 
+/* This function was used to pool the BUSY line on the parallel port, which 
+can be linked to the BUSY line on the display. But since it works 
+with a timed wait, this function is not necessary, and is kept just in case.*/
+#if 0
 static void drv_GU311_wait_busy(void)
 {
     char c;
@@ -114,6 +144,8 @@ static void drv_GU311_wait_busy(void)
        c = drv_generic_parport_status();
     }
 }
+#endif 
+
 
 static void drv_GU311_send_char(char c)
 {
@@ -181,23 +213,18 @@ static void drv_GU311_reset (void)
 }
 
 
-static int drv_GU311_start(const char *section, const int quiet)
+static int drv_GU311_start(const char *section)
 {
   char   cmd[3] = { 0x01, 'O' };
-  DROWS = 4;
-  DCOLS = 21;
-  /* real worker functions */
-  drv_generic_text_real_write = drv_GU311_write;
-  drv_Noritake_clear = drv_GU311_clear;
   
   /* Parallel port opening and association */
   if (drv_generic_parport_open(section, Name) < 0) return -1;
-  if ((SIGNAL_CS=drv_generic_parport_hardwire_ctrl    ("CS", "AUTOFD"))==0xff) return -1;
-  if ((SIGNAL_WR=drv_generic_parport_hardwire_ctrl    ("WR", "STROBE"))==0xff) return -1;
-  if ((SIGNAL_RESET=drv_generic_parport_hardwire_ctrl ("RESET", "INIT"))==0xff) return -1;
-  if ((SIGNAL_BLANK=drv_generic_parport_hardwire_ctrl ("BLANK", "SELECT")  )==0xff) return -1;
-  SIGNAL_BUSY=PARPORT_STATUS_BUSY;
-  SIGNAL_FRP=PARPORT_STATUS_ACK;
+  if ((SIGNAL_CS=drv_generic_parport_wire_ctrl    ("CS", "AUTOFD"))==0xff) return -1;
+  if ((SIGNAL_WR=drv_generic_parport_wire_ctrl    ("WR", "STROBE"))==0xff) return -1;
+  if ((SIGNAL_RESET=drv_generic_parport_wire_ctrl ("RESET", "INIT"))==0xff) return -1;
+  if ((SIGNAL_BLANK=drv_generic_parport_wire_ctrl ("BLANK", "SELECT")  )==0xff) return -1;
+  /* SIGNAL_BUSY=PARPORT_STATUS_BUSY; */ /* Not currently needed */ 
+  /* SIGNAL_FRP=PARPORT_STATUS_ACK;   */ /* Not currently needed */
   
   /* Signals configuration */
   drv_generic_parport_direction(0); /* parallel port in output mode */
@@ -220,18 +247,47 @@ static int drv_GU311_start(const char *section, const int quiet)
 
 
 
-static int drv_Noritake_start (const char *section, const int quiet)
+static int drv_Noritake_start (const char *section)
 {
    char * model=0;
-   
-   
-   model = cfg_get(section,"Model","GU311");
-
-   if ( model && (strcasecmp("GU311",model) == 0) )
-     return drv_GU311_start(section,quiet);
+   int i;
+   model=cfg_get(section, "Model", NULL);
+   if (model!=NULL && *model!='\0') {
+      for (i=0; Models[i].type!=0xff; i++) {
+         if (strcasecmp(Models[i].name, model)==0) break;
+      }
+      if (Models[i].type==0xff) {
+         error ("%s: %s.Model '%s' is unknown from %s", Name, section, model, cfg_source());
+         return -1;
+       }
+       Model=i;
+       info ("%s: using model '%s'", Name, Models[Model].name);
+   } else {
+       error ("%s: no '%s.Model' entry from %s", Name, section, cfg_source());
+       return -1;
+  }
   
-  error("%s : Unsupported display. Currently supported are : GU311.",Name);
-  return -1;
+  DROWS     = Models[Model].rows;
+  DCOLS     = Models[Model].cols;
+  XRES      = Models[Model].xres;
+  YRES      = Models[Model].xres;
+  GOTO_COST = Models[Model].goto_cost;
+  Protocol  = Models[Model].protocol;
+    /* display preferences */
+  CHARS = 0;      /* number of user-defineable characters */
+  CHAR0 = 0;      /* ASCII of first user-defineable char */
+
+
+ 
+  /* real worker functions */
+  drv_Noritake_clear = drv_GU311_clear;
+  if ( Models[Model].type == 0x01 ) {
+     drv_generic_text_real_write = drv_GU311_write;    
+  } else {
+     error("%s: Unsupported display. Currently supported are : GU311.",Name);
+     return -1;
+  }
+  return drv_GU311_start(section);
 }
 
 
@@ -269,18 +325,10 @@ int drv_Noritake_init (const char *section, const int quiet)
   WIDGET_CLASS wc;
   int ret;  
   
-  /* display preferences */
-  XRES  = 6;      /* pixel width of one char  */
-  YRES  = 8;      /* pixel height of one char  */
-  CHARS = 0;      /* number of user-defineable characters */
-  CHAR0 = 0;      /* ASCII of first user-defineable char */
-
-  GOTO_COST = 6;  /* number of bytes a goto command requires */
-
   /* start display */
-  if ((ret=drv_Noritake_start (section, quiet))!=0)
+  if ((ret=drv_Noritake_start (section))!=0)
     return ret;
-  
+    
   /* initialize generic text driver */
   if ((ret=drv_generic_text_init(section, Name))!=0)
     return ret;
