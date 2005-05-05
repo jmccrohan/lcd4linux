@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.14 2005/05/04 06:13:05 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.15 2005/05/05 08:36:12 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.15  2005/05/05 08:36:12  reinelt
+ * changed SELECT to SLCTIN
+ *
  * Revision 1.14  2005/05/04 06:13:05  reinelt
  * parport_wire_status() added
  *
@@ -281,15 +284,19 @@ static unsigned char drv_generic_parport_signal_ctrl (const char *name, const ch
   } else if(strcasecmp(signal,"INIT") == 0) {
     wire = PARPORT_CONTROL_INIT;
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT (Pin 16)]", Driver, name);
-  } else if(strcasecmp(signal,"SELECT") == 0 || strcasecmp(signal,"SLCTIN") == 0) {
+  } else if(strcasecmp(signal,"SLCTIN") == 0) {
     wire = PARPORT_CONTROL_SELECT;
+    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
+  } else if(strcasecmp(signal,"SELECT") == 0) {
+    wire = PARPORT_CONTROL_SELECT;
+    error ("%s: SELECT is deprecated. Please use SLCTIN instead!", Driver);
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
   } else if(strcasecmp(signal,"GND") == 0) {
     wire = 0;
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
     error ("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
-    error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
+    error ("%s: should be STROBE, AUTOFD, INIT, SLCTIN or GND", Driver);
     return 0xff;
   }
   
@@ -359,7 +366,7 @@ static unsigned char drv_generic_parport_signal_status (const char *name, const 
     info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
   } else {
     error ("%s: unknown signal <%s> for status line <%s>", Driver, signal, name);
-    error ("%s: should be STROBE, AUTOFD, INIT, SELECT or GND", Driver);
+    error ("%s: should be ERROR, SELECT, PAPEROUT, ACK, BUSY or GND", Driver);
     return 0xff;
   }
   
@@ -574,7 +581,7 @@ void drv_generic_parport_debug(void)
       control=ctr;
     }
   
-  debug ("%cSTROBE %cAUTOFD %cINIT %cSELECT", 
+  debug ("%cSTROBE %cAUTOFD %cINIT %cSLCTIN", 
 	 control & PARPORT_CONTROL_STROBE ? '-':'+',
 	 control & PARPORT_CONTROL_AUTOFD ? '-':'+',
 	 control & PARPORT_CONTROL_INIT   ? '+':'-',

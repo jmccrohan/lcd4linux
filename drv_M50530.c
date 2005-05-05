@@ -1,4 +1,4 @@
-#/* $Id: drv_M50530.c,v 1.16 2005/01/18 06:30:23 reinelt Exp $
+#/* $Id: drv_M50530.c,v 1.17 2005/05/05 08:36:12 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.17  2005/05/05 08:36:12  reinelt
+ * changed SELECT to SLCTIN
+ *
  * Revision 1.16  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -286,7 +289,7 @@ static int drv_M5_start (const char *section, const int quiet)
   }
 
   if ((SIGNAL_EX   = drv_generic_parport_wire_ctrl ("EX",   "STROBE"))==0xff) return -1;
-  if ((SIGNAL_IOC1 = drv_generic_parport_wire_ctrl ("IOC1", "SELECT"))==0xff) return -1;
+  if ((SIGNAL_IOC1 = drv_generic_parport_wire_ctrl ("IOC1", "SLCTIN"))==0xff) return -1;
   if ((SIGNAL_IOC2 = drv_generic_parport_wire_ctrl ("IOC2", "AUTOFD"))==0xff) return -1;
   if ((SIGNAL_GPO  = drv_generic_parport_wire_ctrl ("GPO",  "GND"   ))==0xff) return -1;
 

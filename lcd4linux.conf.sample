@@ -190,7 +190,7 @@ Display M50530-24x8 {
 #   Port '0x378'
     Size '24x8'
     Wire.EX   'STROBE'
-    Wire.IOC1 'SELECT'
+    Wire.IOC1 'SLCTIN'
     Wire.IOC2 'AUTOFD'
     Wire.GPO  'INIT'
 }
@@ -231,7 +231,7 @@ Display T6963-240x64 {
     Port '/dev/parport0'
     Size '240x64'
     Wire.CE 'STROBE'
-    Wire.CD 'SELECT'
+    Wire.CD 'SLCTIN'
     Wire.RD 'AUTOFD'
     Wire.WR 'INIT'
 }

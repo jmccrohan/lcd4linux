@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.14 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.15 2005/05/05 08:36:12 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.15  2005/05/05 08:36:12  reinelt
+ * changed SELECT to SLCTIN
+ *
  * Revision 1.14  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -495,7 +498,7 @@ static int drv_T6_start (const char *section)
   }
   
   if ((SIGNAL_CE=drv_generic_parport_wire_ctrl ("CE", "STROBE"))==0xff) return -1;
-  if ((SIGNAL_CD=drv_generic_parport_wire_ctrl ("CD", "SELECT"))==0xff) return -1;
+  if ((SIGNAL_CD=drv_generic_parport_wire_ctrl ("CD", "SLCTIN"))==0xff) return -1;
   if ((SIGNAL_RD=drv_generic_parport_wire_ctrl ("RD", "AUTOFD"))==0xff) return -1;
   if ((SIGNAL_WR=drv_generic_parport_wire_ctrl ("WR", "INIT")  )==0xff) return -1;
   

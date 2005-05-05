@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.47 2005/03/28 22:29:23 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.48 2005/05/05 08:36:12 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.48  2005/05/05 08:36:12  reinelt
+ * changed SELECT to SLCTIN
+ *
  * Revision 1.47  2005/03/28 22:29:23  reinelt
  * HD44780 multiple displays patch from geronet
  *
@@ -658,7 +661,7 @@ static int drv_HD_PP_load (const char *section)
   /* Soft-Wiring */
   if (Capabilities & CAP_LCM162) {
     /* the LCM-162 is hardwired */
-    if ((SIGNAL_RS        = drv_generic_parport_hardwire_ctrl ("RS",        "SELECT")) == 0xff) return -1;
+    if ((SIGNAL_RS        = drv_generic_parport_hardwire_ctrl ("RS",        "SLCTIN")) == 0xff) return -1;
     if ((SIGNAL_RW        = drv_generic_parport_hardwire_ctrl ("RW",        "INIT"  )) == 0xff) return -1;
     if ((SIGNAL_ENABLE    = drv_generic_parport_hardwire_ctrl ("ENABLE",    "AUTOFD")) == 0xff) return -1;
     if ((SIGNAL_ENABLE2   = drv_generic_parport_hardwire_ctrl ("ENABLE2",   "GND"   )) == 0xff) return -1;

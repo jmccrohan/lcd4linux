@@ -1,4 +1,4 @@
-/* $Id: drv_Noritake.c,v 1.2 2005/05/04 07:18:44 obconseil Exp $
+/* $Id: drv_Noritake.c,v 1.3 2005/05/05 08:36:12 reinelt Exp $
  * 
  * Driver for a Noritake GU128x32-311 graphical display.
  * 
@@ -22,6 +22,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_Noritake.c,v $
+ * Revision 1.3  2005/05/05 08:36:12  reinelt
+ * changed SELECT to SLCTIN
+ *
  * Revision 1.2  2005/05/04 07:18:44  obconseil
  * Driver modified according to Michels's recommendations :
  *
@@ -222,7 +225,7 @@ static int drv_GU311_start(const char *section)
   if ((SIGNAL_CS=drv_generic_parport_wire_ctrl    ("CS", "AUTOFD"))==0xff) return -1;
   if ((SIGNAL_WR=drv_generic_parport_wire_ctrl    ("WR", "STROBE"))==0xff) return -1;
   if ((SIGNAL_RESET=drv_generic_parport_wire_ctrl ("RESET", "INIT"))==0xff) return -1;
-  if ((SIGNAL_BLANK=drv_generic_parport_wire_ctrl ("BLANK", "SELECT")  )==0xff) return -1;
+  if ((SIGNAL_BLANK=drv_generic_parport_wire_ctrl ("BLANK", "SLCTIN")  )==0xff) return -1;
   /* SIGNAL_BUSY=PARPORT_STATUS_BUSY; */ /* Not currently needed */ 
   /* SIGNAL_FRP=PARPORT_STATUS_ACK;   */ /* Not currently needed */
   
