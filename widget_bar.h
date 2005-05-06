@@ -1,4 +1,4 @@
-/* $Id: widget_bar.h,v 1.6 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_bar.h,v 1.7 2005/05/06 06:37:34 reinelt Exp $
  *
  * bar widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_bar.h,v $
+ * Revision 1.7  2005/05/06 06:37:34  reinelt
+ * hollow bar patch from geronet
+ *
  * Revision 1.6  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -56,6 +59,7 @@
 #define _WIDGET_BAR_H_
 
 typedef enum { DIR_EAST=1, DIR_WEST=2, DIR_NORTH=4, DIR_SOUTH=8 } DIRECTION;
+typedef enum { STYLE_HOLLOW = 1, STYLE_FIRST = 2, STYLE_LAST = 4 } STYLE;
 
 typedef struct WIDGET_BAR {
   char      *expression1;  /* expression that delivers the value */
@@ -67,6 +71,7 @@ typedef struct WIDGET_BAR {
   void      *tree_min;     /* pre-compiled expression that delivers the minimum value */
   void      *tree_max;     /* pre-compiled expression that delivers the maximum value */
   DIRECTION  direction;    /* bar direction */
+  STYLE style;		/* bar style (hollow) */
   int        length;       /* bar length */
   int        update;       /* update interval (msec) */
   double     val1;         /* bar value, 0.0 ... 1.0 */

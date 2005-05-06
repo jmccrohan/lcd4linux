@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.14 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_bar.c,v 1.15 2005/05/06 06:37:34 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.15  2005/05/06 06:37:34  reinelt
+ * hollow bar patch from geronet
+ *
  * Revision 1.14  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -235,6 +238,23 @@ int widget_bar_init (WIDGET *Self)
   }
   free (c);
   
+   /* style: none (default), hollow */
+   c = cfg_get (section, "style", "0");
+   switch (toupper (*c))
+   {
+    case 'H':
+      Bar->style = STYLE_HOLLOW;
+      if (!(Bar->direction & (DIR_EAST | DIR_WEST)))
+      {
+          error ("widget %s with style \"hollow\" not implemented", Self->name);
+          Bar->style = 0;
+      }
+      break;
+    default:
+      Bar->style = 0;
+   }
+   free (c);
+
   /* update interval (msec), default 1 sec */
   cfg_number (section, "update", 1000, 10, -1, &(Bar->update));
   
@@ -274,5 +294,3 @@ WIDGET_CLASS Widget_Bar = {
   draw:   NULL,
   quit:   widget_bar_quit,
 };
-
-

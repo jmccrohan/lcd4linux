@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.25 2005/02/24 07:06:48 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.26 2005/05/06 06:37:34 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.26  2005/05/06 06:37:34  reinelt
+ * hollow bar patch from geronet
+ *
  * Revision 1.25  2005/02/24 07:06:48  reinelt
  * SimpleLCD driver added
  *
@@ -213,6 +216,7 @@ typedef struct {
   int val1;
   int val2;
   DIRECTION dir;
+  STYLE style;
   int segment;
   int invalid;
 } BAR;
@@ -221,6 +225,7 @@ typedef struct {
   int val1;
   int val2;
   DIRECTION dir;
+  STYLE style;
   int used;
   int ascii;
 } SEGMENT;
@@ -554,6 +559,7 @@ static void drv_generic_text_bar_clear(void)
     BarFB[i].val1    = -1;
     BarFB[i].val2    = -1;
     BarFB[i].dir     =  0;
+    BarFB[i].style = 0;
     BarFB[i].segment = -1;
     BarFB[i].invalid =  0;
   }
@@ -589,6 +595,10 @@ void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRE
   Segment[fSegment].val1  = val1;
   Segment[fSegment].val2  = val2;
   Segment[fSegment].dir   = dir;
+  if (val1 == 0 && val2 == 0)
+    Segment[fSegment].style = 0;
+  else
+    Segment[fSegment].style = 255;
   Segment[fSegment].used  = 0;
   Segment[fSegment].ascii = ascii;
   
@@ -597,20 +607,25 @@ void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRE
 }
 
 
-static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION dir, int len, int val1, int val2)
+static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION dir, STYLE style, int len, int val1, int val2)
 {
-  int rev = 0;
+  int rev = 0, max;
+  if (style)
+    BarFB[row * LCOLS + col].style = STYLE_FIRST;
 
   switch (dir) {
   case DIR_WEST:
-    val1 = len-val1;
-    val2 = len-val2;
+      max = len * XRES;
+      val1 = max - val1;
+      val2 = max - val2;
     rev  = 1;
     
   case DIR_EAST:
     while (len > 0 && col < LCOLS) {
       BarFB[row*LCOLS+col].dir = dir;
       BarFB[row*LCOLS+col].segment = -1;
+      if (style && BarFB[row * LCOLS + col].style == 0)
+		BarFB[row * LCOLS + col].style = STYLE_HOLLOW;
       if (val1 >= XRES) {
 	BarFB[row*LCOLS+col].val1 = rev ? 0 : XRES;
 	val1 -= XRES;
@@ -628,11 +643,14 @@ static void drv_generic_text_bar_create_bar (int row, int col, const DIRECTION d
       len--;
       col++;
     }
+    if (style)
+	BarFB[row * LCOLS + col - 1].style = STYLE_LAST;
     break;
     
   case DIR_SOUTH:
-    val1 = len-val1;
-    val2 = len-val2;
+    max = len * YRES;
+    val1 = max - val1;
+    val2 = max - val2;
     rev  = 1;
     
   case DIR_NORTH:
@@ -681,17 +699,44 @@ static void drv_generic_text_bar_create_segments (void)
     if (BarFB[n].dir == 0) continue;
     res = BarFB[n].dir & (DIR_EAST|DIR_WEST) ? XRES:YRES;
     for (i = 0; i < nSegment; i++) {
-      if (Segment[i].dir & BarFB[n].dir) {
-	l1 = Segment[i].val1; if (l1 > res) l1=res;
-	l2 = Segment[i].val2; if (l2 > res) l2=res;
-	if (l1 == BarFB[n].val1 && l2 == BarFB[n].val2) break;
-      }
-    }
+	    l1 = Segment[i].val1;
+	    if (l1 > res)
+		l1 = res;
+	    l2 = Segment[i].val2;
+	    if (l2 > res)
+		l2 = res;
+
+	    /* same value */
+	    if (l1 == BarFB[n].val1 && l2 == BarFB[n].val2) {
+		/* empty block, only style is interesting */
+		if (l1 == 0 && l2 == 0 && Segment[i].style == BarFB[n].style)
+		    break;
+		/* full block, style doesn't matter */
+		if (l1 == res && l2 == res)
+		    break;
+		/* half upper block */
+		if (l1 == res && l2 == 0 && Segment[i].style == BarFB[n].style)
+		    break;
+		/* half lower block */
+		if (l1 == 0 && l2 == res && Segment[i].style == BarFB[n].style)
+		    break;
+		/* same style, same direction */
+		if (Segment[i].style == BarFB[n].style && Segment[i].dir & BarFB[n].dir)
+		    break;
+		/* hollow style, val(1,2) == 1, like '[' */
+/*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
+		                              break;
+*//* hollow style, val(1,2) == 1, like ']' */
+/*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
+                              break;
+*/ }
+	}
     if (i == nSegment) {
       nSegment++;
       Segment[i].val1  = BarFB[n].val1;
       Segment[i].val2  = BarFB[n].val2;
       Segment[i].dir   = BarFB[n].dir;
+      Segment[i].style = BarFB[n].style;
       Segment[i].used  =  0;
       Segment[i].ascii = -1;
     }
@@ -707,7 +752,8 @@ static int drv_generic_text_bar_segment_error (const int i, const int j)
   
   if (i == j) return 65535;
   if (!(Segment[i].dir & Segment[j].dir)) return 65535;
-  
+  if (Segment[i].style != Segment[j].style) return 65535;
+
   res = Segment[i].dir&(DIR_EAST|DIR_WEST) ? XRES:YRES;
   
   i1 = Segment[i].val1; if (i1 > res) i1 = res;
@@ -814,17 +860,29 @@ static void drv_generic_text_bar_define_chars(void)
     Segment[i].ascii = c;
     switch (Segment[i].dir) {
     case DIR_WEST:
-      for (j = 0; j < 4; j++) {
-	buffer[j  ] = (1<<Segment[i].val1)-1;
-	buffer[j+4] = (1<<Segment[i].val2)-1;
-      }
+	    if (Segment[i].style) {
+		buffer[0] = 255;
+		buffer[7] = 255;
+		if (Segment[i].style & (STYLE_FIRST | STYLE_LAST))
+		    for (j = 1; j < 7; j++) {
+			buffer[j] |= Segment[i].style & STYLE_FIRST ? 16 : 1;
+		    }
+	    }
       break;
     case DIR_EAST:
-      for (j = 0; j < 4; j++) {
-	buffer[j  ] = 255<<(XRES-Segment[i].val1);
-	buffer[j+4] = 255<<(XRES-Segment[i].val2);
-      }
-      break;
+	    for (j = 0; j < 4; j++) {
+		buffer[j] = 255 << (XRES - Segment[i].val1);
+		buffer[j + 4] = 255 << (XRES - Segment[i].val2);
+	    }
+	    if (Segment[i].style) {
+		buffer[0] = 255;
+		buffer[7] = 255;
+		if (Segment[i].style & (STYLE_FIRST | STYLE_LAST))
+		    for (j = 1; j < 7; j++) {
+			buffer[j] |= Segment[i].style & STYLE_FIRST ? 16 : 1;
+		    }
+	    }
+          break;
     case DIR_NORTH:
       for (j = 0; j < Segment[i].val1; j++) {
 	buffer[7-j] = (1<<XRES)-1;
@@ -862,10 +920,12 @@ int drv_generic_text_bar_draw (WIDGET *W)
   int row, col, col0, len, res, max, val1, val2;
   int c, n, s;
   DIRECTION dir;
-  
+  STYLE style;
+
   row = W->row;
   col = W->col;
   dir = Bar->direction;
+  style = Bar->style;
   len = Bar->length;
 
   /* maybe grow layout framebuffer */
@@ -890,7 +950,7 @@ int drv_generic_text_bar_draw (WIDGET *W)
   if (Single_Segments) val2 = val1;
   
   /* create this bar */
-  drv_generic_text_bar_create_bar (row, col, dir, len, val1, val2);
+  drv_generic_text_bar_create_bar (row, col, dir, style, len, val1, val2);
 
   /* process all bars */
   drv_generic_text_bar_create_segments ();
@@ -949,5 +1009,3 @@ int drv_generic_text_bar_draw (WIDGET *W)
   return 0;
 
 }
-
-
