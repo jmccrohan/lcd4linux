@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.h,v 1.1 2005/03/28 19:39:23 reinelt Exp $
+/* $Id: drv_generic_i2c.h,v 1.2 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.h,v $
+ * Revision 1.2  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.1  2005/03/28 19:39:23  reinelt
  * HD44780/I2C patch from Luis merged (still does not work for me)
  *
@@ -53,9 +56,9 @@
 #ifndef _DRV_GENERIC_I2C_H_
 #define _DRV_GENERIC_I2C_H_
 
-int           drv_generic_i2c_open  (const char *section, const char *driver);
-int           drv_generic_i2c_close (void);
-unsigned char drv_generic_i2c_wire  (const char *name, const char *deflt);
-void          drv_generic_i2c_data  (const unsigned char data);
+int drv_generic_i2c_open(const char *section, const char *driver);
+int drv_generic_i2c_close(void);
+unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
+void drv_generic_i2c_data(const unsigned char data);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: plugin_time.c,v 1.4 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_time.c,v 1.5 2005/05/08 04:32:45 reinelt Exp $
  *
  * time plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_time.c,v $
+ * Revision 1.5  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.4  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -58,36 +61,36 @@
 #include "plugin.h"
 
 
-static void my_time (RESULT *result)
+static void my_time(RESULT * result)
 {
-  double value = time(NULL);
-  SetResult(&result, R_NUMBER, &value); 
+    double value = time(NULL);
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
-static void my_strftime (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void my_strftime(RESULT * result, RESULT * arg1, RESULT * arg2)
 {
-  char value[256];
-  time_t t = R2N(arg2);
-  
-  value[0] = '\0';
-  strftime(value, sizeof(value), R2S(arg1), localtime(&t));
+    char value[256];
+    time_t t = R2N(arg2);
 
-  SetResult(&result, R_STRING, value); 
+    value[0] = '\0';
+    strftime(value, sizeof(value), R2S(arg1), localtime(&t));
+
+    SetResult(&result, R_STRING, value);
 }
 
 
-int plugin_init_time (void)
+int plugin_init_time(void)
 {
 
-  /* register some basic time functions */
-  AddFunction ("time",     0, my_time);
-  AddFunction ("strftime", 2, my_strftime);
+    /* register some basic time functions */
+    AddFunction("time", 0, my_time);
+    AddFunction("strftime", 2, my_strftime);
 
-  return 0;
+    return 0;
 }
 
-void plugin_exit_time(void) 
+void plugin_exit_time(void)
 {
-  /* empty */
+    /* empty */
 }

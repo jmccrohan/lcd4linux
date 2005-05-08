@@ -1,4 +1,4 @@
-/* $Id: drv.h,v 1.9 2005/01/18 06:30:22 reinelt Exp $
+/* $Id: drv.h,v 1.10 2005/05/08 04:32:43 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.h,v $
+ * Revision 1.10  2005/05/08 04:32:43  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:22  reinelt
  * added (C) to all copyright statements
  *
@@ -71,10 +74,10 @@
 #define _DRV_H_
 
 typedef struct DRIVER {
-  char *name;
-  int (*list)  (void);
-  int (*init)  (const char *section, const int quiet);
-  int (*quit)  (const int quiet);
+    char *name;
+    int (*list) (void);
+    int (*init) (const char *section, const int quiet);
+    int (*quit) (const int quiet);
 } DRIVER;
 
 
@@ -84,8 +87,8 @@ typedef struct DRIVER {
  */
 extern char *output;
 
-int drv_list (void);
-int drv_init (const char *section, const char *driver, const int quiet);
-int drv_quit (const int quiet);
+int drv_list(void);
+int drv_init(const char *section, const char *driver, const int quiet);
+int drv_quit(const int quiet);
 
 #endif

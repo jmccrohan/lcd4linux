@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.12 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget.h,v 1.13 2005/05/08 04:32:45 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.13  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.12  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -82,29 +85,29 @@
 #define _WIDGET_H_
 
 
-struct WIDGET; /* forward declaration */
+struct WIDGET;			/* forward declaration */
 
 
 typedef struct WIDGET_CLASS {
-  char *name;
-  int (*init)   (struct WIDGET *Self);
-  int (*draw)   (struct WIDGET *Self);
-  int (*quit)   (struct WIDGET *Self);
+    char *name;
+    int (*init) (struct WIDGET * Self);
+    int (*draw) (struct WIDGET * Self);
+    int (*quit) (struct WIDGET * Self);
 } WIDGET_CLASS;
 
 
-typedef struct WIDGET{
-  char         *name;
-  WIDGET_CLASS *class;
-  int           row;
-  int           col;
-  void         *data;
+typedef struct WIDGET {
+    char *name;
+    WIDGET_CLASS *class;
+    int row;
+    int col;
+    void *data;
 } WIDGET;
 
 
 
-int  widget_register   (WIDGET_CLASS *widget);
-void widget_unregister (void);
-int  widget_add        (const char *name, const int row, const int col);
+int widget_register(WIDGET_CLASS * widget);
+void widget_unregister(void);
+int widget_add(const char *name, const int row, const int col);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.10 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: evaluator.h,v 1.11 2005/05/08 04:32:44 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.11  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.10  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -86,30 +89,30 @@
 #define R_STRING 2
 
 typedef struct {
-  int type;
-  double number;
-  int    length;
-  char  *string;
+    int type;
+    double number;
+    int length;
+    char *string;
 } RESULT;
 
 
-int  SetVariable        (const char *name, RESULT *value);
-int  SetVariableNumeric (const char *name, const double  value);
-int  SetVariableString  (const char *name, const char   *value);
+int SetVariable(const char *name, RESULT * value);
+int SetVariableNumeric(const char *name, const double value);
+int SetVariableString(const char *name, const char *value);
 
-int  AddFunction        (const char *name, const int argc, void (*func)());
+int AddFunction(const char *name, const int argc, void (*func) ());
 
-void DeleteVariables    (void);
-void DeleteFunctions    (void);
+void DeleteVariables(void);
+void DeleteFunctions(void);
 
-void    DelResult (RESULT *result);
-RESULT* SetResult (RESULT **result, const int type, const void *value);
+void DelResult(RESULT * result);
+RESULT *SetResult(RESULT ** result, const int type, const void *value);
 
-double R2N (RESULT *result);
-char*  R2S (RESULT *result);
+double R2N(RESULT * result);
+char *R2S(RESULT * result);
 
-int  Compile (const char *expression, void **tree);
-int  Eval    (void *tree, RESULT *result);
-void DelTree (void *tree);
+int Compile(const char *expression, void **tree);
+int Eval(void *tree, RESULT * result);
+void DelTree(void *tree);
 
 #endif

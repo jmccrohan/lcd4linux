@@ -1,4 +1,4 @@
-/* $Id: plugin_meminfo.c,v 1.11 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_meminfo.c,v 1.12 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for /proc/meminfo parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_meminfo.c,v $
+ * Revision 1.12  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.11  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -102,78 +105,88 @@
 static HASH MemInfo;
 static FILE *stream = NULL;
 
-static int parse_meminfo (void)
+static int parse_meminfo(void)
 {
-  int age;
-  
-  /* reread every 10 msec only */
-  age=hash_age(&MemInfo, NULL);
-  if (age>0 && age<=10) return 0;
-  
-  if (stream==NULL) stream=fopen("/proc/meminfo", "r");
-  if (stream==NULL) {
-    error ("fopen(/proc/meminfo) failed: %s", strerror(errno));
-    return -1;
-  }
-  
-  rewind(stream);
-  while (!feof(stream)) {
-    char buffer[256];
-    char *c, *key, *val;
-    fgets (buffer, sizeof(buffer), stream);
-    c=strchr(buffer, ':');
-    if (c==NULL) continue;
-    key=buffer; val=c+1;
-    /* strip leading blanks from key */
-    while (isspace(*key)) *key++='\0';
-    /* strip trailing blanks from key */
-    do *c='\0'; while (isspace(*--c));
-    /* strip leading blanks from value */
-    while (isspace(*val)) *val++='\0';
-    /* strip trailing blanks from value */
-    for (c=val; *c!='\0';c++);
-    while (isspace(*--c)) *c='\0';
-    /* skip lines that do not end with " kB" */
-    if (*c=='B' && *(c-1)=='k' && *(c-2)==' ') {
-      /* strip trailing " kB" from value */
-      *(c-2)='\0';
-      /* add entry to hash table */
-      hash_put (&MemInfo, key, val);
+    int age;
+
+    /* reread every 10 msec only */
+    age = hash_age(&MemInfo, NULL);
+    if (age > 0 && age <= 10)
+	return 0;
+
+    if (stream == NULL)
+	stream = fopen("/proc/meminfo", "r");
+    if (stream == NULL) {
+	error("fopen(/proc/meminfo) failed: %s", strerror(errno));
+	return -1;
     }
-  }
-  return 0;
-} 
 
-static void my_meminfo (RESULT *result, RESULT *arg1)
+    rewind(stream);
+    while (!feof(stream)) {
+	char buffer[256];
+	char *c, *key, *val;
+	fgets(buffer, sizeof(buffer), stream);
+	c = strchr(buffer, ':');
+	if (c == NULL)
+	    continue;
+	key = buffer;
+	val = c + 1;
+	/* strip leading blanks from key */
+	while (isspace(*key))
+	    *key++ = '\0';
+	/* strip trailing blanks from key */
+	do
+	    *c = '\0';
+	while (isspace(*--c));
+	/* strip leading blanks from value */
+	while (isspace(*val))
+	    *val++ = '\0';
+	/* strip trailing blanks from value */
+	for (c = val; *c != '\0'; c++);
+	while (isspace(*--c))
+	    *c = '\0';
+	/* skip lines that do not end with " kB" */
+	if (*c == 'B' && *(c - 1) == 'k' && *(c - 2) == ' ') {
+	    /* strip trailing " kB" from value */
+	    *(c - 2) = '\0';
+	    /* add entry to hash table */
+	    hash_put(&MemInfo, key, val);
+	}
+    }
+    return 0;
+}
+
+static void my_meminfo(RESULT * result, RESULT * arg1)
 {
-  char *key, *val;
-  
-  if (parse_meminfo()<0) {
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
-  
-  key=R2S(arg1);
-  val=hash_get(&MemInfo, key, NULL);
-  if (val==NULL) val="";
-  
-  SetResult(&result, R_STRING, val); 
+    char *key, *val;
+
+    if (parse_meminfo() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    key = R2S(arg1);
+    val = hash_get(&MemInfo, key, NULL);
+    if (val == NULL)
+	val = "";
+
+    SetResult(&result, R_STRING, val);
 }
 
 
-int plugin_init_meminfo (void)
+int plugin_init_meminfo(void)
 {
-  hash_create(&MemInfo);
-  AddFunction ("meminfo", 1, my_meminfo);
-  return 0;
+    hash_create(&MemInfo);
+    AddFunction("meminfo", 1, my_meminfo);
+    return 0;
 }
 
 
-void plugin_exit_meminfo(void) 
+void plugin_exit_meminfo(void)
 {
-  if (stream != NULL) {
-    fclose(stream);
-    stream=NULL;
-  }
-  hash_destroy(&MemInfo);
+    if (stream != NULL) {
+	fclose(stream);
+	stream = NULL;
+    }
+    hash_destroy(&MemInfo);
 }

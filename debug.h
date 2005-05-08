@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.9 2005/01/18 06:30:22 reinelt Exp $
+/* $Id: debug.h,v 1.10 2005/05/08 04:32:43 reinelt Exp $
  *
  * debug messages
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.10  2005/05/08 04:32:43  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:22  reinelt
  * added (C) to all copyright statements
  *
@@ -70,7 +73,7 @@ extern int running_foreground;
 extern int running_background;
 extern int verbose_level;
 
-void message (const int level, const char *format, ...);
+void message(const int level, const char *format, ...);
 
 #define debug(args...) message (2, __FILE__ ": " args)
 #define info(args...)  message (1, args)

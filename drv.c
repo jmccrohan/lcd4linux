@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.30 2005/05/04 05:42:38 reinelt Exp $
+/* $Id: drv.c,v 1.31 2005/05/08 04:32:43 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.31  2005/05/08 04:32:43  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.30  2005/05/04 05:42:38  reinelt
  * Noritake driver added
  *
@@ -216,109 +219,112 @@ extern DRIVER drv_X11;
  * has to be defined here because it's referenced
  * even if the raster driver is not included!
  */
-char *output=NULL;
+char *output = NULL;
 
 DRIVER *Driver[] = {
 #ifdef WITH_BECKMANNEGLE
-  &drv_BeckmannEgle,
+    &drv_BeckmannEgle,
 #endif
 #ifdef WITH_BWCT
-  &drv_BWCT,
+    &drv_BWCT,
 #endif
 #ifdef WITH_CRYSTALFONTZ
-  &drv_Crystalfontz,
+    &drv_Crystalfontz,
 #endif
 #ifdef WITH_CWLINUX
-  &drv_Cwlinux,
+    &drv_Cwlinux,
 #endif
 #ifdef WITH_CURSES
-  &drv_Curses,
+    &drv_Curses,
 #endif
 #ifdef WITH_HD44780
-  &drv_HD44780,
+    &drv_HD44780,
 #endif
 #if defined (WITH_PNG) || defined(WITH_PPM)
-  &drv_Image,
+    &drv_Image,
 #endif
 #ifdef WITH_LCDLINUX
-  &drv_LCDLinux,
+    &drv_LCDLinux,
 #endif
 #ifdef WITH_LCDTERM
-  &drv_LCDTerm,
+    &drv_LCDTerm,
 #endif
 #ifdef WITH_M50530
-  &drv_M50530,
+    &drv_M50530,
 #endif
 #ifdef WITH_MATRIXORBITAL
-  &drv_MatrixOrbital,
+    &drv_MatrixOrbital,
 #endif
 #ifdef WITH_MILINST
-  &drv_MilfordInstruments,
+    &drv_MilfordInstruments,
 #endif
 #ifdef WITH_NORITAKE
-  &drv_Noritake,
+    &drv_Noritake,
 #endif
 #ifdef WITH_NULL
-  &drv_NULL,
+    &drv_NULL,
 #endif
 #ifdef WITH_ROUTERBOARD
-  &drv_RouterBoard,
+    &drv_RouterBoard,
 #endif
 #ifdef WITH_SIMPLELCD
-  &drv_SimpleLCD,
+    &drv_SimpleLCD,
 #endif
 #ifdef WITH_T6963
-  &drv_T6963,
+    &drv_T6963,
 #endif
 #ifdef WITH_TREFON
-  &drv_Trefon,
+    &drv_Trefon,
 #endif
 #ifdef WITH_USBLCD
-  &drv_USBLCD,
+    &drv_USBLCD,
 #endif
 #ifdef WITH_X11
-  &drv_X11,
+    &drv_X11,
 #endif
 
-  NULL,
+    NULL,
 };
 
 
 static DRIVER *Drv = NULL;
 
 
-int drv_list (void)
+int drv_list(void)
 {
-  int i;
+    int i;
 
-  printf ("available display drivers:");
-  
-  for (i = 0; Driver[i]; i++) {
-    printf ("\n   %-20s: ", Driver[i]->name);
-    if (Driver[i]->list) Driver[i]->list();
-  }
-  printf ("\n");
-  return 0;
-}
+    printf("available display drivers:");
 
-
-int drv_init (const char *section, const char *driver, const int quiet)
-{
-  int i;
-  for (i = 0; Driver[i]; i++) {
-    if (strcmp (Driver[i]->name, driver) == 0) {
-      Drv = Driver[i];
-      if (Drv->init == NULL) return 0;
-      return Drv->init(section, quiet);
+    for (i = 0; Driver[i]; i++) {
+	printf("\n   %-20s: ", Driver[i]->name);
+	if (Driver[i]->list)
+	    Driver[i]->list();
     }
-  }
-  error ("drv_init(%s) failed: no such driver", driver);
-  return -1;
+    printf("\n");
+    return 0;
 }
 
 
-int drv_quit (const int quiet)
+int drv_init(const char *section, const char *driver, const int quiet)
 {
-  if (Drv->quit == NULL) return 0;
-  return Drv->quit(quiet);
+    int i;
+    for (i = 0; Driver[i]; i++) {
+	if (strcmp(Driver[i]->name, driver) == 0) {
+	    Drv = Driver[i];
+	    if (Drv->init == NULL)
+		return 0;
+	    return Drv->init(section, quiet);
+	}
+    }
+    error("drv_init(%s) failed: no such driver", driver);
+    return -1;
+}
+
+
+int drv_quit(const int quiet)
+{
+    if (Drv->quit == NULL)
+	return 0;
+    return Drv->quit(quiet);
 }

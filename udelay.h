@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.9 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: udelay.h,v 1.10 2005/05/08 04:32:45 reinelt Exp $
  *
  * short delays 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.10  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -71,24 +74,24 @@
 
 /* stolen from linux/asm-i386/processor.h */
 /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
-static inline void rep_nop (void)
+static inline void rep_nop(void)
 {
-  __asm__ __volatile__("rep; nop");
+    __asm__ __volatile__("rep; nop");
 }
 
 
 #ifdef USE_OLD_UDELAY
 
 extern unsigned long loops_per_usec;
-void udelay_calibrate (void);
+void udelay_calibrate(void);
 
 #else
 
-void udelay_init (void);
+void udelay_init(void);
 
 #endif
 
-void ndelay (const unsigned long nsec);
+void ndelay(const unsigned long nsec);
 
 #define udelay(usec) ndelay(usec*1000)
 

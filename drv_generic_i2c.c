@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.2 2005/04/05 05:12:57 reinelt Exp $
+/* $Id: drv_generic_i2c.c,v 1.3 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.3  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.2  2005/04/05 05:12:57  reinelt
  * i2c patch from Paul (still does not work here :-(
  *
@@ -57,105 +60,105 @@
 #include "udelay.h"
 #include "drv_generic_i2c.h"
 
-static char *Driver="";
-static char *Section="";
+static char *Driver = "";
+static char *Section = "";
 static int i2c_device;
 
 static void my_i2c_smbus_write_byte_data(const int device, const unsigned char data)
 {
-  struct i2c_smbus_ioctl_data args;
-  args.read_write = I2C_SMBUS_WRITE;
-  args.command = data;
-  args.size = I2C_SMBUS_BYTE;
-  args.data = 0;
-  ioctl(device,I2C_SMBUS,&args);
+    struct i2c_smbus_ioctl_data args;
+    args.read_write = I2C_SMBUS_WRITE;
+    args.command = data;
+    args.size = I2C_SMBUS_BYTE;
+    args.data = 0;
+    ioctl(device, I2C_SMBUS, &args);
 }
 
 static void my_i2c_smbus_read_byte_data(const int device, const unsigned char data)
 {
-  struct i2c_smbus_ioctl_data args;
-  args.read_write = I2C_SMBUS_READ;
-  args.command = data;
-  args.size = I2C_SMBUS_BYTE;
-  args.data = 0;
-  ioctl(device,I2C_SMBUS,&args);
+    struct i2c_smbus_ioctl_data args;
+    args.read_write = I2C_SMBUS_READ;
+    args.command = data;
+    args.size = I2C_SMBUS_BYTE;
+    args.data = 0;
+    ioctl(device, I2C_SMBUS, &args);
 }
 
-int drv_generic_i2c_open (const char *section, const char *driver)
+int drv_generic_i2c_open(const char *section, const char *driver)
 {
-  int dev;
-  char *bus,*device;
+    int dev;
+    char *bus, *device;
 
-  //SIGNAL_ENABLE = 0x40;
-  //SIGNAL_RW = 0x10;
-  //SIGNAL_RS = 0x20;
+    //SIGNAL_ENABLE = 0x40;
+    //SIGNAL_RW = 0x10;
+    //SIGNAL_RS = 0x20;
 
-  udelay_init();
+    udelay_init();
 
-  Section = (char*)section;
-  Driver  = (char*)driver;
+    Section = (char *) section;
+    Driver = (char *) driver;
 
-  bus    = cfg_get(Section, "Port", NULL);   
-  device = cfg_get(Section, "Device", NULL);
-  dev    = atoi(device);
-  info   ("%s: initializing I2C bus %s",Driver,bus);
-  info   ("device %d",dev);
-  if ((i2c_device = open(bus,O_WRONLY)) < 0) {
-    error("%s: I2C bus %s open failed !\n",Driver,bus);
-    return -1;
-  }
-  
-  info   ("%s: initializing I2C slave device 0x%x",Driver,dev);
-  if (ioctl(i2c_device,I2C_SLAVE, dev ) < 0) {
-    error("%s: error initializing device 0x%x\n",Driver,dev);
+    bus = cfg_get(Section, "Port", NULL);
+    device = cfg_get(Section, "Device", NULL);
+    dev = atoi(device);
+    info("%s: initializing I2C bus %s", Driver, bus);
+    info("device %d", dev);
+    if ((i2c_device = open(bus, O_WRONLY)) < 0) {
+	error("%s: I2C bus %s open failed !\n", Driver, bus);
+	return -1;
+    }
+
+    info("%s: initializing I2C slave device 0x%x", Driver, dev);
+    if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
+	error("%s: error initializing device 0x%x\n", Driver, dev);
+	close(i2c_device);
+	return -1;
+    }
+
+    return 0;
+}
+
+
+int drv_generic_i2c_close(void)
+{
+
     close(i2c_device);
-    return -1;
-  }
 
-  return 0;
+    return 0;
 }
 
-
-int drv_generic_i2c_close (void)
+unsigned char drv_generic_i2c_wire(const char *name, const char *deflt)
 {
+    unsigned char w;
+    char wire[256];
+    char *s;
 
-  close(i2c_device);
+    qprintf(wire, sizeof(wire), "Wire.%s", name);
+    s = cfg_get(Section, wire, deflt);
+    if (strlen(s) == 3 && strncasecmp(s, "DB", 2) == 0 && s[2] >= '0' && s[2] <= '7') {
+	w = s[2] - '0';
+    } else if (strcasecmp(s, "GND") == 0) {
+	w = 0;
+    } else {
+	error("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
+	error("%s: should be DB0..7 or GND", Driver);
+	return 0xff;
+    }
+    free(s);
+    if (w == 0) {
+	info("%s: wiring: [DISPLAY:%s]<==>[i2c:GND]", Driver, name);
+    } else {
+	info("%s: wiring: [DISPLAY:%s]<==>[i2c:DB%d]", Driver, name, w);
+    }
 
-  return 0;
+    w = 1 << w;
+
+    return w;
 }
 
-unsigned char drv_generic_i2c_wire (const char *name, const char *deflt)
-{
-  unsigned char w;
-  char wire[256];
-  char *s;
-  
-  qprintf(wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (Section, wire, deflt);
-  if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
-    w=s[2]-'0';
-  } else if(strcasecmp(s,"GND")==0) {
-    w=0;
-  } else {
-    error ("%s: unknown signal <%s> for wire <%s>", Driver, s, name);
-    error ("%s: should be DB0..7 or GND", Driver);
-    return 0xff;
-  }
-  free(s);
-  if (w==0) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[i2c:GND]", Driver, name);
-  } else {
-    info ("%s: wiring: [DISPLAY:%s]<==>[i2c:DB%d]", Driver, name, w);
-  }
-  
-  w=1<<w;
-
-  return w;
-}
-
-void drv_generic_i2c_data (const unsigned char data)
+void drv_generic_i2c_data(const unsigned char data)
 {
 
-  my_i2c_smbus_write_byte_data(i2c_device, data);
-  
+    my_i2c_smbus_write_byte_data(i2c_device, data);
+
 }

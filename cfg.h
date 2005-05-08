@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 1.12 2005/01/18 06:30:21 reinelt Exp $
+/* $Id: cfg.h,v 1.13 2005/05/08 04:32:43 reinelt Exp $
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.h,v $
+ * Revision 1.13  2005/05/08 04:32:43  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.12  2005/01/18 06:30:21  reinelt
  * added (C) to all copyright statements
  *
@@ -77,14 +80,13 @@
 #ifndef _CFG_H_
 #define _CFG_H_
 
-int   cfg_init    (const char *file);
-char *cfg_source  (void);
-int   cfg_cmd     (const char *arg);
-char *cfg_list    (const char *section);
-char *cfg_get_raw (const char *section, const char *key, const char *defval);
-char *cfg_get     (const char *section, const char *key, const char *defval);
-int   cfg_number  (const char *section, const char *key, const int   defval, 
-		   const int min, const int max, int *value);
-int   cfg_exit    (void);
+int cfg_init(const char *file);
+char *cfg_source(void);
+int cfg_cmd(const char *arg);
+char *cfg_list(const char *section);
+char *cfg_get_raw(const char *section, const char *key, const char *defval);
+char *cfg_get(const char *section, const char *key, const char *defval);
+int cfg_number(const char *section, const char *key, const int defval, const int min, const int max, int *value);
+int cfg_exit(void);
 
 #endif

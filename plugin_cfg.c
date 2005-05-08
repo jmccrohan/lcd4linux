@@ -1,4 +1,4 @@
-/* $Id: plugin_cfg.c,v 1.13 2005/03/30 04:57:50 reinelt Exp $
+/* $Id: plugin_cfg.c,v 1.14 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for config file access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_cfg.c,v $
+ * Revision 1.14  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.13  2005/03/30 04:57:50  reinelt
  * Evaluator speedup: use bsearch for finding functions and variables
  *
@@ -111,89 +114,91 @@
 #endif
 
 
-static void load_variables (void)
+static void load_variables(void)
 {
-  char *section = "Variables";
-  char *list, *l, *p;
-  char *expression;
-  void *tree;
-  RESULT result = {0, 0, 0, NULL};
-  
-  list=cfg_list(section);
-  l=list;
-  while (l!=NULL) {
-    while (*l=='|') l++;
-    if ((p=strchr(l, '|'))!=NULL) *p='\0';
-    if (strchr(l, '.')!=NULL || strchr(l, ':') !=0) {
-      error ("ignoring variable '%s' from %s: structures not allowed", l, cfg_source());
-    } else {
-      expression=cfg_get_raw (section, l, "");
-      if (expression!=NULL && *expression!='\0') {
-	tree = NULL;
-        if (Compile(expression, &tree) == 0 && Eval(tree, &result)==0) {
-          SetVariable (l, &result);
-          debug ("Variable %s = '%s' (%g)", l, R2S(&result), R2N(&result));
-          DelResult (&result);
-        } else {
-          error ("error evaluating variable '%s' from %s", list, cfg_source());
-        }
-	DelTree (tree);
-      }
+    char *section = "Variables";
+    char *list, *l, *p;
+    char *expression;
+    void *tree;
+    RESULT result = { 0, 0, 0, NULL };
+
+    list = cfg_list(section);
+    l = list;
+    while (l != NULL) {
+	while (*l == '|')
+	    l++;
+	if ((p = strchr(l, '|')) != NULL)
+	    *p = '\0';
+	if (strchr(l, '.') != NULL || strchr(l, ':') != 0) {
+	    error("ignoring variable '%s' from %s: structures not allowed", l, cfg_source());
+	} else {
+	    expression = cfg_get_raw(section, l, "");
+	    if (expression != NULL && *expression != '\0') {
+		tree = NULL;
+		if (Compile(expression, &tree) == 0 && Eval(tree, &result) == 0) {
+		    SetVariable(l, &result);
+		    debug("Variable %s = '%s' (%g)", l, R2S(&result), R2N(&result));
+		    DelResult(&result);
+		} else {
+		    error("error evaluating variable '%s' from %s", list, cfg_source());
+		}
+		DelTree(tree);
+	    }
+	}
+	l = p ? p + 1 : NULL;
     }
-    l=p?p+1:NULL;
-  }
-  free (list);
-  
+    free(list);
+
 }
 
 
-static void my_cfg (RESULT *result, const int argc, RESULT *argv[])
+static void my_cfg(RESULT * result, const int argc, RESULT * argv[])
 {
-  int i, len;
-  char *value;
-  char *buffer;
-  
-  /* calculate key length */
-  len=0;
-  for (i=0; i<argc; i++) {
-    len+=strlen(R2S(argv[i]))+1;
-  }
-  
-  /* allocate key buffer */
-  buffer=malloc(len+1);
-  
-  /* prepare key buffer */
-  *buffer='\0';
-  for (i=0; i<argc; i++) {
-    strcat (buffer, ".");
-    strcat (buffer, R2S(argv[i]));
-  }
-  
-  /* buffer starts with '.', so cut off first char */
-  value=cfg_get("", buffer+1, "");
-    
-  /* store result */
-  SetResult(&result, R_STRING, value); 
+    int i, len;
+    char *value;
+    char *buffer;
 
-  /* free buffer again */
-  free (buffer);
-  
-  free(value);
+    /* calculate key length */
+    len = 0;
+    for (i = 0; i < argc; i++) {
+	len += strlen(R2S(argv[i])) + 1;
+    }
+
+    /* allocate key buffer */
+    buffer = malloc(len + 1);
+
+    /* prepare key buffer */
+    *buffer = '\0';
+    for (i = 0; i < argc; i++) {
+	strcat(buffer, ".");
+	strcat(buffer, R2S(argv[i]));
+    }
+
+    /* buffer starts with '.', so cut off first char */
+    value = cfg_get("", buffer + 1, "");
+
+    /* store result */
+    SetResult(&result, R_STRING, value);
+
+    /* free buffer again */
+    free(buffer);
+
+    free(value);
 }
 
 
-int plugin_init_cfg (void)
+int plugin_init_cfg(void)
 {
-  /* load "Variables" section from cfg */
-  load_variables();
+    /* load "Variables" section from cfg */
+    load_variables();
 
-  /* register plugin */
-  AddFunction ("cfg", -1, my_cfg);
-  
-  return 0;
+    /* register plugin */
+    AddFunction("cfg", -1, my_cfg);
+
+    return 0;
 }
 
-void plugin_exit_cfg(void) 
+void plugin_exit_cfg(void)
 {
-  /* empty */
+    /* empty */
 }

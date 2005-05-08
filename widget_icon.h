@@ -1,4 +1,4 @@
-/* $Id: widget_icon.h,v 1.8 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_icon.h,v 1.9 2005/05/08 04:32:45 reinelt Exp $
  *
  * icon widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_icon.h,v $
+ * Revision 1.9  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.8  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -64,17 +67,17 @@
 #define _WIDGET_ICON_H_
 
 typedef struct WIDGET_ICON {
-  char *speed_expr;      /* expression for update interval */
-  void *speed_tree;      /* pre-compiled expression for update interval */
-  int   speed;           /* update interval (msec) */
-  char *visible_expr;    /* expression for visibility */
-  void *visible_tree;    /* pre-compiled expression for visibility */
-  int   visible;         /* icon visible? */
-  int   ascii;           /* ascii code of icon (depends on the driver) */
-  int   curmap;          /* current bitmap sequence */
-  int   prvmap;          /* previous bitmap sequence  */
-  int   maxmap;          /* number of bitmap sequences */
-  unsigned char *bitmap; /* bitmaps of (animated) icon */
+    char *speed_expr;		/* expression for update interval */
+    void *speed_tree;		/* pre-compiled expression for update interval */
+    int speed;			/* update interval (msec) */
+    char *visible_expr;		/* expression for visibility */
+    void *visible_tree;		/* pre-compiled expression for visibility */
+    int visible;		/* icon visible? */
+    int ascii;			/* ascii code of icon (depends on the driver) */
+    int curmap;			/* current bitmap sequence */
+    int prvmap;			/* previous bitmap sequence  */
+    int maxmap;			/* number of bitmap sequences */
+    unsigned char *bitmap;	/* bitmaps of (animated) icon */
 } WIDGET_ICON;
 
 extern WIDGET_CLASS Widget_Icon;

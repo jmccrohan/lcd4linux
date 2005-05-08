@@ -1,4 +1,4 @@
-/* $Id: plugin_xmms.c,v 1.13 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_xmms.c,v 1.14 2005/05/08 04:32:45 reinelt Exp $
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright (C) 2003 Markus Keil <markus_keil@t-online.de>
@@ -21,6 +21,9 @@
  *
  *
  * $Log: plugin_xmms.c,v $
+ * Revision 1.14  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.13  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -115,75 +118,84 @@
 static HASH xmms;
 
 
-static int parse_xmms_info (void)
+static int parse_xmms_info(void)
 {
-  int age;
-  FILE *xmms_stream;
-  char zeile[200];
-  
-  /* reread every 100msec only */
-  age=hash_age(&xmms, NULL);
-  if (age>=0 && age<=200) return 0;
-  /* Open Filestream for '/tmp/xmms-info' */
-  xmms_stream = fopen("/tmp/xmms-info","r");
+    int age;
+    FILE *xmms_stream;
+    char zeile[200];
 
-  /* Check for File */
-  if( !xmms_stream ) {
-    error("Error: Cannot open XMMS-Info Stream! Is XMMS started?");
-    return -1;
-  }
-  
-  /* Read Lines from the Stream */
-  while(fgets(zeile,sizeof(zeile),xmms_stream)) {
-    char *c, *key, *val;
-    c=strchr(zeile, ':');
-    if (c==NULL) continue;
-    key=zeile; val=c+1;
-    /* strip leading blanks from key */
-    while (isspace(*key)) *key++='\0';
-    /* strip trailing blanks from key */
-    do *c='\0'; while (isspace(*--c));
-    /* strip leading blanks from value */
-    while (isspace(*val)) *val++='\0';
-    /* strip trailing blanks from value */
-    for (c=val; *c!='\0';c++);
-    while (isspace(*--c)) *c='\0';
-    hash_put (&xmms, key, val);
-  }
-  
-  fclose(xmms_stream);
-  return 0;
-  
+    /* reread every 100msec only */
+    age = hash_age(&xmms, NULL);
+    if (age >= 0 && age <= 200)
+	return 0;
+    /* Open Filestream for '/tmp/xmms-info' */
+    xmms_stream = fopen("/tmp/xmms-info", "r");
+
+    /* Check for File */
+    if (!xmms_stream) {
+	error("Error: Cannot open XMMS-Info Stream! Is XMMS started?");
+	return -1;
+    }
+
+    /* Read Lines from the Stream */
+    while (fgets(zeile, sizeof(zeile), xmms_stream)) {
+	char *c, *key, *val;
+	c = strchr(zeile, ':');
+	if (c == NULL)
+	    continue;
+	key = zeile;
+	val = c + 1;
+	/* strip leading blanks from key */
+	while (isspace(*key))
+	    *key++ = '\0';
+	/* strip trailing blanks from key */
+	do
+	    *c = '\0';
+	while (isspace(*--c));
+	/* strip leading blanks from value */
+	while (isspace(*val))
+	    *val++ = '\0';
+	/* strip trailing blanks from value */
+	for (c = val; *c != '\0'; c++);
+	while (isspace(*--c))
+	    *c = '\0';
+	hash_put(&xmms, key, val);
+    }
+
+    fclose(xmms_stream);
+    return 0;
+
 }
 
-static void my_xmms (RESULT *result, RESULT *arg1)
-{	
-  char *key, *val;
+static void my_xmms(RESULT * result, RESULT * arg1)
+{
+    char *key, *val;
 
-  if (parse_xmms_info()<0) {
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
-   
-  key=R2S(arg1);
-  val=hash_get(&xmms, key, NULL);
-  if (val==NULL) val="";
-  
-  SetResult(&result, R_STRING, val);
+    if (parse_xmms_info() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    key = R2S(arg1);
+    val = hash_get(&xmms, key, NULL);
+    if (val == NULL)
+	val = "";
+
+    SetResult(&result, R_STRING, val);
 }
 
 
-int plugin_init_xmms (void)
+int plugin_init_xmms(void)
 {
-  hash_create(&xmms);
+    hash_create(&xmms);
 
-  /* register xmms info */
-  AddFunction ("xmms", 1, my_xmms);
+    /* register xmms info */
+    AddFunction("xmms", 1, my_xmms);
 
-  return 0;
+    return 0;
 }
 
-void plugin_exit_xmms(void) 
+void plugin_exit_xmms(void)
 {
-  hash_destroy(&xmms);
+    hash_destroy(&xmms);
 }

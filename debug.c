@@ -1,4 +1,4 @@
-/* $Id: debug.c,v 1.12 2005/01/18 06:30:22 reinelt Exp $
+/* $Id: debug.c,v 1.13 2005/05/08 04:32:43 reinelt Exp $
  *
  * debug() and error() functions
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: debug.c,v $
+ * Revision 1.13  2005/05/08 04:32:43  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.12  2005/01/18 06:30:22  reinelt
  * added (C) to all copyright statements
  *
@@ -96,43 +99,44 @@ int running_background = 0;
 
 int verbose_level = 0;
 
-void message (const int level, const char *format, ...)
+void message(const int level, const char *format, ...)
 {
-  va_list ap;
-  char buffer[256];
-  static int log_open=0;
+    va_list ap;
+    char buffer[256];
+    static int log_open = 0;
 
-  if (level>verbose_level) return;
+    if (level > verbose_level)
+	return;
 
-  va_start(ap, format);
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  va_end(ap);
-  
-  if (!running_background) {
-    
+    va_start(ap, format);
+    vsnprintf(buffer, sizeof(buffer), format, ap);
+    va_end(ap);
+
+    if (!running_background) {
+
 #ifdef WITH_CURSES
-    extern int curses_error(char *);
-    if (!curses_error(buffer))
-#endif      
-      fprintf (level?stdout:stderr, "%s\n", buffer);
-  }
-  
-  if (running_foreground)
-    return;
-  
-  if (!log_open) {
-    openlog ("LCD4Linux", LOG_PID, LOG_USER);
-    log_open = 1;
-  }
-  
-  switch (level) {
-  case 0:
-    syslog (LOG_ERR, "%s", buffer);
-    break;
-  case 1:
-    syslog (LOG_INFO, "%s", buffer);
-    break;
-  default:
-    syslog (LOG_DEBUG, "%s", buffer);
-  }
+	extern int curses_error(char *);
+	if (!curses_error(buffer))
+#endif
+	    fprintf(level ? stdout : stderr, "%s\n", buffer);
+    }
+
+    if (running_foreground)
+	return;
+
+    if (!log_open) {
+	openlog("LCD4Linux", LOG_PID, LOG_USER);
+	log_open = 1;
+    }
+
+    switch (level) {
+    case 0:
+	syslog(LOG_ERR, "%s", buffer);
+	break;
+    case 1:
+	syslog(LOG_INFO, "%s", buffer);
+	break;
+    default:
+	syslog(LOG_DEBUG, "%s", buffer);
+    }
 }

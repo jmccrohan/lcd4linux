@@ -1,6 +1,6 @@
 /* lcd.h
  *
- * $Id: drv_LCDLinux.h,v 1.3 2005/05/02 05:15:46 reinelt Exp $
+ * $Id: drv_LCDLinux.h,v 1.4 2005/05/08 04:32:44 reinelt Exp $
  *
  * LCD driver for HD44780 compatible displays connected to the parallel port.
  * 
@@ -36,17 +36,17 @@
 #include <linux/types.h>
 
 struct lcd_driver {
-	/* Hardware */
-	unsigned short io;		/* Parport base address */
-	unsigned short flags;		/* Flags (see Documentation) */
+    /* Hardware */
+    unsigned short io;		/* Parport base address */
+    unsigned short flags;	/* Flags (see Documentation) */
 
-	/* Display geometry */
-	unsigned short num_cntr;	/* Number of available controllers */
-	unsigned short cntr_rows;	/* Rows per controller */
-	unsigned short disp_cols;	/* Columns */
-	unsigned short frames;		/* Framebuffer frames */
+    /* Display geometry */
+    unsigned short num_cntr;	/* Number of available controllers */
+    unsigned short cntr_rows;	/* Rows per controller */
+    unsigned short disp_cols;	/* Columns */
+    unsigned short frames;	/* Framebuffer frames */
 
-	unsigned short tabstop;		/* Length of tab character */
+    unsigned short tabstop;	/* Length of tab character */
 };
 
 /* IOCTLs */
@@ -54,16 +54,16 @@ struct lcd_driver {
 #define IOCTL_SET_PARAM		_IOW(LCD_MAJOR, 0, struct lcd_driver *)
 #define IOCTL_GET_PARAM		_IOR(LCD_MAJOR, 1, struct lcd_driver *)
 
-#define LCD_PROC_ON	0x0001		/* Enable the /proc filesystem support */
-#define LCD_ETTY_ON	0x0002		/* Enable the tty support */
-#define LCD_CONSOLE	0x0004		/* Enable the console support */
-#define LCD_4BITS_BUS	0x0008		/* Set the bus length to 4 bits */
-#define LCD_5X10_FONT	0x0010		/* Use 5x10 dots fonts */
-#define LCD_CHECK_BF	0x0020		/* Do busy flag checking */
+#define LCD_PROC_ON	0x0001	/* Enable the /proc filesystem support */
+#define LCD_ETTY_ON	0x0002	/* Enable the tty support */
+#define LCD_CONSOLE	0x0004	/* Enable the console support */
+#define LCD_4BITS_BUS	0x0008	/* Set the bus length to 4 bits */
+#define LCD_5X10_FONT	0x0010	/* Use 5x10 dots fonts */
+#define LCD_CHECK_BF	0x0020	/* Do busy flag checking */
 
 
 
-#ifdef __KERNEL__ /* The rest is for kernel only */
+#ifdef __KERNEL__		/* The rest is for kernel only */
 
 #include <linux/version.h>
 
@@ -87,6 +87,6 @@ int lcd_write(const char *, int, unsigned int);
 int lcd_read(char *, int, unsigned int);
 #endif
 
-#endif /* __KERNEL__ */
+#endif				/* __KERNEL__ */
 
-#endif /* External interface included */
+#endif				/* External interface included */

@@ -1,4 +1,4 @@
-/* $Id: plugin_statfs.c,v 1.1 2005/04/03 07:07:51 reinelt Exp $
+/* $Id: plugin_statfs.c,v 1.2 2005/05/08 04:32:45 reinelt Exp $
  *
  * plugin for statfs() syscall
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_statfs.c,v $
+ * Revision 1.2  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.1  2005/04/03 07:07:51  reinelt
  * added statfs plugin
  *
@@ -49,56 +52,56 @@
 
 
 
-static void my_statfs (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void my_statfs(RESULT * result, RESULT * arg1, RESULT * arg2)
 {
-  struct statfs buf;
-  char *path, *key;
-  double value;
-  
-  path = R2S(arg1);
-  key  = R2S(arg2);
-  
-  if (statfs(path, &buf)!=0) {
-    error("statfs(%s) failed: %s", path, strerror(errno));
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
+    struct statfs buf;
+    char *path, *key;
+    double value;
 
-  if (strcasecmp(key, "type")==0) {
-    value = buf.f_type;
-  } else if  (strcasecmp(key, "bsize")==0) {
-    value = buf.f_bsize;
-  } else if  (strcasecmp(key, "blocks")==0) {
-    value = buf.f_blocks;
-  } else if  (strcasecmp(key, "bfree")==0) {
-    value = buf.f_bfree;
-  } else if  (strcasecmp(key, "bavail")==0) {
-    value = buf.f_bavail;
-  } else if  (strcasecmp(key, "files")==0) {
-    value = buf.f_files;
-  } else if  (strcasecmp(key, "ffree")==0) {
-    value = buf.f_ffree;
+    path = R2S(arg1);
+    key = R2S(arg2);
+
+    if (statfs(path, &buf) != 0) {
+	error("statfs(%s) failed: %s", path, strerror(errno));
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    if (strcasecmp(key, "type") == 0) {
+	value = buf.f_type;
+    } else if (strcasecmp(key, "bsize") == 0) {
+	value = buf.f_bsize;
+    } else if (strcasecmp(key, "blocks") == 0) {
+	value = buf.f_blocks;
+    } else if (strcasecmp(key, "bfree") == 0) {
+	value = buf.f_bfree;
+    } else if (strcasecmp(key, "bavail") == 0) {
+	value = buf.f_bavail;
+    } else if (strcasecmp(key, "files") == 0) {
+	value = buf.f_files;
+    } else if (strcasecmp(key, "ffree") == 0) {
+	value = buf.f_ffree;
 #if 0
-  } else if  (strcasecmp(key, "fsid")==0) {
-    value = buf.f_fsid;
+    } else if (strcasecmp(key, "fsid") == 0) {
+	value = buf.f_fsid;
 #endif
-  } else if  (strcasecmp(key, "namelen")==0) {
-    value = buf.f_namelen;
-  } else {
-    error("statfs: unknown field '%s'", key);
-    value = -1;
-  }
+    } else if (strcasecmp(key, "namelen") == 0) {
+	value = buf.f_namelen;
+    } else {
+	error("statfs: unknown field '%s'", key);
+	value = -1;
+    }
 
-  SetResult(&result, R_NUMBER, &value); 
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
-int plugin_init_statfs (void)
+int plugin_init_statfs(void)
 {
-  AddFunction ("statfs", 2, my_statfs);
-  return 0;
+    AddFunction("statfs", 2, my_statfs);
+    return 0;
 }
 
-void plugin_exit_statfs(void) 
+void plugin_exit_statfs(void)
 {
 }

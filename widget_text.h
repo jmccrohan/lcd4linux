@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.6 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_text.h,v 1.7 2005/05/08 04:32:45 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.7  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.6  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -62,22 +65,22 @@
 typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } ALIGN;
 
 typedef struct WIDGET_TEXT {
-  char *prefix;      /* expression for label on the left side */
-  void *pretree;     /* pre-compiled expression for label on the left side */
-  char *preval;      /* value for label on the left side */
-  char *postfix;     /* expression for label on the right side */
-  void *posttree;    /* pre-compiled expression for label on the right side */
-  char *postval;     /* value for label on the right side */
-  char *expression;  /* expression that delivers the value */
-  void *tree;        /* pre-compiled expression that delivers the value */
-  char *value;       /* evaluated value from expression */
-  char *buffer;      /* string with 'width+1' bytes allocated  */
-  int   width;       /* field width */
-  int   precision;   /* number of digits after the decimal point */
-  ALIGN align;       /* alignment: L, C, R, M(arquee) */
-  int   update;      /* update interval */
-  int   scroll;      /* marquee starting point */
-  int   speed;       /* marquee scrolling speed */
+    char *prefix;		/* expression for label on the left side */
+    void *pretree;		/* pre-compiled expression for label on the left side */
+    char *preval;		/* value for label on the left side */
+    char *postfix;		/* expression for label on the right side */
+    void *posttree;		/* pre-compiled expression for label on the right side */
+    char *postval;		/* value for label on the right side */
+    char *expression;		/* expression that delivers the value */
+    void *tree;			/* pre-compiled expression that delivers the value */
+    char *value;		/* evaluated value from expression */
+    char *buffer;		/* string with 'width+1' bytes allocated  */
+    int width;			/* field width */
+    int precision;		/* number of digits after the decimal point */
+    ALIGN align;		/* alignment: L, C, R, M(arquee) */
+    int update;			/* update interval */
+    int scroll;			/* marquee starting point */
+    int speed;			/* marquee scrolling speed */
 } WIDGET_TEXT;
 
 

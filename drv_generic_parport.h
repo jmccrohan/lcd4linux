@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.10 2005/05/04 06:13:05 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.11 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.11  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.10  2005/05/04 06:13:05  reinelt
  * parport_wire_status() added
  *
@@ -120,18 +123,18 @@
 #ifndef _DRV_GENERIC_PARPORT_H_
 #define _DRV_GENERIC_PARPORT_H_
 
-int           drv_generic_parport_open          (const char *section, const char *driver);
-int           drv_generic_parport_close         (void);
-unsigned char drv_generic_parport_wire_ctrl     (const char *name, const char *deflt);
-unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *deflt);
-unsigned char drv_generic_parport_wire_status   (const char *name, const char *deflt);
-unsigned char drv_generic_parport_wire_data     (const char *name, const char *deflt);
-void          drv_generic_parport_direction     (const int direction);
-unsigned char drv_generic_parport_status        (void);
-void          drv_generic_parport_control       (const unsigned char mask, const unsigned char value);
-void          drv_generic_parport_toggle        (const unsigned char bit, const int level, const int delay);
-void          drv_generic_parport_data          (const unsigned char data);
-unsigned char drv_generic_parport_read          (void);
-void          drv_generic_parport_debug         (void);
+int drv_generic_parport_open(const char *section, const char *driver);
+int drv_generic_parport_close(void);
+unsigned char drv_generic_parport_wire_ctrl(const char *name, const char *deflt);
+unsigned char drv_generic_parport_hardwire_ctrl(const char *name, const char *deflt);
+unsigned char drv_generic_parport_wire_status(const char *name, const char *deflt);
+unsigned char drv_generic_parport_wire_data(const char *name, const char *deflt);
+void drv_generic_parport_direction(const int direction);
+unsigned char drv_generic_parport_status(void);
+void drv_generic_parport_control(const unsigned char mask, const unsigned char value);
+void drv_generic_parport_toggle(const unsigned char bit, const int level, const int delay);
+void drv_generic_parport_data(const unsigned char data);
+unsigned char drv_generic_parport_read(void);
+void drv_generic_parport_debug(void);
 
 #endif

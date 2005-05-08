@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.18 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget.c,v 1.19 2005/05/08 04:32:45 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.19  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.18  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -123,118 +126,122 @@
 /* we use a static array of widgets and not realloc() */
 #define MAX_WIDGETS 256
 
-static WIDGET_CLASS *Classes=NULL;
-static int          nClasses=0;
+static WIDGET_CLASS *Classes = NULL;
+static int nClasses = 0;
 
-static WIDGET       *Widgets=NULL;
-static int          nWidgets=0;
+static WIDGET *Widgets = NULL;
+static int nWidgets = 0;
 
-static int widget_added=0;
+static int widget_added = 0;
 
-int widget_register (WIDGET_CLASS *widget)
+int widget_register(WIDGET_CLASS * widget)
 {
-  int i;
+    int i;
 
-  /* sanity check: disallow widget registering after at least one */
-  /* widget has been added, because we use realloc here, and there may  */
-  /* be pointers to the old memory area */
-  if (widget_added) {
-    error ("internal error: register_widget(%s) after add_widget()", widget->name);
-    return -1;
-  }
-    
-  for (i=0; i<nClasses; i++) {
-    if (strcasecmp(widget->name, Classes[i].name)==0) {
-      error ("internal error: widget '%s' already exists!", widget->name);
-      return -1;
+    /* sanity check: disallow widget registering after at least one */
+    /* widget has been added, because we use realloc here, and there may  */
+    /* be pointers to the old memory area */
+    if (widget_added) {
+	error("internal error: register_widget(%s) after add_widget()", widget->name);
+	return -1;
     }
-  }
 
-  nClasses++;
-  Classes=realloc(Classes, nClasses*sizeof(WIDGET_CLASS));
-  Classes[nClasses-1] = *widget;
-  
-  return 0;
+    for (i = 0; i < nClasses; i++) {
+	if (strcasecmp(widget->name, Classes[i].name) == 0) {
+	    error("internal error: widget '%s' already exists!", widget->name);
+	    return -1;
+	}
+    }
+
+    nClasses++;
+    Classes = realloc(Classes, nClasses * sizeof(WIDGET_CLASS));
+    Classes[nClasses - 1] = *widget;
+
+    return 0;
 }
 
-void widget_unregister(void) {
-  int i;
-  for (i=0;i<nWidgets;i++) {
-    Widgets[i].class->quit(&(Widgets[i]));
-  }
-  free(Widgets);
+void widget_unregister(void)
+{
+    int i;
+    for (i = 0; i < nWidgets; i++) {
+	Widgets[i].class->quit(&(Widgets[i]));
+    }
+    free(Widgets);
 
-  free(Classes);
+    free(Classes);
 
-  nWidgets=0;
-  nClasses=0;
+    nWidgets = 0;
+    nClasses = 0;
 }
 
-int widget_add (const char *name, const int row, const int col)
+int widget_add(const char *name, const int row, const int col)
 {
-  int i;
-  char *section;
-  char *class;
-  
-  WIDGET_CLASS *Class;
-  WIDGET       *Widget;
-  
-  /* prepare config section */
-  /* strlen("Widget:")=7 */
-  section=malloc(strlen(name)+8);
-  strcpy(section, "Widget:");
-  strcat(section, name);
+    int i;
+    char *section;
+    char *class;
 
-  /* get widget class */
-  class=cfg_get(section, "class", NULL);
-  if (class==NULL || *class=='\0') {
-    error ("error: widget '%s' has no class!", name);
-    if (class) free (class);
-    return -1;
-  }
-  free(section);
-  /* lookup widget class */
-  Class=NULL;
-  for (i=0; i<nClasses; i++) {
-    if (strcasecmp(class, Classes[i].name)==0) {
-      Class=&(Classes[i]);
-      break;
+    WIDGET_CLASS *Class;
+    WIDGET *Widget;
+
+    /* prepare config section */
+    /* strlen("Widget:")=7 */
+    section = malloc(strlen(name) + 8);
+    strcpy(section, "Widget:");
+    strcat(section, name);
+
+    /* get widget class */
+    class = cfg_get(section, "class", NULL);
+    if (class == NULL || *class == '\0') {
+	error("error: widget '%s' has no class!", name);
+	if (class)
+	    free(class);
+	return -1;
     }
-  }
-  if (i==nClasses) {
-    error ("widget '%s': class '%s' not supported", name, class);
-    if (class) free (class);
-    return -1;
-  }
-  if (class) free (class);
-  
-  /* do NOT use realloc here because there may be pointers to the old */
-  /* memory area, which would point to nowhere if realloc moves the area */
-  if (Widgets==NULL) {
-    Widgets=malloc(MAX_WIDGETS*sizeof(WIDGET));
-    if (Widgets==NULL) {
-      error ("internal error: allocation of widget buffer failed: %s", strerror(errno));
-      return -1;
+    free(section);
+    /* lookup widget class */
+    Class = NULL;
+    for (i = 0; i < nClasses; i++) {
+	if (strcasecmp(class, Classes[i].name) == 0) {
+	    Class = &(Classes[i]);
+	    break;
+	}
     }
-  }
+    if (i == nClasses) {
+	error("widget '%s': class '%s' not supported", name, class);
+	if (class)
+	    free(class);
+	return -1;
+    }
+    if (class)
+	free(class);
 
-  /* another sanity check */
-  if (nWidgets>=MAX_WIDGETS) {
-    error ("internal error: widget buffer full!");
-    return -1;
-  }
+    /* do NOT use realloc here because there may be pointers to the old */
+    /* memory area, which would point to nowhere if realloc moves the area */
+    if (Widgets == NULL) {
+	Widgets = malloc(MAX_WIDGETS * sizeof(WIDGET));
+	if (Widgets == NULL) {
+	    error("internal error: allocation of widget buffer failed: %s", strerror(errno));
+	    return -1;
+	}
+    }
 
-  Widget=&(Widgets[nWidgets]);
-  nWidgets++;
-  
-  Widget->name  = (char*)name;
-  Widget->class = Class;
-  Widget->row   = row;
-  Widget->col   = col;
-  
-  if (Class->init!=0) {
-    Class->init(Widget);
-  }
+    /* another sanity check */
+    if (nWidgets >= MAX_WIDGETS) {
+	error("internal error: widget buffer full!");
+	return -1;
+    }
 
-  return 0;
+    Widget = &(Widgets[nWidgets]);
+    nWidgets++;
+
+    Widget->name = (char *) name;
+    Widget->class = Class;
+    Widget->row = row;
+    Widget->col = col;
+
+    if (Class->init != 0) {
+	Class->init(Widget);
+    }
+
+    return 0;
 }

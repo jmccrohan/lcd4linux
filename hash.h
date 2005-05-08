@@ -1,4 +1,4 @@
-/* $Id: hash.h,v 1.18 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: hash.h,v 1.19 2005/05/08 04:32:44 reinelt Exp $
  *
  * hashes (associative arrays)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: hash.h,v $
+ * Revision 1.19  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.18  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -113,52 +116,52 @@
 
 
 typedef struct {
-  int   size;
-  char *value;
-  struct timeval timestamp;
+    int size;
+    char *value;
+    struct timeval timestamp;
 } HASH_SLOT;
 
 
 typedef struct {
-  char *key;
-  int   val;
+    char *key;
+    int val;
 } HASH_COLUMN;
 
 typedef struct {
-  char      *key;
-  int       index;
-  int       nSlot;
-  HASH_SLOT *Slot;
+    char *key;
+    int index;
+    int nSlot;
+    HASH_SLOT *Slot;
 } HASH_ITEM;
 
 
 typedef struct {
-  int         sorted;
-  struct timeval timestamp;
-  int         nItems;
-  HASH_ITEM   *Items;
-  int         nColumns;
-  HASH_COLUMN *Columns;
-  char        *delimiter;
+    int sorted;
+    struct timeval timestamp;
+    int nItems;
+    HASH_ITEM *Items;
+    int nColumns;
+    HASH_COLUMN *Columns;
+    char *delimiter;
 } HASH;
 
 
 
-void   hash_create        (HASH *Hash);
+void hash_create(HASH * Hash);
 
-int    hash_age           (HASH *Hash, const char *key);
+int hash_age(HASH * Hash, const char *key);
 
-void   hash_set_column    (HASH *Hash, const int number, const char *column);
-void   hash_set_delimiter (HASH *Hash, const char *delimiter);
+void hash_set_column(HASH * Hash, const int number, const char *column);
+void hash_set_delimiter(HASH * Hash, const char *delimiter);
 
-char  *hash_get           (HASH *Hash, const char *key, const char *column);
-double hash_get_delta     (HASH *Hash, const char *key, const char *column, const int delay);
-double hash_get_regex     (HASH *Hash, const char *key, const char *column, const int delay);
+char *hash_get(HASH * Hash, const char *key, const char *column);
+double hash_get_delta(HASH * Hash, const char *key, const char *column, const int delay);
+double hash_get_regex(HASH * Hash, const char *key, const char *column, const int delay);
 
-void   hash_put           (HASH *Hash, const char *key, const char *value);
-void   hash_put_delta     (HASH *Hash, const char *key, const char *value);
+void hash_put(HASH * Hash, const char *key, const char *value);
+void hash_put_delta(HASH * Hash, const char *key, const char *value);
 
-void   hash_destroy       (HASH *Hash);
+void hash_destroy(HASH * Hash);
 
 
 #endif

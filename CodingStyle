@@ -1,0 +1,22 @@
+LCD4Linux Coding Style
+
+We decided to use a common coding style to make patches and diffs 
+easier to read and apply.
+
+The style we use is based on Kernighan & Ritchie and the coding style 
+of the linux kernel (see /usr/src/linux/Documentation/CodingStyle),
+with some differences:
+
+- we use a indentation level of 4 spaces (Linus prefers 8)
+- we allow lines up to 150 chars (Linus uses 80)
+
+The resulting indent command is:
+indent -kr -l150
+
+There's a script called 'indent.sh' that comes with the LCD4Linux 
+source package; all it does is call indent with all .c and .h files.
+
+It is always a good idea to call 'indent.sh' before any CVS operation,
+this ensures that diffs and updates won't get mixed up because of
+cosmetic changes.
+

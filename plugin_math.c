@@ -1,4 +1,4 @@
-/* $Id: plugin_math.c,v 1.8 2005/04/05 04:46:06 reinelt Exp $
+/* $Id: plugin_math.c,v 1.9 2005/05/08 04:32:44 reinelt Exp $
  *
  * math plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_math.c,v $
+ * Revision 1.9  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.8  2005/04/05 04:46:06  reinelt
  * ceil/floor patch from Maxime
  *
@@ -79,104 +82,104 @@
 #include "plugin.h"
 
 
-static void my_sqrt (RESULT *result, RESULT *arg1)
+static void my_sqrt(RESULT * result, RESULT * arg1)
 {
-  double value=sqrt(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = sqrt(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_exp (RESULT *result, RESULT *arg1)
+static void my_exp(RESULT * result, RESULT * arg1)
 {
-  double value=exp(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = exp(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_ln (RESULT *result, RESULT *arg1)
+static void my_ln(RESULT * result, RESULT * arg1)
 {
-  double value=log(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = log(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_log (RESULT *result, RESULT *arg1)
+static void my_log(RESULT * result, RESULT * arg1)
 {
-  double value=log10(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = log10(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_sin (RESULT *result, RESULT *arg1)
+static void my_sin(RESULT * result, RESULT * arg1)
 {
-  double value=sin(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = sin(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_cos (RESULT *result, RESULT *arg1)
+static void my_cos(RESULT * result, RESULT * arg1)
 {
-  double value=cos(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = cos(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
-static void my_tan (RESULT *result, RESULT *arg1)
+static void my_tan(RESULT * result, RESULT * arg1)
 {
-  double value=tan(R2N(arg1));
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-
-static void my_min (RESULT *result, RESULT *arg1, RESULT *arg2)
-{
-  double a1=R2N(arg1);
-  double a2=R2N(arg2);
-  double value=a1<a2?a1:a2;
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_max (RESULT *result, RESULT *arg1, RESULT *arg2)
-{
-  double a1=R2N(arg1);
-  double a2=R2N(arg2);
-  double value=a1>a2?a1:a2;
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-static void my_floor (RESULT *result, RESULT *arg)
-{
-  double value = floor(R2N(arg));
-  SetResult(&result, R_NUMBER, &value);
-}
-
-static void my_ceil (RESULT *result, RESULT *arg)
-{
-  double value = ceil(R2N(arg));
-  SetResult(&result, R_NUMBER, &value);
+    double value = tan(R2N(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
-int plugin_init_math (void)
+static void my_min(RESULT * result, RESULT * arg1, RESULT * arg2)
 {
-  /* set some handy constants */
-  SetVariableNumeric ("Pi", M_PI);
-  SetVariableNumeric ("e",  M_E);
-  
-  /* register some basic math functions */
-  AddFunction ("sqrt", 1, my_sqrt);
-  AddFunction ("exp",  1, my_exp);
-  AddFunction ("ln",   1, my_ln);
-  AddFunction ("log",  1, my_log);
-  AddFunction ("sin",  1, my_sin);
-  AddFunction ("cos",  1, my_cos);
-  AddFunction ("tan",  1, my_tan);
-  
-  /* min, max */
-  AddFunction ("min",  2, my_min);
-  AddFunction ("max",  2, my_max);
-
-  /* floor, ceil */
-  AddFunction ("floor", 1, my_floor);
-  AddFunction ("ceil",  1, my_ceil);
-
-  return 0;
+    double a1 = R2N(arg1);
+    double a2 = R2N(arg2);
+    double value = a1 < a2 ? a1 : a2;
+    SetResult(&result, R_NUMBER, &value);
 }
 
-void plugin_exit_math(void) 
+static void my_max(RESULT * result, RESULT * arg1, RESULT * arg2)
+{
+    double a1 = R2N(arg1);
+    double a2 = R2N(arg2);
+    double value = a1 > a2 ? a1 : a2;
+    SetResult(&result, R_NUMBER, &value);
+}
+
+static void my_floor(RESULT * result, RESULT * arg)
+{
+    double value = floor(R2N(arg));
+    SetResult(&result, R_NUMBER, &value);
+}
+
+static void my_ceil(RESULT * result, RESULT * arg)
+{
+    double value = ceil(R2N(arg));
+    SetResult(&result, R_NUMBER, &value);
+}
+
+
+int plugin_init_math(void)
+{
+    /* set some handy constants */
+    SetVariableNumeric("Pi", M_PI);
+    SetVariableNumeric("e", M_E);
+
+    /* register some basic math functions */
+    AddFunction("sqrt", 1, my_sqrt);
+    AddFunction("exp", 1, my_exp);
+    AddFunction("ln", 1, my_ln);
+    AddFunction("log", 1, my_log);
+    AddFunction("sin", 1, my_sin);
+    AddFunction("cos", 1, my_cos);
+    AddFunction("tan", 1, my_tan);
+
+    /* min, max */
+    AddFunction("min", 2, my_min);
+    AddFunction("max", 2, my_max);
+
+    /* floor, ceil */
+    AddFunction("floor", 1, my_floor);
+    AddFunction("ceil", 1, my_ceil);
+
+    return 0;
+}
+
+void plugin_exit_math(void)
 {
 }

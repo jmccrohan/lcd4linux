@@ -1,4 +1,4 @@
-/* $Id: plugin_diskstats.c,v 1.7 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_diskstats.c,v 1.8 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for /proc/diskstats parsing
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_diskstats.c,v $
+ * Revision 1.8  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.7  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -79,98 +82,106 @@ static HASH DISKSTATS;
 static FILE *stream = NULL;
 
 
-static int parse_diskstats (void)
+static int parse_diskstats(void)
 {
-  int age;
-  
-  /* reread every 10 msec only */
-  age = hash_age(&DISKSTATS, NULL);
-  if (age > 0 && age <= 10) return 0;
-  
-  if (stream == NULL) stream = fopen("/proc/diskstats", "r");
-  if (stream == NULL) {
-    error ("fopen(/proc/diskstats) failed: %s", strerror(errno));
-    return -1;
-  }
-  
-  rewind(stream);
-  
-  while (!feof(stream)) {
-    char buffer[1024];
-    char dev[64];
-    char *beg, *end;
-    unsigned int num, len;
-    
-    if (fgets (buffer, sizeof(buffer), stream) == NULL) break;
-    
-    /* fetch device name (3rd column) as key */
-    num = 0;
-    beg = buffer;
-    end = beg;
-    while (*beg) {
-      while (*beg == ' ') beg++;
-      end = beg + 1;
-      while (*end && *end != ' ') end++;
-      if (num++ == 2) break;
-      beg = end ? end+1 : NULL;
+    int age;
+
+    /* reread every 10 msec only */
+    age = hash_age(&DISKSTATS, NULL);
+    if (age > 0 && age <= 10)
+	return 0;
+
+    if (stream == NULL)
+	stream = fopen("/proc/diskstats", "r");
+    if (stream == NULL) {
+	error("fopen(/proc/diskstats) failed: %s", strerror(errno));
+	return -1;
     }
-    len = end ? (unsigned)(end - beg) : strlen(beg);
-    
-    if (len >= sizeof(dev)) len = sizeof(dev)-1;
-    strncpy (dev, beg, len);
-    dev[len] = '\0';
-    
-    hash_put_delta (&DISKSTATS, dev, buffer); 
-    
-  }
-  return 0;
+
+    rewind(stream);
+
+    while (!feof(stream)) {
+	char buffer[1024];
+	char dev[64];
+	char *beg, *end;
+	unsigned int num, len;
+
+	if (fgets(buffer, sizeof(buffer), stream) == NULL)
+	    break;
+
+	/* fetch device name (3rd column) as key */
+	num = 0;
+	beg = buffer;
+	end = beg;
+	while (*beg) {
+	    while (*beg == ' ')
+		beg++;
+	    end = beg + 1;
+	    while (*end && *end != ' ')
+		end++;
+	    if (num++ == 2)
+		break;
+	    beg = end ? end + 1 : NULL;
+	}
+	len = end ? (unsigned) (end - beg) : strlen(beg);
+
+	if (len >= sizeof(dev))
+	    len = sizeof(dev) - 1;
+	strncpy(dev, beg, len);
+	dev[len] = '\0';
+
+	hash_put_delta(&DISKSTATS, dev, buffer);
+
+    }
+    return 0;
 }
 
 
-static void my_diskstats (RESULT *result, RESULT *arg1, RESULT *arg2, RESULT *arg3)
+static void my_diskstats(RESULT * result, RESULT * arg1, RESULT * arg2, RESULT * arg3)
 {
-  char *dev, *key;
-  int delay;
-  double value;
-  
-  if (parse_diskstats() < 0) {
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
-  
-  dev   = R2S(arg1);
-  key   = R2S(arg2);
-  delay = R2N(arg3);
-  
-  value  = hash_get_regex(&DISKSTATS, dev, key, delay);
-  
-  SetResult(&result, R_NUMBER, &value); 
+    char *dev, *key;
+    int delay;
+    double value;
+
+    if (parse_diskstats() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    dev = R2S(arg1);
+    key = R2S(arg2);
+    delay = R2N(arg3);
+
+    value = hash_get_regex(&DISKSTATS, dev, key, delay);
+
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
-int plugin_init_diskstats (void)
+int plugin_init_diskstats(void)
 {
-  int i;
-  char *header[] = { "major", "minor", "name", 
-		     "reads",  "read_merges",  "read_sectors",  "read_ticks",
-		     "writes", "write_merges", "write_sectors", "write_ticks",
-		     "in_flight", "io_ticks", "time_in_queue", "" };
-  
-  hash_create (&DISKSTATS);
-  hash_set_delimiter (&DISKSTATS, " \n");
-  for (i=0; *header[i] != '\0'; i++) {
-    hash_set_column (&DISKSTATS, i, header[i]);
-  }
-  
-  AddFunction ("diskstats", 3, my_diskstats);
-  return 0;
+    int i;
+    char *header[] = { "major", "minor", "name",
+	"reads", "read_merges", "read_sectors", "read_ticks",
+	"writes", "write_merges", "write_sectors", "write_ticks",
+	"in_flight", "io_ticks", "time_in_queue", ""
+    };
+
+    hash_create(&DISKSTATS);
+    hash_set_delimiter(&DISKSTATS, " \n");
+    for (i = 0; *header[i] != '\0'; i++) {
+	hash_set_column(&DISKSTATS, i, header[i]);
+    }
+
+    AddFunction("diskstats", 3, my_diskstats);
+    return 0;
 }
 
-void plugin_exit_diskstats(void) 
+void plugin_exit_diskstats(void)
 {
-  if (stream != NULL) {
-    fclose (stream);
-    stream = NULL;
-  }
-  hash_destroy(&DISKSTATS);
+    if (stream != NULL) {
+	fclose(stream);
+	stream = NULL;
+    }
+    hash_destroy(&DISKSTATS);
 }

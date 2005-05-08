@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.17 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.18 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.18  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.17  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -103,28 +106,28 @@
 #include "widget.h"
 
 
-extern int DROWS, DCOLS; /* display size */
-extern int LROWS, LCOLS; /* layout size */
-extern int XRES,  YRES;  /* pixel width/height of one char  */
-extern int CHARS, CHAR0; /* number of user-defineable characters, ASCII of first char */
-extern int ICONS;        /* number of user-defineable characters reserved for icons */
-extern int GOTO_COST;    /* number of bytes a goto command requires */
-extern int INVALIDATE;   /* re-send a modified userdefined char? */
+extern int DROWS, DCOLS;	/* display size */
+extern int LROWS, LCOLS;	/* layout size */
+extern int XRES, YRES;		/* pixel width/height of one char  */
+extern int CHARS, CHAR0;	/* number of user-defineable characters, ASCII of first char */
+extern int ICONS;		/* number of user-defineable characters reserved for icons */
+extern int GOTO_COST;		/* number of bytes a goto command requires */
+extern int INVALIDATE;		/* re-send a modified userdefined char? */
 
 /* these functions must be implemented by the real driver */
-void (*drv_generic_text_real_write)(const int row, const int col, const char *data, const int len);
-void (*drv_generic_text_real_defchar)(const int ascii, const unsigned char *matrix);
+void (*drv_generic_text_real_write) (const int row, const int col, const char *data, const int len);
+void (*drv_generic_text_real_defchar) (const int ascii, const unsigned char *matrix);
 
 /* generic functions and widget callbacks */
-int  drv_generic_text_init            (const char *section, const char *driver);
-int  drv_generic_text_greet           (const char *msg1, const char *msg2);
-int  drv_generic_text_draw            (WIDGET *W);
-int  drv_generic_text_icon_init       (void);
-int  drv_generic_text_icon_draw       (WIDGET *W);
-int  drv_generic_text_bar_init        (const int single_segments);
-void drv_generic_text_bar_add_segment (const int val1, const int val2, const DIRECTION dir, const int ascii);
-int  drv_generic_text_bar_draw        (WIDGET *W);
-int  drv_generic_text_quit            (void);
+int drv_generic_text_init(const char *section, const char *driver);
+int drv_generic_text_greet(const char *msg1, const char *msg2);
+int drv_generic_text_draw(WIDGET * W);
+int drv_generic_text_icon_init(void);
+int drv_generic_text_icon_draw(WIDGET * W);
+int drv_generic_text_bar_init(const int single_segments);
+void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRECTION dir, const int ascii);
+int drv_generic_text_bar_draw(WIDGET * W);
+int drv_generic_text_quit(void);
 
 
 #endif

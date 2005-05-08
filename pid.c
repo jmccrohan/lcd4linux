@@ -1,4 +1,4 @@
-/* $Id: pid.c,v 1.9 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: pid.c,v 1.10 2005/05/08 04:32:44 reinelt Exp $
  *
  * PID file handling
  *
@@ -22,6 +22,9 @@
  *
  *
  * $Log: pid.c,v $
+ * Revision 1.10  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -96,91 +99,92 @@
 #endif
 
 
-int pid_init (const char *pidfile)
+int pid_init(const char *pidfile)
 {
-  char tmpfile[256];
-  char buffer[16];
-  int fd, len, pid;
-  
-  qprintf(tmpfile, sizeof(tmpfile), "%s.%s", pidfile, "XXXXXX");
+    char tmpfile[256];
+    char buffer[16];
+    int fd, len, pid;
 
-  if ((fd=mkstemp(tmpfile))==-1) {
-    error ("mkstemp(%s) failed: %s", tmpfile, strerror(errno));
-    return -1;
-  }
-  
-  if (fchmod(fd,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)==-1) {
-    error ("fchmod(%s) failed: %s", tmpfile, strerror(errno));
+    qprintf(tmpfile, sizeof(tmpfile), "%s.%s", pidfile, "XXXXXX");
+
+    if ((fd = mkstemp(tmpfile)) == -1) {
+	error("mkstemp(%s) failed: %s", tmpfile, strerror(errno));
+	return -1;
+    }
+
+    if (fchmod(fd, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
+	error("fchmod(%s) failed: %s", tmpfile, strerror(errno));
+	close(fd);
+	unlink(tmpfile);
+	return -1;
+    }
+
+    qprintf(buffer, sizeof(buffer), "%d\n", (int) getpid());
+    len = strlen(buffer);
+    if (write(fd, buffer, len) != len) {
+	error("write(%s) failed: %s", tmpfile, strerror(errno));
+	close(fd);
+	unlink(tmpfile);
+	return -1;
+    }
     close(fd);
-    unlink(tmpfile);
-    return -1;
-  }
-  
-  qprintf(buffer, sizeof(buffer), "%d\n", (int)getpid());
-  len = strlen(buffer);
-  if (write(fd, buffer, len) != len) {
-    error ("write(%s) failed: %s", tmpfile, strerror(errno));
-    close(fd);
-    unlink(tmpfile);
-    return -1;
-  }
-  close (fd);
-  
-  
-  while (link(tmpfile, pidfile)==-1) {
 
-    if (errno!=EEXIST) {
-      error ("link(%s, %s) failed: %s", tmpfile, pidfile, strerror(errno));
-      unlink(tmpfile);
-      return -1;
-    }
 
-    if ((fd=open(pidfile, O_RDONLY))==-1) {
-      if (errno==ENOENT) continue; /* pidfile disappared */
-      error ("open(%s) failed: %s", pidfile, strerror(errno));
-      unlink (tmpfile);
-      return -1;
-    }
+    while (link(tmpfile, pidfile) == -1) {
 
-    len=read(fd, buffer, sizeof(buffer)-1);
-    if (len<0) {
-      error ("read(%s) failed: %s", pidfile, strerror(errno));
-      unlink (tmpfile);
-      return -1;
-    }
-    
-    buffer[len]='\0';
-    if (sscanf(buffer, "%d", &pid)!=1 || pid==0) {
-      error ("scan(%s) failed.", pidfile);
-      unlink (tmpfile);
-      return -1;
-    }
+	if (errno != EEXIST) {
+	    error("link(%s, %s) failed: %s", tmpfile, pidfile, strerror(errno));
+	    unlink(tmpfile);
+	    return -1;
+	}
 
-    if (pid==getpid()) {
-      error ("%s already locked by us. uh-oh...", pidfile);
-      unlink(tmpfile);
-      return 0;
-    }
-    
-    if ((kill(pid, 0)==-1) && errno==ESRCH) {
-      error ("removing stale PID file %s", pidfile);
-      if (unlink(pidfile)==-1 && errno!=ENOENT) {
-	error ("unlink(%s) failed: %s", pidfile, strerror(errno));
+	if ((fd = open(pidfile, O_RDONLY)) == -1) {
+	    if (errno == ENOENT)
+		continue;	/* pidfile disappared */
+	    error("open(%s) failed: %s", pidfile, strerror(errno));
+	    unlink(tmpfile);
+	    return -1;
+	}
+
+	len = read(fd, buffer, sizeof(buffer) - 1);
+	if (len < 0) {
+	    error("read(%s) failed: %s", pidfile, strerror(errno));
+	    unlink(tmpfile);
+	    return -1;
+	}
+
+	buffer[len] = '\0';
+	if (sscanf(buffer, "%d", &pid) != 1 || pid == 0) {
+	    error("scan(%s) failed.", pidfile);
+	    unlink(tmpfile);
+	    return -1;
+	}
+
+	if (pid == getpid()) {
+	    error("%s already locked by us. uh-oh...", pidfile);
+	    unlink(tmpfile);
+	    return 0;
+	}
+
+	if ((kill(pid, 0) == -1) && errno == ESRCH) {
+	    error("removing stale PID file %s", pidfile);
+	    if (unlink(pidfile) == -1 && errno != ENOENT) {
+		error("unlink(%s) failed: %s", pidfile, strerror(errno));
+		unlink(tmpfile);
+		return pid;
+	    }
+	    continue;
+	}
 	unlink(tmpfile);
 	return pid;
-      }
-      continue;
     }
-    unlink (tmpfile);
-    return pid;
-  }
-  
-  unlink (tmpfile);
-  return 0;
+
+    unlink(tmpfile);
+    return 0;
 }
 
 
-int pid_exit (const char *pidfile)
+int pid_exit(const char *pidfile)
 {
-  return unlink(pidfile);
+    return unlink(pidfile);
 }

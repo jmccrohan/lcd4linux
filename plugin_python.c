@@ -1,4 +1,4 @@
-/* $Id: plugin_python.c,v 1.3 2005/05/04 05:22:12 reinelt Exp $
+/* $Id: plugin_python.c,v 1.4 2005/05/08 04:32:45 reinelt Exp $
  *
  * Python plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_python.c,v $
+ * Revision 1.4  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.3  2005/05/04 05:22:12  reinelt
  * * replaced fprintf(stderr,...  with error()
  * * corrected a "dangling reference" memory problem
@@ -62,98 +65,95 @@
  * Fixme: this function should be able to accept and receive any types 
  * of arguments supported by the evaluator. Right now only strings are accepted.
  */
- 
-static void 
-pyt_exec_str(RESULT *result, const char* module, const char* function, int argc, const char* argv[]) {
 
-  PyObject *pName, *pModule, *pDict, *pFunc;
-  PyObject *pArgs, *pValue;
-  const char * rv = NULL;
-  int i;
+static void pyt_exec_str(RESULT * result, const char *module, const char *function, int argc, const char *argv[])
+{
 
-  pName = PyString_FromString(module);
-  /* Error checking of pName left out */
+    PyObject *pName, *pModule, *pDict, *pFunc;
+    PyObject *pArgs, *pValue;
+    const char *rv = NULL;
+    int i;
 
-  pModule = PyImport_Import(pName);
-  Py_DECREF(pName);
+    pName = PyString_FromString(module);
+    /* Error checking of pName left out */
 
-  if (pModule != NULL) {
-    pDict = PyModule_GetDict(pModule);
-    /* pDict is a borrowed reference */
+    pModule = PyImport_Import(pName);
+    Py_DECREF(pName);
 
-    pFunc = PyDict_GetItemString(pDict, function);
-    /* pFun: Borrowed reference */
+    if (pModule != NULL) {
+	pDict = PyModule_GetDict(pModule);
+	/* pDict is a borrowed reference */
 
-    if (pFunc && PyCallable_Check(pFunc)) {
-      pArgs = PyTuple_New(argc);
-      for (i = 0; i < argc; ++i) {
-        pValue = PyString_FromString(argv[i]);
-        if (!pValue) {
-          Py_DECREF(pArgs);
-          Py_DECREF(pModule);
-          error("Cannot convert argument \"%s\" to python format", argv[i]);
-          SetResult(&result, R_STRING, "");
-          return;
-        }
-        /* pValue reference stolen here: */
-        PyTuple_SetItem(pArgs, i, pValue);
-      }
-      pValue = PyObject_CallObject(pFunc, pArgs);
-      Py_DECREF(pArgs);
-      if (pValue != NULL) {
-        rv = PyString_AsString(pValue);
-        SetResult(&result, R_STRING, rv);
-        Py_DECREF(pValue);
-        /* rv is now a 'dangling reference' */
-        return;
-      }
-      else {
-        Py_DECREF(pModule);
-        error("Python call failed (\"%s.%s\")", module, function); 
-        SetResult(&result, R_STRING, "");
-        return;
-      }
-      /* pDict and pFunc are borrowed and must not be Py_DECREF-ed */
+	pFunc = PyDict_GetItemString(pDict, function);
+	/* pFun: Borrowed reference */
+
+	if (pFunc && PyCallable_Check(pFunc)) {
+	    pArgs = PyTuple_New(argc);
+	    for (i = 0; i < argc; ++i) {
+		pValue = PyString_FromString(argv[i]);
+		if (!pValue) {
+		    Py_DECREF(pArgs);
+		    Py_DECREF(pModule);
+		    error("Cannot convert argument \"%s\" to python format", argv[i]);
+		    SetResult(&result, R_STRING, "");
+		    return;
+		}
+		/* pValue reference stolen here: */
+		PyTuple_SetItem(pArgs, i, pValue);
+	    }
+	    pValue = PyObject_CallObject(pFunc, pArgs);
+	    Py_DECREF(pArgs);
+	    if (pValue != NULL) {
+		rv = PyString_AsString(pValue);
+		SetResult(&result, R_STRING, rv);
+		Py_DECREF(pValue);
+		/* rv is now a 'dangling reference' */
+		return;
+	    } else {
+		Py_DECREF(pModule);
+		error("Python call failed (\"%s.%s\")", module, function);
+		SetResult(&result, R_STRING, "");
+		return;
+	    }
+	    /* pDict and pFunc are borrowed and must not be Py_DECREF-ed */
+	} else {
+	    error("Can not find python function \"%s.%s\"", module, function);
+	}
+	Py_DECREF(pModule);
+    } else {
+	error("Failed to load python module \"%s\"", module);
     }
-    else {
-      error("Can not find python function \"%s.%s\"", module, function);
-    }
-    Py_DECREF(pModule);
-  }
-  else {
-    error("Failed to load python module \"%s\"", module);
-  }
-  SetResult(&result, R_STRING, "");
-  return;
+    SetResult(&result, R_STRING, "");
+    return;
 }
 
 static int python_cleanup_responsibility = 0;
-    
-static void my_exec (RESULT *result, RESULT *module, RESULT *function, RESULT *arg )
-{ 
-  /* Fixme: a plugin should be able to accept any number of arguments, don't know how
-     to code that (yet) */
-  const char* args[] = {R2S(arg)};
-  pyt_exec_str(result, R2S(module), R2S(function), 1, args);
+
+static void my_exec(RESULT * result, RESULT * module, RESULT * function, RESULT * arg)
+{
+    /* Fixme: a plugin should be able to accept any number of arguments, don't know how
+       to code that (yet) */
+    const char *args[] = { R2S(arg) };
+    pyt_exec_str(result, R2S(module), R2S(function), 1, args);
 }
 
-int plugin_init_python (void)
+int plugin_init_python(void)
 {
-  if (!Py_IsInitialized()) {
-    Py_Initialize();
-    python_cleanup_responsibility = 1;
-  }
-  AddFunction ("python::exec", 3, my_exec);
-  return 0;
+    if (!Py_IsInitialized()) {
+	Py_Initialize();
+	python_cleanup_responsibility = 1;
+    }
+    AddFunction("python::exec", 3, my_exec);
+    return 0;
 }
 
-void plugin_exit_python (void) 
+void plugin_exit_python(void)
 {
-  /* Make sure NOT to call Py_Finalize() When (and if) the entire lcd4linux process 
-   * is started from inside python
-   */
-  if (python_cleanup_responsibility) {
-    python_cleanup_responsibility = 0;
-    Py_Finalize();
-  }
+    /* Make sure NOT to call Py_Finalize() When (and if) the entire lcd4linux process 
+     * is started from inside python
+     */
+    if (python_cleanup_responsibility) {
+	python_cleanup_responsibility = 0;
+	Py_Finalize();
+    }
 }

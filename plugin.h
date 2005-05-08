@@ -1,4 +1,4 @@
-/* $Id: plugin.h,v 1.3 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin.h,v 1.4 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.h,v $
+ * Revision 1.4  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.3  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -54,6 +57,6 @@
 #ifndef _PLUGIN_H_
 #define _PLUGIN_H_
 
-int plugin_init (void);
+int plugin_init(void);
 void plugin_exit(void);
 #endif

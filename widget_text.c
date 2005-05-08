@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.21 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_text.c,v 1.22 2005/05/08 04:32:45 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.22  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.21  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -147,317 +150,335 @@
 #endif
 
 
-void widget_text_scroll (void *Self)
+void widget_text_scroll(void *Self)
 {
-  WIDGET      *W = (WIDGET*)Self;
-  WIDGET_TEXT *T = W->data;
-  
-  int num, len, width, pad;
-  char *src, *dst;
+    WIDGET *W = (WIDGET *) Self;
+    WIDGET_TEXT *T = W->data;
 
-  num   = 0;
-  len   = strlen(T->value);
-  width = T->width-strlen(T->preval)-strlen(T->postval);
-  if (width<0) width=0;
-  
-  switch (T->align) {
-  case ALIGN_LEFT:
-    pad=0;
-    break;
-  case ALIGN_CENTER:
-    pad=(width - len)/2;  
-    if (pad<0) pad=0;
-    break;
-  case ALIGN_RIGHT:
-    pad=width - len; 
-    if (pad<0) pad=0;
-    break;
-  case ALIGN_MARQUEE:
-    pad=width - T->scroll;
-    T->scroll++;
-    if (T->scroll >= width+len) T->scroll=0;
-    break;
-  default: /* not reached  */
-    pad=0;
-  }
-  
-  dst=T->buffer;
+    int num, len, width, pad;
+    char *src, *dst;
 
-  /* process prefix */
-  src=T->preval;
-  while (num < T->width) {
-    if (*src=='\0') break;
-    *(dst++)=*(src++);
-    num++;
-  }
-  
-  src=T->value;
+    num = 0;
+    len = strlen(T->value);
+    width = T->width - strlen(T->preval) - strlen(T->postval);
+    if (width < 0)
+	width = 0;
 
-  /* pad blanks on the beginning */
-  while (pad > 0 && num < T->width) {
-    *(dst++)=' ';
-    num++;
-    pad--;
-  }
-  
-  /* skip src chars (marquee) */
-  while (pad<0) {
-    src++;
-    pad++;
-  }
-  
-  /* copy content */
-  while (num < T->width) {
-    if (*src=='\0') break;
-    *(dst++)=*(src++);
-    num++;
-  }
-  
-  /* pad blanks on the end */
-  src=T->postval;
-  len=strlen(src);
-  while (num < T->width-len) {
-    *(dst++)=' ';
-    num++;
-  }
-  
-  /* process postfix */
-  while (num < T->width) {
-    if (*src=='\0') break;
-    *(dst++)=*(src++);
-    num++;
-  }
-  
-  *dst='\0';
-  
-  /* finally, draw it! */
-  if (W->class->draw)
-    W->class->draw(W);
+    switch (T->align) {
+    case ALIGN_LEFT:
+	pad = 0;
+	break;
+    case ALIGN_CENTER:
+	pad = (width - len) / 2;
+	if (pad < 0)
+	    pad = 0;
+	break;
+    case ALIGN_RIGHT:
+	pad = width - len;
+	if (pad < 0)
+	    pad = 0;
+	break;
+    case ALIGN_MARQUEE:
+	pad = width - T->scroll;
+	T->scroll++;
+	if (T->scroll >= width + len)
+	    T->scroll = 0;
+	break;
+    default:			/* not reached  */
+	pad = 0;
+    }
+
+    dst = T->buffer;
+
+    /* process prefix */
+    src = T->preval;
+    while (num < T->width) {
+	if (*src == '\0')
+	    break;
+	*(dst++) = *(src++);
+	num++;
+    }
+
+    src = T->value;
+
+    /* pad blanks on the beginning */
+    while (pad > 0 && num < T->width) {
+	*(dst++) = ' ';
+	num++;
+	pad--;
+    }
+
+    /* skip src chars (marquee) */
+    while (pad < 0) {
+	src++;
+	pad++;
+    }
+
+    /* copy content */
+    while (num < T->width) {
+	if (*src == '\0')
+	    break;
+	*(dst++) = *(src++);
+	num++;
+    }
+
+    /* pad blanks on the end */
+    src = T->postval;
+    len = strlen(src);
+    while (num < T->width - len) {
+	*(dst++) = ' ';
+	num++;
+    }
+
+    /* process postfix */
+    while (num < T->width) {
+	if (*src == '\0')
+	    break;
+	*(dst++) = *(src++);
+	num++;
+    }
+
+    *dst = '\0';
+
+    /* finally, draw it! */
+    if (W->class->draw)
+	W->class->draw(W);
 }
 
 
 
-void widget_text_update (void *Self)
+void widget_text_update(void *Self)
 {
-  WIDGET      *W = (WIDGET*)Self;
-  WIDGET_TEXT *T = W->data;
-  RESULT result = {0, 0, 0, NULL};
-  char *preval, *postval, *value;
-  int update;
-  
-  /* evaluate prefix */
-  if (T->pretree!=NULL) {
-    Eval(T->pretree, &result);
-    preval=strdup(R2S(&result));
-    DelResult (&result);
-  } else {
-    preval=strdup("");
-  }
-  
-  /* evaluate postfix */
-  if (T->posttree!=NULL) {
-    Eval(T->posttree, &result);
-    postval=strdup(R2S(&result));
-    DelResult (&result);
-  } else {
-    postval=strdup("");
-  }
-  
-  /* evaluate expression */
-  Eval(T->tree, &result);
-  
-  /* string or number? */
-  if (T->precision==0xC0DE) {
-    value=strdup(R2S(&result));
-  } else {
-    double number=R2N(&result);
-    int width=T->width-strlen(preval)-strlen(postval);
-    int precision=T->precision;
-    /* print zero bytes so we can specify NULL as target  */
-    /* and get the length of the resulting string */
-    int size=snprintf (NULL, 0, "%.*f", precision, number);
-    /* number does not fit into field width: try to reduce precision */
-    if (width<0) width=0;
-    if (size>width && precision>0) {
-      int delta=size-width;
-      if (delta>precision) delta=precision;
-      precision-=delta;
-      size-=delta;
-      /* zero precision: omit decimal point, too */
-      if (precision==0) size--;
-    }
-    /* number still doesn't fit: display '*****'  */
-    if (size>width) {
-      value=malloc(width+1);
-      memset (value, '*', width);
-      *(value+width)='\0';
+    WIDGET *W = (WIDGET *) Self;
+    WIDGET_TEXT *T = W->data;
+    RESULT result = { 0, 0, 0, NULL };
+    char *preval, *postval, *value;
+    int update;
+
+    /* evaluate prefix */
+    if (T->pretree != NULL) {
+	Eval(T->pretree, &result);
+	preval = strdup(R2S(&result));
+	DelResult(&result);
     } else {
-      value=malloc(size+1);
-      snprintf (value, size+1, "%.*f", precision, number);
+	preval = strdup("");
     }
-  }
-  
-  DelResult (&result);
-  
-  update=0;
-  
-  /* prefix changed? */
-  if (T->preval == NULL || strcmp(T->preval, preval)!=0) {
-    update=1;
-    if (T->preval) free (T->preval); 
-    T->preval=preval;   
-    T->scroll=0; /* reset marquee counter */
-  } else {              
-    free (preval);      
-  }
-  
-  /* postfix changed? */
-  if (T->postval == NULL || strcmp(T->postval, postval)!=0) {
-    update=1;
-    if (T->postval) free (T->postval);
-    T->postval=postval;
-    T->scroll=0; /* reset marquee counter */
-  } else {
-    free (postval);
-  }
-  
-  /* value changed? */
-  if (T->value == NULL || strcmp(T->value, value)!=0) {
-    update=1;
-    if (T->value) free (T->value);
-    T->value=value;
-    T->scroll=0; /* reset marquee counter */
-  } else {
-    free (value);
-  }
 
-  /* something has changed and should be updated */
-  if (update) {
-    /* if there's a marquee scroller active, it has its own */
-    /* update callback timer, so we do nothing here; otherwise */
-    /* we simply call this scroll callback directly */
-    if (T->align!=ALIGN_MARQUEE) {
-      widget_text_scroll (Self);
+    /* evaluate postfix */
+    if (T->posttree != NULL) {
+	Eval(T->posttree, &result);
+	postval = strdup(R2S(&result));
+	DelResult(&result);
+    } else {
+	postval = strdup("");
     }
-  }
+
+    /* evaluate expression */
+    Eval(T->tree, &result);
+
+    /* string or number? */
+    if (T->precision == 0xC0DE) {
+	value = strdup(R2S(&result));
+    } else {
+	double number = R2N(&result);
+	int width = T->width - strlen(preval) - strlen(postval);
+	int precision = T->precision;
+	/* print zero bytes so we can specify NULL as target  */
+	/* and get the length of the resulting string */
+	int size = snprintf(NULL, 0, "%.*f", precision, number);
+	/* number does not fit into field width: try to reduce precision */
+	if (width < 0)
+	    width = 0;
+	if (size > width && precision > 0) {
+	    int delta = size - width;
+	    if (delta > precision)
+		delta = precision;
+	    precision -= delta;
+	    size -= delta;
+	    /* zero precision: omit decimal point, too */
+	    if (precision == 0)
+		size--;
+	}
+	/* number still doesn't fit: display '*****'  */
+	if (size > width) {
+	    value = malloc(width + 1);
+	    memset(value, '*', width);
+	    *(value + width) = '\0';
+	} else {
+	    value = malloc(size + 1);
+	    snprintf(value, size + 1, "%.*f", precision, number);
+	}
+    }
+
+    DelResult(&result);
+
+    update = 0;
+
+    /* prefix changed? */
+    if (T->preval == NULL || strcmp(T->preval, preval) != 0) {
+	update = 1;
+	if (T->preval)
+	    free(T->preval);
+	T->preval = preval;
+	T->scroll = 0;		/* reset marquee counter */
+    } else {
+	free(preval);
+    }
+
+    /* postfix changed? */
+    if (T->postval == NULL || strcmp(T->postval, postval) != 0) {
+	update = 1;
+	if (T->postval)
+	    free(T->postval);
+	T->postval = postval;
+	T->scroll = 0;		/* reset marquee counter */
+    } else {
+	free(postval);
+    }
+
+    /* value changed? */
+    if (T->value == NULL || strcmp(T->value, value) != 0) {
+	update = 1;
+	if (T->value)
+	    free(T->value);
+	T->value = value;
+	T->scroll = 0;		/* reset marquee counter */
+    } else {
+	free(value);
+    }
+
+    /* something has changed and should be updated */
+    if (update) {
+	/* if there's a marquee scroller active, it has its own */
+	/* update callback timer, so we do nothing here; otherwise */
+	/* we simply call this scroll callback directly */
+	if (T->align != ALIGN_MARQUEE) {
+	    widget_text_scroll(Self);
+	}
+    }
 
 }
 
 
-int widget_text_init (WIDGET *Self) 
+int widget_text_init(WIDGET * Self)
 {
-  char *section; char *c;
-  WIDGET_TEXT *Text;
+    char *section;
+    char *c;
+    WIDGET_TEXT *Text;
 
-  /* prepare config section */
-  /* strlen("Widget:")=7 */
-  section=malloc(strlen(Self->name)+8);
-  strcpy(section, "Widget:");
-  strcat(section, Self->name);
-  
-  Text=malloc(sizeof(WIDGET_TEXT));
-  memset (Text, 0, sizeof(WIDGET_TEXT));
+    /* prepare config section */
+    /* strlen("Widget:")=7 */
+    section = malloc(strlen(Self->name) + 8);
+    strcpy(section, "Widget:");
+    strcat(section, Self->name);
 
-  /* get raw pre- and postfix (we evaluate it ourselves) */
-  Text->prefix  = cfg_get_raw (section, "prefix",  NULL);
-  Text->postfix = cfg_get_raw (section, "postfix", NULL);
-  
-  /* compile pre- and postfix */
-  Compile (Text->prefix,  &Text->pretree);
-  Compile (Text->postfix, &Text->posttree);
-  
-  /* get raw expression (we evaluate it ourselves) */
-  Text->expression = cfg_get_raw (section, "expression",  "''");
-  Compile (Text->expression, &Text->tree);
-  
-  /* field width, default 10 */
-  cfg_number (section, "width", 10,  0, -1, &(Text->width));
-  
-  /* precision: number of digits after the decimal point (default: none) */
-  /* Note: this is the *maximum* precision on small values, */
-  /* for larger values the precision may be reduced to fit into the field width. */
-  /* The default value 0xC0DE is used to distinguish between numbers and strings: */
-  /* if no precision is given, the result is always treated as a string. If a */
-  /* precision is specified, the result is treated as a number. */
-  cfg_number (section, "precision", 0xC0DE, 0, 80, &(Text->precision));
-  
-  /* field alignment: Left (default), Center, Right or Marquee */
-  c = cfg_get (section, "align",  "L");
-  switch (toupper(*c)) {
-  case 'L':
-    Text->align=ALIGN_LEFT;
-    break;
-  case 'C':
-    Text->align=ALIGN_CENTER;
-    break;
-  case 'R':
-    Text->align=ALIGN_RIGHT;
-    break;
-  case 'M':
-    Text->align=ALIGN_MARQUEE;
-    break;
-  default:
-    error ("widget %s has unknown alignment '%s', using 'Left'", section, c);
-    Text->align=ALIGN_LEFT;
-  }
-  free (c);
-  
-  /* update interval (msec), default 1 sec, 0 stands for never */
-  cfg_number (section, "update", 1000, 0, -1, &(Text->update));
-  /* limit update interval to min 10 msec */
-  if (Text->update > 0 && Text->update < 10) Text->update = 10;
-  
-  /* marquee scroller speed: interval (msec), default 500msec */
-  if (Text->align==ALIGN_MARQUEE) {
-    cfg_number (section, "speed", 500, 10, -1, &(Text->speed));
-  }
-  
-  /* buffer */
-  Text->buffer=malloc(Text->width+1);
-  
-  free (section);
-  Self->data=Text;
-  
-  /* add update timer, use one-shot if 'update' is zero */
-  timer_add (widget_text_update, Self, Text->update, Text->update==0);
+    Text = malloc(sizeof(WIDGET_TEXT));
+    memset(Text, 0, sizeof(WIDGET_TEXT));
 
-  /* a marquee scroller has its own timer and callback */
-  if (Text->align==ALIGN_MARQUEE) {
-    timer_add (widget_text_scroll, Self, Text->speed, 0);
-  }
+    /* get raw pre- and postfix (we evaluate it ourselves) */
+    Text->prefix = cfg_get_raw(section, "prefix", NULL);
+    Text->postfix = cfg_get_raw(section, "postfix", NULL);
 
-  return 0;
+    /* compile pre- and postfix */
+    Compile(Text->prefix, &Text->pretree);
+    Compile(Text->postfix, &Text->posttree);
+
+    /* get raw expression (we evaluate it ourselves) */
+    Text->expression = cfg_get_raw(section, "expression", "''");
+    Compile(Text->expression, &Text->tree);
+
+    /* field width, default 10 */
+    cfg_number(section, "width", 10, 0, -1, &(Text->width));
+
+    /* precision: number of digits after the decimal point (default: none) */
+    /* Note: this is the *maximum* precision on small values, */
+    /* for larger values the precision may be reduced to fit into the field width. */
+    /* The default value 0xC0DE is used to distinguish between numbers and strings: */
+    /* if no precision is given, the result is always treated as a string. If a */
+    /* precision is specified, the result is treated as a number. */
+    cfg_number(section, "precision", 0xC0DE, 0, 80, &(Text->precision));
+
+    /* field alignment: Left (default), Center, Right or Marquee */
+    c = cfg_get(section, "align", "L");
+    switch (toupper(*c)) {
+    case 'L':
+	Text->align = ALIGN_LEFT;
+	break;
+    case 'C':
+	Text->align = ALIGN_CENTER;
+	break;
+    case 'R':
+	Text->align = ALIGN_RIGHT;
+	break;
+    case 'M':
+	Text->align = ALIGN_MARQUEE;
+	break;
+    default:
+	error("widget %s has unknown alignment '%s', using 'Left'", section, c);
+	Text->align = ALIGN_LEFT;
+    }
+    free(c);
+
+    /* update interval (msec), default 1 sec, 0 stands for never */
+    cfg_number(section, "update", 1000, 0, -1, &(Text->update));
+    /* limit update interval to min 10 msec */
+    if (Text->update > 0 && Text->update < 10)
+	Text->update = 10;
+
+    /* marquee scroller speed: interval (msec), default 500msec */
+    if (Text->align == ALIGN_MARQUEE) {
+	cfg_number(section, "speed", 500, 10, -1, &(Text->speed));
+    }
+
+    /* buffer */
+    Text->buffer = malloc(Text->width + 1);
+
+    free(section);
+    Self->data = Text;
+
+    /* add update timer, use one-shot if 'update' is zero */
+    timer_add(widget_text_update, Self, Text->update, Text->update == 0);
+
+    /* a marquee scroller has its own timer and callback */
+    if (Text->align == ALIGN_MARQUEE) {
+	timer_add(widget_text_scroll, Self, Text->speed, 0);
+    }
+
+    return 0;
 }
 
 
-int widget_text_quit (WIDGET *Self) {
-  WIDGET_TEXT *Text;
-  if (Self) {
-    Text=Self->data;
-    if (Self->data) {	  
-      DelTree(Text->pretree);
-      DelTree(Text->posttree);
-      DelTree(Text->tree);  	
-      if (Text->preval)  free(Text->preval);
-      if (Text->postval) free(Text->postval);
-      if (Text->value)   free(Text->value);
-      if (Text->buffer)  free(Text->buffer);
-      free (Self->data);
-      Self->data=NULL;
+int widget_text_quit(WIDGET * Self)
+{
+    WIDGET_TEXT *Text;
+    if (Self) {
+	Text = Self->data;
+	if (Self->data) {
+	    DelTree(Text->pretree);
+	    DelTree(Text->posttree);
+	    DelTree(Text->tree);
+	    if (Text->preval)
+		free(Text->preval);
+	    if (Text->postval)
+		free(Text->postval);
+	    if (Text->value)
+		free(Text->value);
+	    if (Text->buffer)
+		free(Text->buffer);
+	    free(Self->data);
+	    Self->data = NULL;
+	}
+
     }
-  
-  }
-  return 0;
-  
+    return 0;
+
 }
 
 
 
 WIDGET_CLASS Widget_Text = {
-  name:   "text",
-  init:   widget_text_init,
-  draw:   NULL,
-  quit:   widget_text_quit,
+  name:"text",
+  init:widget_text_init,
+  draw:NULL,
+  quit:widget_text_quit,
 };
-
-

@@ -1,4 +1,4 @@
-/* $Id: plugin_uname.c,v 1.5 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_uname.c,v 1.6 2005/05/08 04:32:45 reinelt Exp $
  *
  * plugin for uname() syscall
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_uname.c,v $
+ * Revision 1.6  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.5  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -68,48 +71,48 @@
 
 
 
-static void my_uname (RESULT *result, RESULT *arg1)
+static void my_uname(RESULT * result, RESULT * arg1)
 {
-  struct utsname utsbuf;
-  char *key, *value;
-  
-  key=R2S(arg1);
-  
-  if (uname(&utsbuf)!=0) {
-    error("uname() failed: %s", strerror(errno));
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
+    struct utsname utsbuf;
+    char *key, *value;
 
-  if (strcasecmp(key, "sysname")==0) {
-    value=utsbuf.sysname;
-  } else if  (strcasecmp(key, "nodename")==0) {
-    value=utsbuf.nodename;
-  } else if  (strcasecmp(key, "release")==0) {
-    value=utsbuf.release;
-  } else if  (strcasecmp(key, "version")==0) {
-    value=utsbuf.version;
-  } else if  (strcasecmp(key, "machine")==0) {
-    value=utsbuf.machine;
+    key = R2S(arg1);
+
+    if (uname(&utsbuf) != 0) {
+	error("uname() failed: %s", strerror(errno));
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    if (strcasecmp(key, "sysname") == 0) {
+	value = utsbuf.sysname;
+    } else if (strcasecmp(key, "nodename") == 0) {
+	value = utsbuf.nodename;
+    } else if (strcasecmp(key, "release") == 0) {
+	value = utsbuf.release;
+    } else if (strcasecmp(key, "version") == 0) {
+	value = utsbuf.version;
+    } else if (strcasecmp(key, "machine") == 0) {
+	value = utsbuf.machine;
 #ifdef _GNU_SOURCE
-  } else if  (strcasecmp(key, "domainname")==0) {
-    value=utsbuf.domainname;
+    } else if (strcasecmp(key, "domainname") == 0) {
+	value = utsbuf.domainname;
 #endif
-  } else {
-    error("uname: unknown field '%s'", key);
-    value="";
-  }
+    } else {
+	error("uname: unknown field '%s'", key);
+	value = "";
+    }
 
-  SetResult(&result, R_STRING, value); 
+    SetResult(&result, R_STRING, value);
 }
 
 
-int plugin_init_uname (void)
+int plugin_init_uname(void)
 {
-  AddFunction ("uname",   1, my_uname);
-  return 0;
+    AddFunction("uname", 1, my_uname);
+    return 0;
 }
 
-void plugin_exit_uname(void) 
+void plugin_exit_uname(void)
 {
 }

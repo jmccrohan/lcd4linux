@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.15 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: layout.c,v 1.16 2005/05/08 04:32:44 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.16  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.15  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -113,55 +116,57 @@
 #endif
 
 
-int layout_addItem (const char *name, const int row, const int col)
+int layout_addItem(const char *name, const int row, const int col)
 {
-  /* allocate widget */
-  widget_add (name, row-1, col-1);
-  return 0;
+    /* allocate widget */
+    widget_add(name, row - 1, col - 1);
+    return 0;
 }
 
 
-int layout_init (const char *layout)
+int layout_init(const char *layout)
 {
-  char *section;
-  char *list, *l;
-  char *widget;
-  int row, col;
-  
-  info ("initializing layout '%s'", layout);
-  
-  /* prepare config section */
-  /* strlen("Layout:")=7 */
-  section=malloc(strlen(layout)+8);
-  strcpy(section, "Layout:");
-  strcat(section, layout);
-  
-  /* get a list of all keys in this section */
-  list=cfg_list(section);
+    char *section;
+    char *list, *l;
+    char *widget;
+    int row, col;
 
-  /* map to lower char for scanf() */
-  for (l=list; *l!='\0'; l++) *l=tolower(*l);
+    info("initializing layout '%s'", layout);
 
-  l=list;
-  while (l!=NULL) {
-    char *p;
-    int i, n;
-    /* list is delimited by | */
-    while (*l=='|') l++;
-    if ((p=strchr(l, '|'))!=NULL) *p='\0';
-    i=sscanf (l, "row%d.col%d%n", &row, &col, &n);
-    if (i==2 && l[n]=='\0') {
-      widget=cfg_get(section, l, NULL);
-      if (widget!=NULL && *widget!='\0') {
-        layout_addItem (widget, row, col);
-      }
-      free(widget);
+    /* prepare config section */
+    /* strlen("Layout:")=7 */
+    section = malloc(strlen(layout) + 8);
+    strcpy(section, "Layout:");
+    strcat(section, layout);
+
+    /* get a list of all keys in this section */
+    list = cfg_list(section);
+
+    /* map to lower char for scanf() */
+    for (l = list; *l != '\0'; l++)
+	*l = tolower(*l);
+
+    l = list;
+    while (l != NULL) {
+	char *p;
+	int i, n;
+	/* list is delimited by | */
+	while (*l == '|')
+	    l++;
+	if ((p = strchr(l, '|')) != NULL)
+	    *p = '\0';
+	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
+	if (i == 2 && l[n] == '\0') {
+	    widget = cfg_get(section, l, NULL);
+	    if (widget != NULL && *widget != '\0') {
+		layout_addItem(widget, row, col);
+	    }
+	    free(widget);
+	}
+	/* next field */
+	l = p ? p + 1 : NULL;
     }
-    /* next field */
-    l=p?p+1:NULL;
-  }
-  free (list);
-  free(section);
-  return 0;
+    free(list);
+    free(section);
+    return 0;
 }
-

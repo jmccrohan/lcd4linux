@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.77 2005/03/30 04:57:50 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.78 2005/05/08 04:32:44 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.78  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.77  2005/03/30 04:57:50  reinelt
  * Evaluator speedup: use bsearch for finding functions and variables
  *
@@ -390,289 +393,291 @@
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
-static char *release   = "LCD4Linux " VERSION;
+static char *release = "LCD4Linux " VERSION;
 static char *copyright = "Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
-extern char* output;
+extern char *output;
 
-int got_signal=0;
+int got_signal = 0;
 
 
 static void usage(void)
 {
-  printf ("%s\n", release);
-  printf ("%s\n", copyright);
-  printf ("usage: lcd4linux [-h]\n");
-  printf ("       lcd4linux [-l]\n");
-  printf ("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
-  printf ("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
+    printf("%s\n", release);
+    printf("%s\n", copyright);
+    printf("usage: lcd4linux [-h]\n");
+    printf("       lcd4linux [-l]\n");
+    printf("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
+    printf("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
-static void interactive_mode (void)
+static void interactive_mode(void)
 {
-  char line[1024];
-  void *tree;
-  RESULT result = {0, 0, 0, NULL};
-    
-  printf("\neval> ");
-  for(fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
-    if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
-    if (strlen(line)>0) {
-      if (Compile(line, &tree)!=-1) {
-	Eval (tree, &result);
-	if (result.type == R_NUMBER) {
-	  printf ("%g\n", R2N(&result));
-	} else if (result.type == R_STRING) {
-	  printf ("'%s'\n", R2S(&result));
-	} else if (result.type == (R_NUMBER|R_STRING)) {
-	  printf ("'%s' (%g)\n", R2S(&result), R2N(&result));
-	} else {
-	  printf ("internal error: unknown result type %d\n", result.type);
+    char line[1024];
+    void *tree;
+    RESULT result = { 0, 0, 0, NULL };
+
+    printf("\neval> ");
+    for (fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
+	if (line[strlen(line) - 1] == '\n')
+	    line[strlen(line) - 1] = '\0';
+	if (strlen(line) > 0) {
+	    if (Compile(line, &tree) != -1) {
+		Eval(tree, &result);
+		if (result.type == R_NUMBER) {
+		    printf("%g\n", R2N(&result));
+		} else if (result.type == R_STRING) {
+		    printf("'%s'\n", R2S(&result));
+		} else if (result.type == (R_NUMBER | R_STRING)) {
+		    printf("'%s' (%g)\n", R2S(&result), R2N(&result));
+		} else {
+		    printf("internal error: unknown result type %d\n", result.type);
+		}
+		DelResult(&result);
+	    }
+	    DelTree(tree);
 	}
-	DelResult (&result);
-      }
-      DelTree(tree);
+	printf("eval> ");
     }
-    printf("eval> ");
-  }
-  printf ("\n");
+    printf("\n");
 }
 
 
-void handler (int signal)
+void handler(int signal)
 {
-  debug ("got signal %d", signal);
-  got_signal=signal;
+    debug("got signal %d", signal);
+    got_signal = signal;
 }
 
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-  char *cfg = "/etc/lcd4linux.conf";
-  char *display, *driver, *layout;
-  char  section[32];
-  int c;
-  int quiet = 0;
-  int interactive = 0;
-  int pid;
+    char *cfg = "/etc/lcd4linux.conf";
+    char *display, *driver, *layout;
+    char section[32];
+    int c;
+    int quiet = 0;
+    int interactive = 0;
+    int pid;
 
-  /* save arguments for restart */
-  my_argv = malloc(sizeof(char*)*(argc+1));
-  for (c = 0; c < argc; c++) {
-    my_argv[c] = strdup(argv[c]);
-  }
-  my_argv[c] = NULL;
+    /* save arguments for restart */
+    my_argv = malloc(sizeof(char *) * (argc + 1));
+    for (c = 0; c < argc; c++) {
+	my_argv[c] = strdup(argv[c]);
+    }
+    my_argv[c] = NULL;
 
-  running_foreground = 0;
-  running_background = 0;
-  
-  while ((c=getopt (argc, argv, "c:Ff:hilo:qv"))!=EOF) {
+    running_foreground = 0;
+    running_background = 0;
 
-    switch (c) {
-    case 'c':
-      if (cfg_cmd (optarg)<0) {
-	fprintf (stderr, "%s: illegal argument -c '%s'\n", argv[0], optarg);
+    while ((c = getopt(argc, argv, "c:Ff:hilo:qv")) != EOF) {
+
+	switch (c) {
+	case 'c':
+	    if (cfg_cmd(optarg) < 0) {
+		fprintf(stderr, "%s: illegal argument -c '%s'\n", argv[0], optarg);
+		exit(2);
+	    }
+	    break;
+	case 'F':
+	    running_foreground++;
+	    break;
+	case 'f':
+	    cfg = optarg;
+	    break;
+	case 'h':
+	    usage();
+	    exit(0);
+	case 'i':
+	    interactive++;
+	    break;
+	case 'l':
+	    printf("%s\n", release);
+	    printf("%s\n", copyright);
+	    drv_list();
+	    exit(0);
+	case 'o':
+	    output = optarg;
+	    break;
+	case 'q':
+	    quiet++;
+	    break;
+	case 'v':
+	    verbose_level++;
+	    break;
+	default:
+	    exit(2);
+	}
+    }
+
+    if (optind < argc) {
+	fprintf(stderr, "%s: illegal option %s\n", argv[0], argv[optind]);
 	exit(2);
-      }
-      break;
-    case 'F':
-      running_foreground++;
-      break;
-    case 'f':
-      cfg=optarg;
-      break;
-    case 'h':
-      usage();
-      exit(0);
-    case 'i':
-      interactive++;
-      break;
-    case 'l':
-      printf ("%s\n", release);
-      printf ("%s\n", copyright);
-      drv_list();
-      exit(0);
-    case 'o':
-      output=optarg;
-      break;
-    case 'q':
-      quiet++;
-      break;
-    case 'v':
-      verbose_level++;
-      break;
-    default:
-      exit(2);
-    }
-  }
-
-  if (optind < argc) {
-    fprintf (stderr, "%s: illegal option %s\n", argv[0], argv[optind]);
-    exit(2);
-  }
-
-  /* do not fork in interactive mode */
-  if (interactive) {
-    running_foreground=1;
-  }
-
-  info ("Version " VERSION " starting");
-  if (!running_foreground && (my_argv[0]==NULL || my_argv[0][0]!='/')) {
-    info ("invoked without full path; restart may not work!");
-  }
-
-  if (cfg_init(cfg)==-1)
-    exit (1);
-  
-  if (plugin_init()==-1)
-    exit (1);
-  
-  display=cfg_get(NULL, "Display", NULL);
-  if (display==NULL || *display=='\0') {
-    error ("missing 'Display' entry in %s!", cfg_source());
-    exit (1);
-  }
-  
-  qprintf(section, sizeof(section), "Display:%s", display);
-  free(display);
-  driver=cfg_get(section, "Driver", NULL);
-  if (driver==NULL || *driver=='\0') {
-    error ("missing '%s.Driver' entry in %s!", section, cfg_source());
-    exit (1);
-  }
-  
-  if (!running_foreground) {
-    pid_t i;
-    int fd;
-    debug ("going background...");
-    i=fork();
-    if (i<0) {
-      error ("fork() failed: %s", strerror(errno));
-      exit (1);
-    }
-    if (i!=0) exit (0);
-    
-    /* ignore nasty signals */
-    signal(SIGINT,  SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
-
-    /* chdir("/") */
-    if (chdir("/")!=0) {
-      error ("chdir(\"/\") failed: %s", strerror(errno));
-      exit (1);
-    }
-    
-    /* we want full control over permissions */
-    umask (0);
-    
-    /* detach stdin */
-    if (freopen("/dev/null", "r", stdin)==NULL) {
-      error ("freopen (/dev/null) failed: %s", strerror(errno));
-      exit (1);
     }
 
-    /* detach stdout and stderr */
-    fd=open("/dev/null", O_WRONLY, 0666);
-    if (fd==-1) {
-      error ("open (/dev/null) failed: %s", strerror(errno));
-      exit (1);
-    }
-    fflush(stdout);
-    fflush(stderr);
-    dup2(fd, STDOUT_FILENO);
-    dup2(fd, STDERR_FILENO);
-    close(fd);
-
-    /* create PID file */
-    if ((pid = pid_init(PIDFILE)) != 0) {
-      error ("lcd4linux already running as process %d", pid);
-      exit (1);
+    /* do not fork in interactive mode */
+    if (interactive) {
+	running_foreground = 1;
     }
 
-    /* now we are a daemon */
-    running_background=1;
-  }
-  
-  /* go into interactive mode before display initialization */
-  if (interactive >= 2) {
-    interactive_mode();
-    pid_exit(PIDFILE);
-    cfg_exit();
-    exit (0);
-  }
-  
-  /* check the conf to see if quiet startup is wanted  */
-  if (!quiet) {
-    cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
-  }
-  
-  debug ("initializing driver %s", driver);
-  if (drv_init(section, driver, quiet)==-1) {
-    pid_exit(PIDFILE);
-    exit (1);
-  }
-  free(driver);
-  
-  /* go into interactive mode (display has been initialized) */
-  if (interactive >= 1) {
-    interactive_mode();
+    info("Version " VERSION " starting");
+    if (!running_foreground && (my_argv[0] == NULL || my_argv[0][0] != '/')) {
+	info("invoked without full path; restart may not work!");
+    }
+
+    if (cfg_init(cfg) == -1)
+	exit(1);
+
+    if (plugin_init() == -1)
+	exit(1);
+
+    display = cfg_get(NULL, "Display", NULL);
+    if (display == NULL || *display == '\0') {
+	error("missing 'Display' entry in %s!", cfg_source());
+	exit(1);
+    }
+
+    qprintf(section, sizeof(section), "Display:%s", display);
+    free(display);
+    driver = cfg_get(section, "Driver", NULL);
+    if (driver == NULL || *driver == '\0') {
+	error("missing '%s.Driver' entry in %s!", section, cfg_source());
+	exit(1);
+    }
+
+    if (!running_foreground) {
+	pid_t i;
+	int fd;
+	debug("going background...");
+	i = fork();
+	if (i < 0) {
+	    error("fork() failed: %s", strerror(errno));
+	    exit(1);
+	}
+	if (i != 0)
+	    exit(0);
+
+	/* ignore nasty signals */
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+
+	/* chdir("/") */
+	if (chdir("/") != 0) {
+	    error("chdir(\"/\") failed: %s", strerror(errno));
+	    exit(1);
+	}
+
+	/* we want full control over permissions */
+	umask(0);
+
+	/* detach stdin */
+	if (freopen("/dev/null", "r", stdin) == NULL) {
+	    error("freopen (/dev/null) failed: %s", strerror(errno));
+	    exit(1);
+	}
+
+	/* detach stdout and stderr */
+	fd = open("/dev/null", O_WRONLY, 0666);
+	if (fd == -1) {
+	    error("open (/dev/null) failed: %s", strerror(errno));
+	    exit(1);
+	}
+	fflush(stdout);
+	fflush(stderr);
+	dup2(fd, STDOUT_FILENO);
+	dup2(fd, STDERR_FILENO);
+	close(fd);
+
+	/* create PID file */
+	if ((pid = pid_init(PIDFILE)) != 0) {
+	    error("lcd4linux already running as process %d", pid);
+	    exit(1);
+	}
+
+	/* now we are a daemon */
+	running_background = 1;
+    }
+
+    /* go into interactive mode before display initialization */
+    if (interactive >= 2) {
+	interactive_mode();
+	pid_exit(PIDFILE);
+	cfg_exit();
+	exit(0);
+    }
+
+    /* check the conf to see if quiet startup is wanted  */
+    if (!quiet) {
+	cfg_number(NULL, "Quiet", 0, 0, 1, &quiet);
+    }
+
+    debug("initializing driver %s", driver);
+    if (drv_init(section, driver, quiet) == -1) {
+	pid_exit(PIDFILE);
+	exit(1);
+    }
+    free(driver);
+
+    /* go into interactive mode (display has been initialized) */
+    if (interactive >= 1) {
+	interactive_mode();
+	drv_quit(quiet);
+	pid_exit(PIDFILE);
+	cfg_exit();
+	exit(0);
+    }
+
+    /* check for new-style layout */
+    layout = cfg_get(NULL, "Layout", NULL);
+    if (layout == NULL || *layout == '\0') {
+	error("missing 'Layout' entry in %s!", cfg_source());
+	exit(1);
+    }
+
+    layout_init(layout);
+    free(layout);
+
+    debug("starting main loop");
+
+    /* now install our own signal handler */
+    signal(SIGHUP, handler);
+    signal(SIGINT, handler);
+    signal(SIGQUIT, handler);
+    signal(SIGTERM, handler);
+
+    while (got_signal == 0) {
+	struct timespec delay;
+	if (timer_process(&delay) < 0)
+	    break;
+	nanosleep(&delay, NULL);
+    }
+
+    debug("leaving main loop");
+
     drv_quit(quiet);
     pid_exit(PIDFILE);
     cfg_exit();
-    exit (0);
-  }
+    plugin_exit();
+    timer_exit();
 
-  /* check for new-style layout */
-  layout=cfg_get(NULL, "Layout", NULL);
-  if (layout==NULL || *layout=='\0') {
-    error ("missing 'Layout' entry in %s!", cfg_source());
-    exit (1);
-  }
-  
-  layout_init(layout);
-  free(layout);
-
-  debug ("starting main loop");
-  
-  /* now install our own signal handler */
-  signal(SIGHUP,  handler);
-  signal(SIGINT,  handler);
-  signal(SIGQUIT, handler);
-  signal(SIGTERM, handler);
-  
-  while (got_signal==0) {
-    struct timespec delay;
-    if (timer_process(&delay)<0) break;
-    nanosleep(&delay, NULL);
-  }
-  
-  debug ("leaving main loop");
-  
-  drv_quit(quiet);
-  pid_exit(PIDFILE);
-  cfg_exit();
-  plugin_exit();    
-  timer_exit();
-
-  if (got_signal==SIGHUP) {
-    long fd;
-    debug ("restarting...");
-    /* close all files on exec */
-    for (fd=sysconf(_SC_OPEN_MAX); fd>2; fd--) {
-      int flag;
-      if ((flag=fcntl(fd,F_GETFD,0))!=-1)
-	fcntl(fd,F_SETFD,flag|FD_CLOEXEC);
+    if (got_signal == SIGHUP) {
+	long fd;
+	debug("restarting...");
+	/* close all files on exec */
+	for (fd = sysconf(_SC_OPEN_MAX); fd > 2; fd--) {
+	    int flag;
+	    if ((flag = fcntl(fd, F_GETFD, 0)) != -1)
+		fcntl(fd, F_SETFD, flag | FD_CLOEXEC);
+	}
+	execv(my_argv[0], my_argv);
+	error("execv() failed: %s", strerror(errno));
+	exit(1);
     }
-    execv (my_argv[0], my_argv);
-    error ("execv() failed: %s", strerror(errno));
-    exit(1);
-  }
-  
-  for(c=0;my_argv[c]!=NULL;c++) {
-    free(my_argv[c]);
-  }
-  free(my_argv);
 
-  exit (0);
+    for (c = 0; my_argv[c] != NULL; c++) {
+	free(my_argv[c]);
+    }
+    free(my_argv);
+
+    exit(0);
 }
-  

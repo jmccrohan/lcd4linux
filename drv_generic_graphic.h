@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.8 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.9 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.9  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.8  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -69,23 +72,23 @@
 #include "widget.h"
 
 
-extern int DROWS, DCOLS; /* display size */
-extern int LROWS, LCOLS; /* layout size */
-extern int XRES,  YRES;  /* pixel width/height of one char  */
+extern int DROWS, DCOLS;	/* display size */
+extern int LROWS, LCOLS;	/* layout size */
+extern int XRES, YRES;		/* pixel width/height of one char  */
 
 /* framebuffer */
 extern unsigned char *drv_generic_graphic_FB;
 
 /* these functions must be implemented by the real driver */
-void (*drv_generic_graphic_real_blit)(const int row, const int col, const int height, const int width);
+void (*drv_generic_graphic_real_blit) (const int row, const int col, const int height, const int width);
 
 /* generic functions and widget callbacks */
-int drv_generic_graphic_init      (const char *section, const char *driver);
-int drv_generic_graphic_clear     (void);
-int drv_generic_graphic_greet     (const char *msg1, const char *msg2);
-int drv_generic_graphic_draw      (WIDGET *W);
-int drv_generic_graphic_icon_draw (WIDGET *W);
-int drv_generic_graphic_bar_draw  (WIDGET *W);
-int drv_generic_graphic_quit      (void);
+int drv_generic_graphic_init(const char *section, const char *driver);
+int drv_generic_graphic_clear(void);
+int drv_generic_graphic_greet(const char *msg1, const char *msg2);
+int drv_generic_graphic_draw(WIDGET * W);
+int drv_generic_graphic_icon_draw(WIDGET * W);
+int drv_generic_graphic_bar_draw(WIDGET * W);
+int drv_generic_graphic_quit(void);
 
 #endif

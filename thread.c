@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.6 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: thread.c,v 1.7 2005/05/08 04:32:45 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.7  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.6  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -105,103 +108,103 @@
 /* glibc 2.1 requires defining semun ourselves */
 #ifdef _SEM_SEMUN_UNDEFINED
 union semun {
-  int val;
-  struct semid_ds *buf;
-  unsigned short int *array;
-  struct seminfo *__buf;
+    int val;
+    struct semid_ds *buf;
+    unsigned short int *array;
+    struct seminfo *__buf;
 };
 #endif
 
 
-int mutex_create (void)
+int mutex_create(void)
 {
-  int semid;
-  union semun semun;
-  
-  semid = semget(IPC_PRIVATE, 1, 0);
-  if (semid == -1) {
-    error ("fatal error: semget() failed: %s", strerror(errno));
-    return -1;
-  }
-  semun.val = 1;
-  semctl(semid, 0, SETVAL, semun);
-  
-  return semid;
+    int semid;
+    union semun semun;
+
+    semid = semget(IPC_PRIVATE, 1, 0);
+    if (semid == -1) {
+	error("fatal error: semget() failed: %s", strerror(errno));
+	return -1;
+    }
+    semun.val = 1;
+    semctl(semid, 0, SETVAL, semun);
+
+    return semid;
 }
 
 
-void mutex_lock (const int semid) 
+void mutex_lock(const int semid)
 {
-  struct sembuf sembuf;
-  sembuf.sem_num =  0;
-  sembuf.sem_op  = -1;
-  sembuf.sem_flg =  0;
-  semop (semid, &sembuf, 1);
+    struct sembuf sembuf;
+    sembuf.sem_num = 0;
+    sembuf.sem_op = -1;
+    sembuf.sem_flg = 0;
+    semop(semid, &sembuf, 1);
 }
 
 
-void mutex_unlock (const int semid) 
+void mutex_unlock(const int semid)
 {
-  struct sembuf sembuf;
-  sembuf.sem_num = 0;
-  sembuf.sem_op  = 1;
-  sembuf.sem_flg = 0;
-  semop (semid, &sembuf, 1);
+    struct sembuf sembuf;
+    sembuf.sem_num = 0;
+    sembuf.sem_op = 1;
+    sembuf.sem_flg = 0;
+    semop(semid, &sembuf, 1);
 }
 
 
-void mutex_destroy (const int semid)
+void mutex_destroy(const int semid)
 {
-  union semun arg;
-  semctl(semid, 0, IPC_RMID, arg);
+    union semun arg;
+    semctl(semid, 0, IPC_RMID, arg);
 }
 
 
-int shm_create (void **buffer, const int size) 
+int shm_create(void **buffer, const int size)
 {
-  int shmid;
-  
-  shmid = shmget(IPC_PRIVATE, size, SHM_R|SHM_W);
-  if (shmid==-1) {
-    error ("fatal error: shmget() failed: %s", strerror(errno));
-    return -1;
-  }
+    int shmid;
 
-  *buffer = shmat(shmid, NULL, 0);
-  if (*buffer == NULL) {
-    error ("fatal error: shmat() failed: %s", strerror(errno));
-    return -1;
-  }
-  
-  return shmid;
+    shmid = shmget(IPC_PRIVATE, size, SHM_R | SHM_W);
+    if (shmid == -1) {
+	error("fatal error: shmget() failed: %s", strerror(errno));
+	return -1;
+    }
+
+    *buffer = shmat(shmid, NULL, 0);
+    if (*buffer == NULL) {
+	error("fatal error: shmat() failed: %s", strerror(errno));
+	return -1;
+    }
+
+    return shmid;
 }
 
 
-void shm_destroy (const int shmid, const void *buffer) 
+void shm_destroy(const int shmid, const void *buffer)
 {
-  shmdt (buffer);
-  shmctl(shmid, IPC_RMID, NULL);
+    shmdt(buffer);
+    shmctl(shmid, IPC_RMID, NULL);
 }
 
 
-int thread_create (const char *name, void (*thread)(void *data), void *data)
+int thread_create(const char *name, void (*thread) (void *data), void *data)
 {
-  pid_t pid, ppid;
+    pid_t pid, ppid;
 
-  ppid=getpid();
+    ppid = getpid();
 
-  switch (pid = fork()) {
-  case -1:
-    error ("fatal error: fork(%s) failed: %s", name, strerror(errno));
-    return -1;
-  case 0:
-    info ("thread %s starting...", name);
-    thread(data);
-    info ("thread %s ended.", name);
-    exit (0);
-  default:
-    info ("forked process %d for thread %s", pid, name);
-  }
-  
-  return pid;
+    switch (pid = fork()) {
+    case -1:
+	error("fatal error: fork(%s) failed: %s", name, strerror(errno));
+	return -1;
+    case 0:
+	info("thread %s starting...", name);
+	thread(data);
+	info("thread %s ended.", name);
+	exit(0);
+    default:
+	info("forked process %d for thread %s", pid, name);
+    }
+
+    return pid;
 }

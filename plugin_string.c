@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.7 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_string.c,v 1.8 2005/05/08 04:32:45 reinelt Exp $
  *
  * string plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.8  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.7  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -73,23 +76,23 @@
 #include "plugin.h"
 
 
-static void my_strlen (RESULT *result, RESULT *arg1)
+static void my_strlen(RESULT * result, RESULT * arg1)
 {
-  double value=strlen(R2S(arg1));
-  SetResult(&result, R_NUMBER, &value); 
+    double value = strlen(R2S(arg1));
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
-int plugin_init_string (void)
+int plugin_init_string(void)
 {
 
-  /* register some basic string functions */
-  AddFunction ("strlen", 1, my_strlen);
+    /* register some basic string functions */
+    AddFunction("strlen", 1, my_strlen);
 
-  return 0;
+    return 0;
 }
 
-void plugin_exit_string(void) 
+void plugin_exit_string(void)
 {
-  /* empty */
+    /* empty */
 }

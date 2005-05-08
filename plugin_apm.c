@@ -1,4 +1,4 @@
-/* $Id: plugin_apm.c,v 1.5 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_apm.c,v 1.6 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for APM (battery status)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: plugin_apm.c,v $
+ * Revision 1.6  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.5  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -130,87 +133,92 @@ static HASH APM;
  */
 
 
-static int parse_proc_apm (void)
+static int parse_proc_apm(void)
 {
-  char *key[] = { "driver_version", 
-		  "bios_version", 
-		  "bios_flags", 
-		  "line_status",
-		  "battery_status",
-		  "battery_flag",
-		  "battery_percent",
-		  "battery_remaining",
-		  "time_units" }; 
-  
-  char buffer[128], *beg, *end; 
-  int age, i;
+    char *key[] = { "driver_version",
+	"bios_version",
+	"bios_flags",
+	"line_status",
+	"battery_status",
+	"battery_flag",
+	"battery_percent",
+	"battery_remaining",
+	"time_units"
+    };
 
-  /* reread every 10 msec only */
-  age = hash_age (&APM, NULL);
-  if (age > 0 && age <= 10) return 0;
-  
-  if (fd == -2) {
-    fd = open("/proc/apm", O_RDONLY | O_NDELAY);
-    if (fd == -1) {
-      error ("open(/proc/apm) failed: %s", strerror(errno));
-      return -1;
+    char buffer[128], *beg, *end;
+    int age, i;
+
+    /* reread every 10 msec only */
+    age = hash_age(&APM, NULL);
+    if (age > 0 && age <= 10)
+	return 0;
+
+    if (fd == -2) {
+	fd = open("/proc/apm", O_RDONLY | O_NDELAY);
+	if (fd == -1) {
+	    error("open(/proc/apm) failed: %s", strerror(errno));
+	    return -1;
+	}
     }
-  }
-  
-  if (lseek(fd, 0L, SEEK_SET) != 0) {
-    error ("lseek(/proc/apm) failed: %s", strerror(errno));
-    fd = -1;
-    return -1;
-  }
-  
-  if (read (fd, &buffer, sizeof(buffer)-1) == -1) {
-    error ("read(/proc/apm) failed: %s", strerror(errno));
-    fd=-1;
-    return -1;
-  }
-  
-  beg = buffer;
-  for (i = 0; i < 9 && beg != NULL; i++) {
-    while (*beg == ' ') beg++; 
-    if ((end = strpbrk(beg, " \n"))) *end='\0'; 
-    hash_put (&APM, key[i], beg); 
-    beg = end ? end+1 : NULL;
-  }
-  
-  return 0;
+
+    if (lseek(fd, 0L, SEEK_SET) != 0) {
+	error("lseek(/proc/apm) failed: %s", strerror(errno));
+	fd = -1;
+	return -1;
+    }
+
+    if (read(fd, &buffer, sizeof(buffer) - 1) == -1) {
+	error("read(/proc/apm) failed: %s", strerror(errno));
+	fd = -1;
+	return -1;
+    }
+
+    beg = buffer;
+    for (i = 0; i < 9 && beg != NULL; i++) {
+	while (*beg == ' ')
+	    beg++;
+	if ((end = strpbrk(beg, " \n")))
+	    *end = '\0';
+	hash_put(&APM, key[i], beg);
+	beg = end ? end + 1 : NULL;
+    }
+
+    return 0;
 }
 
 
-static void my_apm (RESULT *result, RESULT *arg1)
+static void my_apm(RESULT * result, RESULT * arg1)
 {
-  char *val;
-  
-  if (parse_proc_apm() < 0) {
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
+    char *val;
 
-  val = hash_get(&APM, R2S(arg1), NULL);
-  if (val == NULL) val = "";
+    if (parse_proc_apm() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
 
-  SetResult(&result, R_STRING, val); 
+    val = hash_get(&APM, R2S(arg1), NULL);
+    if (val == NULL)
+	val = "";
+
+    SetResult(&result, R_STRING, val);
 }
 
-int plugin_init_apm (void)
+int plugin_init_apm(void)
 {
-  hash_create (&APM);
-  
-  AddFunction ("apm", 1, my_apm);
+    hash_create(&APM);
 
-  return 0;
+    AddFunction("apm", 1, my_apm);
+
+    return 0;
 }
 
-void plugin_exit_apm (void) 
+void plugin_exit_apm(void)
 {
-  if (fd > -1) {
-    close (fd);
-  }
-  fd = -2;
+    if (fd > -1) {
+	close(fd);
+    }
+    fd = -2;
 
-  hash_destroy(&APM);
+    hash_destroy(&APM);
 }

@@ -1,4 +1,4 @@
-/* $Id: plugin_test.c,v 1.4 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_test.c,v 1.5 2005/05/08 04:32:45 reinelt Exp $
 *
 * Handy functions for testing displays and debugging code.
 *
@@ -26,6 +26,9 @@
 *
 *
 * $Log: plugin_test.c,v $
+* Revision 1.5  2005/05/08 04:32:45  reinelt
+* CodingStyle added and applied
+*
 * Revision 1.4  2005/01/18 06:30:23  reinelt
 * added (C) to all copyright statements
 *
@@ -45,7 +48,7 @@
 *
 */
 
-int plugin_init_test (void);
+int plugin_init_test(void);
 
 #include "config.h"
 
@@ -67,65 +70,64 @@ int plugin_init_test (void);
  * amount rdelta every time they are read. Starting value is rstart.
  * rbar gives the number of the test bar. 
  */
-static void my_test_bar (RESULT *result, RESULT *rbar, RESULT *rmax,
-			 RESULT *rstart, RESULT *rdelta)
+static void my_test_bar(RESULT * result, RESULT * rbar, RESULT * rmax, RESULT * rstart, RESULT * rdelta)
 {
-  static double values[10]={-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-  static double deltas[10];
-  int bar;
-  double max,delta,value;
+    static double values[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+    static double deltas[10];
+    int bar;
+    double max, delta, value;
 
-  max=R2N(rmax);
-  delta=R2N(rdelta);
+    max = R2N(rmax);
+    delta = R2N(rdelta);
 
-  /* the maths is just to stop double rounding errors and bad values. */
-  bar=((int)floor(R2N(rbar)+0.1)) % 10;
-  if ( fabs(delta) > 0.1 ) {
-    /* don't move or init the bar if delta=0 (the widget is only browsing) */
-    if (values[bar] == -1) {
-      /* first time called. */
-      values[bar]=R2N(rstart);
-      deltas[bar]=delta;
+    /* the maths is just to stop double rounding errors and bad values. */
+    bar = ((int) floor(R2N(rbar) + 0.1)) % 10;
+    if (fabs(delta) > 0.1) {
+	/* don't move or init the bar if delta=0 (the widget is only browsing) */
+	if (values[bar] == -1) {
+	    /* first time called. */
+	    values[bar] = R2N(rstart);
+	    deltas[bar] = delta;
+	};
+	values[bar] += deltas[bar];
     };
-    values[bar]+=deltas[bar];
-  };
-  if (values[bar] < 0 || values[bar] > max ) {
-    /* turn around. */
-    deltas[bar]= -deltas[bar];
-    values[bar]+= deltas[bar];
-  };
-  value=values[bar];
-  SetResult(&result, R_NUMBER, &value);
+    if (values[bar] < 0 || values[bar] > max) {
+	/* turn around. */
+	deltas[bar] = -deltas[bar];
+	values[bar] += deltas[bar];
+    };
+    value = values[bar];
+    SetResult(&result, R_NUMBER, &value);
 }
 
 
 /* like above, but just switches a value between 1 and -1. Can use to test
  * visibility of icons. 
  */
-static void my_test_onoff (RESULT *result, RESULT *arg1)
+static void my_test_onoff(RESULT * result, RESULT * arg1)
 {
-  static int on[10] = {1,1,1,1,1,1,1,1,1,1};
-  int i;
-  double val;
-  
-  i = ((int)floor(R2N(arg1)+0.1)) % 10;
-  on[i] = -on[i];
-  val = (double)on[i];
+    static int on[10] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    int i;
+    double val;
 
-  SetResult(&result, R_NUMBER, &val);
+    i = ((int) floor(R2N(arg1) + 0.1)) % 10;
+    on[i] = -on[i];
+    val = (double) on[i];
+
+    SetResult(&result, R_NUMBER, &val);
 }
 
 
-int plugin_init_test (void)
+int plugin_init_test(void)
 {
-  
-  AddFunction ("test::bar",   4, my_test_bar);
-  AddFunction ("test::onoff", 1, my_test_onoff);
-  
-  return 0;
+
+    AddFunction("test::bar", 4, my_test_bar);
+    AddFunction("test::onoff", 1, my_test_onoff);
+
+    return 0;
 }
 
 void plugin_exit_test(void)
 {
-  /* empty */
+    /* empty */
 }

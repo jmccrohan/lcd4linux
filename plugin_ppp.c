@@ -1,4 +1,4 @@
-/* $Id: plugin_ppp.c,v 1.9 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_ppp.c,v 1.10 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for ppp throughput
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_ppp.c,v $
+ * Revision 1.10  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -96,76 +99,77 @@
 
 static HASH PPP;
 
-static int get_ppp_stats (void)
+static int get_ppp_stats(void)
 {
-  int age;
-  int unit;
-  unsigned ibytes, obytes;
-  static int fd=-2;
-  struct ifpppstatsreq req;
-  char key[16], val[16];
+    int age;
+    int unit;
+    unsigned ibytes, obytes;
+    static int fd = -2;
+    struct ifpppstatsreq req;
+    char key[16], val[16];
 
-  /* reread every 10 msec only */
-  age=hash_age(&PPP, NULL);
-  if (age>0 && age<=10) return 0;
-  
-  /* open socket only once */
-  if (fd==-2) {
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd==-1) {
-      error ("socket() failed: %s", strerror(errno));
-      return -1;
-    }
-  }
-  
-  for (unit=0; unit<8; unit++) {
-    memset (&req, 0, sizeof (req));
-    req.stats_ptr = (caddr_t) &req.stats;
-    qprintf(req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
-    
-    if (ioctl(fd, SIOCGPPPSTATS, &req) == 0) {
-      ibytes=req.stats.p.ppp_ibytes;
-      obytes=req.stats.p.ppp_obytes;
-    } else {
-      ibytes=obytes=0;
-    }
-    qprintf(key, sizeof(key), "Rx:%d", unit);
-    qprintf(val, sizeof(val), "%d", ibytes);
-    hash_put_delta (&PPP, key, val);
-    qprintf(key, sizeof(key), "Tx:%d", unit);
-    qprintf(val, sizeof(val), "%d", obytes);
-    hash_put_delta (&PPP, key, val);
+    /* reread every 10 msec only */
+    age = hash_age(&PPP, NULL);
+    if (age > 0 && age <= 10)
+	return 0;
 
-  }
-  return 0;
+    /* open socket only once */
+    if (fd == -2) {
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd == -1) {
+	    error("socket() failed: %s", strerror(errno));
+	    return -1;
+	}
+    }
+
+    for (unit = 0; unit < 8; unit++) {
+	memset(&req, 0, sizeof(req));
+	req.stats_ptr = (caddr_t) & req.stats;
+	qprintf(req.ifr__name, sizeof(req.ifr__name), "ppp%d", unit);
+
+	if (ioctl(fd, SIOCGPPPSTATS, &req) == 0) {
+	    ibytes = req.stats.p.ppp_ibytes;
+	    obytes = req.stats.p.ppp_obytes;
+	} else {
+	    ibytes = obytes = 0;
+	}
+	qprintf(key, sizeof(key), "Rx:%d", unit);
+	qprintf(val, sizeof(val), "%d", ibytes);
+	hash_put_delta(&PPP, key, val);
+	qprintf(key, sizeof(key), "Tx:%d", unit);
+	qprintf(val, sizeof(val), "%d", obytes);
+	hash_put_delta(&PPP, key, val);
+
+    }
+    return 0;
 }
 
 
-static void my_ppp (RESULT *result, RESULT *arg1, RESULT *arg2)
+static void my_ppp(RESULT * result, RESULT * arg1, RESULT * arg2)
 {
-  double value;
-  
-  if (get_ppp_stats()<0) {
-    SetResult(&result, R_STRING, ""); 
-    return;
-  }
-  value=hash_get_delta(&PPP, R2S(arg1), NULL, R2N(arg2));
-  SetResult(&result, R_NUMBER, &value); 
+    double value;
+
+    if (get_ppp_stats() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+    value = hash_get_delta(&PPP, R2S(arg1), NULL, R2N(arg2));
+    SetResult(&result, R_NUMBER, &value);
 }
 
 #endif
 
 
-int plugin_init_ppp (void)
+int plugin_init_ppp(void)
 {
-  hash_create(&PPP);
+    hash_create(&PPP);
 #ifdef HAVE_NET_IF_PPP_H
-  AddFunction ("ppp", 2, my_ppp);
+    AddFunction("ppp", 2, my_ppp);
 #endif
-  return 0;
+    return 0;
 }
 
-void plugin_exit_ppp(void) 
+void plugin_exit_ppp(void)
 {
-  hash_destroy(&PPP);
+    hash_destroy(&PPP);
 }

@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.16 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: widget_icon.c,v 1.17 2005/05/08 04:32:45 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.17  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.16  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -124,153 +127,156 @@
 /* icons always are 8 pixels high  */
 #define YRES 8
 
-static void widget_icon_read_bitmap (const char *section, WIDGET_ICON *Icon)
+static void widget_icon_read_bitmap(const char *section, WIDGET_ICON * Icon)
 {
-  int row, n;
-  char  key[15];
-  char *val, *v;
-  unsigned char *map;
-  
-  for (row=0; row<YRES; row++) {
-    qprintf(key, sizeof(key), "Bitmap.Row%d", row+1);
-    val=cfg_get(section, key, ""); 
-    map=Icon->bitmap+row;
-    n=0;
-    for (v=val; *v!='\0'; v++) {
-      if (n>=Icon->maxmap) {
-	Icon->maxmap++;
-	Icon->bitmap=realloc(Icon->bitmap, Icon->maxmap*YRES*sizeof(char));
-	memset (Icon->bitmap+n*YRES, 0, YRES*sizeof(char));
-	map=Icon->bitmap+n*YRES+row;
-      }
-      switch (*v) {
-      case '|':
-	n++;
-	map+=YRES;
-	break;
-      case '*':
-	(*map)<<=1;
-	(*map)|=1;
-	break;
-      default:
-	(*map)<<=1;
-      }
+    int row, n;
+    char key[15];
+    char *val, *v;
+    unsigned char *map;
+
+    for (row = 0; row < YRES; row++) {
+	qprintf(key, sizeof(key), "Bitmap.Row%d", row + 1);
+	val = cfg_get(section, key, "");
+	map = Icon->bitmap + row;
+	n = 0;
+	for (v = val; *v != '\0'; v++) {
+	    if (n >= Icon->maxmap) {
+		Icon->maxmap++;
+		Icon->bitmap = realloc(Icon->bitmap, Icon->maxmap * YRES * sizeof(char));
+		memset(Icon->bitmap + n * YRES, 0, YRES * sizeof(char));
+		map = Icon->bitmap + n * YRES + row;
+	    }
+	    switch (*v) {
+	    case '|':
+		n++;
+		map += YRES;
+		break;
+	    case '*':
+		(*map) <<= 1;
+		(*map) |= 1;
+		break;
+	    default:
+		(*map) <<= 1;
+	    }
+	}
+	free(val);
     }
-    free(val);
-  }
 }
 
 
-void widget_icon_update (void *Self)
+void widget_icon_update(void *Self)
 {
-  WIDGET      *W = (WIDGET*)Self;
-  WIDGET_ICON *Icon = W->data;
-  RESULT result = {0, 0, 0, NULL};
-  
-  /* evaluate expressions */
-  Icon->speed = 100;
-  if (Icon->speed_tree!=NULL) {
-    Eval(Icon->speed_tree, &result); 
-    Icon->speed = R2N(&result); 
-    if (Icon->speed<10) Icon->speed=10;
-    DelResult(&result);
-  }
-  
-  Icon->visible = 1;
-  if (Icon->visible_tree!=NULL) {
-    Eval(Icon->visible_tree, &result); 
-    Icon->visible = R2N(&result); 
-    if (Icon->visible<1) Icon->visible=0;
-    DelResult(&result);
-  }  
-  
-  /* rotate icon bitmap */
-  Icon->curmap++;
-  if (Icon->curmap >= Icon->maxmap)
-    Icon->curmap = 0;
-  
-  /* finally, draw it! */
-  if (W->class->draw)
-    W->class->draw(W);
+    WIDGET *W = (WIDGET *) Self;
+    WIDGET_ICON *Icon = W->data;
+    RESULT result = { 0, 0, 0, NULL };
 
-  /* add a new one-shot timer */
-  timer_add (widget_icon_update, Self, Icon->speed, 1);
-  
-}
-
-
-
-int widget_icon_init (WIDGET *Self) 
-{
-  char *section;
-  WIDGET_ICON *Icon;
-  
-  /* prepare config section */
-  /* strlen("Widget:")=7 */
-  section=malloc(strlen(Self->name)+8);
-  strcpy(section, "Widget:");
-  strcat(section, Self->name);
-  
-  Icon=malloc(sizeof(WIDGET_ICON));
-  memset (Icon, 0, sizeof(WIDGET_ICON));
-
-  /* get raw expressions (we evaluate them ourselves) */
-  Icon->speed_expr   = cfg_get_raw (section, "speed",    NULL);
-  Icon->visible_expr = cfg_get_raw (section, "visible",  NULL);  
-  
-  /* compile'em */
-  Compile (Icon->speed_expr,   &Icon->speed_tree);
-  Compile (Icon->visible_expr, &Icon->visible_tree);
-  
-  /* sanity check */
-  if (Icon->speed_expr==NULL || *Icon->speed_expr=='\0') {
-    error ("Icon %s has no speed, using '100'", Self->name);
-    Icon->speed_expr="100";
-  }
-  
-  /* read bitmap */
-  widget_icon_read_bitmap (section, Icon);
-  
-  free (section);
-  Self->data=Icon;
-  
-  /* as the speed is evaluatod on every call, we use 'one-shot'-timers.  */
-  /* The timer will be reactivated on every call to widget_icon_update().  */
-  /* We do the initial call here... */
-  Icon->prvmap=-1;
-
-  /* reset ascii  */
-  Icon->ascii=-1;
-  
-  /* just do it! */
-  widget_icon_update(Self);
-
-  return 0;
-}
-
-
-int widget_icon_quit (WIDGET *Self) 
-{
-  if (Self) {
-    if (Self->data) {
-      WIDGET_ICON *Icon = Self->data;
-      DelTree(Icon->speed_tree);
-      DelTree(Icon->visible_tree);
-      if (Icon->bitmap) free (Icon->bitmap); 
-      free(Self->data);
-      Self->data=NULL;
+    /* evaluate expressions */
+    Icon->speed = 100;
+    if (Icon->speed_tree != NULL) {
+	Eval(Icon->speed_tree, &result);
+	Icon->speed = R2N(&result);
+	if (Icon->speed < 10)
+	    Icon->speed = 10;
+	DelResult(&result);
     }
-  }
-  
-  return 0;
-  
+
+    Icon->visible = 1;
+    if (Icon->visible_tree != NULL) {
+	Eval(Icon->visible_tree, &result);
+	Icon->visible = R2N(&result);
+	if (Icon->visible < 1)
+	    Icon->visible = 0;
+	DelResult(&result);
+    }
+
+    /* rotate icon bitmap */
+    Icon->curmap++;
+    if (Icon->curmap >= Icon->maxmap)
+	Icon->curmap = 0;
+
+    /* finally, draw it! */
+    if (W->class->draw)
+	W->class->draw(W);
+
+    /* add a new one-shot timer */
+    timer_add(widget_icon_update, Self, Icon->speed, 1);
+
+}
+
+
+
+int widget_icon_init(WIDGET * Self)
+{
+    char *section;
+    WIDGET_ICON *Icon;
+
+    /* prepare config section */
+    /* strlen("Widget:")=7 */
+    section = malloc(strlen(Self->name) + 8);
+    strcpy(section, "Widget:");
+    strcat(section, Self->name);
+
+    Icon = malloc(sizeof(WIDGET_ICON));
+    memset(Icon, 0, sizeof(WIDGET_ICON));
+
+    /* get raw expressions (we evaluate them ourselves) */
+    Icon->speed_expr = cfg_get_raw(section, "speed", NULL);
+    Icon->visible_expr = cfg_get_raw(section, "visible", NULL);
+
+    /* compile'em */
+    Compile(Icon->speed_expr, &Icon->speed_tree);
+    Compile(Icon->visible_expr, &Icon->visible_tree);
+
+    /* sanity check */
+    if (Icon->speed_expr == NULL || *Icon->speed_expr == '\0') {
+	error("Icon %s has no speed, using '100'", Self->name);
+	Icon->speed_expr = "100";
+    }
+
+    /* read bitmap */
+    widget_icon_read_bitmap(section, Icon);
+
+    free(section);
+    Self->data = Icon;
+
+    /* as the speed is evaluatod on every call, we use 'one-shot'-timers.  */
+    /* The timer will be reactivated on every call to widget_icon_update().  */
+    /* We do the initial call here... */
+    Icon->prvmap = -1;
+
+    /* reset ascii  */
+    Icon->ascii = -1;
+
+    /* just do it! */
+    widget_icon_update(Self);
+
+    return 0;
+}
+
+
+int widget_icon_quit(WIDGET * Self)
+{
+    if (Self) {
+	if (Self->data) {
+	    WIDGET_ICON *Icon = Self->data;
+	    DelTree(Icon->speed_tree);
+	    DelTree(Icon->visible_tree);
+	    if (Icon->bitmap)
+		free(Icon->bitmap);
+	    free(Self->data);
+	    Self->data = NULL;
+	}
+    }
+
+    return 0;
+
 }
 
 
 
 WIDGET_CLASS Widget_Icon = {
-  name:   "icon",
-  init:   widget_icon_init,
-  draw:   NULL,
-  quit:   widget_icon_quit,
+  name:"icon",
+  init:widget_icon_init,
+  draw:NULL,
+  quit:widget_icon_quit,
 };

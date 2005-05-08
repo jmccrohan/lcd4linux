@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.5 2005/04/01 05:16:04 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.6 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.6  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.5  2005/04/01 05:16:04  reinelt
  * moved plugin init stuff to a seperate function called on first use
  *
@@ -84,141 +87,142 @@ static MYSQL conex;
 static char Section[] = "Plugin:MySQL";
 
 
-static int configure_mysql (void)
+static int configure_mysql(void)
 {
-  static int configured = 0;
+    static int configured = 0;
 
-  char server[256];
-  unsigned int port;
-  char user[128];
-  char password[256];
-  char database[256];  
-  char *s;
-    
-  if (configured != 0) return configured;
+    char server[256];
+    unsigned int port;
+    char user[128];
+    char password[256];
+    char database[256];
+    char *s;
 
-  s = cfg_get (Section, "server", "localhost");
-  if (*s=='\0') {
-    info ("[MySQL] empty '%s.server' entry from %s, assuming 'localhost'", Section, cfg_source());
-    strcpy(server,"localhost"); 
-  }
-  else strcpy(server,s);
-  free(s);
-  
-  if (cfg_number(Section, "port", 0, 1, 65536, &port)<1) {
-    /* using 0 as default port because mysql_real_connect() will convert it to real default one */
-    info ("[MySQL] no '%s.port' entry from %s using MySQL's default", Section, cfg_source());
-  }
-  
-  s = cfg_get (Section, "user", "");
-  if (*s=='\0') {
-    /* If user is NULL or the empty string "", the lcd4linux Unix user is assumed. */
-    info ("[MySQL] empty '%s.user' entry from %s, assuming lcd4linux owner", Section, cfg_source());
-    strcpy(user,""); 
-  }
-  else strcpy(user,s);
-  free(s);   
-  
-  s = cfg_get (Section, "password","");
-  /* Do not encrypt the password because encryption is handled automatically by the MySQL client API. */  
-  if (*s=='\0') {
-    info ("[MySQL] empty '%s.password' entry in %s, assuming none", Section, cfg_source());
-    strcpy(password,""); 
-  }
-  else strcpy(password,s);
-  free(s);  
-  
-  s = cfg_get (Section, "database", "");
-  if (*s=='\0') {
-    error ("[MySQL] no '%s:database' entry from %s, specify one", Section, cfg_source());
-    free (s);
-    configured = -1;
-    return configured;
-  }
-  strcpy(database,s);
-  free(s);  
-  
-  mysql_init(&conex);
-  if (!mysql_real_connect(&conex,server,user,password,database,port,NULL,0)) {
-    error( "[MySQL] conection error: %s",mysql_error(&conex));
-    configured = -1;
-    return configured;
-  }
+    if (configured != 0)
+	return configured;
 
-  configured = 1;
-  return configured;
-}
+    s = cfg_get(Section, "server", "localhost");
+    if (*s == '\0') {
+	info("[MySQL] empty '%s.server' entry from %s, assuming 'localhost'", Section, cfg_source());
+	strcpy(server, "localhost");
+    } else
+	strcpy(server, s);
+    free(s);
 
-
-static void my_MySQLquery (RESULT *result, RESULT *query)
-{
-  char *q;
-  double value;
-  MYSQL_RES *res;
-  
-  if (configure_mysql() < 0) {
-    value = -1;
-    SetResult(&result, R_NUMBER, &value); 
-    return;
-  }
-  
-  q = R2S(query);
-  
-  /* mysql_ping(MYSQL *mysql) checks whether the connection to the server is working. */
-  /* If it has gone down, an automatic reconnection is attempted. */
-  mysql_ping(&conex);
-  if (mysql_real_query(&conex,q,(unsigned int) strlen(q))) {
-    error( "[MySQL] query error: %s",mysql_error(&conex));
-    value = -1;
-  } else {
-    /* We don't use res=mysql_use_result();  because mysql_num_rows() will not */
-    /* return the correct value until all the rows in the result set have been retrieved */
-    /* with mysql_fetch_row(), so we use res=mysql_store_result(); instead */
-    res=mysql_store_result(&conex);   
-    value = (double) mysql_num_rows(res);
-    mysql_free_result(res);
-  }
-  
-  SetResult(&result, R_NUMBER, &value); 
-}
-
-
-static void my_MySQLstatus (RESULT *result)
-{
-  char *value = "";
-  char *status;
-  
-  if (configure_mysql > 0) {
-
-    mysql_ping(&conex);
-    status=mysql_stat(&conex);
-    if (!status) {
-      error( "[MySQL] status error: %s",mysql_error(&conex));
-      value="error";
-    } else {
-      value = status;
+    if (cfg_number(Section, "port", 0, 1, 65536, &port) < 1) {
+	/* using 0 as default port because mysql_real_connect() will convert it to real default one */
+	info("[MySQL] no '%s.port' entry from %s using MySQL's default", Section, cfg_source());
     }
-  }
-  
-  SetResult(&result, R_STRING, value); 
+
+    s = cfg_get(Section, "user", "");
+    if (*s == '\0') {
+	/* If user is NULL or the empty string "", the lcd4linux Unix user is assumed. */
+	info("[MySQL] empty '%s.user' entry from %s, assuming lcd4linux owner", Section, cfg_source());
+	strcpy(user, "");
+    } else
+	strcpy(user, s);
+    free(s);
+
+    s = cfg_get(Section, "password", "");
+    /* Do not encrypt the password because encryption is handled automatically by the MySQL client API. */
+    if (*s == '\0') {
+	info("[MySQL] empty '%s.password' entry in %s, assuming none", Section, cfg_source());
+	strcpy(password, "");
+    } else
+	strcpy(password, s);
+    free(s);
+
+    s = cfg_get(Section, "database", "");
+    if (*s == '\0') {
+	error("[MySQL] no '%s:database' entry from %s, specify one", Section, cfg_source());
+	free(s);
+	configured = -1;
+	return configured;
+    }
+    strcpy(database, s);
+    free(s);
+
+    mysql_init(&conex);
+    if (!mysql_real_connect(&conex, server, user, password, database, port, NULL, 0)) {
+	error("[MySQL] conection error: %s", mysql_error(&conex));
+	configured = -1;
+	return configured;
+    }
+
+    configured = 1;
+    return configured;
+}
+
+
+static void my_MySQLquery(RESULT * result, RESULT * query)
+{
+    char *q;
+    double value;
+    MYSQL_RES *res;
+
+    if (configure_mysql() < 0) {
+	value = -1;
+	SetResult(&result, R_NUMBER, &value);
+	return;
+    }
+
+    q = R2S(query);
+
+    /* mysql_ping(MYSQL *mysql) checks whether the connection to the server is working. */
+    /* If it has gone down, an automatic reconnection is attempted. */
+    mysql_ping(&conex);
+    if (mysql_real_query(&conex, q, (unsigned int) strlen(q))) {
+	error("[MySQL] query error: %s", mysql_error(&conex));
+	value = -1;
+    } else {
+	/* We don't use res=mysql_use_result();  because mysql_num_rows() will not */
+	/* return the correct value until all the rows in the result set have been retrieved */
+	/* with mysql_fetch_row(), so we use res=mysql_store_result(); instead */
+	res = mysql_store_result(&conex);
+	value = (double) mysql_num_rows(res);
+	mysql_free_result(res);
+    }
+
+    SetResult(&result, R_NUMBER, &value);
+}
+
+
+static void my_MySQLstatus(RESULT * result)
+{
+    char *value = "";
+    char *status;
+
+    if (configure_mysql > 0) {
+
+	mysql_ping(&conex);
+	status = mysql_stat(&conex);
+	if (!status) {
+	    error("[MySQL] status error: %s", mysql_error(&conex));
+	    value = "error";
+	} else {
+	    value = status;
+	}
+    }
+
+    SetResult(&result, R_STRING, value);
 }
 
 
 #endif
 
 
-int plugin_init_mysql (void)
+int plugin_init_mysql(void)
 {
 #ifdef HAVE_MYSQL_MYSQL_H
-  AddFunction ("MySQL::query",  1, my_MySQLquery);
-  AddFunction ("MySQL::status", 0, my_MySQLstatus);
+    AddFunction("MySQL::query", 1, my_MySQLquery);
+    AddFunction("MySQL::status", 0, my_MySQLstatus);
 #endif
-  return 0;
+    return 0;
 }
 
-void plugin_exit_mysql(void) 
+void plugin_exit_mysql(void)
 {
 #ifdef HAVE_MYSQL_MYSQL_H
-  mysql_close(&conex);
+    mysql_close(&conex);
 #endif
 }

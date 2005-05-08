@@ -1,4 +1,4 @@
-/* $Id: widget_bar.h,v 1.7 2005/05/06 06:37:34 reinelt Exp $
+/* $Id: widget_bar.h,v 1.8 2005/05/08 04:32:45 reinelt Exp $
  *
  * bar widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_bar.h,v $
+ * Revision 1.8  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.7  2005/05/06 06:37:34  reinelt
  * hollow bar patch from geronet
  *
@@ -58,26 +61,26 @@
 #ifndef _WIDGET_BAR_H_
 #define _WIDGET_BAR_H_
 
-typedef enum { DIR_EAST=1, DIR_WEST=2, DIR_NORTH=4, DIR_SOUTH=8 } DIRECTION;
+typedef enum { DIR_EAST = 1, DIR_WEST = 2, DIR_NORTH = 4, DIR_SOUTH = 8 } DIRECTION;
 typedef enum { STYLE_HOLLOW = 1, STYLE_FIRST = 2, STYLE_LAST = 4 } STYLE;
 
 typedef struct WIDGET_BAR {
-  char      *expression1;  /* expression that delivers the value */
-  char      *expression2;  /* expression that delivers the value */
-  char      *expr_min;     /* expression that delivers the minimum value */
-  char      *expr_max;     /* expression that delivers the maximum value */
-  void      *tree1;        /* pre-compiled expression that delivers the value */
-  void      *tree2;        /* pre-compiled expression that delivers the value */
-  void      *tree_min;     /* pre-compiled expression that delivers the minimum value */
-  void      *tree_max;     /* pre-compiled expression that delivers the maximum value */
-  DIRECTION  direction;    /* bar direction */
-  STYLE style;		/* bar style (hollow) */
-  int        length;       /* bar length */
-  int        update;       /* update interval (msec) */
-  double     val1;         /* bar value, 0.0 ... 1.0 */
-  double     val2;         /* bar value, 0.0 ... 1.0 */
-  double     min;          /* minimum value */
-  double     max;          /* maximum value */
+    char *expression1;		/* expression that delivers the value */
+    char *expression2;		/* expression that delivers the value */
+    char *expr_min;		/* expression that delivers the minimum value */
+    char *expr_max;		/* expression that delivers the maximum value */
+    void *tree1;		/* pre-compiled expression that delivers the value */
+    void *tree2;		/* pre-compiled expression that delivers the value */
+    void *tree_min;		/* pre-compiled expression that delivers the minimum value */
+    void *tree_max;		/* pre-compiled expression that delivers the maximum value */
+    DIRECTION direction;	/* bar direction */
+    STYLE style;		/* bar style (hollow) */
+    int length;			/* bar length */
+    int update;			/* update interval (msec) */
+    double val1;		/* bar value, 0.0 ... 1.0 */
+    double val2;		/* bar value, 0.0 ... 1.0 */
+    double min;			/* minimum value */
+    double max;			/* maximum value */
 } WIDGET_BAR;
 
 

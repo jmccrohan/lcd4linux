@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.5 2005/01/18 06:30:24 reinelt Exp $
+/* $Id: thread.h,v 1.6 2005/05/08 04:32:45 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.6  2005/05/08 04:32:45  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.5  2005/01/18 06:30:24  reinelt
  * added (C) to all copyright statements
  *
@@ -50,14 +53,14 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-int  mutex_create  (void);
-void mutex_lock    (const int semid);
-void mutex_unlock  (const int semid);
-void mutex_destroy (const int semid);
+int mutex_create(void);
+void mutex_lock(const int semid);
+void mutex_unlock(const int semid);
+void mutex_destroy(const int semid);
 
-int  shm_create    (void **buffer, const int size);
-void shm_destroy   (const int shmid, const void *buffer);
+int shm_create(void **buffer, const int size);
+void shm_destroy(const int shmid, const void *buffer);
 
-int thread_create  (const char *name, void (*thread)(void *data), void *data);
+int thread_create(const char *name, void (*thread) (void *data), void *data);
 
 #endif

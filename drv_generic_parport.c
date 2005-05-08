@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.15 2005/05/05 08:36:12 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.16 2005/05/08 04:32:44 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.16  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.15  2005/05/05 08:36:12  reinelt
  * changed SELECT to SLCTIN
  *
@@ -143,448 +146,439 @@
 #include "drv_generic_parport.h"
 
 
-static char *Driver="";
-static char *Section="";
-static unsigned short Port=0;
-static char *PPdev=NULL;
+static char *Driver = "";
+static char *Section = "";
+static unsigned short Port = 0;
+static char *PPdev = NULL;
 
 /* initial value taken from linux/parport_pc.c */
 static unsigned char ctr = 0xc;
 
 #ifdef WITH_PPDEV
-static int PPfd=-1;
+static int PPfd = -1;
 #endif
 
 
-int drv_generic_parport_open (const char *section, const char *driver)
+int drv_generic_parport_open(const char *section, const char *driver)
 {
-  char *s, *e;
-  
-  Section = (char*)section;
-  Driver  = (char*)driver;
-  
-  udelay_init();
-  
+    char *s, *e;
+
+    Section = (char *) section;
+    Driver = (char *) driver;
+
+    udelay_init();
+
 #ifndef WITH_PPDEV
-  error ("The files include/linux/parport.h and/or include/linux/ppdev.h");
-  error ("were missing at compile time. Even if your system supports");
-  error ("ppdev, it will not be used.");
-  error ("You *really* should install these files and recompile LCD4linux!");
+    error("The files include/linux/parport.h and/or include/linux/ppdev.h");
+    error("were missing at compile time. Even if your system supports");
+    error("ppdev, it will not be used.");
+    error("You *really* should install these files and recompile LCD4linux!");
 #endif
-  
-  s=cfg_get (Section, "Port", NULL);
-  if (s==NULL || *s=='\0') {
-    error ("%s: no '%s.Port' entry from %s", Driver, Section, cfg_source());
-    return -1;
-  }
 
-  PPdev=NULL;
-  if ((Port=strtol(s, &e, 0))==0 || *e!='\0') {
+    s = cfg_get(Section, "Port", NULL);
+    if (s == NULL || *s == '\0') {
+	error("%s: no '%s.Port' entry from %s", Driver, Section, cfg_source());
+	return -1;
+    }
+
+    PPdev = NULL;
+    if ((Port = strtol(s, &e, 0)) == 0 || *e != '\0') {
 #ifdef WITH_PPDEV
-    Port=0;
-    PPdev=s;
+	Port = 0;
+	PPdev = s;
 #else
-    error ("%s: bad %s.Port '%s' from %s", Driver, Section, s, cfg_source());
-    free(s);
-    return -1;
+	error("%s: bad %s.Port '%s' from %s", Driver, Section, s, cfg_source());
+	free(s);
+	return -1;
 #endif
-  }
-  
-  
-#ifdef WITH_PPDEV
-  
-  if (PPdev) {
-    info ("%s: using ppdev %s", Driver, PPdev);
-    PPfd=open(PPdev, O_RDWR);
-    if (PPfd==-1) {
-      error ("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
-      return -1;
     }
-    
+#ifdef WITH_PPDEV
+
+    if (PPdev) {
+	info("%s: using ppdev %s", Driver, PPdev);
+	PPfd = open(PPdev, O_RDWR);
+	if (PPfd == -1) {
+	    error("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
+	    return -1;
+	}
 #if 0
-    /* Fixme: this always fails here... */
-    if (ioctl(PPfd, PPEXCL)) {
-      debug ("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
+	/* Fixme: this always fails here... */
+	if (ioctl(PPfd, PPEXCL)) {
+	    debug("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
+	} else {
+	    debug("ioctl(%s, PPEXCL) succeded.");
+	}
+#endif
+
+	if (ioctl(PPfd, PPCLAIM)) {
+	    error("%s: ioctl(%s, PPCLAIM) failed: %d %s", Driver, PPdev, errno, strerror(errno));
+	    return -1;
+	}
+    } else
+#endif
+
+    {
+	error("using raw port 0x%x (deprecated!)", Port);
+	error("You *really* should change your setup and use ppdev!");
+	if ((Port + 3) <= 0x3ff) {
+	    if (ioperm(Port, 3, 1) != 0) {
+		error("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
+		return -1;
+	    }
+	} else {
+	    if (iopl(3) != 0) {
+		error("%s: iopl(1) failed: %s", Driver, strerror(errno));
+		return -1;
+	    }
+	}
+    }
+    return 0;
+}
+
+
+int drv_generic_parport_close(void)
+{
+#ifdef WITH_PPDEV
+    if (PPdev) {
+	debug("closing ppdev %s", PPdev);
+	if (ioctl(PPfd, PPRELEASE)) {
+	    error("%s: ioctl(%s, PPRELEASE) failed: %s", Driver, PPdev, strerror(errno));
+	}
+	if (close(PPfd) == -1) {
+	    error("%s: close(%s) failed: %s", Driver, PPdev, strerror(errno));
+	    return -1;
+	}
+	free(PPdev);
+    } else
+#endif
+    {
+	debug("closing raw port 0x%x", Port);
+	if ((Port + 3) <= 0x3ff) {
+	    if (ioperm(Port, 3, 0) != 0) {
+		error("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
+		return -1;
+	    }
+	} else {
+	    if (iopl(0) != 0) {
+		error("%s: iopl(0) failed: %s", Driver, strerror(errno));
+		return -1;
+	    }
+	}
+    }
+
+    return 0;
+}
+
+
+static unsigned char drv_generic_parport_signal_ctrl(const char *name, const char *signal)
+{
+    unsigned char wire;
+
+    if (strcasecmp(signal, "STROBE") == 0) {
+	wire = PARPORT_CONTROL_STROBE;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE (Pin 1)]", Driver, name);
+    } else if (strcasecmp(signal, "AUTOFD") == 0) {
+	wire = PARPORT_CONTROL_AUTOFD;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD (Pin 14)]", Driver, name);
+    } else if (strcasecmp(signal, "INIT") == 0) {
+	wire = PARPORT_CONTROL_INIT;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT (Pin 16)]", Driver, name);
+    } else if (strcasecmp(signal, "SLCTIN") == 0) {
+	wire = PARPORT_CONTROL_SELECT;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
+    } else if (strcasecmp(signal, "SELECT") == 0) {
+	wire = PARPORT_CONTROL_SELECT;
+	error("%s: SELECT is deprecated. Please use SLCTIN instead!", Driver);
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
+    } else if (strcasecmp(signal, "GND") == 0) {
+	wire = 0;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
     } else {
-      debug ("ioctl(%s, PPEXCL) succeded.");
+	error("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
+	error("%s: should be STROBE, AUTOFD, INIT, SLCTIN or GND", Driver);
+	return 0xff;
     }
-#endif
-    
-    if (ioctl(PPfd, PPCLAIM)) {
-      error ("%s: ioctl(%s, PPCLAIM) failed: %d %s", Driver, PPdev, errno, strerror(errno));
-      return -1;
-    }
-  } else
-    
-#endif
-    
-    {
-      error ("using raw port 0x%x (deprecated!)", Port);
-      error ("You *really* should change your setup and use ppdev!");
-      if ((Port+3)<=0x3ff) {
-	if (ioperm(Port, 3, 1)!=0) {
-	  error ("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
-	  return -1;
-	}
-      } else {
-	if (iopl(3)!=0) {
-	  error ("%s: iopl(1) failed: %s", Driver, strerror(errno));
-	  return -1;
-	}
-      }
-    }
-  return 0;
+
+    return wire;
 }
 
 
-int drv_generic_parport_close (void)
+unsigned char drv_generic_parport_wire_ctrl(const char *name, const char *deflt)
+{
+    unsigned char wire;
+    char key[256];
+    char *val;
+
+    qprintf(key, sizeof(key), "Wire.%s", name);
+    val = cfg_get(Section, key, deflt);
+
+    wire = drv_generic_parport_signal_ctrl(name, val);
+
+    free(val);
+
+    return wire;
+}
+
+
+unsigned char drv_generic_parport_hardwire_ctrl(const char *name, const char *signal)
+{
+    unsigned char wire;
+    char key[256];
+    char *val;
+
+    qprintf(key, sizeof(key), "Wire.%s", name);
+    val = cfg_get(Section, key, "");
+
+    /* maybe warn the user */
+    if (*val != '\0' && strcasecmp(signal, val) != 0) {
+	error("%s: ignoring configured signal <%s> for control line <%s>", Driver, val, name);
+    }
+    free(val);
+
+    wire = drv_generic_parport_signal_ctrl(name, signal);
+
+    return wire;
+}
+
+
+static unsigned char drv_generic_parport_signal_status(const char *name, const char *signal)
+{
+    unsigned char wire;
+
+    if (strcasecmp(signal, "ERROR") == 0) {
+	wire = PARPORT_STATUS_ERROR;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ERROR (Pin 15)]", Driver, name);
+    } else if (strcasecmp(signal, "SELECT") == 0) {
+	wire = PARPORT_STATUS_SELECT;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT (Pin 13)]", Driver, name);
+    } else if (strcasecmp(signal, "PAPEROUT") == 0) {
+	wire = PARPORT_STATUS_PAPEROUT;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:PAPEROUT (Pin 12)]", Driver, name);
+    } else if (strcasecmp(signal, "ACK") == 0) {
+	wire = PARPORT_STATUS_ACK;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ACK (Pin 10)]", Driver, name);
+    } else if (strcasecmp(signal, "BUSY") == 0) {
+	wire = PARPORT_STATUS_BUSY;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:BUSY (Pin 11)]", Driver, name);
+    } else if (strcasecmp(signal, "GND") == 0) {
+	wire = 0;
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+    } else {
+	error("%s: unknown signal <%s> for status line <%s>", Driver, signal, name);
+	error("%s: should be ERROR, SELECT, PAPEROUT, ACK, BUSY or GND", Driver);
+	return 0xff;
+    }
+
+    return wire;
+}
+
+
+unsigned char drv_generic_parport_wire_status(const char *name, const char *deflt)
+{
+    unsigned char wire;
+    char key[256];
+    char *val;
+
+    qprintf(key, sizeof(key), "Wire.%s", name);
+    val = cfg_get(Section, key, deflt);
+
+    wire = drv_generic_parport_signal_status(name, val);
+
+    free(val);
+
+    return wire;
+}
+
+
+unsigned char drv_generic_parport_wire_data(const char *name, const char *deflt)
+{
+    unsigned char w;
+    char wire[256];
+    char *s;
+
+    qprintf(wire, sizeof(wire), "Wire.%s", name);
+    s = cfg_get(Section, wire, deflt);
+    if (strlen(s) == 3 && strncasecmp(s, "DB", 2) == 0 && s[2] >= '0' && s[2] <= '7') {
+	w = s[2] - '0';
+    } else if (strcasecmp(s, "GND") == 0) {
+	w = 0;
+    } else {
+	error("%s: unknown signal <%s> for data line <%s>", Driver, s, name);
+	error("%s: should be DB0..7 or GND", Driver);
+	return 0xff;
+    }
+    free(s);
+    if (w == 0) {
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+    } else {
+	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d (Pin %d)]", Driver, name, w, w + 2);
+    }
+
+    w = 1 << w;
+
+    return w;
+}
+
+
+void drv_generic_parport_direction(const int direction)
 {
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    debug ("closing ppdev %s", PPdev);
-    if (ioctl(PPfd, PPRELEASE)) {
-      error ("%s: ioctl(%s, PPRELEASE) failed: %s", Driver, PPdev, strerror(errno));
-    }
-    if (close(PPfd)==-1) {
-      error ("%s: close(%s) failed: %s", Driver, PPdev, strerror(errno));
-      return -1;
-    }
-    free(PPdev);
-  } else 
-#endif    
-    {
-      debug ("closing raw port 0x%x", Port);
-      if ((Port+3)<=0x3ff) {
-	if (ioperm(Port, 3, 0)!=0) {
-	  error ("%s: ioperm(0x%x) failed: %s", Driver, Port, strerror(errno));
-	  return -1;
-	} 
-      } else {
-	if (iopl(0)!=0) {
-	  error ("%s: iopl(0) failed: %s", Driver, strerror(errno));
-	  return -1;
-	}
-      }
-    }
-
-  return 0;
-}
-
-
-static unsigned char drv_generic_parport_signal_ctrl (const char *name, const char *signal)
-{
-  unsigned char wire;
-
-  if (strcasecmp(signal,"STROBE") == 0) {
-    wire = PARPORT_CONTROL_STROBE;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE (Pin 1)]", Driver, name);
-  } else if(strcasecmp(signal,"AUTOFD") == 0) {
-    wire = PARPORT_CONTROL_AUTOFD;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD (Pin 14)]", Driver, name);
-  } else if(strcasecmp(signal,"INIT") == 0) {
-    wire = PARPORT_CONTROL_INIT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT (Pin 16)]", Driver, name);
-  } else if(strcasecmp(signal,"SLCTIN") == 0) {
-    wire = PARPORT_CONTROL_SELECT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
-  } else if(strcasecmp(signal,"SELECT") == 0) {
-    wire = PARPORT_CONTROL_SELECT;
-    error ("%s: SELECT is deprecated. Please use SLCTIN instead!", Driver);
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
-  } else if(strcasecmp(signal,"GND") == 0) {
-    wire = 0;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
-  } else {
-    error ("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
-    error ("%s: should be STROBE, AUTOFD, INIT, SLCTIN or GND", Driver);
-    return 0xff;
-  }
-  
-  return wire;
-}
-
-
-unsigned char drv_generic_parport_wire_ctrl (const char *name, const char *deflt)
-{
-  unsigned char wire;
-  char key[256];
-  char *val;
-  
-  qprintf(key, sizeof(key), "Wire.%s", name);
-  val = cfg_get (Section, key, deflt);
-  
-  wire = drv_generic_parport_signal_ctrl (name, val);
-  
-  free (val);
-
-  return wire;
-}
-
-
-unsigned char drv_generic_parport_hardwire_ctrl (const char *name, const char *signal)
-{
-  unsigned char wire;
-  char key[256];
-  char *val;
-  
-  qprintf(key, sizeof(key), "Wire.%s", name);
-  val = cfg_get (Section, key, "");
-  
-  /* maybe warn the user */
-  if (*val != '\0' && strcasecmp (signal, val) != 0) {
-    error ("%s: ignoring configured signal <%s> for control line <%s>", Driver, val, name);
-  }
-  free (val);
-  
-  wire = drv_generic_parport_signal_ctrl (name, signal);
-  
-  return wire;
-}
-
-
-static unsigned char drv_generic_parport_signal_status (const char *name, const char *signal)
-{
-  unsigned char wire;
-
-  if (strcasecmp(signal,"ERROR") == 0) {
-    wire = PARPORT_STATUS_ERROR;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ERROR (Pin 15)]", Driver, name);
-  } else if(strcasecmp(signal,"SELECT") == 0) {
-    wire = PARPORT_STATUS_SELECT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT (Pin 13)]", Driver, name);
-  } else if(strcasecmp(signal,"PAPEROUT") == 0) {
-    wire = PARPORT_STATUS_PAPEROUT;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:PAPEROUT (Pin 12)]", Driver, name);
-  } else if(strcasecmp(signal,"ACK") == 0) {
-    wire = PARPORT_STATUS_ACK;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ACK (Pin 10)]", Driver, name);
-  } else if(strcasecmp(signal,"BUSY") == 0) {
-    wire = PARPORT_STATUS_BUSY;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:BUSY (Pin 11)]", Driver, name);
-  } else if(strcasecmp(signal,"GND") == 0) {
-    wire = 0;
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
-  } else {
-    error ("%s: unknown signal <%s> for status line <%s>", Driver, signal, name);
-    error ("%s: should be ERROR, SELECT, PAPEROUT, ACK, BUSY or GND", Driver);
-    return 0xff;
-  }
-  
-  return wire;
-}
-
-
-unsigned char drv_generic_parport_wire_status (const char *name, const char *deflt)
-{
-  unsigned char wire;
-  char key[256];
-  char *val;
-  
-  qprintf(key, sizeof(key), "Wire.%s", name);
-  val = cfg_get (Section, key, deflt);
-  
-  wire = drv_generic_parport_signal_status (name, val);
-  
-  free (val);
-
-  return wire;
-}
-
-
-unsigned char drv_generic_parport_wire_data (const char *name, const char *deflt)
-{
-  unsigned char w;
-  char wire[256];
-  char *s;
-  
-  qprintf(wire, sizeof(wire), "Wire.%s", name);
-  s=cfg_get (Section, wire, deflt);
-  if(strlen(s)==3 && strncasecmp(s,"DB",2)==0 && s[2]>='0' && s[2]<='7') {
-    w=s[2]-'0';
-  } else if(strcasecmp(s,"GND")==0) {
-    w=0;
-  } else {
-    error ("%s: unknown signal <%s> for data line <%s>", Driver, s, name);
-    error ("%s: should be DB0..7 or GND", Driver);
-    return 0xff;
-  }
-  free(s);
-  if (w==0) {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
-  } else {
-    info ("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d (Pin %d)]", Driver, name, w, w+2);
-  }
-  
-  w=1<<w;
-
-  return w;
-}
-
-
-void drv_generic_parport_direction (const int direction)
-{
-#ifdef WITH_PPDEV
-  if (PPdev) {
-    ioctl (PPfd, PPDATADIR, &direction);
-  } else
+    if (PPdev) {
+	ioctl(PPfd, PPDATADIR, &direction);
+    } else
 #endif
     {
-      /* code stolen from linux/parport_pc.h */
-      ctr = (ctr & ~0x20) ^ (direction?0x20:0x00);
-      outb (ctr, Port+2);
+	/* code stolen from linux/parport_pc.h */
+	ctr = (ctr & ~0x20) ^ (direction ? 0x20 : 0x00);
+	outb(ctr, Port + 2);
     }
 }
 
 
-unsigned char drv_generic_parport_status (void)
+unsigned char drv_generic_parport_status(void)
 {
-  unsigned char mask = 
-    PARPORT_STATUS_ERROR    | 
-    PARPORT_STATUS_SELECT   |
-    PARPORT_STATUS_PAPEROUT |
-    PARPORT_STATUS_ACK      |
-    PARPORT_STATUS_BUSY;
+    unsigned char mask = PARPORT_STATUS_ERROR | PARPORT_STATUS_SELECT | PARPORT_STATUS_PAPEROUT | PARPORT_STATUS_ACK | PARPORT_STATUS_BUSY;
 
-  unsigned char data;
-  
+    unsigned char data;
+
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    ioctl (PPfd, PPRSTATUS, &data);
-  } else
+    if (PPdev) {
+	ioctl(PPfd, PPRSTATUS, &data);
+    } else
 #endif
     {
-      data = inb (Port+1);
+	data = inb(Port + 1);
     }
-  
-  /* clear unused bits */
-  data &= mask;
-  
-  return data;
+
+    /* clear unused bits */
+    data &= mask;
+
+    return data;
 }
 
 
-void drv_generic_parport_control (const unsigned char mask, const unsigned char value)
+void drv_generic_parport_control(const unsigned char mask, const unsigned char value)
 {
-  unsigned char val;
-  
-  /* any signal affected? */
-  /* Note: this may happen in case a signal is hardwired to GND */
-  if (mask==0) return;
+    unsigned char val;
 
-  /* Strobe, Select and AutoFeed are inverted! */
-  val = mask & (value ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
+    /* any signal affected? */
+    /* Note: this may happen in case a signal is hardwired to GND */
+    if (mask == 0)
+	return;
+
+    /* Strobe, Select and AutoFeed are inverted! */
+    val = mask & (value ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
 
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    struct ppdev_frob_struct frob;
-    frob.mask=mask;
-    frob.val=val;
-    ioctl (PPfd, PPFCONTROL, &frob);
-  } else
+    if (PPdev) {
+	struct ppdev_frob_struct frob;
+	frob.mask = mask;
+	frob.val = val;
+	ioctl(PPfd, PPFCONTROL, &frob);
+    } else
 #endif
     {
-      /* code stolen from linux/parport_pc.h */
-      ctr = (ctr & ~mask) ^ val;
-      outb (ctr, Port+2);
+	/* code stolen from linux/parport_pc.h */
+	ctr = (ctr & ~mask) ^ val;
+	outb(ctr, Port + 2);
     }
 }
 
 
-void drv_generic_parport_toggle (const unsigned char bits, const int level, const int delay)
+void drv_generic_parport_toggle(const unsigned char bits, const int level, const int delay)
 {
-  unsigned char value1, value2;
+    unsigned char value1, value2;
 
-  /* any signal affected? */
-  /* Note: this may happen in case a signal is hardwired to GND */
-  if (bits == 0) return;
+    /* any signal affected? */
+    /* Note: this may happen in case a signal is hardwired to GND */
+    if (bits == 0)
+	return;
 
-  /* prepare value */
-  value1 = level ? bits : 0;
-  value2 = level ? 0    : bits;
-  
-  /* Strobe, Select and AutoFeed are inverted! */
-  value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
-  value2 = bits & (value2 ^ (PARPORT_CONTROL_STROBE|PARPORT_CONTROL_SELECT|PARPORT_CONTROL_AUTOFD));
-  
- 
+    /* prepare value */
+    value1 = level ? bits : 0;
+    value2 = level ? 0 : bits;
+
+    /* Strobe, Select and AutoFeed are inverted! */
+    value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
+    value2 = bits & (value2 ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
+
+
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    struct ppdev_frob_struct frob;
-    frob.mask = bits;
-      
-    /* rise */
-    frob.val = value1;
-    ioctl (PPfd, PPFCONTROL, &frob);
-      
-    /* pulse width */
-    ndelay(delay);      
-      
-    /* lower */
-    frob.val = value2;
-    ioctl (PPfd, PPFCONTROL, &frob);
+    if (PPdev) {
+	struct ppdev_frob_struct frob;
+	frob.mask = bits;
 
-  } else
+	/* rise */
+	frob.val = value1;
+	ioctl(PPfd, PPFCONTROL, &frob);
+
+	/* pulse width */
+	ndelay(delay);
+
+	/* lower */
+	frob.val = value2;
+	ioctl(PPfd, PPFCONTROL, &frob);
+
+    } else
 #endif
     {
-      /* rise */
-      ctr = (ctr & ~bits) ^ value1;
-      outb (ctr, Port+2);
+	/* rise */
+	ctr = (ctr & ~bits) ^ value1;
+	outb(ctr, Port + 2);
 
-      /* pulse width */
-      ndelay(delay);      
-      
-      /* lower */
-      ctr = (ctr & ~bits) ^ value2;
-      outb (ctr, Port+2);
+	/* pulse width */
+	ndelay(delay);
+
+	/* lower */
+	ctr = (ctr & ~bits) ^ value2;
+	outb(ctr, Port + 2);
     }
 }
 
 
-void drv_generic_parport_data (const unsigned char data)
+void drv_generic_parport_data(const unsigned char data)
 {
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    ioctl(PPfd, PPWDATA, &data);
-  } else
+    if (PPdev) {
+	ioctl(PPfd, PPWDATA, &data);
+    } else
 #endif
     {
-      outb (data, Port);
+	outb(data, Port);
     }
 }
 
-unsigned char drv_generic_parport_read (void)
+unsigned char drv_generic_parport_read(void)
 {
-  unsigned char data;
-  
+    unsigned char data;
+
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    ioctl (PPfd, PPRDATA, &data);
-  } else
+    if (PPdev) {
+	ioctl(PPfd, PPRDATA, &data);
+    } else
 #endif
     {
-      data=inb (Port);
+	data = inb(Port);
     }
-  return data;
+    return data;
 }
 
 
 void drv_generic_parport_debug(void)
 {
-  unsigned char control;
-  
+    unsigned char control;
+
 #ifdef WITH_PPDEV
-  if (PPdev) {
-    ioctl (PPfd, PPRCONTROL, &control);
-  } else 
+    if (PPdev) {
+	ioctl(PPfd, PPRCONTROL, &control);
+    } else
 #endif
     {
-      control=ctr;
+	control = ctr;
     }
-  
-  debug ("%cSTROBE %cAUTOFD %cINIT %cSLCTIN", 
-	 control & PARPORT_CONTROL_STROBE ? '-':'+',
-	 control & PARPORT_CONTROL_AUTOFD ? '-':'+',
-	 control & PARPORT_CONTROL_INIT   ? '+':'-',
-	 control & PARPORT_CONTROL_SELECT ? '-':'+');
-  
+
+    debug("%cSTROBE %cAUTOFD %cINIT %cSLCTIN",
+	  control & PARPORT_CONTROL_STROBE ? '-' : '+',
+	  control & PARPORT_CONTROL_AUTOFD ? '-' : '+', control & PARPORT_CONTROL_INIT ? '+' : '-', control & PARPORT_CONTROL_SELECT ? '-' : '+');
+
 }

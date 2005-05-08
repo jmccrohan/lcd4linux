@@ -1,4 +1,4 @@
-/* $Id: plugin_loadavg.c,v 1.9 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: plugin_loadavg.c,v 1.10 2005/05/08 04:32:44 reinelt Exp $
  *
  * plugin for load average
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_loadavg.c,v $
+ * Revision 1.10  2005/05/08 04:32:44  reinelt
+ * CodingStyle added and applied
+ *
  * Revision 1.9  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -99,86 +102,91 @@
 #ifndef HAVE_GETLOADAVG
 static int fd = -2;
 
-int getloadavg (double loadavg[], int nelem)
+int getloadavg(double loadavg[], int nelem)
 {
-  char buf[65], *p;
-  ssize_t nread;
-  int i;
-      
-  if (fd == -2) fd = open ("/proc/loadavg", O_RDONLY);
-  if (fd < 0) return -1;
+    char buf[65], *p;
+    ssize_t nread;
+    int i;
 
-  lseek(fd,0,SEEK_SET);
-  nread = read (fd, buf, sizeof buf - 1);
-  
-  if (nread < 0) return -1;
-  buf[nread - 1] = '\0';
-  
-  if (nelem > 3) nelem = 3;
-  p = buf;
-  for (i = 0; i < nelem; ++i) {
-    char *endp;
-    loadavg[i] = strtod (p, &endp);
-    if (endp == NULL || endp == p)
-      /* This should not happen.  The format of /proc/loadavg
-	 must have changed.  Don't return with what we have,
-	 signal an error.  */
-      return -1;
-    p = endp;
-  }
-  
-  return i;
+    if (fd == -2)
+	fd = open("/proc/loadavg", O_RDONLY);
+    if (fd < 0)
+	return -1;
+
+    lseek(fd, 0, SEEK_SET);
+    nread = read(fd, buf, sizeof buf - 1);
+
+    if (nread < 0)
+	return -1;
+    buf[nread - 1] = '\0';
+
+    if (nelem > 3)
+	nelem = 3;
+    p = buf;
+    for (i = 0; i < nelem; ++i) {
+	char *endp;
+	loadavg[i] = strtod(p, &endp);
+	if (endp == NULL || endp == p)
+	    /* This should not happen.  The format of /proc/loadavg
+	       must have changed.  Don't return with what we have,
+	       signal an error.  */
+	    return -1;
+	p = endp;
+    }
+
+    return i;
 }
 
 #endif
 
 
-static void my_loadavg (RESULT *result, RESULT *arg1)
+static void my_loadavg(RESULT * result, RESULT * arg1)
 {
-  static int nelem=-1;
-  int index,age;
-  static double loadavg[3];
-  static struct timeval last_value;
-  struct timeval now;
-  
-  gettimeofday(&now,NULL);
-  
-  age = (now.tv_sec - last_value.tv_sec)*1000 + (now.tv_usec - last_value.tv_usec)/1000;
-  /* reread every 10 msec only */
-  if (nelem==-1 || age==0 || age>10) {
-  
-    nelem=getloadavg(loadavg, 3);
-    if (nelem<0) {
-      error ("getloadavg() failed!");
-      SetResult(&result, R_STRING, "");
-      return;
+    static int nelem = -1;
+    int index, age;
+    static double loadavg[3];
+    static struct timeval last_value;
+    struct timeval now;
+
+    gettimeofday(&now, NULL);
+
+    age = (now.tv_sec - last_value.tv_sec) * 1000 + (now.tv_usec - last_value.tv_usec) / 1000;
+    /* reread every 10 msec only */
+    if (nelem == -1 || age == 0 || age > 10) {
+
+	nelem = getloadavg(loadavg, 3);
+	if (nelem < 0) {
+	    error("getloadavg() failed!");
+	    SetResult(&result, R_STRING, "");
+	    return;
+	}
+	last_value = now;
     }
-    last_value=now;
-  }
 
-  index=R2N(arg1);
-  if (index<1 || index>nelem) {
-    error ("loadavg(%d): index out of range!", index);
-    SetResult(&result, R_STRING, "");
+    index = R2N(arg1);
+    if (index < 1 || index > nelem) {
+	error("loadavg(%d): index out of range!", index);
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+
+    SetResult(&result, R_NUMBER, &(loadavg[index - 1]));
     return;
-  }
 
-  
-  SetResult(&result, R_NUMBER, &(loadavg[index-1]));
-  return;
-  
 }
 
-int plugin_init_loadavg (void)
+int plugin_init_loadavg(void)
 {
-  AddFunction ("loadavg", 1, my_loadavg);
-  return 0;
+    AddFunction("loadavg", 1, my_loadavg);
+    return 0;
 }
 
-void plugin_exit_loadavg(void) 
+void plugin_exit_loadavg(void)
 {
-#ifndef HAVE_GETLOADAVG   
-  if (fd>0) close(fd);
-  fd=-2;
+#ifndef HAVE_GETLOADAVG
+    if (fd > 0)
+	close(fd);
+    fd = -2;
 #endif
 }
