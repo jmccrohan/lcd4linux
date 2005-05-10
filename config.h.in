@@ -100,6 +100,9 @@
 /* Define to 1 if you have the `regcomp' function. */
 #undef HAVE_REGCOMP
 
+/* Define to 1 if you have the <serdisplib/serdisp.h> header file. */
+#undef HAVE_SERDISPLIB_SERDISP_H
+
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 
@@ -382,6 +385,9 @@
 
 /* RouterBoard driver */
 #undef WITH_ROUTERBOARD
+
+/* serdisplib driver */
+#undef WITH_SERDISPLIB
 
 /* SimpleLCD driver */
 #undef WITH_SIMPLELCD

@@ -65,6 +65,7 @@ drv_MilfordInstruments.c    \
 drv_Noritake.c              \
 drv_NULL.c                  \
 drv_RouterBoard.c           \
+drv_serdisplib.c            \
 drv_SimpleLCD.c             \
 drv_T6963.c                 \
 drv_Trefon.c                \

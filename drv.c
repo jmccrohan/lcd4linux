@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.31 2005/05/08 04:32:43 reinelt Exp $
+/* $Id: drv.c,v 1.32 2005/05/10 13:20:14 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.32  2005/05/10 13:20:14  reinelt
+ * added serdisplib driver
+ *
  * Revision 1.31  2005/05/08 04:32:43  reinelt
  * CodingStyle added and applied
  *
@@ -209,6 +212,7 @@ extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
 extern DRIVER drv_RouterBoard;
+extern DRIVER drv_serdisplib;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
 extern DRIVER drv_Trefon;
@@ -266,6 +270,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,
+#endif
+#ifdef WITH_SERDISPLIB
+    &drv_serdisplib,
 #endif
 #ifdef WITH_SIMPLELCD
     &drv_SimpleLCD,

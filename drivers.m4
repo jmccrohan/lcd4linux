@@ -31,7 +31,8 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
   [                        MilfordInstruments, Noritake, NULL, PNG, PPM,]
-  [                        RouterBoard, SimpleLCD, T6963, Trefon, USBLCD, X11],
+  [                        RouterBoard, serdisplib, SimpleLCD, T6963, Trefon,]
+  [                        USBLCD, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -68,11 +69,12 @@ for driver in $drivers; do
          PNG="yes"
          PPM="yes"
 	 ROUTERBOARD="yes"
+	 SERDISPLIB="yes"
+         SIMPLELCD="yes"
          T6963="yes"
          Trefon="yes"
          USBLCD="yes"
          X11="yes"
-         SIMPLELCD="yes"
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
@@ -121,6 +123,9 @@ for driver in $drivers; do
          ;;
       RouterBoard)
          ROUTERBOARD=$val
+         ;;
+      serdisplib)
+         SERDISPLIB=$val;
          ;;
       SimpleLCD)
          SIMPLELCD=$val
@@ -277,6 +282,17 @@ if test "$ROUTERBOARD" = "yes"; then
    TEXT="yes"
    DRIVERS="$DRIVERS drv_RouterBoard.o"
    AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
+fi
+
+if test "$SERDISPLIB" = "yes"; then
+   if test "$has_serdisplib" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_serdisplib.o"
+      DRVLIBS="$DRVLIBS -L/usr/local/lib -lserdisp"
+      AC_DEFINE(WITH_SERDISPLIB,1,[serdisplib driver])
+   else
+      AC_MSG_WARN(serdisp.h not found: serdisplib driver disabled)
+   fi
 fi
 
 if test "$SIMPLELCD" = "yes"; then

@@ -64,6 +64,9 @@ AC_CHECK_HEADERS(linux/compiler.h linux/i2c.h linux/i2c-dev.h,[has_i2c="true"],[
 # endif
 ])
 
+# check for serdisplib
+AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
+
 # check for python
 sinclude(python.m4)
 AC_PYTHON_DEVEL
