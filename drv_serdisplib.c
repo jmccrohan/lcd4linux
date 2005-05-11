@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.1 2005/05/10 13:20:14 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.2 2005/05/11 04:27:49 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.2  2005/05/11 04:27:49  reinelt
+ * small serdisplib bugs fixed
+ *
  * Revision 1.1  2005/05/10 13:20:14  reinelt
  * added serdisplib driver
  *
@@ -39,13 +42,9 @@
 #include "config.h"
 
 #include <stdlib.h>
-//#include <stdio.h>
+#include <stdio.h>
 #include <string.h>
-//#include <errno.h>
 #include <unistd.h>
-//#include <termios.h>
-//#include <fcntl.h>
-//#include <sys/time.h>
 
 #include <serdisplib/serdisp.h>
 
@@ -82,7 +81,7 @@ static void drv_SD_blit(const int row, const int col, const int height, const in
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
 	    color = drv_generic_graphic_FB[r * LCOLS + c] ? SD_COL_BLACK : SD_COL_WHITE;
-	    serdisp_setcolour(dd, r, c, color);
+	    serdisp_setcolour(dd, c, r, color);
 	}
     }
 
@@ -94,7 +93,6 @@ static int drv_SD_start(const char *section)
 {
     long version;
     char *port, *model, *options, *s;
-    int TROWS, TCOLS;
 
     version = serdisp_getversioncode();
     info ("%s: header  version %d.%d", Name, SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
@@ -153,9 +151,6 @@ static int drv_SD_start(const char *section)
 	error("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
 	return -1;
     }
-    
-    TROWS = DROWS / YRES;	/* text rows */
-    TCOLS = DCOLS / XRES;	/* text cols */
     
     /* clear display */
     serdisp_clear(dd);
