@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.3 2005/05/12 05:52:43 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.4 2005/05/12 14:55:47 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.4  2005/05/12 14:55:47  reinelt
+ * plugins for serdisplib driver
+ *
  * Revision 1.3  2005/05/12 05:52:43  reinelt
  * serdisplib GET_VERSION_MAJOR macro
  *
@@ -101,10 +104,64 @@ static void drv_SD_blit(const int row, const int col, const int height, const in
 }
 
 
+static int drv_SD_contrast(int contrast)
+{
+    if (contrast < 0)
+	contrast = 0;
+    if (contrast > MAX_CONTRASTSTEP)
+	contrast = MAX_CONTRASTSTEP;
+
+    serdisp_feature(dd, FEATURE_CONTRAST, contrast);
+
+    return contrast;
+}
+
+
+static int drv_SD_backlight(int backlight)
+{
+    if (backlight < FEATURE_NO)
+	backlight = FEATURE_NO;
+    if (backlight > FEATURE_YES)
+	backlight = FEATURE_YES;
+
+    serdisp_feature(dd, FEATURE_BACKLIGHT, backlight);
+
+    return backlight;
+}
+
+
+static int drv_SD_reverse(int reverse)
+{
+    if (reverse < FEATURE_NO)
+	reverse = FEATURE_NO;
+    if (reverse > FEATURE_YES)
+	reverse = FEATURE_YES;
+
+    serdisp_feature(dd, FEATURE_REVERSE, reverse);
+
+    return reverse;
+}
+
+
+static int drv_SD_rotate(int rotate)
+{
+    if (rotate < 0)
+	rotate = 0;
+    if (rotate > 3)
+	rotate = 3;
+
+    serdisp_feature(dd, FEATURE_ROTATE, rotate);
+
+    return rotate;
+}
+
+
+
 static int drv_SD_start(const char *section)
 {
     long version;
     char *port, *model, *options, *s;
+    int contrast, backlight, reverse, rotate;
 
     version = serdisp_getversioncode();
     info("%s: header  version %d.%d", Name, SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
@@ -167,6 +224,22 @@ static int drv_SD_start(const char *section)
     /* clear display */
     serdisp_clear(dd);
 
+    if (cfg_number(section, "Contrast", 0, 0, MAX_CONTRASTSTEP, &contrast) > 0) {
+	drv_SD_contrast(contrast);
+    }
+
+    if (cfg_number(section, "BACKLIGHT", 0, 0, 1, &backlight) > 0) {
+	drv_SD_backlight(backlight);
+    }
+
+    if (cfg_number(section, "REVERSE", 0, 0, 1, &reverse) > 0) {
+	drv_SD_reverse(reverse);
+    }
+
+    if (cfg_number(section, "ROTATE", 0, 0, 3, &rotate) > 0) {
+	drv_SD_rotate(rotate);
+    }
+
     return 0;
 }
 
@@ -175,8 +248,40 @@ static int drv_SD_start(const char *section)
 /***            plugins               ***/
 /****************************************/
 
-/* none at the moment... */
-/* Fixme: SD_FEATURE's */
+static void plugin_contrast(RESULT * result, RESULT * arg1)
+{
+    double contrast;
+
+    contrast = drv_SD_contrast(R2N(arg1));
+    SetResult(&result, R_NUMBER, &contrast);
+}
+
+
+static void plugin_backlight(RESULT * result, RESULT * arg1)
+{
+    double backlight;
+
+    backlight = drv_SD_backlight(R2N(arg1));
+    SetResult(&result, R_NUMBER, &backlight);
+}
+
+
+static void plugin_reverse(RESULT * result, RESULT * arg1)
+{
+    double reverse;
+
+    reverse = drv_SD_reverse(R2N(arg1));
+    SetResult(&result, R_NUMBER, &reverse);
+}
+
+
+static void plugin_rotate(RESULT * result, RESULT * arg1)
+{
+    double rotate;
+
+    rotate = drv_SD_rotate(R2N(arg1));
+    SetResult(&result, R_NUMBER, &rotate);
+}
 
 
 /****************************************/
@@ -244,8 +349,10 @@ int drv_SD_init(const char *section, const int quiet)
     widget_register(&wc);
 
     /* register plugins */
-    /* none at the moment... */
-    /* Fixme: SD_FEATURE's */
+    AddFunction("LCD::contrast",  1, plugin_contrast);
+    AddFunction("LCD::backlight", 1, plugin_backlight);
+    AddFunction("LCD::reverse",   1, plugin_reverse);
+    AddFunction("LCD::rotate",    1, plugin_rotate);
 
     return 0;
 }
