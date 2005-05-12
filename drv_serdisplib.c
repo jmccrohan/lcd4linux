@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.2 2005/05/11 04:27:49 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.3 2005/05/12 05:52:43 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.3  2005/05/12 05:52:43  reinelt
+ * serdisplib GET_VERSION_MAJOR macro
+ *
  * Revision 1.2  2005/05/11 04:27:49  reinelt
  * small serdisplib bugs fixed
  *
@@ -48,6 +51,15 @@
 
 #include <serdisplib/serdisp.h>
 
+/* Fixme: This should be removed as soon as serdisp.h 
+ * contains this macros
+ */
+#ifndef SERDISP_VERSION_GET_MAJOR
+#define SERDISP_VERSION_GET_MAJOR(_c)  ((int)( (_c) >> 8 ))
+#define SERDISP_VERSION_GET_MINOR(_c)  ((int)( (_c) & 0xFF ))
+#endif
+
+
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
@@ -66,7 +78,7 @@
 static char Name[] = "serdisplib";
 
 static serdisp_CONN_t *sdcd;
-static serdisp_t      *dd;
+static serdisp_t *dd;
 
 
 /****************************************/
@@ -77,7 +89,7 @@ static void drv_SD_blit(const int row, const int col, const int height, const in
 {
     int r, c;
     long color;
-    
+
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
 	    color = drv_generic_graphic_FB[r * LCOLS + c] ? SD_COL_BLACK : SD_COL_WHITE;
@@ -95,22 +107,22 @@ static int drv_SD_start(const char *section)
     char *port, *model, *options, *s;
 
     version = serdisp_getversioncode();
-    info ("%s: header  version %d.%d", Name, SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
-    info ("%s: library version %d.%d", Name, version>>8, version & 0xff);
-    
+    info("%s: header  version %d.%d", Name, SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
+    info("%s: library version %d.%d", Name, SERDISP_VERSION_GET_MAJOR(version), SERDISP_VERSION_GET_MINOR(version));
+
     port = cfg_get(section, "Port", NULL);
     if (port == NULL || *port == '\0') {
 	error("%s: no '%s.Port' entry from %s", Name, section, cfg_source());
 	return -1;
     }
-    
-    /* opening the output device */             
+
+    /* opening the output device */
     sdcd = SDCONN_open(port);
-    if (sdcd == NULL) {        
-	error ("%s: open(%s) failed: %s", Name, port, sd_geterrormsg());
+    if (sdcd == NULL) {
+	error("%s: open(%s) failed: %s", Name, port, sd_geterrormsg());
 	return -1;
     }
-    
+
 
     model = cfg_get(section, "Model", "");
     if (model == NULL || *model == '\0') {
@@ -125,14 +137,14 @@ static int drv_SD_start(const char *section)
     /* opening and initialising the display */
     dd = serdisp_init(sdcd, model, options);
     if (dd == NULL) {
-	error ("%s: init(%s, %s, %s) failed: %s", Name, port, model, options, sd_geterrormsg());
+	error("%s: init(%s, %s, %s) failed: %s", Name, port, model, options, sd_geterrormsg());
 	SDCONN_close(sdcd);
 	return -1;
     }
 
     DROWS = serdisp_getheight(dd);
     DCOLS = serdisp_getwidth(dd);
-    info ("%s: display size %dx%d", Name, DCOLS, DROWS);
+    info("%s: display size %dx%d", Name, DCOLS, DROWS);
 
     XRES = -1;
     YRES = -1;
@@ -145,16 +157,16 @@ static int drv_SD_start(const char *section)
 	error("%s: bad Font '%s' from %s", Name, s, cfg_source());
 	return -1;
     }
-    
+
     /* Fixme: provider other fonts someday... */
     if (XRES != 6 && YRES != 8) {
 	error("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
 	return -1;
     }
-    
+
     /* clear display */
     serdisp_clear(dd);
-    
+
     return 0;
 }
 
