@@ -1,4 +1,91 @@
+2005-05-13  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, config.h.in, configure, Makefile.am, Makefile.in:
+	added drv_LCDLinux.h to extra_sources
+
+2005-05-12  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_serdisplib.c, indent.sh: plugins for serdisplib driver
+
+	* drv_serdisplib.c: serdisplib GET_VERSION_MAJOR macro
+
+2005-05-11  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_serdisplib.c: small serdisplib bugs fixed
+
+2005-05-10  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* configure.in, drivers.m4, drv.c, drv_serdisplib.c, lcd4linux.conf.sample, Makefile.am, Makefile.in, config.h.in, configure:
+	added serdisplib driver
+
+2005-05-08  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* plugin_proc_stat.c, plugin_python.c, plugin_sample.c, plugin_seti.c, plugin_statfs.c, plugin_string.c, plugin_test.c, plugin_time.c, plugin_uname.c, plugin_uptime.c, plugin_wireless.c, plugin_xmms.c, qprintf.c, thread.c, thread.h, timer.c, timer.h, udelay.c, udelay.h, widget.c, widget.h, widget_bar.c, widget_bar.h, widget_icon.c, widget_icon.h, widget_text.c, widget_text.h, drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c, drv_Cwlinux.c, drv_HD44780.c, drv_Image.c, drv_LCDLinux.c, drv_LCDLinux.h, drv_LCDTerm.c, drv_M50530.c, drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c, drv_Noritake.c, drv_RouterBoard.c, drv_SimpleLCD.c, drv_T6963.c, drv_Trefon.c, drv_USBLCD.c, drv_X11.c, drv_generic_graphic.c, drv_generic_graphic.h, drv_generic_i2c.c, drv_generic_i2c.h, drv_generic_parport.c, drv_generic_parport.h, drv_generic_serial.c, drv_generic_serial.h, drv_generic_text.c, drv_generic_text.h, evaluator.c, evaluator.h, font_6x8.h, hash.c, hash.h, indent.sh, layout.c, lcd4linux.c, pid.c, pid.h, plugin.c, plugin.h, plugin_apm.c, plugin_cfg.c, plugin_cpuinfo.c, plugin_diskstats.c, plugin_dvb.c, plugin_exec.c, plugin_i2c_sensors.c, plugin_imon.c, plugin_isdn.c, plugin_loadavg.c, plugin_math.c, plugin_meminfo.c, plugin_mysql.c, plugin_netdev.c, plugin_pop3.c, plugin_ppp.c, CodingStyle, cfg.c, cfg.h, configure, debug.c, debug.h, drv.c, drv.h, drv_BWCT.c:
+	CodingStyle added and applied
+
+2005-05-06  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* python.m4: python2.4 added to python.m4
+
+	* drv_generic_text.c, widget_bar.c, widget_bar.h:
+	hollow bar patch from geronet
+
+2005-05-05  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_HD44780.c, drv_M50530.c, drv_Noritake.c, drv_T6963.c, drv_generic_parport.c, lcd4linux.conf.sample:
+	changed SELECT to SLCTIN
+
+2005-05-04  obconseil  <obconseil@merlin.ethnet>
+
+	* drv_Noritake.c:
+	Driver modified according to Michels's recommendations :
+
+	- Suppressed linux/parport.h depandancy. It was not needed anyway.
+	- Compile-time disable the wait_busy polling function, replaced with a time wait.
+	- Replaced the hardwire_* calls by their wire_* equivalent, to adapt other wirings.
+	- Created a "Models" structure, containing parameters for the display.
+	- Other cleanups, to remove compile-time warnings.
+
+2005-05-04  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_generic_parport.c, drv_generic_parport.h:
+	parport_wire_status() added
+
+	* drivers.m4, drv.c, drv_Noritake.c, Makefile.am, Makefile.in, config.h.in, configure:
+	Noritake driver added
+
+	* plugin_python.c: * replaced fprintf(stderr,...  with error()
+	* corrected a "dangling reference" memory problem
+	* removed some PyErr_Print() spam
+	* fixed a segmentation fault that occured when python module was not
+	found
+	* improved error messages
+
+2005-05-03  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drivers.m4, plugin_python.c, plugins.m4, Makefile.am, Makefile.in, configure:
+	rearranged autoconf a bit,
+	libX11 will be linked only if really needed (i.e. when the X11 driver has been selected)
+	plugin_python filled with life
+
+2005-05-02  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, configure.in, plugin.c, plugin_python.c, plugins.m4, python.m4:
+	preparations for python bindings and python plugin
+
+	* cfg.c, drv_LCDLinux.c, drv_LCDLinux.h, lcd4linux.conf.sample:
+	make busy-flag checking configurable for LCD-Linux driver
+
+2005-04-30  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_LCDLinux.c, drv_LCDLinux.h, lcd4linux.conf.sample:
+	LCD-Linux display size set up from lcd4linux.conf
+
 2005-04-24  Michael Reinelt  <reinelt@merlin.ethnet>
+
+	* drv_Trefon.c, lcd4linux.conf.sample: Trefon Backlight added
+
+	* ChangeLog: Changelog updated
 
 	* Makefile.am, Makefile.in, config.h.in, configure, drivers.m4, drv.c, drv_Trefon.c, drv_USBLCD.c, lcd4linux.conf.sample:
 	driver for TREFON USB LCD's added
