@@ -36,7 +36,7 @@ for plugin in $plugins; do
    case $plugin in 
       !*) 
          val="no"
-         driver=`echo $plugin|cut -c 2-`
+         plugin=`echo $plugin|cut -c 2-`
          ;;
        *) 
          val="yes"
