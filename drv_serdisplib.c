@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.4 2005/05/12 14:55:47 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.5 2005/05/28 09:06:14 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.5  2005/05/28 09:06:14  reinelt
+ * serdisplib cosmetics
+ *
  * Revision 1.4  2005/05/12 14:55:47  reinelt
  * plugins for serdisplib driver
  *
@@ -228,15 +231,15 @@ static int drv_SD_start(const char *section)
 	drv_SD_contrast(contrast);
     }
 
-    if (cfg_number(section, "BACKLIGHT", 0, 0, 1, &backlight) > 0) {
+    if (cfg_number(section, "Backlight", 0, 0, 1, &backlight) > 0) {
 	drv_SD_backlight(backlight);
     }
 
-    if (cfg_number(section, "REVERSE", 0, 0, 1, &reverse) > 0) {
+    if (cfg_number(section, "Reverse", 0, 0, 1, &reverse) > 0) {
 	drv_SD_reverse(reverse);
     }
 
-    if (cfg_number(section, "ROTATE", 0, 0, 3, &rotate) > 0) {
+    if (cfg_number(section, "Rotate", 0, 0, 3, &rotate) > 0) {
 	drv_SD_rotate(rotate);
     }
 

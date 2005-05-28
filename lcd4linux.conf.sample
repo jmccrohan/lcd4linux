@@ -87,8 +87,8 @@ Display HD44780-generic {
     Driver 'HD44780'
     Model 'generic'
     Port '/dev/parports/0'	
-    Size '20x4'
-    asc255bug 1
+    Size '8x2'
+    asc255bug 0
     Wire {
 	RW      'GND'
 	RS      'AUTOFD'
@@ -327,7 +327,7 @@ Widget Busy {
     expression proc_stat::cpu('busy', 500)
     prefix 'Busy'	
     postfix '%'	
-    width 10	
+    width 8	
     precision 1
     align 'R'	
     update tick	
@@ -479,8 +479,8 @@ Widget BarTest {
     # if delta=0, just returns the value of bar n instead of changing it.
     expression test::bar(0,30,25,1)
     expression2 test::bar(1,30,0,1)
-    length 6
-    max 50
+    length 8
+    # max 50
     direction 'E'
     update 10
 }
@@ -687,6 +687,15 @@ Layout L24x8 {
     }
 }
 
+Layout L8x2 {
+    Row1 {
+	Col1  'Busy'
+    }
+    Row2 {
+	Col1 'BarTest'
+    }
+}
+
 Layout L16x2 {
     Row1 {
 	Col1  'Busy'
@@ -697,15 +706,6 @@ Layout L16x2 {
 	#Col11 'DiskBar'
 	Col11 'BarTest'
     }
-#   Row2 {
-#	Col1 'Heartbeat'
-#	Col2 'EKG'
-#	Col3 'Karo'
-#	Col4 'Heart'
-#	Col5 'Blob'
-#	Col6 'Wave'
-#	Col7 'Squirrel'
-#   }
 }
 
 Layout L20x2 {
@@ -749,12 +749,12 @@ Layout testMySQL {
 }
 
 
-Display 'SerDispLib'
+#Display 'SerDispLib'
 #Display 'LCD-Linux'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
-#Display 'HD44780-generic'
+Display 'HD44780-generic'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
@@ -772,7 +772,8 @@ Display 'SerDispLib'
 #Display 'Trefon'
 
 #Layout  'Default'
-Layout 'L16x2'
+Layout 'L8x2'
+#Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
 
