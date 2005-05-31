@@ -1,8 +1,8 @@
-/* $Id: drv_generic_i2c.h,v 1.3 2005/05/31 20:42:55 lfcorreia Exp $
+/* $Id: drv_generic_i2c.h,v 1.4 2005/05/31 21:32:00 lfcorreia Exp $
  *
  * generic driver helper for i2c displays
  *
- * Copyright (C) 2005 Luis F. Correia <luis.f.correia@seg-social.pt>
+ * Copyright (C) 2005 Luis Correia <lfcorreia@users.sf.net>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.h,v $
+ * Revision 1.4  2005/05/31 21:32:00  lfcorreia
+ * fix my email address
+ *
  * Revision 1.3  2005/05/31 20:42:55  lfcorreia
  * new file: lcd4linux_i2c.h
  * avoid the problems detecting the proper I2C kernel include files
