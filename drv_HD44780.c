@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.50 2005/05/31 20:42:55 lfcorreia Exp $
+/* $Id: drv_HD44780.c,v 1.51 2005/05/31 21:26:56 lfcorreia Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -6,7 +6,7 @@
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Support for I2C bus
- * Copyright (C) 2005 Luis F. Correia <luis.f.correia@seg-social.pt>
+ * Copyright (C) 2005 Luis Correia <lfcorreia@users.sf.net>
  *
  * Modification for 4-Bit mode
  * Copyright (C) 2003 Martin Hejl (martin@hejl.de)
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.51  2005/05/31 21:26:56  lfcorreia
+ * fix my email address
+ *
  * Revision 1.50  2005/05/31 20:42:55  lfcorreia
  * new file: lcd4linux_i2c.h
  * avoid the problems detecting the proper I2C kernel include files
