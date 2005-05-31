@@ -57,6 +57,10 @@ AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 # check for serdisplib
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
 
+# check for python
+sinclude(python.m4)
+AC_PYTHON_DEVEL
+
 # drivers
 sinclude(drivers.m4)
 
