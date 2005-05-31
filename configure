@@ -5452,76 +5452,7 @@ done
 
 
 # check for i2c
-
-
-
-for ac_header in linux/compiler.h linux/i2c.h linux/i2c-dev.h
-do
-as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-#if HAVE_LINUX_COMPILER_H
-#include <linux/compiler.h>
-# endif
-#if HAVE_LINUX_I2C_H
-#include <linux/i2c.h>
-# endif
-
-
-#include <$ac_header>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  eval "$as_ac_Header=yes"
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-eval "$as_ac_Header=no"
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
- has_i2c="true"
-else
-  has_i2c="false";break
-fi
-
-done
+has_i2c="true"
 
 
 # check for serdisplib
@@ -6062,7 +5993,7 @@ TEXT="no"
 GRAPHIC="no"
 IMAGE="no"
 
-# generiv I/O drivers
+# generic I/O drivers
 PARPORT="no"
 SERIAL="no"
 I2C="no"
@@ -6374,18 +6305,12 @@ fi
 
 # generic i2c driver
 if test "$I2C" = "yes"; then
-   if test "$has_i2c" = true; then
       DRIVERS="$DRIVERS drv_generic_i2c.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_I2C 1
 _ACEOF
 
-   else
-      I2C="no"
-      { echo "$as_me:$LINENO: WARNING: I2C include files not found: I2C bus driver disabled" >&5
-echo "$as_me: WARNING: I2C include files not found: I2C bus driver disabled" >&2;}
-   fi
 fi
 
 

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.49 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.50 2005/05/31 20:42:55 lfcorreia Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,14 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.50  2005/05/31 20:42:55  lfcorreia
+ * new file: lcd4linux_i2c.h
+ * avoid the problems detecting the proper I2C kernel include files
+ *
+ * rearrange all the other autoconf stuff to remove I2C detection
+ *
+ * new method by Paul Kamphuis to write to the I2C device
+ *
  * Revision 1.49  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -819,17 +827,29 @@ static void drv_HD_PP_stop(void)
 }
 
 
+#ifdef WITH_I2C
 
 /****************************************/
 /***  i2c dependant functions         ***/
 /****************************************/
 
-#ifdef WITH_I2C
+    /*
+        DISCLAIMER!!!!
+		
+		The following code is WORK IN PROGRESS, since it basicly 'works for us...'
+
+		(C) 2005 Paul Kamphuis & Luis Correia
+
+		We have removed all of the delays from this code, as the I2C bus is slow enough...
+		(maximum possible speed is 100KHz only)
+
+	*/
 
 static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
 {
     unsigned char enable;
-
+    unsigned char command; /* this is actually the first data byte on the PCF8574 */
+    unsigned char data_block[2];
     /* enable signal: 'controller' is a bitmask */
     /* bit n .. send to controller #n */
     /* so we can send a byte to more controllers at the same time! */
@@ -843,39 +863,32 @@ static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
     if (controller & 0x08)
 	enable |= SIGNAL_ENABLE4;
 
+    /*
+        The new method Paul Kamphuis has concocted places the 3 needed writes to the I2C device
+	    as a single operation, using the 'i2c_smbus_write_block_data' function.
+		These actual writes are performed by putting the nibble along with the 'EN' signal.
 
-    /* clear ENABLE */
-    /* put data on DB1..DB4 */
-    /* nibble already contains RS bit! */
-    drv_generic_i2c_data(nibble);
+		command = first byte to be written, which contains the nibble (DB0..DB3)
+		data [0]   = second byte to be written, which contains the nibble plus the EN signal
+		data [1]   = third byte to be written, which contains the nibble (DB0..DB3)
 
-    /* Address set-up time */
-    ndelay(T_AS);
+		Then we write the block as a whole.
 
-    /* rise ENABLE */
-    drv_generic_i2c_data(nibble | enable);
+		The main advantage we see is that we do 2 less IOCTL's from our driver.
+	*/
 
-    /* Enable pulse width */
-    ndelay(T_PW);
+    command		= nibble;
+    data_block[0] = nibble | enable;
+    data_block[1] = nibble;
 
-    /* lower ENABLE */
-    drv_generic_i2c_data(nibble);
-
-    /* Address hold time */
-    ndelay(T_H);
+	drv_generic_i2c_command(command,data_block,2);
 }
 
 
 static void drv_HD_I2C_byte(const unsigned char controller, const unsigned char data)
 {
-    /* send data with RS disabled */
-    /* send high nibble of the data */
+    /* send data with RS enabled */
     drv_HD_I2C_nibble(controller, ((data >> 4) & 0x0f) | SIGNAL_RS);
-
-    /* Make sure we honour T_CYCLE */
-    ndelay(T_CYCLE - T_AS - T_PW);
-
-    /* send low nibble of the data */
     drv_HD_I2C_nibble(controller, (data & 0x0f) | SIGNAL_RS);
 }
 
@@ -884,13 +897,7 @@ static void drv_HD_I2C_command(const unsigned char controller, const unsigned ch
 {
     /* send data with RS disabled */
     drv_HD_I2C_nibble(controller, ((cmd >> 4) & 0x0f));
-
-    ndelay(T_CYCLE - T_AS - T_PW);
-
     drv_HD_I2C_nibble(controller, ((cmd) & 0x0f));
-
-    /* wait for command completion */
-    udelay(delay);
 }
 
 static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, const int delay)
@@ -902,11 +909,7 @@ static void drv_HD_I2C_data(const unsigned char controller, const char *string, 
 	return;
 
     while (l--) {
-	/* send data with RS enabled */
 	drv_HD_I2C_byte(controller, *(string++));
-
-	/* wait for command completion */
-	udelay(delay);
     }
 }
 
@@ -963,6 +966,8 @@ static void drv_HD_I2C_stop(void)
     /* close port */
     drv_generic_i2c_close();
 }
+
+/* END OF DISCLAIMER */
 
 #endif				/* WITH_I2C */
 

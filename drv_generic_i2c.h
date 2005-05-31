@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.h,v 1.2 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_i2c.h,v 1.3 2005/05/31 20:42:55 lfcorreia Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,14 @@
  *
  *
  * $Log: drv_generic_i2c.h,v $
+ * Revision 1.3  2005/05/31 20:42:55  lfcorreia
+ * new file: lcd4linux_i2c.h
+ * avoid the problems detecting the proper I2C kernel include files
+ *
+ * rearrange all the other autoconf stuff to remove I2C detection
+ *
+ * new method by Paul Kamphuis to write to the I2C device
+ *
  * Revision 1.2  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -51,6 +59,10 @@
  *
  * void drv_generic_i2c_data (unsigned char value)
  *   put data bits on DB1..DB8
+ *
+ * void drv_generic_i2c_command(unsigned char command, unsigned char *data,unsigned char length)
+ *   send command and the data to the i2c device
+ * 
  */
 
 #ifndef _DRV_GENERIC_I2C_H_
@@ -60,5 +72,6 @@ int drv_generic_i2c_open(const char *section, const char *driver);
 int drv_generic_i2c_close(void);
 unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
 void drv_generic_i2c_data(const unsigned char data);
+void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
 
 #endif

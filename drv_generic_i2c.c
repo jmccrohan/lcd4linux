@@ -1,8 +1,8 @@
-/* $Id: drv_generic_i2c.c,v 1.3 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_i2c.c,v 1.4 2005/05/31 20:42:55 lfcorreia Exp $
  *
  * generic driver helper for i2c displays
  *
- * Copyright (C) 2005 Luis F. Correia <luis.f.correia@seg-social.pt>
+ * Copyright (C) 2005 Luis Correia <lfcorreia@users.sf.net>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
@@ -23,6 +23,14 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.4  2005/05/31 20:42:55  lfcorreia
+ * new file: lcd4linux_i2c.h
+ * avoid the problems detecting the proper I2C kernel include files
+ *
+ * rearrange all the other autoconf stuff to remove I2C detection
+ *
+ * new method by Paul Kamphuis to write to the I2C device
+ *
  * Revision 1.3  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -34,6 +42,20 @@
  *
  *
  */
+
+
+    /*
+        DISCLAIMER!!!!
+		
+		The following code is WORK IN PROGRESS, since it basicly 'works for us...'
+
+		(C) 2005 Paul Kamphuis & Luis Correia
+
+		We have removed all of the delays from this code, as the I2C bus is slow enough...
+		(maximum possible speed is 100KHz only)
+
+	*/
+
 
 #include "config.h"
 
@@ -50,10 +72,7 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-#include <linux/compiler.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-
+#include "lcd4linux_i2c.h"
 #include "debug.h"
 #include "qprintf.h"
 #include "cfg.h"
@@ -64,14 +83,20 @@ static char *Driver = "";
 static char *Section = "";
 static int i2c_device;
 
-static void my_i2c_smbus_write_byte_data(const int device, const unsigned char data)
+static void my_i2c_smbus_write_byte_data(const int device, const unsigned char val)
 {
     struct i2c_smbus_ioctl_data args;
+    union i2c_smbus_data data;
     args.read_write = I2C_SMBUS_WRITE;
-    args.command = data;
-    args.size = I2C_SMBUS_BYTE;
-    args.data = 0;
-    ioctl(device, I2C_SMBUS, &args);
+    args.command = val;
+    args.size = I2C_SMBUS_BYTE_DATA;
+    data.byte = val;
+    args.data = &data;
+
+    if (ioctl(device, I2C_SMBUS, &args) < 0) {
+	info("I2C: device %s IOCTL failed !\n", device);
+	}
+
 }
 
 static void my_i2c_smbus_read_byte_data(const int device, const unsigned char data)
@@ -88,10 +113,6 @@ int drv_generic_i2c_open(const char *section, const char *driver)
 {
     int dev;
     char *bus, *device;
-
-    //SIGNAL_ENABLE = 0x40;
-    //SIGNAL_RW = 0x10;
-    //SIGNAL_RS = 0x20;
 
     udelay_init();
 
@@ -160,5 +181,12 @@ void drv_generic_i2c_data(const unsigned char data)
 {
 
     my_i2c_smbus_write_byte_data(i2c_device, data);
+
+}
+
+void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length)
+{
+
+    i2c_smbus_write_block_data(i2c_device,command,length,(unsigned char *)data);
 
 }

@@ -55,12 +55,6 @@
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
 
-/* Define to 1 if you have the <linux/i2c-dev.h> header file. */
-#undef HAVE_LINUX_I2C_DEV_H
-
-/* Define to 1 if you have the <linux/i2c.h> header file. */
-#undef HAVE_LINUX_I2C_H
-
 /* Define to 1 if you have the <linux/isdn.h> header file. */
 #undef HAVE_LINUX_ISDN_H
 

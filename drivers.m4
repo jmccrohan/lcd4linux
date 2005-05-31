@@ -372,13 +372,8 @@ fi
 
 # generic i2c driver
 if test "$I2C" = "yes"; then
-   if test "$has_i2c" = true; then
-      DRIVERS="$DRIVERS drv_generic_i2c.o"
-      AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
-   else
-      I2C="no"
-      AC_MSG_WARN(I2C include files not found: I2C bus driver disabled)
-   fi   
+   DRIVERS="$DRIVERS drv_generic_i2c.o"
+   AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
 fi
 
 

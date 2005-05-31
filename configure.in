@@ -54,22 +54,8 @@ AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true";break], [has_gd="false"])
 # check for usb.h
 AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 
-# check for i2c
-AC_CHECK_HEADERS(linux/compiler.h linux/i2c.h linux/i2c-dev.h,[has_i2c="true"],[has_i2c="false";break],[
-#if HAVE_LINUX_COMPILER_H
-#include <linux/compiler.h>
-# endif
-#if HAVE_LINUX_I2C_H
-#include <linux/i2c.h>
-# endif
-])
-
 # check for serdisplib
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
-
-# check for python
-sinclude(python.m4)
-AC_PYTHON_DEVEL
 
 # drivers
 sinclude(drivers.m4)
