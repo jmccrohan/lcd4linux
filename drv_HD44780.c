@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.51 2005/05/31 21:26:56 lfcorreia Exp $
+/* $Id: drv_HD44780.c,v 1.52 2005/05/31 21:28:42 lfcorreia Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,8 +32,8 @@
  *
  *
  * $Log: drv_HD44780.c,v $
- * Revision 1.51  2005/05/31 21:26:56  lfcorreia
- * fix my email address
+ * Revision 1.52  2005/05/31 21:28:42  lfcorreia
+ * fix typo
  *
  * Revision 1.50  2005/05/31 20:42:55  lfcorreia
  * new file: lcd4linux_i2c.h
