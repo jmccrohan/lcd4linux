@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.4 2005/05/31 20:42:55 lfcorreia Exp $
+/* $Id: drv_generic_i2c.c,v 1.5 2005/06/01 12:50:25 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.5  2005/06/01 12:50:25  reinelt
+ * ifdef'ed unused function to avoid compiler warning
+ *
  * Revision 1.4  2005/05/31 20:42:55  lfcorreia
  * new file: lcd4linux_i2c.h
  * avoid the problems detecting the proper I2C kernel include files
@@ -43,19 +46,17 @@
  *
  */
 
-
     /*
-        DISCLAIMER!!!!
-		
-		The following code is WORK IN PROGRESS, since it basicly 'works for us...'
+       DISCLAIMER!!!!
 
-		(C) 2005 Paul Kamphuis & Luis Correia
+       The following code is WORK IN PROGRESS, since it basicly 'works for us...'
 
-		We have removed all of the delays from this code, as the I2C bus is slow enough...
-		(maximum possible speed is 100KHz only)
+       (C) 2005 Paul Kamphuis & Luis Correia
 
-	*/
+       We have removed all of the delays from this code, as the I2C bus is slow enough...
+       (maximum possible speed is 100KHz only)
 
+     */
 
 #include "config.h"
 
@@ -79,9 +80,11 @@
 #include "udelay.h"
 #include "drv_generic_i2c.h"
 
+
 static char *Driver = "";
 static char *Section = "";
 static int i2c_device;
+
 
 static void my_i2c_smbus_write_byte_data(const int device, const unsigned char val)
 {
@@ -92,13 +95,13 @@ static void my_i2c_smbus_write_byte_data(const int device, const unsigned char v
     args.size = I2C_SMBUS_BYTE_DATA;
     data.byte = val;
     args.data = &data;
-
     if (ioctl(device, I2C_SMBUS, &args) < 0) {
 	info("I2C: device %s IOCTL failed !\n", device);
-	}
-
+    }
 }
 
+/* unused, ifdef'ed away to avoid compiler warning */
+#if 0
 static void my_i2c_smbus_read_byte_data(const int device, const unsigned char data)
 {
     struct i2c_smbus_ioctl_data args;
@@ -108,17 +111,16 @@ static void my_i2c_smbus_read_byte_data(const int device, const unsigned char da
     args.data = 0;
     ioctl(device, I2C_SMBUS, &args);
 }
+#endif
+
 
 int drv_generic_i2c_open(const char *section, const char *driver)
 {
     int dev;
     char *bus, *device;
-
     udelay_init();
-
     Section = (char *) section;
     Driver = (char *) driver;
-
     bus = cfg_get(Section, "Port", NULL);
     device = cfg_get(Section, "Device", NULL);
     dev = atoi(device);
@@ -128,32 +130,28 @@ int drv_generic_i2c_open(const char *section, const char *driver)
 	error("%s: I2C bus %s open failed !\n", Driver, bus);
 	return -1;
     }
-
     info("%s: initializing I2C slave device 0x%x", Driver, dev);
     if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
 	error("%s: error initializing device 0x%x\n", Driver, dev);
 	close(i2c_device);
 	return -1;
     }
-
     return 0;
 }
 
 
 int drv_generic_i2c_close(void)
 {
-
     close(i2c_device);
-
     return 0;
 }
+
 
 unsigned char drv_generic_i2c_wire(const char *name, const char *deflt)
 {
     unsigned char w;
     char wire[256];
     char *s;
-
     qprintf(wire, sizeof(wire), "Wire.%s", name);
     s = cfg_get(Section, wire, deflt);
     if (strlen(s) == 3 && strncasecmp(s, "DB", 2) == 0 && s[2] >= '0' && s[2] <= '7') {
@@ -171,22 +169,18 @@ unsigned char drv_generic_i2c_wire(const char *name, const char *deflt)
     } else {
 	info("%s: wiring: [DISPLAY:%s]<==>[i2c:DB%d]", Driver, name, w);
     }
-
     w = 1 << w;
-
     return w;
 }
 
+
 void drv_generic_i2c_data(const unsigned char data)
 {
-
     my_i2c_smbus_write_byte_data(i2c_device, data);
-
 }
+
 
 void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length)
 {
-
-    i2c_smbus_write_block_data(i2c_device,command,length,(unsigned char *)data);
-
+    i2c_smbus_write_block_data(i2c_device, command, length, (unsigned char *) data);
 }
