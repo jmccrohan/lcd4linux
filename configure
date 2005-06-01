@@ -858,9 +858,10 @@ Optional Packages:
   --with-sco              Use this to turn on SCO-specific code
   --with-sunos-curses     Used to force SunOS 4.x curses
   --with-osf1-curses      Used to force OSF/1 curses
-  --with-vcurses=incdir Used to force SysV curses
-  --with-ncurses=dir  Compile with ncurses/locate base dir
+  --with-vcurses=incdir   Used to force SysV curses
+  --with-ncurses=dir      Compile with ncurses/locate base dir
   --with-x                use the X Window System
+  --with-python           enable python support [default=no]
   --with-drivers=<list>   compile driver for displays in <list>,
                           drivers may be separated with commas,
                           'all' (default) compiles all available drivers,
@@ -3479,7 +3480,7 @@ echo "${ECHO_T}Please note that some screen refreshs may fail" >&6
 echo $ECHO_N "checking for ncurses version... $ECHO_C" >&6
 	ncurses_version=unknown
 cat > conftest.$ac_ext <<EOF
-#line 3482 "configure"
+#line 3483 "configure"
 #include "confdefs.h"
 #ifdef RENAMED_NCURSES
 #include <curses.h>
@@ -5605,7 +5606,20 @@ done
 
 
 # check for python
-## ------------------------
+echo "$as_me:$LINENO: checking if python support is wanted" >&5
+echo $ECHO_N "checking if python support is wanted... $ECHO_C" >&6
+
+# Check whether --with-python or --without-python was given.
+if test "${with_python+set}" = set; then
+  withval="$with_python"
+  echo "$as_me:$LINENO: result: $withval" >&5
+echo "${ECHO_T}$withval" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi;
+if test "$with_python" = "yes"; then
+  ## ------------------------
 ## Python file handling
 ## From Andrew Dalke
 ## Updated by James Henstridge
@@ -5852,6 +5866,7 @@ echo $ECHO_N "checking python extra libraries... $ECHO_C" >&6
 echo "${ECHO_T}$PYTHON_EXTRA_LIBS" >&6`
 
 
+fi
 
 # drivers
 
@@ -6366,7 +6381,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_POP3="yes"
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
-         PLUGIN_PYTHON="yes"
+         PLUGIN_PYTHON=$with_python
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
@@ -7269,18 +7284,23 @@ _ACEOF
 
 fi
 if test "$PLUGIN_PYTHON" = "yes"; then
-   if test -z "$python_path"; then
-      { echo "$as_me:$LINENO: WARNING: python headers not found: python plugin disabled" >&5
-echo "$as_me: WARNING: python headers not found: python plugin disabled" >&2;}
+   if test "$with_python" != "yes"; then
+      { echo "$as_me:$LINENO: WARNING: python support not enabled: python plugin disabled (use --with-python to enable)" >&5
+echo "$as_me: WARNING: python support not enabled: python plugin disabled (use --with-python to enable)" >&2;}
    else
-      PLUGINS="$PLUGINS plugin_python.o"
-      CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
-      PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
+      if test -z "$python_path"; then
+         { echo "$as_me:$LINENO: WARNING: python headers not found: python plugin disabled" >&5
+echo "$as_me: WARNING: python headers not found: python plugin disabled" >&2;}
+      else
+         PLUGINS="$PLUGINS plugin_python.o"
+         CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+         PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_PYTHON 1
 _ACEOF
 
+      fi
    fi
 fi
 if test "$PLUGIN_SETI" = "yes"; then

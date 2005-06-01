@@ -58,8 +58,14 @@ AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
 
 # check for python
-sinclude(python.m4)
-AC_PYTHON_DEVEL
+AC_MSG_CHECKING(if python support is wanted)
+AC_ARG_WITH(python,
+[  --with-python           enable python support [[default=no]]],
+[AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
+if test "$with_python" = "yes"; then
+  sinclude(python.m4)
+  AC_PYTHON_DEVEL
+fi
 
 # drivers
 sinclude(drivers.m4)

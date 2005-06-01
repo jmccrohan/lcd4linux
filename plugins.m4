@@ -64,7 +64,7 @@ for plugin in $plugins; do
          PLUGIN_POP3="yes"
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
-         PLUGIN_PYTHON="yes"
+         PLUGIN_PYTHON=$with_python
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
@@ -231,13 +231,17 @@ if test "$PLUGIN_PROC_STAT" = "yes"; then
    AC_DEFINE(PLUGIN_PROC_STAT,1,[proc_stat plugin])
 fi
 if test "$PLUGIN_PYTHON" = "yes"; then
-   if test -z "$python_path"; then
-      AC_MSG_WARN(python headers not found: python plugin disabled)
+   if test "$with_python" != "yes"; then
+      AC_MSG_WARN(python support not enabled: python plugin disabled (use --with-python to enable))
    else
-      PLUGINS="$PLUGINS plugin_python.o"
-      CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
-      PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
-      AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
+      if test -z "$python_path"; then
+         AC_MSG_WARN(python headers not found: python plugin disabled)
+      else
+         PLUGINS="$PLUGINS plugin_python.o"
+         CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+         PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
+         AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
+      fi 
    fi 
 fi
 if test "$PLUGIN_SETI" = "yes"; then
