@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.52 2005/05/31 21:28:42 lfcorreia Exp $
+/* $Id: drv_HD44780.c,v 1.53 2005/06/01 11:17:54 pk_richman Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.53  2005/06/01 11:17:54  pk_richman
+ * marked unused parameters
+ *
  * Revision 1.52  2005/05/31 21:28:42  lfcorreia
  * fix typo
  *
@@ -896,14 +899,14 @@ static void drv_HD_I2C_byte(const unsigned char controller, const unsigned char 
 }
 
 
-static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, const int delay)
+static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, __attribute__ ((unused))const int delay)
 {
     /* send data with RS disabled */
     drv_HD_I2C_nibble(controller, ((cmd >> 4) & 0x0f));
     drv_HD_I2C_nibble(controller, ((cmd) & 0x0f));
 }
 
-static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, const int delay)
+static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, __attribute__ ((unused)) const int delay)
 {
     int l = len;
 
