@@ -5451,10 +5451,6 @@ fi
 done
 
 
-# check for i2c
-has_i2c="true"
-
-
 # check for serdisplib
 
 for ac_header in serdisplib/serdisp.h
@@ -5993,7 +5989,7 @@ TEXT="no"
 GRAPHIC="no"
 IMAGE="no"
 
-# generic I/O drivers
+# generiv I/O drivers
 PARPORT="no"
 SERIAL="no"
 I2C="no"
@@ -6305,7 +6301,7 @@ fi
 
 # generic i2c driver
 if test "$I2C" = "yes"; then
-      DRIVERS="$DRIVERS drv_generic_i2c.o"
+   DRIVERS="$DRIVERS drv_generic_i2c.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_I2C 1
@@ -6339,7 +6335,7 @@ for plugin in $plugins; do
    case $plugin in
       !*)
          val="no"
-         driver=`echo $plugin|cut -c 2-`
+         plugin=`echo $plugin|cut -c 2-`
          ;;
        *)
          val="yes"
