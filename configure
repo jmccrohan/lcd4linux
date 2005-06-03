@@ -5665,6 +5665,8 @@ if test "$with_python" = "yes"; then
 # doesn't meet the requirement.  MINIMUM-VERSION should consist of
 # numbers and dots only.
 
+# M.Reinelt 2005/06/03: Changed name from AM_... to MY_PYTH_PYTHON
+
 
 
 

@@ -64,7 +64,7 @@ AC_ARG_WITH(python,
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_python" = "yes"; then
   sinclude(python.m4)
-  AC_PYTHON_DEVEL
+  MY_PYTHON_DEVEL
 fi
 
 # drivers

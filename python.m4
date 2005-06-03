@@ -44,7 +44,9 @@
 # doesn't meet the requirement.  MINIMUM-VERSION should consist of
 # numbers and dots only.
 
-AC_DEFUN([AM_PATH_PYTHON],
+# M.Reinelt 2005/06/03: Changed name from AM_... to MY_PYTH_PYTHON
+
+AC_DEFUN([MY_PATH_PYTHON],
  [
   dnl Find a Python interpreter.  Python versions prior to 1.5 are not
   dnl supported because the default installation locations changed from
@@ -179,11 +181,11 @@ dnl @author Andrew Collier <colliera@nu.ac.za>
 dnl @version 2004-07-14
 dnl @license GPLWithACException
 
-AC_DEFUN([AC_PYTHON_DEVEL],[
+AC_DEFUN([MY_PYTHON_DEVEL],[
 	#
 	# should allow for checking of python version here...
 	#
-	AC_REQUIRE([AM_PATH_PYTHON])
+	AC_REQUIRE([MY_PATH_PYTHON])
 
 	# Check for Python include path
 	AC_MSG_CHECKING([for Python include path])
