@@ -44,9 +44,7 @@
 # doesn't meet the requirement.  MINIMUM-VERSION should consist of
 # numbers and dots only.
 
-# M.Reinelt 2005/06/03: Changed name from AM_... to MY_PYTH_PYTHON
-
-AC_DEFUN([MY_PATH_PYTHON],
+AC_DEFUN([AM_PATH_PYTHON],
  [
   dnl Find a Python interpreter.  Python versions prior to 1.5 are not
   dnl supported because the default installation locations changed from
@@ -167,7 +165,10 @@ sys.exit(sys.hexversion < minverhex)"
 
 
 
-dnl @synopsis AC_PYTHON_DEVEL
+dnl M.Reinelt 2005/06/03: Changed name from AC_PYTHON_DEVEL 
+dnl to AC_PYTHON__DEVEL to avoid clashes with swig.m4
+
+dnl @synopsis AC_PYTHON__DEVEL
 dnl
 dnl Checks for Python and tries to get the include path to 'Python.h'.
 dnl It provides the $(PYTHON_CPPFLAGS) and $(PYTHON_LDFLAGS) output
@@ -181,11 +182,11 @@ dnl @author Andrew Collier <colliera@nu.ac.za>
 dnl @version 2004-07-14
 dnl @license GPLWithACException
 
-AC_DEFUN([MY_PYTHON_DEVEL],[
+AC_DEFUN([AC_PYTHON__DEVEL],[
 	#
 	# should allow for checking of python version here...
 	#
-	AC_REQUIRE([MY_PATH_PYTHON])
+	AC_REQUIRE([AM_PATH_PYTHON])
 
 	# Check for Python include path
 	AC_MSG_CHECKING([for Python include path])
