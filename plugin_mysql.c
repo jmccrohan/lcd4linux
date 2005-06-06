@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.6 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.7 2005/06/06 09:24:07 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.7  2005/06/06 09:24:07  reinelt
+ * two bugs in plugin_mysql.c fixed
+ *
  * Revision 1.6  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -189,10 +192,10 @@ static void my_MySQLquery(RESULT * result, RESULT * query)
 
 static void my_MySQLstatus(RESULT * result)
 {
-    char *value = "";
-    char *status;
+    const char *value = "";
+    const char *status;
 
-    if (configure_mysql > 0) {
+    if (configure_mysql() > 0) {
 
 	mysql_ping(&conex);
 	status = mysql_stat(&conex);
