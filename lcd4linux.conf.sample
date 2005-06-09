@@ -195,9 +195,11 @@ Display SimpleLCD {
 
 Display M50530-24x8 {
     Driver 'M50530'
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
 #   Port '0x378'
     Size '24x8'
+    Font '5x7'
+    Duty 2
     Wire.EX   'STROBE'
     Wire.IOC1 'SLCTIN'
     Wire.IOC2 'AUTOFD'
@@ -761,10 +763,10 @@ Layout testMySQL {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-#Display 'M50530-24x8'
+Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'CT20x4'
-Display 'T6963-240x64'
+#Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'

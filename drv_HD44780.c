@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.53 2005/06/01 11:17:54 pk_richman Exp $
+/* $Id: drv_HD44780.c,v 1.54 2005/06/09 17:41:47 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.54  2005/06/09 17:41:47  reinelt
+ * M50530 fixes (many thanks to Szymon Bieganski)
+ *
  * Revision 1.53  2005/06/01 11:17:54  pk_richman
  * marked unused parameters
  *
@@ -840,21 +843,21 @@ static void drv_HD_PP_stop(void)
 /****************************************/
 
     /*
-        DISCLAIMER!!!!
-		
-		The following code is WORK IN PROGRESS, since it basicly 'works for us...'
+       DISCLAIMER!!!!
 
-		(C) 2005 Paul Kamphuis & Luis Correia
+       The following code is WORK IN PROGRESS, since it basicly 'works for us...'
 
-		We have removed all of the delays from this code, as the I2C bus is slow enough...
-		(maximum possible speed is 100KHz only)
+       (C) 2005 Paul Kamphuis & Luis Correia
 
-	*/
+       We have removed all of the delays from this code, as the I2C bus is slow enough...
+       (maximum possible speed is 100KHz only)
+
+     */
 
 static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
 {
     unsigned char enable;
-    unsigned char command; /* this is actually the first data byte on the PCF8574 */
+    unsigned char command;	/* this is actually the first data byte on the PCF8574 */
     unsigned char data_block[2];
     /* enable signal: 'controller' is a bitmask */
     /* bit n .. send to controller #n */
@@ -870,24 +873,24 @@ static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
 	enable |= SIGNAL_ENABLE4;
 
     /*
-        The new method Paul Kamphuis has concocted places the 3 needed writes to the I2C device
-	    as a single operation, using the 'i2c_smbus_write_block_data' function.
-		These actual writes are performed by putting the nibble along with the 'EN' signal.
+       The new method Paul Kamphuis has concocted places the 3 needed writes to the I2C device
+       as a single operation, using the 'i2c_smbus_write_block_data' function.
+       These actual writes are performed by putting the nibble along with the 'EN' signal.
 
-		command = first byte to be written, which contains the nibble (DB0..DB3)
-		data [0]   = second byte to be written, which contains the nibble plus the EN signal
-		data [1]   = third byte to be written, which contains the nibble (DB0..DB3)
+       command = first byte to be written, which contains the nibble (DB0..DB3)
+       data [0]   = second byte to be written, which contains the nibble plus the EN signal
+       data [1]   = third byte to be written, which contains the nibble (DB0..DB3)
 
-		Then we write the block as a whole.
+       Then we write the block as a whole.
 
-		The main advantage we see is that we do 2 less IOCTL's from our driver.
-	*/
+       The main advantage we see is that we do 2 less IOCTL's from our driver.
+     */
 
-    command		= nibble;
+    command = nibble;
     data_block[0] = nibble | enable;
     data_block[1] = nibble;
 
-	drv_generic_i2c_command(command,data_block,2);
+    drv_generic_i2c_command(command, data_block, 2);
 }
 
 
@@ -899,14 +902,16 @@ static void drv_HD_I2C_byte(const unsigned char controller, const unsigned char 
 }
 
 
-static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, __attribute__ ((unused))const int delay)
+static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, __attribute__ ((unused))
+			       const int delay)
 {
     /* send data with RS disabled */
     drv_HD_I2C_nibble(controller, ((cmd >> 4) & 0x0f));
     drv_HD_I2C_nibble(controller, ((cmd) & 0x0f));
 }
 
-static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, __attribute__ ((unused)) const int delay)
+static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, __attribute__ ((unused))
+			    const int delay)
 {
     int l = len;
 
@@ -1168,8 +1173,7 @@ static int drv_HD_start(const char *section, const int quiet)
 	info("%s: using model '%s'", Name, Models[Model].name);
     } else {
 	error("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());
-	if (model)
-	    free(model);
+	free(model);
 	return -1;
     }
     free(model);
@@ -1177,8 +1181,7 @@ static int drv_HD_start(const char *section, const int quiet)
     bus = cfg_get(section, "Bus", "parport");
     if (bus == NULL && *bus == '\0') {
 	error("%s: empty '%s.Bus' entry from %s", Name, section, cfg_source());
-	if (bus)
-	    free(bus);
+	free(bus);
 	return -1;
     }
 
