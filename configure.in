@@ -47,9 +47,17 @@ AC_CHECK_CURSES
 
 # Checks for X11
 AC_PATH_XTRA
+# double-check for X11
+if test "$no_x" != "yes"; then
+   AC_CHECK_HEADERS(X11/Xlib.h X11/Xutil.h, [no_x="$no_x"], [no_x="yes"])
+   if test "$no_x" = "yes"; then
+      AC_MSG_WARN([configure thinks X11 is available while it is *not*])
+      AC_MSG_WARN([maybe someone wants to fix autoconf's AC PATH XTRA])
+   fi
+fi
 
 # check for gd.h
-AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true";break], [has_gd="false"])
+AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true"; break], [has_gd="false"])
 
 # check for usb.h
 AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
