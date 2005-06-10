@@ -75,6 +75,8 @@ drv_X11.c                   \
                             \
 font_6x8.h                  \
                             \
+lcd4linux_i2c.h             \
+                            \
 plugin_apm.c                \
 plugin_cpuinfo.c            \
 plugin_diskstats.c          \
