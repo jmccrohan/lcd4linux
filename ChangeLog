@@ -1,4 +1,70 @@
-2005-05-13  Michael Reinelt  <reinelt@merlin.ethnet>
+2005-06-10  Michael Reinelt  <reinelt@merlin.eth>
+
+	* configure.in, Makefile.am, Makefile.in, configure:
+	version number set to 0.10.0
+
+	* ltmain.sh: removed ltmain.sh
+
+	* libtool: removed libtool and ltmain.sh
+
+2005-06-09  Michael Reinelt  <reinelt@merlin.eth>
+
+	* drv_HD44780.c, drv_M50530.c, lcd4linux.conf.sample:
+	M50530 fixes (many thanks to Szymon Bieganski)
+
+2005-06-06  Michael Reinelt  <reinelt@merlin.eth>
+
+	* lcd4linux.conf.sample, plugin_mysql.c:
+	two bugs in plugin_mysql.c fixed
+
+2005-06-03  Michael Reinelt  <reinelt@merlin.eth>
+
+	* configure.in, python.m4, configure:
+	hopefully solved the AM_PYTHON_PATH issue finally
+
+	* configure.in, python.m4, configure: renamed AM_PYTHON to MY_PYTHON...
+
+2005-06-01  Michael Reinelt  <reinelt@merlin.eth>
+
+	* drv_generic_i2c.c: ifdef'ed unused function to avoid compiler warning
+
+	* configure.in, curses.m4, plugins.m4, configure:
+	--with-python added to configure
+
+	* lcd4linux.conf.sample, lcd4linux_i2c.h, aclocal.m4, config.h.in, configure:
+	removed ^M from lcd4linux_i2c.h; indent.sh run
+
+2005-06-01  pk_richman  <pk_richman@merlin.eth>
+
+	* drv_HD44780.c: marked unused parameters
+
+2005-05-31  lfcorreia  <lfcorreia@merlin.eth>
+
+	* drv_generic_i2c.h, AUTHORS, debian/copyright: fix my email address
+
+	* drv_HD44780.c: fix typo
+
+	* drv_HD44780.c: fix my email address
+
+	* configure.in: replace the accidently deleted Python detection code
+
+	* configure.in, drivers.m4, drv_HD44780.c, drv_generic_i2c.c, drv_generic_i2c.h, lcd4linux_i2c.h, config.h.in, configure:
+	new file: lcd4linux_i2c.h
+	avoid the problems detecting the proper I2C kernel include files
+
+	rearrange all the other autoconf stuff to remove I2C detection
+
+	new method by Paul Kamphuis to write to the I2C device
+
+2005-05-28  Michael Reinelt  <reinelt@merlin.eth>
+
+	* plugins.m4: fixed plugins.m4 bug found by Martin
+
+	* drv_serdisplib.c, lcd4linux.conf.sample: serdisplib cosmetics
+
+2005-05-13  Michael Reinelt  <reinelt@merlin.eth>
+
+	* ChangeLog: ChangeLog updated
 
 	* configure.in, config.h.in, configure, Makefile.am, Makefile.in:
 	added drv_LCDLinux.h to extra_sources
