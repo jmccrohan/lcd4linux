@@ -1,5 +1,12 @@
 2005-06-10  Michael Reinelt  <reinelt@merlin.eth>
 
+	* config.h.in, configure, configure.in:
+	double-check for X11 headers (AC_PATH_XTRA is buggy)
+
+	* depcomp: depcomp removed
+
+	* ChangeLog: ChangeLog
+
 	* configure.in, Makefile.am, Makefile.in, configure:
 	version number set to 0.10.0
 
