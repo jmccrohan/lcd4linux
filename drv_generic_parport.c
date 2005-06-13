@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.16 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.17 2005/06/13 03:38:25 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.17  2005/06/13 03:38:25  reinelt
+ * try PPEXCL again, but ignore result
+ *
  * Revision 1.16  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -201,14 +204,14 @@ int drv_generic_parport_open(const char *section, const char *driver)
 	    error("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
 	    return -1;
 	}
-#if 0
-	/* Fixme: this always fails here... */
+
+	/* PPEXCL fails if someone else uses the port (e.g. lp.ko) */
 	if (ioctl(PPfd, PPEXCL)) {
-	    debug("ioctl(%s, PPEXCL) failed: %s", PPdev, strerror(errno));
+	    info("%s: ioctl(%s, PPEXCL) failed: %s", PPdev, Driver, strerror(errno));
+	    info("%s: could not get exclusive access to %s.", Driver, PPdev);
 	} else {
-	    debug("ioctl(%s, PPEXCL) succeded.");
+	    info("%s: got exclusive access to %s.", Driver, PPdev);
 	}
-#endif
 
 	if (ioctl(PPfd, PPCLAIM)) {
 	    error("%s: ioctl(%s, PPCLAIM) failed: %d %s", Driver, PPdev, errno, strerror(errno));
