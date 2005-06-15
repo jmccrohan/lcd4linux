@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.8 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.9 2005/06/15 05:24:35 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.9  2005/06/15 05:24:35  reinelt
+ * updated LCD-Linux driver to version 0.8.9
+ *
  * Revision 1.8  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -81,6 +84,7 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 
+#define HD44780_MAIN
 #include "drv_LCDLinux.h"
 
 
@@ -190,8 +194,12 @@ static int drv_LL_start(const char *section, const int quiet)
     }
     info("%s: %dx%d display at 0x%x, %d controllers, flags=0x%02x:", Name, buf.disp_cols, buf.cntr_rows, buf.io, buf.num_cntr, buf.flags);
 
+
+#if 0
+    /* these two flags vanished with release 0.8.9 */
     info("%s:   /proc support %sabled", Name, buf.flags & LCD_PROC_ON ? "en" : "dis");
     info("%s:   tty support %sabled", Name, buf.flags & LCD_ETTY_ON ? "en" : "dis");
+#endif
     info("%s:   console support %sabled", Name, buf.flags & LCD_CONSOLE ? "en" : "dis");
     info("%s:   bus width %d bits", Name, buf.flags & LCD_4BITS_BUS ? 4 : 8);
     info("%s:   font size %s", Name, buf.flags & LCD_5X10_FONT ? "5x10" : "5x8");

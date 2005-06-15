@@ -1,6 +1,6 @@
 /* lcd.h
  *
- * $Id: drv_LCDLinux.h,v 1.4 2005/05/08 04:32:44 reinelt Exp $
+ * $Id: drv_LCDLinux.h,v 1.5 2005/06/15 05:24:35 reinelt Exp $
  *
  * LCD driver for HD44780 compatible displays connected to the parallel port.
  * 
@@ -24,8 +24,19 @@
  *
  */
 
-#ifndef LCD_H
-#define LCD_H
+#ifndef LCD_LINUX_H
+#define LCD_LINUX_H
+
+#ifndef HD44780_MAIN
+#warning
+#warning LCD-Linux is still in development stage and
+#warning aims at speed and optimization. For these
+#warning reasons there is no guarantee of backward
+#warning compatibility between different LCD-Linux
+#warning versions. Be sure to use the lcd-linux.h
+#warning file of the same version as the module.
+#warning
+#endif
 
 #define LCD_LINUX_VERSION	"0.8.9-CVS"	/* Version number */
 
@@ -36,34 +47,37 @@
 #include <linux/types.h>
 
 struct lcd_driver {
-    /* Hardware */
-    unsigned short io;		/* Parport base address */
-    unsigned short flags;	/* Flags (see Documentation) */
+	/* Hardware */
+	unsigned short io;		/* Parport base address */
+	unsigned short flags;		/* Flags (see Documentation) */
 
-    /* Display geometry */
-    unsigned short num_cntr;	/* Number of available controllers */
-    unsigned short cntr_rows;	/* Rows per controller */
-    unsigned short disp_cols;	/* Columns */
-    unsigned short frames;	/* Framebuffer frames */
+	/* Display geometry */
+	unsigned short num_cntr;	/* Number of available controllers */
+	unsigned short cntr_rows;	/* Rows per controller */
+	unsigned short disp_cols;	/* Columns */
+	unsigned short frames;		/* Framebuffer frames */
 
-    unsigned short tabstop;	/* Length of tab character */
+	unsigned short tabstop;		/* Length of tab character */
 };
 
 /* IOCTLs */
 #include <asm/ioctl.h>
 #define IOCTL_SET_PARAM		_IOW(LCD_MAJOR, 0, struct lcd_driver *)
 #define IOCTL_GET_PARAM		_IOR(LCD_MAJOR, 1, struct lcd_driver *)
+#define IOCTL_RAW_CMD		_IOW(LCD_MAJOR, 2, unsigned char *)
+#define IOCTL_RESET_CHARMAP	_IOW(LCD_MAJOR, 3, void *)
+#define IOCTL_SAVE_CHARMAP	_IOW(LCD_MAJOR, 4, void *)
+#define IOCTL_RESTORE_CHARMAP	_IOW(LCD_MAJOR, 5, void *)
+#define IOCTL_SWAP_CHARMAP	_IOW(LCD_MAJOR, 6, void *)
 
-#define LCD_PROC_ON	0x0001	/* Enable the /proc filesystem support */
-#define LCD_ETTY_ON	0x0002	/* Enable the tty support */
-#define LCD_CONSOLE	0x0004	/* Enable the console support */
-#define LCD_4BITS_BUS	0x0008	/* Set the bus length to 4 bits */
-#define LCD_5X10_FONT	0x0010	/* Use 5x10 dots fonts */
-#define LCD_CHECK_BF	0x0020	/* Do busy flag checking */
+#define LCD_CHECK_BF	0x0001		/* Do busy flag checking */
+#define LCD_CONSOLE	0x0002		/* Enable the console support */
+#define LCD_4BITS_BUS	0x0004		/* Set the bus length to 4 bits */
+#define LCD_5X10_FONT	0x0008		/* Use 5x10 dots fonts */
 
 
 
-#ifdef __KERNEL__		/* The rest is for kernel only */
+#ifdef __KERNEL__ /* The rest is for kernel only */
 
 #include <linux/version.h>
 
@@ -87,6 +101,6 @@ int lcd_write(const char *, int, unsigned int);
 int lcd_read(char *, int, unsigned int);
 #endif
 
-#endif				/* __KERNEL__ */
+#endif /* __KERNEL__ */
 
-#endif				/* External interface included */
+#endif /* External interface included */
