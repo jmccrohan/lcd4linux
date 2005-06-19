@@ -103,7 +103,7 @@ Display HD44780-winamp {
     Driver 'HD44780'
     Model 'generic'
     UseBusy 1
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
     Size '20x4'
     Wire {
 	RW      'AUTOFD'
@@ -119,7 +119,7 @@ Display HD44780-kernelconcepts {
     Driver 'HD44780'
     Model 'HD66712'
     UseBusy 1
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
     Size '20x4'
     Wire {
 	RW      'AUTOFD'
@@ -132,7 +132,7 @@ Display HD44780-kernelconcepts {
 
 Display SC1602D {
     Driver 'HD44780'
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
     Bits '8'
     Size '16x2'
     asc255bug 0
@@ -150,7 +150,7 @@ Display LCM-162 {
     Driver 'HD44780'
     Model 'LCM-162'
 #   Bus 'parport'
-    Port '/dev/parport0'	
+    Port '/dev/parports/0'	
     Size '16x2'
     UseBusy 1
     asc255bug 0
@@ -757,13 +757,14 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
+Display 'HD44780-WinAmp'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-Display 'M50530-24x8'
+#Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'CT20x4'
 #Display 'T6963-240x64'

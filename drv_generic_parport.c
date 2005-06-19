@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.18 2005/06/13 03:43:46 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.19 2005/06/19 17:57:06 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.19  2005/06/19 17:57:06  reinelt
+ * cosmetics...
+ *
  * Revision 1.18  2005/06/13 03:43:46  reinelt
  * undo PPEXCL activation...
  *
@@ -284,23 +287,23 @@ static unsigned char drv_generic_parport_signal_ctrl(const char *name, const cha
 
     if (strcasecmp(signal, "STROBE") == 0) {
 	wire = PARPORT_CONTROL_STROBE;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:STROBE (Pin 1)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:STROBE (Pin  1)", Driver, name);
     } else if (strcasecmp(signal, "AUTOFD") == 0) {
 	wire = PARPORT_CONTROL_AUTOFD;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:AUTOFD (Pin 14)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:AUTOFD (Pin 14)", Driver, name);
     } else if (strcasecmp(signal, "INIT") == 0) {
 	wire = PARPORT_CONTROL_INIT;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:INIT (Pin 16)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:INIT   (Pin 16)", Driver, name);
     } else if (strcasecmp(signal, "SLCTIN") == 0) {
 	wire = PARPORT_CONTROL_SELECT;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)", Driver, name);
     } else if (strcasecmp(signal, "SELECT") == 0) {
 	wire = PARPORT_CONTROL_SELECT;
 	error("%s: SELECT is deprecated. Please use SLCTIN instead!", Driver);
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SLCTIN (Pin 17)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)", Driver, name);
     } else if (strcasecmp(signal, "GND") == 0) {
 	wire = 0;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:GND", Driver, name);
     } else {
 	error("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
 	error("%s: should be STROBE, AUTOFD, INIT, SLCTIN or GND", Driver);
@@ -355,22 +358,22 @@ static unsigned char drv_generic_parport_signal_status(const char *name, const c
 
     if (strcasecmp(signal, "ERROR") == 0) {
 	wire = PARPORT_STATUS_ERROR;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ERROR (Pin 15)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:ERROR    (Pin 15)", Driver, name);
     } else if (strcasecmp(signal, "SELECT") == 0) {
 	wire = PARPORT_STATUS_SELECT;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:SELECT (Pin 13)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:SELECT   (Pin 13)", Driver, name);
     } else if (strcasecmp(signal, "PAPEROUT") == 0) {
 	wire = PARPORT_STATUS_PAPEROUT;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:PAPEROUT (Pin 12)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:PAPEROUT (Pin 12)", Driver, name);
     } else if (strcasecmp(signal, "ACK") == 0) {
 	wire = PARPORT_STATUS_ACK;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:ACK (Pin 10)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:ACK      (Pin 10)", Driver, name);
     } else if (strcasecmp(signal, "BUSY") == 0) {
 	wire = PARPORT_STATUS_BUSY;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:BUSY (Pin 11)]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:BUSY     (Pin 11)", Driver, name);
     } else if (strcasecmp(signal, "GND") == 0) {
 	wire = 0;
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:GND", Driver, name);
     } else {
 	error("%s: unknown signal <%s> for status line <%s>", Driver, signal, name);
 	error("%s: should be ERROR, SELECT, PAPEROUT, ACK, BUSY or GND", Driver);
@@ -417,9 +420,9 @@ unsigned char drv_generic_parport_wire_data(const char *name, const char *deflt)
     }
     free(s);
     if (w == 0) {
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:GND]", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:GND", Driver, name);
     } else {
-	info("%s: wiring: [DISPLAY:%s]<==>[PARPORT:DB%d (Pin %d)]", Driver, name, w, w + 2);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:DB%d (Pin %2d)", Driver, name, w, w + 2);
     }
 
     w = 1 << w;
