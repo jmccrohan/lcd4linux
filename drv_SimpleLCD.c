@@ -1,4 +1,4 @@
-/* $Id: drv_SimpleLCD.c,v 1.4 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_SimpleLCD.c,v 1.5 2005/07/06 04:40:18 reinelt Exp $
  * 
  * driver for a simple serial terminal.
  * 
@@ -22,6 +22,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_SimpleLCD.c,v $
+ * Revision 1.5  2005/07/06 04:40:18  reinelt
+ * GCC-4 fixes
+ *
  * Revision 1.4  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -198,6 +201,7 @@ static void drv_SL_vt100_write(const int row, const int col, const char *data, i
 static int drv_SL_start(const char *section, const int quiet)
 {
     int rows = -1, cols = -1;
+    int value;
     unsigned int flags = 0;
     char *s;
     char *model = 0;
@@ -209,9 +213,10 @@ static int drv_SL_start(const char *section, const int quiet)
 	    vt100_mode = 1;
     }
 
-    cfg_number(section, "BarCharValue", 0, 0, 255, &flags);
-    bar_char = flags;
-    cfg_number(section, "Options", 0, 0, 0xffff, &flags);
+    cfg_number(section, "BarCharValue", 0, 0, 255, &value);
+    bar_char = value;
+    cfg_number(section, "Options", 0, 0, 0xffff, &value);
+    flags = value;
     if (drv_generic_serial_open(section, Name, flags) < 0)
 	return -1;
 

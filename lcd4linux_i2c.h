@@ -1,4 +1,4 @@
-/* $Id: lcd4linux_i2c.h,v 1.2 2005/06/01 12:09:13 reinelt Exp $
+/* $Id: lcd4linux_i2c.h,v 1.3 2005/07/06 04:40:18 reinelt Exp $
  *
  * user space i2c sturctures and defines, taken from the official kernel i2c 
  * includes to solve the problem when compiling user space application
@@ -32,6 +32,9 @@
  *
  *
  * $Log: lcd4linux_i2c.h,v $
+ * Revision 1.3  2005/07/06 04:40:18  reinelt
+ * GCC-4 fixes
+ *
  * Revision 1.2  2005/06/01 12:09:13  reinelt
  * removed ^M from lcd4linux_i2c.h; indent.sh run
  *
@@ -78,7 +81,7 @@ extern int i2c_master_recv(struct i2c_client *, char *, int);
 
 /* Transfer num messages.
  */
-extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[], int num);
+extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msg, int num);
 
 /*
  * Some adapter types (i.e. PCF 8584 based ones) may support slave behaviuor. 

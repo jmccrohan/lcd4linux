@@ -114,6 +114,23 @@ Display HD44780-winamp {
     }
 }
 
+# Dual-HD44780 display from Pollin
+Display WDC2704M {
+    Driver 'HD44780'
+    Model 'generic'
+    Controllers 2
+    UseBusy 1
+    Port '/dev/parports/0'	
+    Size '27x4'
+    Wire {
+	RW      'AUTOFD'
+	RS      'INIT'
+	ENABLE  'STROBE'
+	ENABLE2 'SLCTIN'
+	GPO     'GND'
+    }
+}
+
 # HD44780 display from www.kernelconcepts.de
 Display HD44780-kernelconcepts {
     Driver 'HD44780'
@@ -648,7 +665,6 @@ Widget Rain {
 Widget Test {
     class 'Text'
     expression '1234567890123456789012345678901234567890'
-    #expression '|'
     width 40
 }
 
@@ -757,7 +773,8 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
-Display 'HD44780-WinAmp'
+#Display 'HD44780-WinAmp'
+Display  'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
@@ -774,8 +791,8 @@ Display 'HD44780-WinAmp'
 #Display 'Image'
 #Display 'Trefon'
 
-#Layout  'Default'
-Layout 'L8x2'
+Layout  'Default'
+#Layout 'L8x2'
 #Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
