@@ -1,6 +1,6 @@
-/* $Id: drv_Trefon.c,v 1.3 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_Trefon.c,v 1.4 2005/08/20 10:10:13 reinelt Exp $
  *
- * driver for TREFON USB LCD displays
+ * driver for TREFON USB LCD displays - http://www.trefon.de
  *
  * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -23,6 +23,16 @@
  *
  *
  * $Log: drv_Trefon.c,v $
+ * Revision 1.4  2005/08/20 10:10:13  reinelt
+ *
+ *
+ * TREFON patch from Stephan Trautvetter:
+ * drv_TF_init: CHAR0 set to 0 instead of 1
+ * drv_TF_write: combine the GOTO and the data into one packet
+ * drv_TF_write: add GOTO-Case for resolutions 8x1/20x4 characters
+ * drv_TF_start: test for existing resolutions from TREFON USB-LCDs implemented
+ * the use of 'asc255bug 1' is recommendable
+ *
  * Revision 1.3  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -168,37 +178,39 @@ static void drv_TF_write(const int row, const int col, const char *data, const i
 {
     char buffer[64];
     char *p;
-    int pos;
+    int pos = 0;
 
-    /* 16x4 Displays use a slightly different layout */
-    if (DCOLS == 16 && DROWS == 4) {
-	pos = (row % 2) * 64 + (row / 2) * 16 + col;
+    if (DCOLS == 8 && DROWS == 1) {	// 8x1 Characters
+	pos = row * 0x40 + col;
+    } else if (DCOLS == 16 && DROWS == 2) {	// 16x2 Characters
+	pos = row * 0x40 + col;
+    } else if (DCOLS == 20 && DROWS == 4) {	// 20x4 Characters
+	pos = row * 0x20 + col;
     } else {
-	pos = (row % 2) * 64 + (row / 2) * 20 + col;
+	error("%s: internal error: DCOLS=%d DROWS=%d", Name, DCOLS, DROWS);
+	return;
     }
 
-    /* I'd like to combine the GOTO and the data into one packet, 
-     * unfortunately the Trefon doesn't like it :-(
-     */
-
-    drv_TF_command(0x80 | pos);
-
+    // combine the GOTO and the data into one packet
     p = buffer;
     *p++ = PKT_START;
-    *p++ = PKT_DATA;
+    *p++ = PKT_CTRL;		// Goto
+    *p++ = 0x80 | pos;
+    *p++ = PKT_DATA;		// Data
     *p++ = (char) len;
     for (pos = 0; pos < len; pos++) {
 	*p++ = *data++;
     }
     *p++ = PKT_END;
 
-    drv_TF_send(buffer, len + 3);
+    drv_TF_send(buffer, len + 5);
 }
+
 
 static void drv_TF_defchar(const int ascii, const unsigned char *matrix)
 {
 
-    char buffer[14] = "\002\006x\002x01234567\377";
+    char buffer[14];
     char *p;
     int i;
 
@@ -233,6 +245,21 @@ static int drv_TF_backlight(int backlight)
 }
 
 
+// test for existing resolutions from TREFON USB-LCDs (TEXT-Mode only)
+int drv_TF_valid_resolution(int rows, int cols)
+{
+
+    if (rows == 1 && cols == 8) {
+	return 0;
+    } else if (rows == 2 && cols == 16) {
+	return 0;
+    } else if (rows == 4 && cols == 20) {
+	return 0;
+    }
+    return -1;
+}
+
+
 static int drv_TF_start(const char *section, const int quiet)
 {
     int backlight;
@@ -244,8 +271,8 @@ static int drv_TF_start(const char *section, const int quiet)
 	error("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
 	return -1;
     }
-    if (sscanf(s, "%dx%d", &cols, &rows) != 2 || rows < 1 || cols < 1) {
-	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
+    if (sscanf(s, "%dx%d", &cols, &rows) != 2 || drv_TF_valid_resolution(rows, cols) < 0) {
+	error("%s: bad %s.Size '%s' (only 8x1/16x2/20x4) from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
     }

@@ -210,6 +210,18 @@ Display SimpleLCD {
     Size '20x2'
 }
 
+Display BA63 {
+    Driver   'SimpleLCD'
+    Model    'vt100'
+    Port     '/dev/tts/0'
+    Speed     9600
+    Size     '20x2'
+    # Activate parity and set it to odd
+    Options 5120
+    # From the BA63 doc, decimal 219 look like a big full block.
+#    BarCharValue 219
+}
+
 Display M50530-24x8 {
     Driver 'M50530'
     Port '/dev/parports/0'	
@@ -774,7 +786,7 @@ Layout testMySQL {
 #Display 'CW12232'
 #Display 'HD44780-generic'
 #Display 'HD44780-WinAmp'
-Display  'WDC2704M'
+#Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
@@ -783,6 +795,8 @@ Display  'WDC2704M'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
+#Display 'SimpleLCD'
+Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
@@ -791,10 +805,10 @@ Display  'WDC2704M'
 #Display 'Image'
 #Display 'Trefon'
 
-Layout  'Default'
+#Layout  'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-#Layout 'L20x2'
+Layout 'L20x2'
 #Layout 'Test'
 
 
