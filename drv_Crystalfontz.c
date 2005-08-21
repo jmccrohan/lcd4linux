@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.34 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.35 2005/08/21 08:18:56 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.35  2005/08/21 08:18:56  reinelt
+ * CrystalFontz ACK processing
+ *
  * Revision 1.34  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -173,10 +176,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
+#include "thread.h"
 #include "timer.h"
 #include "plugin.h"
 #include "widget.h"
@@ -202,6 +207,7 @@ static unsigned int RingWPos = 0;
 /* packet from the display */
 struct {
     unsigned char type;
+    unsigned char code;
     unsigned char size;
     unsigned char data[16 + 1];	/* trailing '\0' */
 } Packet;
@@ -287,38 +293,62 @@ static void drv_CF_process_packet(void)
 {
 
     switch (Packet.type) {
+	
+    case 0x02:
 
-    case 0x80:			/* Key Activity */
-	debug("Key Activity: %d", Packet.data[0]);
-	break;
+	/* async response from display to host */
+	switch (Packet.code) {
 
-    case 0x81:			/* Fan Speed Report */
-	if (Packet.data[1] == 0xff) {
-	    Fan_RPM[Packet.data[0]] = -1.0;
-	} else if (Packet.data[1] < 4) {
-	    Fan_RPM[Packet.data[0]] = 0.0;
-	} else {
-	    Fan_RPM[Packet.data[0]] = (double) 27692308L *(Packet.data[1] - 3) / (Packet.data[2] + 256 * Packet.data[3]);
-	}
-	break;
-
-    case 0x82:			/* Temperature Sensor Report */
-	switch (Packet.data[3]) {
-	case 0:
-	    error("%s: 1-Wire device #%d: CRC error", Name, Packet.data[0]);
+	case 0x00:
+	    /* Key Activity */
+	    debug("Key Activity: %d", Packet.data[0]);
 	    break;
-	case 1:
-	case 2:
-	    Temperature[Packet.data[0]] = (Packet.data[1] + 256 * Packet.data[2]) / 16.0;
+	    
+	case 0x01:
+	    /* Fan Speed Report */
+	    if (Packet.data[1] == 0xff) {
+		Fan_RPM[Packet.data[0]] = -1.0;
+	    } else if (Packet.data[1] < 4) {
+		Fan_RPM[Packet.data[0]] = 0.0;
+	    } else {
+		Fan_RPM[Packet.data[0]] = (double) 27692308L *(Packet.data[1] - 3) / (Packet.data[2] + 256 * Packet.data[3]);
+	    }
 	    break;
+	    
+	case 0x02:			
+	    /* Temperature Sensor Report */
+	    switch (Packet.data[3]) {
+	    case 0:
+		error("%s: 1-Wire device #%d: CRC error", Name, Packet.data[0]);
+		break;
+	    case 1:
+	    case 2:
+		Temperature[Packet.data[0]] = (Packet.data[1] + 256 * Packet.data[2]) / 16.0;
+		break;
+	    default:
+		error("%s: 1-Wire device #%d: unknown CRC status %d", Name, Packet.data[0], Packet.data[3]);
+		break;
+	    }
+	    break;
+	    
 	default:
-	    error("%s: 1-Wire device #%d: unknown CRC status %d", Name, Packet.data[0], Packet.data[3]);
+	    /* this should not happen */
+	    error ("%s: unexpected response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	    break;
 	}
+
+	break;
+	
+    case 0x03:
+	/* error response from display to host */
+	error ("%s: error response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	break;
 
     default:
-	/* just ignore packet */
+	/* these should not happen: */
+	/* type 0x00: command from host to display: should never come back */
+	/* type 0x01: command response from display to host: are processed within send() */
+	error ("%s: unexpected packet type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	break;
     }
 
@@ -375,7 +405,8 @@ static int drv_CF_poll(void)
 	if (MSB(crc) != buffer[size + 3])
 	    goto GARBAGE;
 	/* process packet */
-	Packet.type = buffer[0];
+	Packet.type = buffer[0] >> 6;
+	Packet.code = buffer[0] & 0x3f;
 	Packet.size = size;
 	memcpy(Packet.data, buffer + 2, size);
 	Packet.data[size] = '\0';	/* trailing zero */
@@ -406,14 +437,15 @@ static void drv_CF_timer(void __attribute__ ((unused)) * notused)
 }
 
 
-static void drv_CF_send(const int cmd, int len, const unsigned char *data)
+static void drv_CF_send(const unsigned char cmd, const unsigned char len, const unsigned char *data)
 {
     unsigned char buffer[22];
     unsigned short crc;
+    struct timeval now, end;
 
     if (len > Payload) {
 	error("%s: internal error: packet length %d exceeds payload size %d", Name, len, Payload);
-	len = sizeof(buffer) - 1;
+	return;
     }
 
     buffer[0] = cmd;
@@ -423,12 +455,33 @@ static void drv_CF_send(const int cmd, int len, const unsigned char *data)
     buffer[len + 2] = LSB(crc);
     buffer[len + 3] = MSB(crc);
 
-#if 0
-    debug("Tx Packet %d len=%d", buffer[0], buffer[1]);
-#endif
-
     drv_generic_serial_write((char *) buffer, len + 4);
-
+    
+    /* wait for acknowledge packet */
+    gettimeofday(&now, NULL);
+    while (1) {
+	/* delay 1 msec */
+	usleep (1 * 1000);
+	if (drv_CF_poll()) {
+	    if (Packet.type == 0x01 && Packet.code == cmd) {
+		/* this is the ack we're waiting for */
+		if (0) {
+		    gettimeofday(&end, NULL);
+		    debug ("%s: ACK after %d usec", Name, 1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
+		}
+		break;
+	    } else {
+		/* some other (maybe async) packet, just process it */
+		drv_CF_process_packet();
+	    }
+	}
+	gettimeofday(&end, NULL);
+	/* don't wait more than 250 msec */
+	if ((1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec) > 250*1000) {
+	    error("%s: timeout waiting for response to cmd 0x%02x", Name, cmd);
+	    break;
+	}
+    }
 }
 
 
@@ -634,7 +687,7 @@ static int drv_CF_fan_pwm(int fan, int power)
 
 static int drv_CF_autodetect(void)
 {
-    int i, m;
+    int m;
 
     /* only autodetect newer displays */
     if (Protocol < 2)
@@ -642,43 +695,30 @@ static int drv_CF_autodetect(void)
 
     /* read display type */
     drv_CF_send(1, 0, NULL);
-
-    i = 0;
-    while (1) {
-	/* wait 10 msec */
-	usleep(10 * 1000);
-	/* packet available? */
-	if (drv_CF_poll()) {
-	    /* display type */
-	    if (Packet.type == 0x41) {
-		char t[7], c;
-		float h, v;
-		info("%s: display identifies itself as '%s'", Name, Packet.data);
-		if (sscanf((char *) Packet.data, "%6s:h%f,%c%f", t, &h, &c, &v) != 4) {
-		    error("%s: error parsing display identification string", Name);
-		    return -1;
-		}
-		info("%s: display type '%s', hardware version %3.1f, firmware version %c%3.1f", Name, t, h, c, v);
-		if (strncmp(t, "CFA", 3) == 0) {
-		    for (m = 0; Models[m].type != -1; m++) {
-			/* omit the 'CFA' */
-			if (strcasecmp(Models[m].name, t + 3) == 0)
-			    return m;
-		    }
-		}
-		error("%s: display type '%s' may be not supported!", Name, t);
-		return -1;
-	    }
-	    drv_CF_process_packet();
-	}
-	/* wait no longer than 300 msec */
-	if (++i > 30) {
-	    error("%s: display detection timed out", Name);
+    
+    /* send() did already wait for response packet */
+    if (Packet.type == 0x01 && Packet.code == 0x01) {
+	char t[7], c;
+	float h, v;
+	info("%s: display identifies itself as '%s'", Name, Packet.data);
+	if (sscanf((char *) Packet.data, "%6s:h%f,%c%f", t, &h, &c, &v) != 4) {
+	    error("%s: error parsing display identification string", Name);
 	    return -1;
 	}
+	info("%s: display type '%s', hardware version %3.1f, firmware version %c%3.1f", Name, t, h, c, v);
+	if (strncmp(t, "CFA", 3) == 0) {
+	    for (m = 0; Models[m].type != -1; m++) {
+		/* omit the 'CFA' */
+		if (strcasecmp(Models[m].name, t + 3) == 0)
+		    return m;
+	    }
+	}
+	error("%s: display type '%s' may be not supported!", Name, t);
+	return -1;
     }
 
-    /* not reached */
+    error("%s: display detection failed!", Name);
+    
     return -1;
 }
 
@@ -708,7 +748,7 @@ static int drv_CF_scan_DOW(unsigned char index)
 	/* packet available? */
 	if (drv_CF_poll()) {
 	    /* DOW Device Info */
-	    if (Packet.type == 0x52) {
+	    if (Packet.type == 0x01 && Packet.code == 0x12) {
 		switch (Packet.data[1]) {
 		case 0x00:
 		    /* no device found */

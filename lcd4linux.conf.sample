@@ -55,7 +55,7 @@ Display CF631 {
     Port '/dev/tts/USB0'
     Speed 115200
     Contrast 95
-    Backlight 255
+    Backlight 50
     Icons 1
 }
 
@@ -680,6 +680,21 @@ Widget Test {
     width 40
 }
 
+Widget Test1 {
+    class 'Text'
+    expression 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    width 20
+    align 'M'
+    speed 25
+}
+
+Widget Test2 {
+    class 'Text'
+    expression '1234567890abcdefghijklmnopqrstuvwxyz'
+    width 20
+    align 'M'
+    speed 10
+}
 
 Layout Default {
     Row1 {
@@ -768,6 +783,17 @@ Layout Test {
 #    Row16.Col1 'Test'
 }
 
+Layout Test2 {
+    Row01.Col1 'Test1'
+    #Row02.Col1 'Rain'
+    Row02.Col1 'Test2'
+    Row03.Col1 'Test1'
+    Row04.Col1 'Test2'
+    Row05.Col1 'Test1'
+    Row06.Col1 'Test2'
+    Row07.Col1 'Test1'
+    Row08.Col1 'Test2'
+}
 
 Layout testMySQL {
 	Row1 {
@@ -789,14 +815,14 @@ Layout testMySQL {
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
-#Display 'CF631'
+Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-Display 'BA63'
+#Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
@@ -808,8 +834,9 @@ Display 'BA63'
 #Layout  'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-Layout 'L20x2'
+#Layout 'L20x2'
 #Layout 'Test'
+Layout 'Test2'
 
 
 Variables {

@@ -1,4 +1,4 @@
-/* $Id: drv_Trefon.c,v 1.4 2005/08/20 10:10:13 reinelt Exp $
+/* $Id: drv_Trefon.c,v 1.5 2005/08/21 08:18:56 reinelt Exp $
  *
  * driver for TREFON USB LCD displays - http://www.trefon.de
  *
@@ -23,9 +23,10 @@
  *
  *
  * $Log: drv_Trefon.c,v $
+ * Revision 1.5  2005/08/21 08:18:56  reinelt
+ * CrystalFontz ACK processing
+ *
  * Revision 1.4  2005/08/20 10:10:13  reinelt
- *
- *
  * TREFON patch from Stephan Trautvetter:
  * drv_TF_init: CHAR0 set to 0 instead of 1
  * drv_TF_write: combine the GOTO and the data into one packet
