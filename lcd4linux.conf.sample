@@ -211,15 +211,12 @@ Display SimpleLCD {
 }
 
 Display BA63 {
-    Driver   'SimpleLCD'
-    Model    'vt100'
+    Driver   'WincorNixdorf'
+    Model    'BA63'
     Port     '/dev/tts/0'
     Speed     9600
-    Size     '20x2'
-    # Activate parity and set it to odd
-    Options 5120
-    # From the BA63 doc, decimal 219 look like a big full block.
-#    BarCharValue 219
+    BarChar   219
+    SelfTest  0
 }
 
 Display M50530-24x8 {
@@ -358,7 +355,7 @@ Widget Busy {
     expression proc_stat::cpu('busy', 500)
     prefix 'Busy'	
     postfix '%'	
-    width 8	
+    width 9	
     precision 1
     align 'R'	
     update tick	
@@ -815,14 +812,14 @@ Layout testMySQL {
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
-Display 'CF631'
+#Display 'CF631'
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-#Display 'BA63'
+Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
@@ -834,9 +831,9 @@ Display 'CF631'
 #Layout  'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-#Layout 'L20x2'
+Layout 'L20x2'
 #Layout 'Test'
-Layout 'Test2'
+#Layout 'Test2'
 
 
 Variables {

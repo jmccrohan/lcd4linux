@@ -71,6 +71,7 @@ drv_SimpleLCD.c             \
 drv_T6963.c                 \
 drv_Trefon.c                \
 drv_USBLCD.c                \
+drv_WincorNixdorf.c         \
 drv_X11.c                   \
                             \
 font_6x8.h                  \

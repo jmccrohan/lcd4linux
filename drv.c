@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.32 2005/05/10 13:20:14 reinelt Exp $
+/* $Id: drv.c,v 1.33 2005/08/22 05:44:43 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.33  2005/08/22 05:44:43  reinelt
+ * new driver 'WincorNixdorf'
+ * some fixes to the bar code
+ *
  * Revision 1.32  2005/05/10 13:20:14  reinelt
  * added serdisplib driver
  *
@@ -217,6 +221,7 @@ extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
 extern DRIVER drv_Trefon;
 extern DRIVER drv_USBLCD;
+extern DRIVER drv_WincorNixdorf;
 extern DRIVER drv_X11;
 
 /* output file for Image driver
@@ -285,6 +290,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_USBLCD
     &drv_USBLCD,
+#endif
+#ifdef WITH_WINCORNIXDORF
+    &drv_WincorNixdorf,
 #endif
 #ifdef WITH_X11
     &drv_X11,

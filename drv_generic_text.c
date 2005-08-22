@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.27 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.28 2005/08/22 05:44:43 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.28  2005/08/22 05:44:43  reinelt
+ * new driver 'WincorNixdorf'
+ * some fixes to the bar code
+ *
  * Revision 1.27  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -638,7 +642,7 @@ static void drv_generic_text_bar_create_bar(int row, int col, const DIRECTION di
 	    BarFB[row * LCOLS + col].dir = dir;
 	    BarFB[row * LCOLS + col].segment = -1;
 	    if (style && BarFB[row * LCOLS + col].style == 0)
-		BarFB[row * LCOLS + col].style = STYLE_HOLLOW;
+		BarFB[row * LCOLS + col].style = style;
 	    if (val1 >= XRES) {
 		BarFB[row * LCOLS + col].val1 = rev ? 0 : XRES;
 		val1 -= XRES;
@@ -739,7 +743,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-				                								                              break;
+																																		                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;
@@ -786,18 +790,28 @@ static int drv_generic_text_bar_segment_error(const int i, const int j)
     if (j2 > res)
 	j2 = res;
 
+    /* do not replace empty with non-empty */
     if (i1 == 0 && j1 != 0)
 	return 65535;
     if (i2 == 0 && j2 != 0)
 	return 65535;
+
+    /* do not replace full with non-full */
     if (i1 == res && j1 < res)
 	return 65535;
     if (i2 == res && j2 < res)
 	return 65535;
-    if (i1 == 1 && j1 != 1 && i2 > 0)
-	return 65535;
-    if (i2 == 1 && j2 != 1 && j1 > 0)
-	return 65535;
+
+    /* do not replace start line */
+    /* but only if there are at least some chars available */
+    if (CHARS - ICONS > 0) {
+	if (i1 == 1 && j1 != 1 && i2 > 0)
+	    return 65535;
+	if (i2 == 1 && j2 != 1 && j1 > 0)
+	    return 65535;
+    }
+
+    /* do not replace equal length with non-equal length */
     if (i1 == i2 && j1 != j2)
 	return 65535;
 
@@ -819,6 +833,7 @@ static void drv_generic_text_bar_pack_segments(void)
     for (i = 0; i < nSegment; i++) {
 	for (j = 0; j < nSegment; j++) {
 	    error[i][j] = drv_generic_text_bar_segment_error(i, j);
+	    // debug ("[%d][%d] = %d", i, j, error[i][j]);
 	}
     }
 
@@ -854,7 +869,8 @@ static void drv_generic_text_bar_pack_segments(void)
 	}
 #if 0
 	debug("pack_segment: n=%d i=%d j=%d min=%d", nSegment, pack_i, pack_j, min);
-	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", Segment[pack_i].val1, Segment[pack_i].val2, Segment[pack_j].val1, Segment[pack_j].val2);
+	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", 
+	      Segment[pack_i].val1, Segment[pack_i].val2, Segment[pack_j].val1, Segment[pack_j].val2);
 #endif
 
 	nSegment--;

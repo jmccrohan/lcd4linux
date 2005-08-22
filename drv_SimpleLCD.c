@@ -1,4 +1,4 @@
-/* $Id: drv_SimpleLCD.c,v 1.5 2005/07/06 04:40:18 reinelt Exp $
+/* $Id: drv_SimpleLCD.c,v 1.6 2005/08/22 05:44:43 reinelt Exp $
  * 
  * driver for a simple serial terminal.
  * 
@@ -22,6 +22,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_SimpleLCD.c,v $
+ * Revision 1.6  2005/08/22 05:44:43  reinelt
+ * new driver 'WincorNixdorf'
+ * some fixes to the bar code
+ *
  * Revision 1.5  2005/07/06 04:40:18  reinelt
  * GCC-4 fixes
  *
@@ -127,7 +131,7 @@ static unsigned char bar_char = 0;
 /****************************************/
 
 /** No clear function on SimpleLCD : Just send CR-LF * number of lines **/
-void drv_SL_simple_clear(void)
+static void drv_SL_simple_clear(void)
 {
     char cmd[2];
     int i;
@@ -140,7 +144,7 @@ void drv_SL_simple_clear(void)
 }
 
 /** vt-100 mode : send the ESC-code **/
-void drv_SL_vt100_clear(void)
+static void drv_SL_vt100_clear(void)
 {
     char cmd[4];
     cmd[0] = 0x1b;
@@ -148,9 +152,10 @@ void drv_SL_vt100_clear(void)
     cmd[2] = '2';
     cmd[3] = 'J';
     drv_generic_serial_write(cmd, 4);
+
 }
 
-void drv_SL_clear(void)
+static void drv_SL_clear(void)
 {
     vt100_mode == 1 ? drv_SL_vt100_clear() : drv_SL_simple_clear();
 }
@@ -159,6 +164,7 @@ void drv_SL_clear(void)
 /* If full_commit = true, then the whole buffer is to be sent to screen.
    if full_commit = false, then only the last line is to be sent (faster on slow screens)
 */
+
 static void drv_SL_commit(int full_commit)
 {
     int row;
@@ -306,7 +312,6 @@ int drv_SL_init(const char *section, const int quiet)
     CHAR0 = 0;			/* ASCII of first user-defineable char */
 
     GOTO_COST = -1;		/* number of bytes a goto command requires */
-
 
 
     /* start display */

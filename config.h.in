@@ -401,6 +401,9 @@
 /* USBLCD driver */
 #undef WITH_USBLCD
 
+/* WincorNixdorf driver */
+#undef WITH_WINCORNIXDORF
+
 /* X11 driver */
 #undef WITH_X11
 

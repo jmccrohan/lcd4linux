@@ -32,7 +32,7 @@ AC_ARG_WITH(
   [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
   [                        MilfordInstruments, Noritake, NULL, PNG, PPM,]
   [                        RouterBoard, serdisplib, SimpleLCD, T6963, Trefon,]
-  [                        USBLCD, X11],
+  [                        USBLCD, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -74,6 +74,7 @@ for driver in $drivers; do
          T6963="yes"
          Trefon="yes"
          USBLCD="yes"
+	 WINCORNIXDORF="yes"
          X11="yes"
          ;;
       BeckmannEgle)
@@ -138,6 +139,9 @@ for driver in $drivers; do
          ;;
       USBLCD)
          USBLCD=$val
+         ;;
+      WincorNixdorf)
+         WINCORNIXDORF=$val
          ;;
       X11)
          X11=$val
@@ -328,6 +332,13 @@ if test "$USBLCD" = "yes"; then
       DRVLIBS="$DRVLIBS -lusb"
    fi
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
+fi
+
+if test "$WINCORNIXDORF" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_WincorNixdorf.o"
+   AC_DEFINE(WITH_WINCORNIXDORF,1,[WincorNixdorf driver])
 fi
 
 if test "$X11" = "yes"; then
