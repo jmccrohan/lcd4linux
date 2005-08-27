@@ -55,6 +55,9 @@
 /* Define to 1 if you have the <linux/isdn.h> header file. */
 #undef HAVE_LINUX_ISDN_H
 
+/* Define to 1 if you have the <linux/lcd-linux.h> header file. */
+#undef HAVE_LINUX_LCD_LINUX_H
+
 /* Define to 1 if you have the <linux/parport.h> header file. */
 #undef HAVE_LINUX_PARPORT_H
 

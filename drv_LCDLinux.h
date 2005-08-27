@@ -1,10 +1,11 @@
-/* lcd.h
+/* hd44780.h
  *
- * $Id: drv_LCDLinux.h,v 1.5 2005/06/15 05:24:35 reinelt Exp $
+ * $Id: drv_LCDLinux.h,v 1.6 2005/08/27 07:02:25 reinelt Exp $
  *
- * LCD driver for HD44780 compatible displays connected to the parallel port.
+ * LCD-Linux:
+ * Driver for HD44780 compatible displays connected to the parallel port.
  * 
- * External interface header file.
+ * HD44780 header file.
  * 
  * Copyright (C) 2004, 2005  Mattia Jona-Lasinio (mjona@users.sourceforge.net)
  *
@@ -24,83 +25,66 @@
  *
  */
 
-#ifndef LCD_LINUX_H
-#define LCD_LINUX_H
+#ifndef HD44780_H
+#define HD44780_H
 
-#ifndef HD44780_MAIN
-#warning
-#warning LCD-Linux is still in development stage and
-#warning aims at speed and optimization. For these
-#warning reasons there is no guarantee of backward
-#warning compatibility between different LCD-Linux
-#warning versions. Be sure to use the lcd-linux.h
-#warning file of the same version as the module.
-#warning
-#endif
+#include <linux/lcd-linux.h>
 
-#define LCD_LINUX_VERSION	"0.8.9-CVS"	/* Version number */
+#define HD44780_VERSION		"0.9.0"		/* Version number */
+#define HD44780_STRING		"hd44780"
 
-#define LCD_MAJOR		120	/* Major number for this device
-					 * Set this to 0 for dynamic allocation
-					 */
-
-#include <linux/types.h>
-
-struct lcd_driver {
-	/* Hardware */
-	unsigned short io;		/* Parport base address */
-	unsigned short flags;		/* Flags (see Documentation) */
-
-	/* Display geometry */
-	unsigned short num_cntr;	/* Number of available controllers */
-	unsigned short cntr_rows;	/* Rows per controller */
-	unsigned short disp_cols;	/* Columns */
-	unsigned short frames;		/* Framebuffer frames */
-
-	unsigned short tabstop;		/* Length of tab character */
-};
 
 /* IOCTLs */
 #include <asm/ioctl.h>
-#define IOCTL_SET_PARAM		_IOW(LCD_MAJOR, 0, struct lcd_driver *)
-#define IOCTL_GET_PARAM		_IOR(LCD_MAJOR, 1, struct lcd_driver *)
-#define IOCTL_RAW_CMD		_IOW(LCD_MAJOR, 2, unsigned char *)
-#define IOCTL_RESET_CHARMAP	_IOW(LCD_MAJOR, 3, void *)
-#define IOCTL_SAVE_CHARMAP	_IOW(LCD_MAJOR, 4, void *)
-#define IOCTL_RESTORE_CHARMAP	_IOW(LCD_MAJOR, 5, void *)
-#define IOCTL_SWAP_CHARMAP	_IOW(LCD_MAJOR, 6, void *)
+#define IOCTL_RAW_CMD	_IOW(LCD_MAJOR, 0, unsigned char *)
 
-#define LCD_CHECK_BF	0x0001		/* Do busy flag checking */
-#define LCD_CONSOLE	0x0002		/* Enable the console support */
-#define LCD_4BITS_BUS	0x0004		/* Set the bus length to 4 bits */
-#define LCD_5X10_FONT	0x0008		/* Use 5x10 dots fonts */
+/* flags */
+#define HD44780_CHECK_BF	0x0001	/* Do busy flag checking */
+#define HD44780_4BITS_BUS	0x0002	/* Set the bus length to 4 bits */
+#define HD44780_5X10_FONT	0x0004	/* Use 5x10 dots fonts */
 
 
 
-#ifdef __KERNEL__ /* The rest is for kernel only */
+/*** HD44780 Command Set ***/
 
-#include <linux/version.h>
+/* Clear Display*/
+#define CLR_DISP	0x01	/* Clear entire display; cursor at row 0, column 0 */
 
-#ifndef KERNEL_VERSION
-#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#endif
+/* Return Home */
+#define	RET_HOME	0x02	/* Cursor at row 0, column 0; display content doesn't change */
 
-#ifndef LINUX_VERSION_CODE
-#error - LINUX_VERSION_CODE undefined.
-#endif
+/* Entry Mode Set */
+#define DISP_SHIFT_ON	0x05	/* Shift display, not cursor after data write */
+#define DISP_SHIFT_OFF	0x04	/* Shift cursor, not display after data write */
+#define CURS_INC	0x06	/* Shift on the right after data read/write */
+#define CURS_DEC	0x04	/* Shift on the left after data read/write */
 
-/* External interface */
-int lcd_init(struct lcd_driver *);
-void lcd_exit(void);
-int lcd_ioctl(unsigned int, void *);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
-ssize_t lcd_write(const char *, size_t, unsigned int);
-ssize_t lcd_read(char *, size_t, unsigned int);
-#else
-int lcd_write(const char *, int, unsigned int);
-int lcd_read(char *, int, unsigned int);
-#endif
+/* Display on/off Control */
+#define BLINK_ON	0x09	/* Cursor blinking on */
+#define BLINK_OFF	0x08	/* Cursor blinking off */
+#define CURS_ON		0x0a	/* Display Cursor */
+#define CURS_OFF	0x08	/* Hide Cursor */
+#define DISP_ON		0x0c	/* Turn on display updating */
+#define DISP_OFF	0x08	/* Freeze display content */
 
-#endif /* __KERNEL__ */
+/* Cursor or Display Shift */
+#define SHIFT_RIGHT	0x14	/* Shift on the right */
+#define SHIFT_LEFT	0x10	/* Shift on the left */
+#define SHIFT_DISP	0x18	/* Shift display */
+#define SHIFT_CURS	0x10	/* Shift cursor */
 
-#endif /* External interface included */
+/* Function Set */
+#define FONT_5X10	0x24	/* Select 5x10 dots font */
+#define FONT_5X8	0x20	/* Select 5x8 dots font */
+#define DISP_2_LINES	0x28	/* Select 2 lines display (only 5x8 font allowed) */
+#define DISP_1_LINE	0x20	/* Select 1 line display */
+#define BUS_8_BITS	0x30	/* Set 8 data bits */
+#define BUS_4_BITS	0x20	/* Set 4 data bits */
+
+/* Set CGRAM Address */
+#define CGRAM_IO	0x40	/* Access the CGRAM */
+
+/* Set DDRAM Address */
+#define DDRAM_IO	0x80	/* Access the DDRAM */
+
+#endif /* HD44780 included */

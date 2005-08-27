@@ -218,9 +218,13 @@ if test "$HD44780" = "yes"; then
 fi
 
 if test "$LCDLINUX" = "yes"; then
-   TEXT="yes"
-   DRIVERS="$DRIVERS drv_LCDLinux.o"
-   AC_DEFINE(WITH_LCDLINUX,1,[LCD-Linux driver])
+   if test "$has_lcd_linux" = true; then
+      TEXT="yes"
+      DRIVERS="$DRIVERS drv_LCDLinux.o"
+      AC_DEFINE(WITH_LCDLINUX,1,[LCD-Linux driver])
+   else
+      AC_MSG_WARN(lcd-linux.h not found: LCD-Linux driver disabled)
+   fi   
 fi
 
 if test "$LCDTERM" = "yes"; then

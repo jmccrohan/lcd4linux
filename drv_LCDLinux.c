@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.9 2005/06/15 05:24:35 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.10 2005/08/27 07:02:25 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.10  2005/08/27 07:02:25  reinelt
+ * LCD-Linux updated to 0.9.0
+ *
  * Revision 1.9  2005/06/15 05:24:35  reinelt
  * updated LCD-Linux driver to version 0.8.9
  *
@@ -84,13 +87,14 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 
-#define HD44780_MAIN
+#define LCD_LINUX_MAIN
 #include "drv_LCDLinux.h"
 
 
 static char Name[] = "LCD-Linux";
 static char Device[] = "/dev/lcd";
 static int lcdlinux_fd = -1;
+static int raw_mode = 0;
 
 
 /****************************************/
@@ -122,8 +126,8 @@ static void drv_LL_send(const char *string, const int len)
 
 static void drv_LL_clear(void)
 {
-    /* Fixme: is there no otherway to clear the display? */
-    drv_LL_send("\14", 1);	/* Form Feed */
+    /* No return value check since this ioctl cannot fail */
+    ioctl(lcdlinux_fd, IOCTL_CLEAR_DISP);
 }
 
 
@@ -161,8 +165,8 @@ static int drv_LL_start(const char *section, const int quiet)
 {
     char *s;
     int rows = -1, cols = -1;
-    int use_busy = 0;
-    struct lcd_driver buf;
+    int use_busy = 0, commit = 0;
+    struct lcd_parameters buf;
 
     /* emit version information */
     info("%s: Version %s", Name, LCD_LINUX_VERSION);
@@ -192,58 +196,51 @@ static int drv_LL_start(const char *section, const int quiet)
 	error("%s: Could not query display information!", Name);
 	return -1;
     }
-    info("%s: %dx%d display at 0x%x, %d controllers, flags=0x%02x:", Name, buf.disp_cols, buf.cntr_rows, buf.io, buf.num_cntr, buf.flags);
+    info("%s: %dx%d display with %d controllers, flags=0x%02x:", 
+	 Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
 
-
-#if 0
-    /* these two flags vanished with release 0.8.9 */
-    info("%s:   /proc support %sabled", Name, buf.flags & LCD_PROC_ON ? "en" : "dis");
-    info("%s:   tty support %sabled", Name, buf.flags & LCD_ETTY_ON ? "en" : "dis");
-#endif
-    info("%s:   console support %sabled", Name, buf.flags & LCD_CONSOLE ? "en" : "dis");
-    info("%s:   bus width %d bits", Name, buf.flags & LCD_4BITS_BUS ? 4 : 8);
-    info("%s:   font size %s", Name, buf.flags & LCD_5X10_FONT ? "5x10" : "5x8");
-    info("%s:   busy-flag checking %sabled", Name, buf.flags & LCD_CHECK_BF ? "en" : "dis");
+    info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
+    info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
+    info("%s:   font size %s", Name, buf.flags & HD44780_5X10_FONT ? "5x10" : "5x8");
+    
 
 
     /* overwrite with size from lcd4linux.conf */
-    if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.disp_cols)) {
+    if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.cntr_cols)) {
 	info("%s: changing size to %dx%d", Name, cols, rows);
 	buf.cntr_rows = rows;
-	buf.disp_cols = cols;
-	if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
-	    error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
-	    error("%s: Could not set display geometry!", Name);
-	    return -1;
-	}
+	buf.cntr_cols = cols;
+	commit = 1;
     }
 
     DROWS = buf.cntr_rows;
-    DCOLS = buf.disp_cols;
+    DCOLS = buf.cntr_cols;
 
     /* overwrite busy-flag checking from lcd4linux.conf */
     cfg_number(section, "UseBusy", 0, 0, 1, &use_busy);
-    if (use_busy && !(buf.flags & LCD_CHECK_BF)) {
+    if (use_busy && !(buf.flags & HD44780_CHECK_BF)) {
 	info("%s: activating busy-flag checking", Name);
-	buf.flags |= LCD_CHECK_BF;
-	if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
-	    error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
-	    error("%s: Could not activate busy-flag checking!", Name);
-	    return -1;
-	}
-    } else if (!use_busy && (buf.flags & LCD_CHECK_BF)) {
+	buf.flags |= HD44780_CHECK_BF;
+	commit = 1;
+    } else if (!use_busy && (buf.flags & HD44780_CHECK_BF)) {
 	info("%s: deactivating busy-flag checking", Name);
-	buf.flags &= ~LCD_CHECK_BF;
-	if (ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
-	    error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
-	    error("%s: Could not deactivate busy-flag checking!", Name);
-	    return -1;
-	}
+	buf.flags &= ~HD44780_CHECK_BF;
+	commit = 1;
     }
+
+    if (commit && ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
+	error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
+	return -1;
+     }
 
     /* initialize display */
     drv_LL_clear();		/* clear display */
 
+    /* Disable control characters interpretation. */
+    /* No return value check since this ioctl cannot fail */
+    raw_mode = 1;
+    ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
+    
     if (!quiet) {
 	char buffer[40];
 	qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
@@ -368,7 +365,12 @@ int drv_LL_quit(const int quiet)
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
     }
-
+ 
+    /* Enable control characters interpretation. */
+    /* No return value check since this ioctl cannot fail */
+    raw_mode = 0;
+    ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
+ 
     /* close device */
     close(lcdlinux_fd);
 

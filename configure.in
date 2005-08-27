@@ -65,6 +65,9 @@ AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 # check for serdisplib
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
 
+# check for LCD-Linux
+AC_CHECK_HEADERS(linux/lcd-linux.h, [has_lcd_linux="true"], [has_lcd_linux="false"])
+
 # check for python
 AC_MSG_CHECKING(if python support is wanted)
 AC_ARG_WITH(python,
