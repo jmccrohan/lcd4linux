@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.78 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.79 2005/09/02 05:27:08 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.79  2005/09/02 05:27:08  reinelt
+ * double-fork daemonize patch from Petri Damsten
+ *
  * Revision 1.78  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -450,6 +453,70 @@ void handler(int signal)
 }
 
 
+static void daemonize(void)
+{
+
+    /* thanks to Petri Damsten, we now follow the guidelines from the UNIX Programming FAQ */
+    /* 1.7 How do I get my program to act like a daemon? */
+    /* http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16 */
+    /* especially the double-fork solved the 'lcd4linux dying when called from init' problem */
+
+    pid_t i;
+    int fd;
+
+
+    /* Step 1: fork() so that the parent can exit */
+    i = fork();
+    if (i < 0) {
+	error("fork(#1) failed: %s", strerror(errno));
+	exit(1);
+    }
+    if (i != 0)
+	exit(0);
+
+    /* Step 2: setsid() to become a process group and session group leader */
+    setsid();
+
+    /* Step 3: fork() again so the parent (the session group leader) can exit */
+    i = fork();
+    if (i < 0) {
+	error("fork(#2) failed: %s", strerror(errno));
+	exit(1);
+    }
+    if (i != 0)
+	exit(0);
+
+    /* Step 4: chdir("/") to ensure that our process doesn't keep any directory in use */
+    if (chdir("/") != 0) {
+	error("chdir(\"/\") failed: %s", strerror(errno));
+	exit(1);
+    }
+
+    /* Step 5: umask(0) so that we have complete control over the permissions of anything we write */
+    umask(0);
+
+    /* Step 6: Establish new open descriptors for stdin, stdout and stderr */
+    /* detach stdin */
+    if (freopen("/dev/null", "r", stdin) == NULL) {
+	error("freopen (/dev/null) failed: %s", strerror(errno));
+	exit(1);
+    }
+
+    /* detach stdout and stderr */
+    fd = open("/dev/null", O_WRONLY, 0666);
+    if (fd == -1) {
+	error("open (/dev/null) failed: %s", strerror(errno));
+	exit(1);
+    }
+    fflush(stdout);
+    dup2(fd, STDOUT_FILENO);
+    fflush(stderr);
+    dup2(fd, STDERR_FILENO);
+    close(fd);
+
+}
+
+
 int main(int argc, char *argv[])
 {
     char *cfg = "/etc/lcd4linux.conf";
@@ -546,47 +613,14 @@ int main(int argc, char *argv[])
     }
 
     if (!running_foreground) {
-	pid_t i;
-	int fd;
+
 	debug("going background...");
-	i = fork();
-	if (i < 0) {
-	    error("fork() failed: %s", strerror(errno));
-	    exit(1);
-	}
-	if (i != 0)
-	    exit(0);
+
+	daemonize();
 
 	/* ignore nasty signals */
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
-
-	/* chdir("/") */
-	if (chdir("/") != 0) {
-	    error("chdir(\"/\") failed: %s", strerror(errno));
-	    exit(1);
-	}
-
-	/* we want full control over permissions */
-	umask(0);
-
-	/* detach stdin */
-	if (freopen("/dev/null", "r", stdin) == NULL) {
-	    error("freopen (/dev/null) failed: %s", strerror(errno));
-	    exit(1);
-	}
-
-	/* detach stdout and stderr */
-	fd = open("/dev/null", O_WRONLY, 0666);
-	if (fd == -1) {
-	    error("open (/dev/null) failed: %s", strerror(errno));
-	    exit(1);
-	}
-	fflush(stdout);
-	fflush(stderr);
-	dup2(fd, STDOUT_FILENO);
-	dup2(fd, STDERR_FILENO);
-	close(fd);
 
 	/* create PID file */
 	if ((pid = pid_init(PIDFILE)) != 0) {
