@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.35 2005/08/21 08:18:56 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.36 2005/09/07 06:51:44 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.36  2005/09/07 06:51:44  reinelt
+ * Support for CF635 added
+ *
  * Revision 1.35  2005/08/21 08:18:56  reinelt
  * CrystalFontz ACK processing
  *
@@ -246,6 +249,7 @@ static MODEL Models[] = {
     {632, "632", 2, 16, 0, 1, 0},
     {633, "633", 2, 16, 0, 2, 18},
     {634, "634", 4, 20, 0, 1, 0},
+    {635, "635", 4, 20, 0, 3, 22},
     {636, "636", 2, 16, 0, 1, 0},
     {-1, "Unknown", -1, -1, 0, 0, 0}
 };
@@ -293,7 +297,7 @@ static void drv_CF_process_packet(void)
 {
 
     switch (Packet.type) {
-	
+
     case 0x02:
 
 	/* async response from display to host */
@@ -303,7 +307,7 @@ static void drv_CF_process_packet(void)
 	    /* Key Activity */
 	    debug("Key Activity: %d", Packet.data[0]);
 	    break;
-	    
+
 	case 0x01:
 	    /* Fan Speed Report */
 	    if (Packet.data[1] == 0xff) {
@@ -314,8 +318,8 @@ static void drv_CF_process_packet(void)
 		Fan_RPM[Packet.data[0]] = (double) 27692308L *(Packet.data[1] - 3) / (Packet.data[2] + 256 * Packet.data[3]);
 	    }
 	    break;
-	    
-	case 0x02:			
+
+	case 0x02:
 	    /* Temperature Sensor Report */
 	    switch (Packet.data[3]) {
 	    case 0:
@@ -330,25 +334,25 @@ static void drv_CF_process_packet(void)
 		break;
 	    }
 	    break;
-	    
+
 	default:
 	    /* this should not happen */
-	    error ("%s: unexpected response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	    error("%s: unexpected response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	    break;
 	}
 
 	break;
-	
+
     case 0x03:
 	/* error response from display to host */
-	error ("%s: error response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	error("%s: error response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	break;
 
     default:
 	/* these should not happen: */
 	/* type 0x00: command from host to display: should never come back */
 	/* type 0x01: command response from display to host: are processed within send() */
-	error ("%s: unexpected packet type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	error("%s: unexpected packet type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
 	break;
     }
 
@@ -456,18 +460,18 @@ static void drv_CF_send(const unsigned char cmd, const unsigned char len, const 
     buffer[len + 3] = MSB(crc);
 
     drv_generic_serial_write((char *) buffer, len + 4);
-    
+
     /* wait for acknowledge packet */
     gettimeofday(&now, NULL);
     while (1) {
 	/* delay 1 msec */
-	usleep (1 * 1000);
+	usleep(1 * 1000);
 	if (drv_CF_poll()) {
 	    if (Packet.type == 0x01 && Packet.code == cmd) {
 		/* this is the ack we're waiting for */
 		if (0) {
 		    gettimeofday(&end, NULL);
-		    debug ("%s: ACK after %d usec", Name, 1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
+		    debug("%s: ACK after %d usec", Name, 1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
 		}
 		break;
 	    } else {
@@ -477,7 +481,7 @@ static void drv_CF_send(const unsigned char cmd, const unsigned char len, const 
 	}
 	gettimeofday(&end, NULL);
 	/* don't wait more than 250 msec */
-	if ((1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec) > 250*1000) {
+	if ((1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec) > 250 * 1000) {
 	    error("%s: timeout waiting for response to cmd 0x%02x", Name, cmd);
 	    break;
 	}
@@ -527,13 +531,13 @@ static void drv_CF_write3(const int row, const int col, const char *data, const 
     unsigned char cmd[23];
 
     /* limit length */
-    if (col + l > 20)
-	l = 20 - col;
+    if (col + l > DCOLS)
+	l = DCOLS - col;
     if (l < 0)
 	l = 0;
 
     /* sanity check */
-    if (row >= 2 || col + l > 20) {
+    if (row >= DROWS || col + l > DCOLS) {
 	error("%s: internal error: write outside display bounds!", Name);
 	return;
     }
@@ -695,7 +699,7 @@ static int drv_CF_autodetect(void)
 
     /* read display type */
     drv_CF_send(1, 0, NULL);
-    
+
     /* send() did already wait for response packet */
     if (Packet.type == 0x01 && Packet.code == 0x01) {
 	char t[7], c;
@@ -718,7 +722,7 @@ static int drv_CF_autodetect(void)
     }
 
     error("%s: display detection failed!", Name);
-    
+
     return -1;
 }
 
