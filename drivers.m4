@@ -193,6 +193,7 @@ fi
 
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
+      TEXT="yes"
       DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
@@ -242,12 +243,15 @@ if test "$M50530" = "yes"; then
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
+   TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[MatrixOrbital driver])
 fi
 
 if test "$MILINST" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
    DRIVERS="$DRIVERS drv_MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
 fi
@@ -370,7 +374,6 @@ fi
 
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
-:
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 

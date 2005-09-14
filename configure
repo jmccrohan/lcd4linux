@@ -6187,6 +6187,7 @@ fi
 
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
+      TEXT="yes"
       DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
@@ -6262,6 +6263,7 @@ _ACEOF
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
+   TEXT="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
 
@@ -6272,6 +6274,8 @@ _ACEOF
 fi
 
 if test "$MILINST" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
    DRIVERS="$DRIVERS drv_MilfordInstruments.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -6452,7 +6456,6 @@ fi
 
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
-:
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 
