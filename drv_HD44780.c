@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.54 2005/06/09 17:41:47 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.55 2005/10/02 07:58:48 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.55  2005/10/02 07:58:48  reinelt
+ * HD44780 address setup time increased
+ *
  * Revision 1.54  2005/06/09 17:41:47  reinelt
  * M50530 fixes (many thanks to Szymon Bieganski)
  *
@@ -299,7 +302,7 @@ static int Capabilities;
 
 #define T_CYCLE 1000		/* Enable cycle time */
 #define T_PW     450		/* Enable pulse width */
-#define T_AS      60		/* Address setup time */
+#define T_AS     140		/* Address setup time */
 #define T_H       40		/* Data hold time */
 #define T_AH      20		/* Address hold time */
 
