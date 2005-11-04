@@ -365,6 +365,9 @@
 /* LCDTerm driver */
 #undef WITH_LCDTERM
 
+/* LPH7508 driver */
+#undef WITH_LPH7508
+
 /* M50530 driver */
 #undef WITH_M50530
 

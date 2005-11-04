@@ -1,3 +1,9 @@
+Variables {
+   tick 500
+   tack 100
+   minute 60000
+}
+
 Display SerDispLib {
     Driver 'serdisplib'
     Port 'PAR:/dev/parports/0'
@@ -273,6 +279,18 @@ Display T6963-240x64 {
     Wire.WR 'INIT'
 }
 
+
+#Display LPH7508 {
+#    Driver 'LPH7508'
+#    Port   '/dev/parports/0'
+#    Font   '6x8'
+#}
+
+Display LPH7508 {
+    Driver 'serdisplib'
+    Port 'PAR:/dev/parports/0'
+    Model 'LPH7508'
+}
 
 Display XWindow {
     Driver 'X11'
@@ -703,7 +721,7 @@ Layout Default {
     }
     Row3 {
 	Col1  'Busy'
-#	Col10 'Rain'
+	Col10 'Rain'
 	Col11 'BusyBar'
     }
     Row4 {
@@ -762,22 +780,22 @@ Layout L20x2 {
 }
 
 Layout Test {
-    Row01.Col1 'Test'
-    Row02.Col1 'Test'
-    Row03.Col1 'Test'
-    Row04.Col1 'Test'
-    Row05.Col1 'Test'
-    Row06.Col1 'Test'
-    Row07.Col1 'Test'
-    Row08.Col1 'Test'
-#    Row09.Col1 'Test'
-#    Row10.Col1 'Test'
-#    Row11.Col1 'Test'
-#    Row12.Col1 'Test'
-#    Row13.Col1 'Test'
-#    Row14.Col1 'Test'
-#    Row15.Col1 'Test'
-#    Row16.Col1 'Test'
+    Row01.Col1 'Test1'
+    Row02.Col1 'Test1'
+    Row03.Col1 'Test1'
+    Row04.Col1 'Test1'
+    Row05.Col1 'Test1'
+    Row06.Col1 'Test1'
+    Row07.Col1 'Test1'
+    Row08.Col1 'Test1'
+    Row09.Col1 'Test1'
+    Row10.Col1 'Test1'
+    Row11.Col1 'Test1'
+    Row12.Col1 'Test1'
+    Row13.Col1 'Test1'
+    Row14.Col1 'Test1'
+    Row15.Col1 'Test1'
+    Row16.Col1 'Test1'
 }
 
 Layout Test2 {
@@ -803,7 +821,7 @@ Layout testMySQL {
 
 
 #Display 'SerDispLib'
-Display 'LCD-Linux'
+#Display 'LCD-Linux'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
@@ -827,17 +845,13 @@ Display 'LCD-Linux'
 #Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
+Display 'LPH7508'
 
-#Layout  'Default'
+#Layout 'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-Layout 'L20x2'
-#Layout 'Test'
+#Layout 'L20x2'
+Layout 'Test'
 #Layout 'Test2'
 
 
-Variables {
-   tick 500
-   tack 100
-   minute 60000
-}

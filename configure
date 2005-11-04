@@ -869,10 +869,10 @@ Optional Packages:
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
-                          HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,
-                          MilfordInstruments, Noritake, NULL, PNG, PPM,
-                          RouterBoard, serdisplib, SimpleLCD, T6963, Trefon,
-                          USBLCD, WincorNixdorf, X11
+                          HD44780, LCDLinux, LCDTerm, LPH7508, M50530,
+                          MatrixOrbital, MilfordInstruments, Noritake, NULL,
+                          PNG, PPM, RouterBoard, serdisplib, SimpleLCD, T6963,
+                          Trefon, USBLCD, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -6039,6 +6039,7 @@ for driver in $drivers; do
          HD44780="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
+	 LPH7508="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
@@ -6079,6 +6080,9 @@ for driver in $drivers; do
       LCDTerm)
          LCDTERM=$val
 	 ;;
+      LPH7508)
+         LPH7508=$val
+         ;;
       M50530)
          M50530=$val
          ;;
@@ -6247,6 +6251,17 @@ if test "$LCDTERM" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_LCDTERM 1
+_ACEOF
+
+fi
+
+if test "$LPH7508" = "yes"; then
+   GRAPHICS="yes"
+   PARPORT="yes"
+   DRIVERS="$DRIVERS drv_LPH7508.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_LPH7508 1
 _ACEOF
 
 fi
@@ -9491,18 +9506,24 @@ else
   ac_cv_func_fork_works=cross
 else
   cat >conftest.$ac_ext <<_ACEOF
-/* By Ruediger Kuhlmann. */
-      #include <sys/types.h>
-      #if HAVE_UNISTD_H
-      # include <unistd.h>
-      #endif
-      /* Some systems only have a dummy stub for fork() */
-      int main ()
-      {
-	if (fork() < 0)
-	  exit (1);
-	exit (0);
-      }
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+
+	  /* By Ruediger Kuhlmann. */
+	  if (fork() < 0)
+	    exit (1);
+	  exit (0);
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest$ac_exeext
 if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5

@@ -29,10 +29,10 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
-  [                        HD44780, LCDLinux, LCDTerm, M50530, MatrixOrbital,]
-  [                        MilfordInstruments, Noritake, NULL, PNG, PPM,]
-  [                        RouterBoard, serdisplib, SimpleLCD, T6963, Trefon,]
-  [                        USBLCD, WincorNixdorf, X11],
+  [                        HD44780, LCDLinux, LCDTerm, LPH7508, M50530,]
+  [                        MatrixOrbital, MilfordInstruments, Noritake, NULL,]
+  [                        PNG, PPM, RouterBoard, serdisplib, SimpleLCD, T6963,]
+  [                        Trefon, USBLCD, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -61,6 +61,7 @@ for driver in $drivers; do
          HD44780="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
+	 LPH7508="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
@@ -101,6 +102,9 @@ for driver in $drivers; do
       LCDTerm)
          LCDTERM=$val
 	 ;;
+      LPH7508)
+         LPH7508=$val
+         ;;
       M50530)
          M50530=$val
          ;;
@@ -233,6 +237,13 @@ if test "$LCDTERM" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_LCDTerm.o"
    AC_DEFINE(WITH_LCDTERM,1,[LCDTerm driver])
+fi
+
+if test "$LPH7508" = "yes"; then
+   GRAPHICS="yes"
+   PARPORT="yes"
+   DRIVERS="$DRIVERS drv_LPH7508.o"
+   AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
 fi
 
 if test "$M50530" = "yes"; then

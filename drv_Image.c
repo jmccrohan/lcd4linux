@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.12 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_Image.c,v 1.13 2005/11/04 04:44:52 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.13  2005/11/04 04:44:52  reinelt
+ * LPH7508 driver (not yet finished)
+ *
  * Revision 1.12  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -427,21 +430,21 @@ static int drv_IMG_start(const char *section)
     if (cfg_number(section, "border", 0, 0, -1, &border) < 0)
 	return -1;
 
-    if (sscanf(s = cfg_get(NULL, "foreground", "#102000"), "#%x", &fg_col) != 1) {
+    if (sscanf(s = cfg_get(section, "foreground", "#102000"), "#%x", &fg_col) != 1) {
 	error("%s: bad %s.foreground color '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
     }
     free(s);
 
-    if (sscanf(s = cfg_get(NULL, "halfground", "#70c000"), "#%x", &hg_col) != 1) {
+    if (sscanf(s = cfg_get(section, "halfground", "#70c000"), "#%x", &hg_col) != 1) {
 	error("%s: bad %s.halfground color '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
     }
     free(s);
 
-    if (sscanf(s = cfg_get(NULL, "background", "#80d000"), "#%x", &bg_col) != 1) {
+    if (sscanf(s = cfg_get(section, "background", "#80d000"), "#%x", &bg_col) != 1) {
 	error("%s: bad %s.background color '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;

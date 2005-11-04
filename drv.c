@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.33 2005/08/22 05:44:43 reinelt Exp $
+/* $Id: drv.c,v 1.34 2005/11/04 04:44:52 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.34  2005/11/04 04:44:52  reinelt
+ * LPH7508 driver (not yet finished)
+ *
  * Revision 1.33  2005/08/22 05:44:43  reinelt
  * new driver 'WincorNixdorf'
  * some fixes to the bar code
@@ -210,6 +213,7 @@ extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
 extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
+extern DRIVER drv_LPH7508;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
@@ -257,6 +261,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_LCDTERM
     &drv_LCDTerm,
+#endif
+#ifdef WITH_LPH7508
+    &drv_LPH7508,
 #endif
 #ifdef WITH_M50530
     &drv_M50530,
