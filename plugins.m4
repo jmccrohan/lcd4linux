@@ -65,6 +65,7 @@ for plugin in $plugins; do
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
          PLUGIN_PYTHON=$with_python
+         PLUGIN_SAMPLE="yes"
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
@@ -119,6 +120,9 @@ for plugin in $plugins; do
          ;;
       python)
          PLUGIN_PYTHON=$val
+         ;;
+      sample)
+         PLUGIN_SAMPLE=$val
          ;;
       seti)
          PLUGIN_SETI=$val
@@ -243,6 +247,10 @@ if test "$PLUGIN_PYTHON" = "yes"; then
          AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
       fi 
    fi 
+fi
+if test "$PLUGIN_SAMPLE" = "yes"; then
+   PLUGINS="$PLUGINS plugin_sample.o"
+   AC_DEFINE(PLUGIN_SAMPLE,1,[sample plugin])
 fi
 if test "$PLUGIN_SETI" = "yes"; then
    PLUGINS="$PLUGINS plugin_seti.o"

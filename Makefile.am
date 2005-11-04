@@ -95,6 +95,7 @@ plugin_pop3.c               \
 plugin_ppp.c                \
 plugin_proc_stat.c          \
 plugin_python.c             \
+plugin_sample.c             \
 plugin_seti.c               \
 plugin_statfs.c             \
 plugin_uname.c              \

@@ -293,6 +293,9 @@
 /* python plugin */
 #undef PLUGIN_PYTHON
 
+/* sample plugin */
+#undef PLUGIN_SAMPLE
+
 /* seti plugin */
 #undef PLUGIN_SETI
 

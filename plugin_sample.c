@@ -1,4 +1,4 @@
-/* $Id: plugin_sample.c,v 1.10 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: plugin_sample.c,v 1.11 2005/11/04 04:53:10 reinelt Exp $
  *
  * plugin template
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_sample.c,v $
+ * Revision 1.11  2005/11/04 04:53:10  reinelt
+ * sample plugin activated
+ *
  * Revision 1.10  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -246,13 +249,13 @@ int plugin_init_sample(void)
     /* register all our cool functions */
     /* the second parameter is the number of arguments */
     /* -1 stands for variable argument list */
-    AddFunction("mul2", 1, my_mul2);
-    AddFunction("mul3", 1, my_mul3);
-    AddFunction("answer", 0, my_answer);
-    AddFunction("diff", 2, my_diff);
-    AddFunction("length", 1, my_length);
-    AddFunction("upcase", 1, my_upcase);
-    AddFunction("concat", -1, my_concat);
+    AddFunction("sample::mul2", 1, my_mul2);
+    AddFunction("sample::mul3", 1, my_mul3);
+    AddFunction("sample::answer", 0, my_answer);
+    AddFunction("sample::diff", 2, my_diff);
+    AddFunction("sample::length", 1, my_length);
+    AddFunction("sample::upcase", 1, my_upcase);
+    AddFunction("sample::concat", -1, my_concat);
 
     return 0;
 }

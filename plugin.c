@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.38 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: plugin.c,v 1.39 2005/11/04 04:53:10 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.39  2005/11/04 04:53:10  reinelt
+ * sample plugin activated
+ *
  * Revision 1.38  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -246,6 +249,8 @@ int plugin_init_proc_stat(void);
 void plugin_exit_proc_stat(void);
 int plugin_init_python(void);
 void plugin_exit_python(void);
+int plugin_init_sample(void);
+void plugin_exit_sample(void);
 int plugin_init_seti(void);
 void plugin_exit_seti(void);
 int plugin_init_statfs(void);
@@ -315,6 +320,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_PYTHON
     plugin_init_python();
+#endif
+#ifdef PLUGIN_SAMPLE
+    plugin_init_sample();
 #endif
 #ifdef PLUGIN_SETI
     plugin_init_seti();
@@ -388,6 +396,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_PYTHON
     plugin_exit_python();
+#endif
+#ifdef PLUGIN_SAMPLE
+    plugin_exit_sample();
 #endif
 #ifdef PLUGIN_SETI
     plugin_exit_seti();
