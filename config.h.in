@@ -395,6 +395,9 @@
 /* RouterBoard driver */
 #undef WITH_ROUTERBOARD
 
+/* Sample driver */
+#undef WITH_SAMPLE
+
 /* serdisplib driver */
 #undef WITH_SERDISPLIB
 

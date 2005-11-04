@@ -871,8 +871,8 @@ Optional Packages:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           HD44780, LCDLinux, LCDTerm, LPH7508, M50530,
                           MatrixOrbital, MilfordInstruments, Noritake, NULL,
-                          PNG, PPM, RouterBoard, serdisplib, SimpleLCD, T6963,
-                          Trefon, USBLCD, WincorNixdorf, X11
+                          PNG, PPM, RouterBoard, Sample, serdisplib, SimpleLCD,
+                          T6963, Trefon, USBLCD, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -6048,6 +6048,7 @@ for driver in $drivers; do
          PNG="yes"
          PPM="yes"
 	 ROUTERBOARD="yes"
+         SAMPLE="yes"
 	 SERDISPLIB="yes"
          SIMPLELCD="yes"
          T6963="yes"
@@ -6106,6 +6107,9 @@ for driver in $drivers; do
          ;;
       RouterBoard)
          ROUTERBOARD=$val
+         ;;
+      Sample)
+         SAMPLE=$val
          ;;
       serdisplib)
          SERDISPLIB=$val;
@@ -6356,6 +6360,22 @@ if test "$ROUTERBOARD" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_ROUTERBOARD 1
+_ACEOF
+
+fi
+
+if test "$SAMPLE" = "yes"; then
+   # select either text or graphics mode
+   TEXT="yes"
+   GRAPHIC="yes"
+   # select bus: serial (including USB), parallel or i2c
+   SERIAL="yes"
+   PARPORT="yes"
+   #I2C="yes"
+   DRIVERS="$DRIVERS drv_Sample.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_SAMPLE 1
 _ACEOF
 
 fi

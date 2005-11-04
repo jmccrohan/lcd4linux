@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.34 2005/11/04 04:44:52 reinelt Exp $
+/* $Id: drv.c,v 1.35 2005/11/04 14:10:38 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.35  2005/11/04 14:10:38  reinelt
+ * drv_Sample and drv_LPH7508
+ *
  * Revision 1.34  2005/11/04 04:44:52  reinelt
  * LPH7508 driver (not yet finished)
  *
@@ -220,6 +223,7 @@ extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
 extern DRIVER drv_RouterBoard;
+extern DRIVER drv_Sample;
 extern DRIVER drv_serdisplib;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
@@ -282,6 +286,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,
+#endif
+#ifdef WITH_Sample
+    &drv_Sample,
 #endif
 #ifdef WITH_SERDISPLIB
     &drv_serdisplib,

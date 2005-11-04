@@ -31,8 +31,8 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        HD44780, LCDLinux, LCDTerm, LPH7508, M50530,]
   [                        MatrixOrbital, MilfordInstruments, Noritake, NULL,]
-  [                        PNG, PPM, RouterBoard, serdisplib, SimpleLCD, T6963,]
-  [                        Trefon, USBLCD, WincorNixdorf, X11],
+  [                        PNG, PPM, RouterBoard, Sample, serdisplib, SimpleLCD,]
+  [                        T6963, Trefon, USBLCD, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -70,6 +70,7 @@ for driver in $drivers; do
          PNG="yes"
          PPM="yes"
 	 ROUTERBOARD="yes"
+         SAMPLE="yes"
 	 SERDISPLIB="yes"
          SIMPLELCD="yes"
          T6963="yes"
@@ -128,6 +129,9 @@ for driver in $drivers; do
          ;;
       RouterBoard)
          ROUTERBOARD=$val
+         ;;
+      Sample)
+         SAMPLE=$val
          ;;
       serdisplib)
          SERDISPLIB=$val;
@@ -305,6 +309,18 @@ if test "$ROUTERBOARD" = "yes"; then
    TEXT="yes"
    DRIVERS="$DRIVERS drv_RouterBoard.o"
    AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
+fi
+
+if test "$SAMPLE" = "yes"; then
+   # select either text or graphics mode
+   TEXT="yes"
+   GRAPHIC="yes"
+   # select bus: serial (including USB), parallel or i2c
+   SERIAL="yes"
+   PARPORT="yes"
+   #I2C="yes"
+   DRIVERS="$DRIVERS drv_Sample.o"
+   AC_DEFINE(WITH_SAMPLE,1,[Sample driver])
 fi
 
 if test "$SERDISPLIB" = "yes"; then
