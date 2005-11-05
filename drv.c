@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.35 2005/11/04 14:10:38 reinelt Exp $
+/* $Id: drv.c,v 1.36 2005/11/05 06:26:51 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.36  2005/11/05 06:26:51  reinelt
+ * littly typo corrected
+ *
  * Revision 1.35  2005/11/04 14:10:38  reinelt
  * drv_Sample and drv_LPH7508
  *
@@ -287,7 +290,7 @@ DRIVER *Driver[] = {
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,
 #endif
-#ifdef WITH_Sample
+#ifdef WITH_SAMPLE
     &drv_Sample,
 #endif
 #ifdef WITH_SERDISPLIB
