@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.13 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: widget.h,v 1.14 2005/11/06 09:17:20 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.14  2005/11/06 09:17:20  reinelt
+ * re-use icons (thanks to Jesus de Santos Garcia)
+ *
  * Revision 1.13  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -99,6 +102,7 @@ typedef struct WIDGET_CLASS {
 typedef struct WIDGET {
     char *name;
     WIDGET_CLASS *class;
+    struct WIDGET *parent;
     int row;
     int col;
     void *data;

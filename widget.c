@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.19 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: widget.c,v 1.20 2005/11/06 09:17:20 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.20  2005/11/06 09:17:20  reinelt
+ * re-use icons (thanks to Jesus de Santos Garcia)
+ *
  * Revision 1.19  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -165,6 +168,8 @@ void widget_unregister(void)
     int i;
     for (i = 0; i < nWidgets; i++) {
 	Widgets[i].class->quit(&(Widgets[i]));
+	if (Widgets[i].name)
+	    free (Widgets[i].name);
     }
     free(Widgets);
 
@@ -182,6 +187,7 @@ int widget_add(const char *name, const int row, const int col)
 
     WIDGET_CLASS *Class;
     WIDGET *Widget;
+    WIDGET *Parent;
 
     /* prepare config section */
     /* strlen("Widget:")=7 */
@@ -231,15 +237,25 @@ int widget_add(const char *name, const int row, const int col)
 	return -1;
     }
 
+    /* look up parent widget (widget with the same name) */
+    Parent = NULL;
+    for (i = 0; i < nWidgets; i++) {
+	if (strcmp(name, Widgets[i].name) == 0) {
+	    Parent = &(Widgets[i]);
+	    break;
+	}
+    }
+
     Widget = &(Widgets[nWidgets]);
     nWidgets++;
 
-    Widget->name = (char *) name;
+    Widget->name = strdup(name);
     Widget->class = Class;
+    Widget->parent = Parent;
     Widget->row = row;
     Widget->col = col;
 
-    if (Class->init != 0) {
+    if (Class->init != NULL) {
 	Class->init(Widget);
     }
 
