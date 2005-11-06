@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.28 2005/08/22 05:44:43 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.29 2005/11/06 09:54:43 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.29  2005/11/06 09:54:43  reinelt
+ * fixed icon size removed, uses XRES & YRES (I hope this doesn't lead to problemes...)
+ *
  * Revision 1.28  2005/08/22 05:44:43  reinelt
  * new driver 'WincorNixdorf'
  * some fixes to the bar code
@@ -172,7 +175,7 @@
  *   renders Text widget into framebuffer
  *   calls drv_generic_text_real_write()
  *
- * int drv_generic_text_icon_init       (void);
+ * int drv_generic_text_icon_init (void);
  *   initializes the generic icon driver
  *   
  * int drv_generic_text_icon_draw (WIDGET *W);
@@ -743,7 +746,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																		                								                              break;
+																																																				                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;
@@ -869,8 +872,7 @@ static void drv_generic_text_bar_pack_segments(void)
 	}
 #if 0
 	debug("pack_segment: n=%d i=%d j=%d min=%d", nSegment, pack_i, pack_j, min);
-	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", 
-	      Segment[pack_i].val1, Segment[pack_i].val2, Segment[pack_j].val1, Segment[pack_j].val2);
+	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", Segment[pack_i].val1, Segment[pack_i].val2, Segment[pack_j].val1, Segment[pack_j].val2);
 #endif
 
 	nSegment--;

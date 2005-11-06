@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.18 2005/11/06 09:17:20 reinelt Exp $
+/* $Id: widget_icon.c,v 1.19 2005/11/06 09:54:43 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.19  2005/11/06 09:54:43  reinelt
+ * fixed icon size removed, uses XRES & YRES (I hope this doesn't lead to problemes...)
+ *
  * Revision 1.18  2005/11/06 09:17:20  reinelt
  * re-use icons (thanks to Jesus de Santos Garcia)
  *
@@ -127,8 +130,8 @@
 #include <dmalloc.h>
 #endif
 
-/* icons always are 8 pixels high  */
-#define YRES 8
+/* icons size is same as char size */
+extern int XRES, YRES;
 
 static void widget_icon_read_bitmap(const char *section, WIDGET_ICON * Icon)
 {
