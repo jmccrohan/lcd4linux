@@ -1,4 +1,4 @@
-/* $Id: drv_BWCT.c,v 1.3 2005/05/08 04:32:43 reinelt Exp $
+/* $Id: drv_BWCT.c,v 1.4 2005/12/11 14:55:28 reinelt Exp $
  *
  * new style driver for BWCT USB LCD displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_BWCT.c,v $
+ * Revision 1.4  2005/12/11 14:55:28  reinelt
+ * contrast range for BWCT is 0..255, not 0..100
+ *
  * Revision 1.3  2005/05/08 04:32:43  reinelt
  * CodingStyle added and applied
  *
@@ -258,7 +261,7 @@ static int drv_BW_start(const char *section, const int quiet)
     drv_BW_command(0x06);	/* curser moves to right, no shift */
 
 
-    if (cfg_number(section, "Contrast", 0, 0, 100, &contrast) > 0) {
+    if (cfg_number(section, "Contrast", 0, 0, 255, &contrast) > 0) {
 	drv_BW_contrast(contrast);
     }
 

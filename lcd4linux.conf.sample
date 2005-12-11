@@ -111,6 +111,7 @@ Display HD44780-winamp {
     UseBusy 1
     Port '/dev/parports/0'	
     Size '20x4'
+    asc255bug 1
     Wire {
 	RW      'AUTOFD'
 	RS      'INIT'
@@ -219,7 +220,8 @@ Display SimpleLCD {
 Display BA63 {
     Driver   'WincorNixdorf'
     Model    'BA63'
-    Port     '/dev/tts/0'
+#   Port     '/dev/tts/0'
+    Port     '/dev/tts/USB0'
     Speed     9600
     BarChar   219
     SelfTest  0
@@ -262,8 +264,8 @@ Display USBLCD {
 
 Display BWCT {
     Driver 'BWCT'
-    Size '16x2'
-    Contrast 30
+    Size '20x4'
+    Contrast 220
     asc255bug 1
     Icons 1
 }
@@ -280,13 +282,13 @@ Display T6963-240x64 {
 }
 
 
-#Display LPH7508 {
-#    Driver 'LPH7508'
-#    Port   '/dev/parports/0'
-#    Font   '6x8'
-#}
-
 Display LPH7508 {
+    Driver 'LPH7508'
+    Port   '/dev/parports/0'
+    Font   '6x8'
+}
+
+Display LPH7508-serdisplib {
     Driver 'serdisplib'
     Port 'PAR:/dev/parports/0'
     Model 'LPH7508'
@@ -842,16 +844,17 @@ Layout testMySQL {
 #Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
-#Display 'BWCT'
+Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
-Display 'LPH7508'
+#Display 'LPH7508-serdisplib'
+#Display 'LPH7508'
 
 #Layout 'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-#Layout 'L20x2'
-Layout 'Test'
+Layout 'L20x2'
+#Layout 'Test'
 #Layout 'Test2'
 
 
