@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.56 2005/12/12 05:52:03 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.57 2005/12/12 09:08:08 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.57  2005/12/12 09:08:08  reinelt
+ * finally removed old udelay code path; read timing values from config
+ *
  * Revision 1.56  2005/12/12 05:52:03  reinelt
  * type of delays is 'unsigned long'
  *
@@ -298,28 +301,9 @@ static int Model;
 static int Capabilities;
 
 
-/* low level communication timings [nanoseconds]
- * as these values differ from spec to spec,
- * we use the worst-case values.
- */
-
-#define T_CYCLE 1000		/* Enable cycle time */
-#define T_PW     450		/* Enable pulse width */
-#define T_AS     140		/* Address setup time */
-#define T_H       40		/* Data hold time */
-#define T_AH      20		/* Address hold time */
-
-
-/* HD44780 execution timings [microseconds]
- * as these values differ from spec to spec,
- * we use the worst-case values.
- */
-
-#define T_INIT1 4100		/* first init sequence:  4.1 msec */
-#define T_INIT2  100		/* second init sequence: 100 usec */
-#define T_EXEC    80		/* normal execution time */
-#define T_WRCG   120		/* CG RAM Write */
-#define T_CLEAR 2250		/* Clear Display */
+/* Timings */
+static int T_CY, T_PW, T_AS, T_AH;
+static int T_INIT1, T_INIT2, T_EXEC, T_WRCG, T_CLEAR, T_HOME, T_ONOFF;
 
 
 static int Bits = 0;
@@ -561,8 +545,8 @@ static void drv_HD_PP_byte(const unsigned char controller, const unsigned char d
     /* send high nibble of the data */
     drv_HD_PP_nibble(controller, ((data >> 4) & 0x0f) | RS);
 
-    /* Make sure we honour T_CYCLE */
-    ndelay(T_CYCLE - T_AS - T_PW);
+    /* Make sure we honour T_CY */
+    ndelay(T_CY - T_AS - T_PW);
 
     /* send low nibble of the data */
     drv_HD_PP_nibble(controller, (data & 0x0f) | RS);
@@ -769,6 +753,30 @@ static int drv_HD_PP_load(const char *section)
 	Capabilities &= ~CAP_GPO;
     }
 
+    /* Timings */
+
+    /* low level communication timings [nanoseconds]
+     * as these values differ from spec to spec,
+     * we use the worst-case default values, but allow
+     * modification from the config file.
+     */
+    T_CY = timing(Name, section, "CY", 1000, "ns");	/* Enable cycle time */
+    T_PW = timing(Name, section, "PW", 450, "ns");	/* Enable pulse width */
+    T_AS = timing(Name, section, "AS", 140, "ns");	/* Address setup time */
+    T_AH = timing(Name, section, "AH", 20, "ns");	/* Address hold time */
+
+    /* HD44780 execution timings [microseconds]
+     * as these values differ from spec to spec,
+     * we use the worst-case default values, but allow
+     * modification from the config file.
+     */
+    T_INIT1 = timing(Name, section, "INIT1", 4100, "us");	/* first init sequence: 4.1 msec */
+    T_INIT2 = timing(Name, section, "INIT2", 100, "us");	/* second init sequence: 100 usec */
+    T_EXEC = timing(Name, section, "EXEC", 80, "us");	/* normal execution time */
+    T_WRCG = timing(Name, section, "WRCG", 120, "us");	/* CG RAM Write */
+    T_CLEAR = timing(Name, section, "CLEAR", 2250, "us");	/* Clear Display */
+    T_HOME = timing(Name, section, "HOME", 2250, "us");	/* Return Cursor Home */
+    T_ONOFF = timing(Name, section, "ONOFF", 2250, "us");	/* Display On/Off Control */
 
     /* clear all signals */
     if (Bits == 8) {
@@ -1313,7 +1321,7 @@ static int drv_HD_start(const char *section, const int quiet)
     }
 
     drv_HD_command(allControllers, 0x08, T_EXEC);	/* Controller off, cursor off, blink off */
-    drv_HD_command(allControllers, 0x0c, T_CLEAR);	/* Display on, cursor off, blink off, wait 1.64 ms */
+    drv_HD_command(allControllers, 0x0c, T_ONOFF);	/* Display on, cursor off, blink off, wait 1.64 ms */
     drv_HD_command(allControllers, 0x06, T_EXEC);	/* curser moves to right, no shift */
 
     if ((Capabilities & CAP_HD66712) && DROWS > 2) {
@@ -1323,7 +1331,7 @@ static int drv_HD_start(const char *section, const int quiet)
     }
 
     drv_HD_clear();		/* clear *all* displays */
-    drv_HD_command(allControllers, 0x03, T_CLEAR);	/* return home */
+    drv_HD_command(allControllers, 0x03, T_HOME);	/* return home */
 
     /* maybe set backlight */
     if (Capabilities & CAP_BACKLIGHT) {

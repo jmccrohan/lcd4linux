@@ -119,6 +119,21 @@ Display HD44780-winamp {
 	ENABLE2 'GND'
 	GPO     'GND'
     }
+    Timing {
+	# low-level communication [ns]
+	CY 1000  # Enable cycle time
+	PW  450  # Enable pulse width
+	AS  140  # Address setup time
+	AH   20  # Address hold time
+	# HD44780 execution timings [us]
+	INIT1 4100  # first init sequence: 4.1 msec
+	INIT2  100  # second init sequence: 100 usec
+	EXEC    80  # normal execution time
+	WRCG   120  # CG RAM Write
+	CLEAR 2250  # Clear Display
+	HOME  2250  # Return Cursor Home
+	ONOFF 2250  # Display On/Off Control
+    }
 }
 
 # Dual-HD44780 display from Pollin
@@ -828,7 +843,7 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
-#Display 'HD44780-WinAmp'
+Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
@@ -839,7 +854,7 @@ Layout testMySQL {
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-Display 'BA63'
+#Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'

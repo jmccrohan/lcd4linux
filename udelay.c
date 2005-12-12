@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.20 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: udelay.c,v 1.21 2005/12/12 09:08:08 reinelt Exp $
  *
  * short delays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.21  2005/12/12 09:08:08  reinelt
+ * finally removed old udelay code path; read timing values from config
+ *
  * Revision 1.20  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -112,20 +115,18 @@
  *
  * exported fuctions:
  *
- * void udelay (unsigned long usec)
- *  delays program execution for usec microseconds
- *  uses global variable 'loops_per_usec', which has to be set before.
- *  This function does busy-waiting! so use only for delays smaller
- *  than 10 msec
- *
- * void udelay_calibrate (void) (if USE_OLD_UDELAY is defined)
- *   does a binary approximation for 'loops_per_usec'
- *   should be called several times on an otherwise idle machine
- *   the maximum value should be used
- *
  * void udelay_init (void)
  *   selects delay method (gettimeofday() ord rdtsc() according
  *   to processor features
+ *
+ * unsigned long timing (const char *driver, const char *section, const char *name, const int defval, const char *unit);
+ *   returns a timing value from config or the default value
+ *
+ * void udelay (unsigned long usec)
+ *   delays program execution for usec microseconds
+ *   uses global variable 'loops_per_usec', which has to be set before.
+ *   This function does busy-waiting! so use only for delays smaller
+ *   than 10 msec
  *
  */
 
@@ -133,12 +134,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-#ifdef USE_OLD_UDELAY
-
-#include <time.h>
-
-#else
 
 #include <math.h>
 #include <unistd.h>
@@ -151,57 +146,15 @@
 #include <asm/msr.h>
 #endif
 
-#endif
-
 
 #include "debug.h"
+#include "cfg.h"
+#include "qprintf.h"
 #include "udelay.h"
 
-#ifdef USE_OLD_UDELAY
-
-unsigned long loops_per_usec;
-
-void ndelay(const unsigned long nsec)
-{
-    unsigned long loop = (nsec * loops_per_usec + 999) / 1000;
-
-  __asm__(".align 16\n" "1:\tdecl %0\n" "\tjne 1b":	/* no result */
-  :"a"(loop));
-}
-
-/* adopted from /usr/src/linux/init/main.c */
-
-void udelay_calibrate(void)
-{
-    clock_t tick;
-    unsigned long bit;
-
-    loops_per_usec = 1;
-    while (loops_per_usec <<= 1) {
-	tick = clock();
-	while (clock() == tick);
-	tick = clock();
-	ndelay(1000000000 / CLOCKS_PER_SEC);
-	if (clock() > tick)
-	    break;
-    }
-
-    loops_per_usec >>= 1;
-    bit = loops_per_usec;
-    while (bit >>= 1) {
-	loops_per_usec |= bit;
-	tick = clock();
-	while (clock() == tick);
-	tick = clock();
-	ndelay(1000000000 / CLOCKS_PER_SEC);
-	if (clock() > tick)
-	    loops_per_usec &= ~bit;
-    }
-}
-
-#else
 
 static unsigned int ticks_per_usec = 0;
+
 
 static void getCPUinfo(int *hasTSC, double *MHz)
 {
@@ -269,11 +222,27 @@ void udelay_init(void)
     error("udelay: Even if your CPU supports TSC, it will not be used!");
     error("udelay: You *really* should install msr.h and recompile LCD4linux!");
 #endif
-
     {
 	ticks_per_usec = 0;
 	info("udelay: using gettimeofday() delay loop");
     }
+}
+
+
+unsigned long timing(const char *driver, const char *section, const char *name, const int defval, const char *unit)
+{
+    char sec[256];
+    int ret, val;
+
+    qprintf(sec, sizeof(sec), "%s.Timing", section);
+
+    ret = cfg_number(sec, name, defval, 0, -1, &val);
+    if (val != defval) {
+	info("%s: timing: %6s = %5d %s (default %d %s)", driver, name, val, unit, defval, unit);
+    } else {
+	info("%s: timing: %6s = %5d %s (default)", driver, name, defval, unit);
+    }
+    return val;
 }
 
 
@@ -314,5 +283,3 @@ void ndelay(const unsigned long nsec)
 	} while (now.tv_sec == end.tv_sec ? now.tv_usec < end.tv_usec : now.tv_sec < end.tv_sec);
     }
 }
-
-#endif
