@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.55 2005/10/02 07:58:48 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.56 2005/12/12 05:52:03 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.56  2005/12/12 05:52:03  reinelt
+ * type of delays is 'unsigned long'
+ *
  * Revision 1.55  2005/10/02 07:58:48  reinelt
  * HD44780 address setup time increased
  *
@@ -386,8 +389,8 @@ static MODEL Models[] = {
 /****************************************/
 
 static int (*drv_HD_load) (const char *section);
-static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const int delay);
-static void (*drv_HD_data) (const unsigned char controller, const char *string, const int len, const int delay);
+static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const unsigned long delay);
+static void (*drv_HD_data) (const unsigned char controller, const char *string, const int len, const unsigned long delay);
 static void (*drv_HD_stop) (void);
 
 
@@ -566,7 +569,7 @@ static void drv_HD_PP_byte(const unsigned char controller, const unsigned char d
 }
 
 
-static void drv_HD_PP_command(const unsigned char controller, const unsigned char cmd, const int delay)
+static void drv_HD_PP_command(const unsigned char controller, const unsigned char cmd, const unsigned long delay)
 {
     unsigned char enable;
 
@@ -613,7 +616,7 @@ static void drv_HD_PP_command(const unsigned char controller, const unsigned cha
 }
 
 
-static void drv_HD_PP_data(const unsigned char controller, const char *string, const int len, const int delay)
+static void drv_HD_PP_data(const unsigned char controller, const char *string, const int len, const unsigned long delay)
 {
     int l = len;
     unsigned char enable;
@@ -906,7 +909,7 @@ static void drv_HD_I2C_byte(const unsigned char controller, const unsigned char 
 
 
 static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, __attribute__ ((unused))
-			       const int delay)
+			       const unsigned long delay)
 {
     /* send data with RS disabled */
     drv_HD_I2C_nibble(controller, ((cmd >> 4) & 0x0f));
@@ -914,7 +917,7 @@ static void drv_HD_I2C_command(const unsigned char controller, const unsigned ch
 }
 
 static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, __attribute__ ((unused))
-			    const int delay)
+			    const unsigned long delay)
 {
     int l = len;
 

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.19 2005/06/19 17:57:06 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.20 2005/12/12 05:52:03 reinelt Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.20  2005/12/12 05:52:03  reinelt
+ * type of delays is 'unsigned long'
+ *
  * Revision 1.19  2005/06/19 17:57:06  reinelt
  * cosmetics...
  *
@@ -210,7 +213,6 @@ int drv_generic_parport_open(const char *section, const char *driver)
 	    error("%s: open(%s) failed: %s", Driver, PPdev, strerror(errno));
 	    return -1;
 	}
-
 #if 0
 	/* PPEXCL fails if someone else uses the port (e.g. lp.ko) */
 	if (ioctl(PPfd, PPEXCL)) {
@@ -496,7 +498,7 @@ void drv_generic_parport_control(const unsigned char mask, const unsigned char v
 }
 
 
-void drv_generic_parport_toggle(const unsigned char bits, const int level, const int delay)
+void drv_generic_parport_toggle(const unsigned char bits, const int level, const unsigned long delay)
 {
     unsigned char value1, value2;
 

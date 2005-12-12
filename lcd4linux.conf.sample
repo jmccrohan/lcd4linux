@@ -220,8 +220,8 @@ Display SimpleLCD {
 Display BA63 {
     Driver   'WincorNixdorf'
     Model    'BA63'
-#   Port     '/dev/tts/0'
-    Port     '/dev/tts/USB0'
+    Port     '/dev/tts/0'
+#   Port     '/dev/tts/USB0'
     Speed     9600
     BarChar   219
     SelfTest  0
@@ -839,12 +839,12 @@ Layout testMySQL {
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-#Display 'BA63'
+Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
-Display 'BWCT'
+#Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
 #Display 'LPH7508-serdisplib'

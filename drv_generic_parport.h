@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.h,v 1.11 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_parport.h,v 1.12 2005/12/12 05:52:03 reinelt Exp $
  *
  * generic driver helper for parallel port displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.h,v $
+ * Revision 1.12  2005/12/12 05:52:03  reinelt
+ * type of delays is 'unsigned long'
+ *
  * Revision 1.11  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -132,7 +135,7 @@ unsigned char drv_generic_parport_wire_data(const char *name, const char *deflt)
 void drv_generic_parport_direction(const int direction);
 unsigned char drv_generic_parport_status(void);
 void drv_generic_parport_control(const unsigned char mask, const unsigned char value);
-void drv_generic_parport_toggle(const unsigned char bit, const int level, const int delay);
+void drv_generic_parport_toggle(const unsigned char bit, const int level, const unsigned long delay);
 void drv_generic_parport_data(const unsigned char data);
 unsigned char drv_generic_parport_read(void);
 void drv_generic_parport_debug(void);
