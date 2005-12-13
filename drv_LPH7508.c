@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.1 2005/11/04 14:10:38 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.2 2005/12/13 14:07:28 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.2  2005/12/13 14:07:28  reinelt
+ * LPH7508 driver finished
+ *
  * Revision 1.1  2005/11/04 14:10:38  reinelt
  * drv_Sample and drv_LPH7508
  *
@@ -83,58 +86,79 @@ unsigned char *Buffer1, *Buffer2;
 
 static void drv_L7_write_ctrl(const unsigned char data)
 {
-    /* Fixme: busy-check??? */
-
     /* put data on DB1..DB8 */
     drv_generic_parport_data(data);
 
     /* CS1 = high, RW = low, A0 = low */
     drv_generic_parport_control(SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0, SIGNAL_CS1);
 
-    /* Fixme: setup time? */
-    ndelay(100);
+    /* Address Setup Time = 10 ns */
+    /* Data Setup Time = 20 ns */
+    ndelay(20);
 
-    /* Fixme: toggle time? */
-    drv_generic_parport_toggle(SIGNAL_CS1, 0, 100);
+    /* Control L Pulse Width = 22 ns */
+    drv_generic_parport_toggle(SIGNAL_CS1, 0, 22);
 
-    ndelay(100);		// Fixme
+    /* Address & Data Hold Time = 10 ns */
+    ndelay(10);
 }
 
 
 static void drv_L7_write_data(const unsigned char data)
 {
-    /* Fixme: busy-check??? */
-
     /* put data on DB1..DB8 */
     drv_generic_parport_data(data);
 
     /* CS1 = high, RW = low, A0 = high */
     drv_generic_parport_control(SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0, SIGNAL_CS1 | SIGNAL_A0);
 
-    /* Fixme: setup time? */
-    ndelay(100);
+    /* Address Setup Time = 10 ns */
+    /* Data Setup Time = 20 ns */
+    ndelay(20);
 
-    /* Fixme: toggle time? */
-    drv_generic_parport_toggle(SIGNAL_CS1, 0, 100);
+    /* Control L Pulse Width = 22 ns */
+    drv_generic_parport_toggle(SIGNAL_CS1, 0, 22);
 
-    ndelay(100);		// Fixme
+    /* Address & Data Hold Time = 10 ns */
+    ndelay(10);
+}
+
+
+static void drv_L7_clear (void)
+{
+    int p, c;
+
+    for (p= 0; p < PAGES; p++) {
+	/* select page */
+	drv_L7_write_ctrl(0xb0 | p);
+	/* select column address */
+	drv_L7_write_ctrl(0x00);
+	drv_L7_write_ctrl(0x10);
+	for (c = 0; c < SCOLS; c++) {
+	    drv_L7_write_data(0);
+	}
+    }
 }
 
 
 static void drv_L7_blit(const int row, const int col, const int height, const int width)
 {
-    int r, c;
+    int r, p, p0;
 
     /* transfer layout to display framebuffer */
     for (r = row; r < row + height; r++) {
 	if (r >= SROWS)
 	    break;
-	int p = r / 8;		/* page */
+	/* page */
+	int p = r / 8;
+	int c;
 	for (c = col; c < col + width; c++) {
 	    if (c >= SCOLS)
 		break;
-	    int a = p * SCOLS + c;	/* RAM address */
-	    unsigned char m = 1 << (r % 8);	/* bit mask */
+	    /* RAM address */
+	    int a = p * SCOLS + c;
+	    /* bit mask */
+	    unsigned char m = 1 << (r % 8);
 	    if (drv_generic_graphic_FB[r * LCOLS + c]) {
 		/* set bit */
 		Buffer1[a] |= m;
@@ -146,13 +170,61 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
     }
 
     /* process display framebuffer */
+    p0 = -1;
+    for (p = row / 8; p <= (row + height) / 8; p++) {
+	int i, j, a, e;
+	if (p >= PAGES)
+	    break;
+	for (i = col; i < col+width; i++) {
+	    a = p * SCOLS + i;
+	    if (Buffer1[a] == Buffer2[a])
+		continue;
+	    for (j = i, e = 0; i < col+width; i++) {
+		a = p * SCOLS + i;
+		if (Buffer1[a] == Buffer2[a]) {
+		    if (++e > 2)
+			break;
+		} else {
+		    e = 0;
+		}
+	    }
+	    /* change page if necessary */
+	    if (p != p0) {
+		p0 = p;
+		drv_L7_write_ctrl(0xb0 | p);
+	    }
+	    /* column address */
+	    /* first column address = 32 */
+	    drv_L7_write_ctrl(0x00 | ((j + 32) & 0x0f));
+	    drv_L7_write_ctrl(0x10 | ((j + 32) >> 4));
+	    /* data */
+	    for (j = j; j <= i - e; j++) {
+		a = p * SCOLS + j;
+		drv_L7_write_data(Buffer1[a]);
+		Buffer2[a] = Buffer1[a];
+	    }
+	}
+    }
+}
 
+
+static int drv_L7_contrast(int contrast)
+{
+    if (contrast < 0)
+	contrast = 0;
+    if (contrast > 31)
+	contrast = 31;
+
+    drv_L7_write_ctrl(0x80 | contrast);
+
+    return contrast;
 }
 
 
 static int drv_L7_start(const char *section)
 {
     char *s;
+    int contrast;
 
     /* fixed size */
     DROWS = 64;
@@ -218,29 +290,37 @@ static int drv_L7_start(const char *section)
     /* set direction: write */
     drv_generic_parport_direction(0);
 
-
     /* reset display: lower RESET for 1 usec */
     drv_generic_parport_control(SIGNAL_RES, 0);
     udelay(1);
     drv_generic_parport_control(SIGNAL_RES, SIGNAL_RES);
-    udelay(1);
+    udelay(100);
 
     /* just to make sure: send a software reset */
     drv_L7_write_ctrl(0xe2);
+    udelay(20000);
 
-    /* initialize display */
+    drv_L7_write_ctrl(0xAE);	/* Display off */
     drv_L7_write_ctrl(0x40);	/* Start Display Line = 0 */
-    drv_L7_write_ctrl(0x20);	/* reverse line driving release */
+    drv_L7_write_ctrl(0x20);	/* reverse line driving off */
     drv_L7_write_ctrl(0xCC);	/* OutputStatus = $0C, 102x64 */
     drv_L7_write_ctrl(0xA0);	/* ADC = normal */
     drv_L7_write_ctrl(0xA9);	/* LCD-Duty = 1/64 */
     drv_L7_write_ctrl(0xAB);	/* LCD-Duty +1 (1/65, symbols) */
     drv_L7_write_ctrl(0x25);	/* power supply on */
-    udelay(100);
+    udelay(100 * 1000);		/* wait 100 msec */
     drv_L7_write_ctrl(0xED);	/* power supply on completion */
+    drv_L7_write_ctrl(0x8F);	/* Contrast medium */
+    drv_L7_write_ctrl(0xA4);	/* Display Test off */
+    drv_L7_write_ctrl(0xAF);	/* Display on */
+    drv_L7_write_ctrl(0xA6);	/* Display on */
 
     /* clear display */
-    /* Fixme drv_L7_clear(); */
+    drv_L7_clear();
+
+    if (cfg_number(section, "Contrast", 15, 0, 31, &contrast) > 0) {
+	drv_L7_contrast(contrast);
+    }
 
     return 0;
 }
@@ -250,7 +330,14 @@ static int drv_L7_start(const char *section)
 /***            plugins               ***/
 /****************************************/
 
-/* none at the moment... */
+
+static void plugin_contrast(RESULT * result, RESULT * arg1)
+{
+    double contrast;
+
+    contrast = drv_L7_contrast(R2N(arg1));
+    SetResult(&result, R_NUMBER, &contrast);
+}
 
 
 /****************************************/
@@ -318,7 +405,7 @@ int drv_L7_init(const char *section, const int quiet)
     widget_register(&wc);
 
     /* register plugins */
-    /* none at the moment... */
+    AddFunction("LCD::contrast", 1, plugin_contrast);
 
 
     return 0;

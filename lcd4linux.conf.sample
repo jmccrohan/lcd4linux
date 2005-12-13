@@ -301,6 +301,7 @@ Display LPH7508 {
     Driver 'LPH7508'
     Port   '/dev/parports/0'
     Font   '6x8'
+    Contrast 15
 }
 
 Display LPH7508-serdisplib {
@@ -717,7 +718,7 @@ Widget Test1 {
     expression 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
     width 20
     align 'M'
-    speed 25
+    speed 100
 }
 
 Widget Test2 {
@@ -725,7 +726,7 @@ Widget Test2 {
     expression '1234567890abcdefghijklmnopqrstuvwxyz'
     width 20
     align 'M'
-    speed 10
+    speed 150
 }
 
 Layout Default {
@@ -843,7 +844,7 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
-Display 'HD44780-WinAmp'
+#Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
@@ -863,12 +864,12 @@ Display 'HD44780-WinAmp'
 #Display 'Image'
 #Display 'Trefon'
 #Display 'LPH7508-serdisplib'
-#Display 'LPH7508'
+Display 'LPH7508'
 
-#Layout 'Default'
+Layout 'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
-Layout 'L20x2'
+#Layout 'L20x2'
 #Layout 'Test'
 #Layout 'Test2'
 

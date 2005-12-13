@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.16  2005/12/13 14:07:28  reinelt
+ * LPH7508 driver finished
+ *
  * Revision 1.15  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -191,8 +194,8 @@ static void drv_generic_graphic_resizeFB(int rows, int cols)
 
 int drv_generic_graphic_clear(void)
 {
-    memset(drv_generic_graphic_FB, 0, DCOLS * DROWS * sizeof(*drv_generic_graphic_FB));
-    drv_generic_graphic_real_blit(0, 0, DROWS, DCOLS);
+    memset(drv_generic_graphic_FB, 0, LCOLS * LROWS * sizeof(*drv_generic_graphic_FB));
+    drv_generic_graphic_real_blit(0, 0, LROWS, LCOLS);
     return 0;
 }
 
