@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.20 2005/11/06 09:17:20 reinelt Exp $
+/* $Id: widget.c,v 1.21 2005/12/18 16:18:36 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.21  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.20  2005/11/06 09:17:20  reinelt
  * re-use icons (thanks to Jesus de Santos Garcia)
  *
@@ -169,7 +172,7 @@ void widget_unregister(void)
     for (i = 0; i < nWidgets; i++) {
 	Widgets[i].class->quit(&(Widgets[i]));
 	if (Widgets[i].name)
-	    free (Widgets[i].name);
+	    free(Widgets[i].name);
     }
     free(Widgets);
 
@@ -179,7 +182,7 @@ void widget_unregister(void)
     nClasses = 0;
 }
 
-int widget_add(const char *name, const int row, const int col)
+int widget_add(const char *name, const int type, const int row, const int col)
 {
     int i;
     char *section;
@@ -204,6 +207,7 @@ int widget_add(const char *name, const int row, const int col)
 	return -1;
     }
     free(section);
+
     /* lookup widget class */
     Class = NULL;
     for (i = 0; i < nClasses; i++) {
@@ -218,8 +222,17 @@ int widget_add(const char *name, const int row, const int col)
 	    free(class);
 	return -1;
     }
+
+    /* check if widget type matches */
+    if ((Class->type & type) == 0) {
+	error("widget '%s': class '%s' not applicable", name, class);
+	free(class);
+	return -1;
+    }
+
     if (class)
 	free(class);
+
 
     /* do NOT use realloc here because there may be pointers to the old */
     /* memory area, which would point to nowhere if realloc moves the area */

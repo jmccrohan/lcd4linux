@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.16 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: layout.c,v 1.17 2005/12/18 16:18:36 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.17  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.16  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -116,20 +119,12 @@
 #endif
 
 
-int layout_addItem(const char *name, const int row, const int col)
-{
-    /* allocate widget */
-    widget_add(name, row - 1, col - 1);
-    return 0;
-}
-
-
 int layout_init(const char *layout)
 {
     char *section;
     char *list, *l;
     char *widget;
-    int row, col;
+    int row, col, gpo;
 
     info("initializing layout '%s'", layout);
 
@@ -155,11 +150,21 @@ int layout_init(const char *layout)
 	    l++;
 	if ((p = strchr(l, '|')) != NULL)
 	    *p = '\0';
+	/* visible widgets */
 	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
 	if (i == 2 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		layout_addItem(widget, row, col);
+		widget_add(widget, WIDGET_TYPE_VIS, row - 1, col - 1);
+	    }
+	    free(widget);
+	}
+	/* GPO widgets */
+	i = sscanf(l, "gpo%d%n", &gpo, &n);
+	if (i == 1 && l[n] == '\0') {
+	    widget = cfg_get(section, l, NULL);
+	    if (widget != NULL && *widget != '\0') {
+		widget_add(widget, WIDGET_TYPE_GPO, gpo - 1, 0);
 	    }
 	    free(widget);
 	}

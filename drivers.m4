@@ -166,6 +166,7 @@ AC_MSG_RESULT([done])
 # generic display drivers
 TEXT="no"
 GRAPHIC="no"
+GPIO="no"
 IMAGE="no"
 
 # generiv I/O drivers
@@ -246,6 +247,7 @@ fi
 if test "$LPH7508" = "yes"; then
    GRAPHICS="yes"
    PARPORT="yes"
+   GPIO="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
    AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
 fi
@@ -404,6 +406,10 @@ if test "$GRAPHIC" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_graphic.o"
 fi
 
+# generic GPIO driver
+if test "$GPIO" = "yes"; then
+   DRIVERS="$DRIVERS drv_generic_gpio.o"
+fi
 
 # generic parport driver
 if test "$PARPORT" = "yes"; then

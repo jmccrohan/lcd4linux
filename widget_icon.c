@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.19 2005/11/06 09:54:43 reinelt Exp $
+/* $Id: widget_icon.c,v 1.20 2005/12/18 16:18:36 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.20  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.19  2005/11/06 09:54:43  reinelt
  * fixed icon size removed, uses XRES & YRES (I hope this doesn't lead to problemes...)
  *
@@ -261,10 +264,10 @@ int widget_icon_init(WIDGET * Self)
 	Icon->ascii = -1;
 
     } else {
-	
+
 	/* re-use the parent */
 	Self->data = Self->parent->data;
-	
+
     }
 
     /* just do it! */
@@ -299,6 +302,7 @@ int widget_icon_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Icon = {
   name:"icon",
+  type:WIDGET_TYPE_VIS,
   init:widget_icon_init,
   draw:NULL,
   quit:widget_icon_quit,

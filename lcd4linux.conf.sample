@@ -729,6 +729,18 @@ Widget Test2 {
     speed 150
 }
 
+Widget GPO_Test {
+    class 'GPO'
+    expression test::onoff(1)
+    update 300
+}
+
+Widget GPO_Test2 {
+    class 'GPO'
+    expression test::bar(0,15, 0, 1)
+    update 300
+}
+
 Layout Default {
     Row1 {
 	Col1  'OS'
@@ -828,6 +840,12 @@ Layout Test2 {
     Row08.Col1 'Test2'
 }
 
+Layout TestGPO {
+    Row1.Col1 'Test1'
+#   GPO7      'GPO_Test'
+    GPO2      'GPO_Test2'
+}
+
 Layout testMySQL {
 	Row1 {
 		Col1 'MySQLtest1'
@@ -866,11 +884,12 @@ Layout testMySQL {
 #Display 'LPH7508-serdisplib'
 Display 'LPH7508'
 
-Layout 'Default'
+#Layout 'Default'
 #Layout 'L8x2'
 #Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'Test'
 #Layout 'Test2'
+Layout 'TestGPO'
 
 

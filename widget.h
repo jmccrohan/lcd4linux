@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.14 2005/11/06 09:17:20 reinelt Exp $
+/* $Id: widget.h,v 1.15 2005/12/18 16:18:36 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.15  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.14  2005/11/06 09:17:20  reinelt
  * re-use icons (thanks to Jesus de Santos Garcia)
  *
@@ -93,6 +96,7 @@ struct WIDGET;			/* forward declaration */
 
 typedef struct WIDGET_CLASS {
     char *name;
+    int type;
     int (*init) (struct WIDGET * Self);
     int (*draw) (struct WIDGET * Self);
     int (*quit) (struct WIDGET * Self);
@@ -109,9 +113,12 @@ typedef struct WIDGET {
 } WIDGET;
 
 
+#define WIDGET_TYPE_VIS 1
+#define WIDGET_TYPE_GPO 2
+
 
 int widget_register(WIDGET_CLASS * widget);
 void widget_unregister(void);
-int widget_add(const char *name, const int row, const int col);
+int widget_add(const char *name, const int type, const int row, const int col);
 
 #endif

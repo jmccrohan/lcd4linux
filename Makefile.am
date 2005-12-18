@@ -31,6 +31,7 @@ widget.c      widget.h      \
 widget_text.c widget_text.h \
 widget_bar.c  widget_bar.h  \
 widget_icon.c widget_icon.h \
+widget_gpo.c  widget_gpo.h  \
                             \
 plugin.c      plugin.h      \
 plugin_cfg.c                \
@@ -44,6 +45,8 @@ drv_generic_text.c          \
 drv_generic_text.h          \
 drv_generic_graphic.c       \
 drv_generic_graphic.h       \
+drv_generic_gpio.c          \
+drv_generic_gpio.h          \
 drv_generic_serial.c        \
 drv_generic_serial.h        \
 drv_generic_parport.c       \

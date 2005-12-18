@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.22 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: widget_text.c,v 1.23 2005/12/18 16:18:36 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.23  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.22  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -478,6 +481,7 @@ int widget_text_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Text = {
   name:"text",
+  type:WIDGET_TYPE_VIS,
   init:widget_text_init,
   draw:NULL,
   quit:widget_text_quit,

@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.2 2005/12/13 14:07:28 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.3 2005/12/18 16:18:36 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.3  2005/12/18 16:18:36  reinelt
+ * GPO's added again
+ *
  * Revision 1.2  2005/12/13 14:07:28  reinelt
  * LPH7508 driver finished
  *
@@ -61,6 +64,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_parport.h"
 
 #ifdef WITH_DMALLOC
@@ -77,7 +81,8 @@ static unsigned char SIGNAL_A0;
 
 static int PAGES, SROWS, SCOLS;
 
-unsigned char *Buffer1, *Buffer2;
+static unsigned char *Buffer1, *Buffer2;
+
 
 
 /****************************************/
@@ -124,13 +129,42 @@ static void drv_L7_write_data(const unsigned char data)
 }
 
 
-static void drv_L7_clear (void)
+static void drv_L7_page(int page)
+{
+    static int cp = -1;
+
+    if (page != cp) {
+	cp = page;
+	drv_L7_write_ctrl(0xb0 | cp);
+    }
+
+}
+
+
+static void drv_L7_put(int col, int val)
+{
+    static int cc = -1;
+
+    /* select page 8 */
+    drv_L7_page(8);
+
+    if (col != cc) {
+	cc = col;
+	drv_L7_write_ctrl(0x00 | (cc & 0x0f));
+	drv_L7_write_ctrl(0x10 | (cc >> 4));
+    }
+    drv_L7_write_data(val);
+    cc++;
+}
+
+
+static void drv_L7_clear(void)
 {
     int p, c;
 
-    for (p= 0; p < PAGES; p++) {
+    for (p = 0; p < PAGES; p++) {
 	/* select page */
-	drv_L7_write_ctrl(0xb0 | p);
+	drv_L7_page(p);
 	/* select column address */
 	drv_L7_write_ctrl(0x00);
 	drv_L7_write_ctrl(0x10);
@@ -143,11 +177,12 @@ static void drv_L7_clear (void)
 
 static void drv_L7_blit(const int row, const int col, const int height, const int width)
 {
-    int r, p, p0;
+    int r, p;
 
     /* transfer layout to display framebuffer */
     for (r = row; r < row + height; r++) {
-	if (r >= SROWS)
+	/* do not process extra row for symbols */
+	if (r >= SROWS - 1)
 	    break;
 	/* page */
 	int p = r / 8;
@@ -170,16 +205,17 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
     }
 
     /* process display framebuffer */
-    p0 = -1;
     for (p = row / 8; p <= (row + height) / 8; p++) {
 	int i, j, a, e;
 	if (p >= PAGES)
 	    break;
-	for (i = col; i < col+width; i++) {
+	for (i = col; i < col + width; i++) {
+	    if (i >= SCOLS)
+		break;
 	    a = p * SCOLS + i;
 	    if (Buffer1[a] == Buffer2[a])
 		continue;
-	    for (j = i, e = 0; i < col+width; i++) {
+	    for (j = i, e = 0; i < col + width; i++) {
 		a = p * SCOLS + i;
 		if (Buffer1[a] == Buffer2[a]) {
 		    if (++e > 2)
@@ -188,11 +224,8 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 		    e = 0;
 		}
 	    }
-	    /* change page if necessary */
-	    if (p != p0) {
-		p0 = p;
-		drv_L7_write_ctrl(0xb0 | p);
-	    }
+	    /* select page */
+	    drv_L7_page(p);
 	    /* column address */
 	    /* first column address = 32 */
 	    drv_L7_write_ctrl(0x00 | ((j + 32) & 0x0f));
@@ -205,6 +238,71 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 	    }
 	}
     }
+}
+
+
+static int drv_L7_GPO(const int num, const int val)
+{
+    switch (num) {
+    case 0:
+	/* battery symbol */
+	drv_L7_put(32, (val > 0) ? 1 : 0);
+	break;
+    case 1:
+	/* battery level */
+	if (val < 0) {
+	    drv_L7_put(46, 0);
+	    drv_L7_put(47, 0);
+	    drv_L7_put(48, 0);
+	    drv_L7_put(49, 0);
+	} else {
+	    drv_L7_put(46, (val & 1) ? 1 : 0);
+	    drv_L7_put(47, (val & 2) ? 1 : 0);
+	    drv_L7_put(48, (val & 4) ? 1 : 0);
+	    drv_L7_put(49, (val & 8) ? 1 : 0);
+	}
+	break;
+    case 2:
+	/* earpiece */
+	drv_L7_put(59, (val > 0) ? 1 : 0);
+	break;
+    case 3:
+	/* triangle */
+	drv_L7_put(69, (val > 0) ? 1 : 0);
+	Buffer1[8 * SCOLS + 69 - 32] = (val > 0);
+	break;
+    case 4:
+	/* head */
+	drv_L7_put(83, (val > 0) ? 1 : 0);
+	Buffer1[8 * SCOLS + 83 - 32] = (val > 0);
+	break;
+    case 5:
+	/* message */
+	drv_L7_put(98, (val > 0) ? 1 : 0);
+	Buffer1[8 * SCOLS + 98 - 32] = (val > 0);
+	break;
+    case 6:
+	/* antenna */
+	drv_L7_put(117, (val > 0) ? 1 : 0);
+	Buffer1[8 * SCOLS + 117 - 32] = (val > 0);
+	break;
+    case 7:
+	/* signal level */
+	if (val < 0) {
+	    drv_L7_put(112, 0);
+	    drv_L7_put(113, 0);
+	    drv_L7_put(114, 0);
+	    drv_L7_put(115, 0);
+	} else {
+	    drv_L7_put(112, (val & 1) ? 1 : 0);
+	    drv_L7_put(113, (val & 2) ? 1 : 0);
+	    drv_L7_put(114, (val & 4) ? 1 : 0);
+	    drv_L7_put(115, (val & 8) ? 1 : 0);
+	}
+	break;
+    }
+
+    return 0;
 }
 
 
@@ -229,10 +327,11 @@ static int drv_L7_start(const char *section)
     /* fixed size */
     DROWS = 64;
     DCOLS = 100;
+    GPOS = 8;
 
     /* SED1560 display RAM layout */
     PAGES = 8;
-    SROWS = PAGES * 8;
+    SROWS = 64;
     SCOLS = 166;
 
     s = cfg_get(section, "Font", "6x8");
@@ -255,20 +354,20 @@ static int drv_L7_start(const char *section)
     }
 
     /* provide room for page 8 (symbols) */
-    Buffer1 = malloc((PAGES + 1) * SCOLS);
+    Buffer1 = malloc(PAGES * SCOLS);
     if (Buffer1 == NULL) {
 	error("%s: framebuffer #1 could not be allocated: malloc() failed", Name);
 	return -1;
     }
 
-    Buffer2 = malloc((PAGES + 1) * SCOLS);
+    Buffer2 = malloc(PAGES * SCOLS);
     if (Buffer2 == NULL) {
 	error("%s: framebuffer #2 could not be allocated: malloc() failed", Name);
 	return -1;
     }
 
-    memset(Buffer1, 0, (PAGES + 1) * SCOLS * sizeof(*Buffer1));
-    memset(Buffer2, 0, (PAGES + 1) * SCOLS * sizeof(*Buffer2));
+    memset(Buffer1, 0, PAGES * SCOLS * sizeof(*Buffer1));
+    memset(Buffer2, 0, PAGES * SCOLS * sizeof(*Buffer2));
 
     if (drv_generic_parport_open(section, Name) != 0) {
 	error("%s: could not initialize parallel port!", Name);
@@ -348,6 +447,7 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 /* using drv_generic_graphic_draw(W) */
 /* using drv_generic_graphic_icon_draw(W) */
 /* using drv_generic_graphic_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -371,6 +471,7 @@ int drv_L7_init(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_L7_blit;
+    drv_generic_gpio_real_set = drv_L7_GPO;
 
     /* start display */
     if ((ret = drv_L7_start(section)) != 0)
@@ -378,6 +479,10 @@ int drv_L7_init(const char *section, const int quiet)
 
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
+	return ret;
+
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
 	return ret;
 
     if (!quiet) {
@@ -419,12 +524,14 @@ int drv_L7_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_graphic_clear();
+    drv_generic_gpio_clear();
 
     if (!quiet) {
 	drv_generic_graphic_greet("goodbye!", NULL);
     }
 
     drv_generic_graphic_quit();
+    drv_generic_gpio_quit();
     drv_generic_parport_close();
 
     if (Buffer1) {
