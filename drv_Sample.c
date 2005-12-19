@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.1 2005/11/04 14:10:38 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.2 2005/12/19 05:08:31 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.2  2005/12/19 05:08:31  reinelt
+ * GPO's added to the Sample driver
+ *
  * Revision 1.1  2005/11/04 14:10:38  reinelt
  * drv_Sample and drv_LPH7508
  *
@@ -62,6 +65,9 @@
 /* graphic display? */
 #include "drv_generic_graphic.h"
 
+/* GPO's? */
+#include "drv_generic_gpio.h"
+
 /* serial port? */
 #include "drv_generic_serial.h"
 
@@ -94,17 +100,17 @@ static void drv_Sample_bang(const unsigned int data)
 {
     /* put data on DB1..DB8 */
     drv_generic_parport_data(data & 0xff);
-    
+
     /* set/clear some signals */
     drv_generic_parport_control(SIGNAL_RS, SIGNAL_RS);
-    
+
     /* data setup time (e.g. 200 ns) */
     ndelay(200);
-    
+
     /* send byte */
     /* signal pulse width 500ns */
     drv_generic_parport_toggle(SIGNAL_EX, 1, 500);
-    
+
     /* wait for command completion (e.g. 100 us) */
     udelay(100);
 }
@@ -157,13 +163,13 @@ static int drv_Sample_close(void)
 static void drv_Sample_send(const char *data, const unsigned int len)
 {
     unsigned int i;
-    
+
     /* send data to the serial port is easy... */
     drv_generic_serial_write(data, len);
 
     /* sending data to the parallel port is a bit more tricky... */
     for (i = 0; i < len; i++) {
-	drv_Sample_bang (*data++);
+	drv_Sample_bang(*data++);
     }
 }
 
@@ -233,6 +239,22 @@ static void drv_Sample_blit(const int row, const int col, const int height, cons
 }
 
 
+/* remove unless you have GPO's */
+static int drv_Sample_GPO(const int num, const int val)
+{
+    char cmd[4];
+    
+    /* assume 0x42 to be the 'GPO' command */
+    cmd[0] = 0x42;
+    cmd[1] = num;
+    cmd[2] = (val > 0) ? 1 : 0;
+
+    drv_Sample_send(cmd, 3);
+
+    return 0;
+}
+
+
 /* example function used in a plugin */
 static int drv_Sample_contrast(int contrast)
 {
@@ -275,6 +297,9 @@ static int drv_Sample_start(const char *section)
 
     DROWS = rows;
     DCOLS = cols;
+
+    /* number of GPO's; remove if you don't have them */
+    GPOS = 8;
 
     /* open communication with the display */
     if (drv_Sample_open(section) < 0) {
@@ -377,6 +402,7 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -410,6 +436,9 @@ int drv_Sample_init(const char *section, const int quiet)
     drv_generic_text_real_write = drv_Sample_write;
     drv_generic_text_real_defchar = drv_Sample_defchar;
 
+    /* remove unless you have GPO's */
+    drv_generic_gpio_real_set = drv_Sample_GPO;
+
 
     /* start display */
     if ((ret = drv_Sample_start(section)) != 0)
@@ -439,6 +468,11 @@ int drv_Sample_init(const char *section, const int quiet)
     /* add fixed chars to the bar driver */
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
 
+
+    /* initialize generic GPIO driver */
+    /* remove unless you have GPO's */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
@@ -471,6 +505,9 @@ int drv_Sample_init2(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_Sample_blit;
+
+    /* remove unless you have GPO's */
+    drv_generic_gpio_real_set = drv_Sample_GPO;
 
     /* start display */
     if ((ret = drv_Sample_start2(section)) != 0)
@@ -525,6 +562,9 @@ int drv_Sample_quit(const int quiet)
     /* clear display */
     drv_Sample_clear();
 
+    /* remove unless you have GPO's */
+    drv_generic_gpio_clear();
+
     /* say goodbye... */
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
@@ -545,6 +585,9 @@ int drv_Sample_quit2(const int quiet)
 
     /* clear display */
     drv_generic_graphic_clear();
+
+    /* remove unless you have GPO's */
+    drv_generic_gpio_clear();
 
     /* say goodbye... */
     if (!quiet) {

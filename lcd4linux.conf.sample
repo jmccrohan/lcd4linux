@@ -844,6 +844,8 @@ Layout TestGPO {
     Row1.Col1 'Test1'
 #   GPO7      'GPO_Test'
     GPO2      'GPO_Test2'
+   GPO1      'GPO_Test'
+
 }
 
 Layout testMySQL {

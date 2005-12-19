@@ -317,6 +317,8 @@ if test "$SAMPLE" = "yes"; then
    # select either text or graphics mode
    TEXT="yes"
    GRAPHIC="yes"
+   # support for GPO's
+   GPO="yes"
    # select bus: serial (including USB), parallel or i2c
    SERIAL="yes"
    PARPORT="yes"
