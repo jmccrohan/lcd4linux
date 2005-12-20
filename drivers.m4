@@ -223,6 +223,7 @@ if test "$HD44780" = "yes"; then
    TEXT="yes"
    PARPORT="yes"
    I2C="yes"
+   GPIO="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
 fi
@@ -317,8 +318,8 @@ if test "$SAMPLE" = "yes"; then
    # select either text or graphics mode
    TEXT="yes"
    GRAPHIC="yes"
-   # support for GPO's
-   GPO="yes"
+   # support for GPIO's
+   GPIO="yes"
    # select bus: serial (including USB), parallel or i2c
    SERIAL="yes"
    PARPORT="yes"

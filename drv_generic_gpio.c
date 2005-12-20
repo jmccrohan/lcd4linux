@@ -1,4 +1,4 @@
-/* $Id: drv_generic_gpio.c,v 1.1 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: drv_generic_gpio.c,v 1.2 2005/12/20 07:07:44 reinelt Exp $
  *
  * generic driver helper for GPO's
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_gpio.c,v $
+ * Revision 1.2  2005/12/20 07:07:44  reinelt
+ * further work on GPO's, HD44780 GPO support
+ *
  * Revision 1.1  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -37,8 +40,8 @@
  *
  * these functions must be implemented by the real driver:
  *
- * void (*drv_generic_gpio_real_set) (const int num, const int val);
- *   sets GPO num to val
+ * int (*drv_generic_gpio_real_set) (const int num, const int val);
+ *   sets GPO num to val, returns the actal value
  *
  * int (*drv_generic_gpio_real_get) (const int num);
  *   reads GPI num
@@ -88,6 +91,43 @@ int GPOS = 0;
 int GPIS = 0;
 
 
+static void drv_generic_gpio_plugin_gpo(RESULT * result, const int argc, RESULT * argv[])
+{
+    int num, val;
+    double gpo;
+
+    switch (argc) {
+    case 1:
+	num = R2N(argv[0]);
+	if (num <= 0 || num > GPOS) {
+	    error("%s::GPO(%d): GPO out of range (1..%d)", Driver, num, GPOS);
+	    SetResult(&result, R_STRING, "");
+	    return;
+	}
+	gpo = GPO[num-1];
+	SetResult(&result, R_NUMBER, &gpo);
+	break;
+    case 2:
+	num = R2N(argv[0]);
+	val = R2N(argv[1]);
+	if (num <= 0 || num > GPOS) {
+	    error("%s::GPO(%d): GPO out of range (1..%d)", Driver, num, GPOS);
+	    SetResult(&result, R_STRING, "");
+	    return;
+	}
+	if (GPO[num-1] != val) {
+	    GPO[num-1] = drv_generic_gpio_real_set(num-1, val);
+	}
+	gpo = GPO[num-1];
+	SetResult(&result, R_NUMBER, &gpo);
+	break;
+    default:
+	error("%s::GPO(): wrong number of parameters", Driver);
+	SetResult(&result, R_STRING, "");
+    }
+}
+
+
 int drv_generic_gpio_init(const char *section, const char *driver)
 {
     WIDGET_CLASS wc;
@@ -109,7 +149,7 @@ int drv_generic_gpio_init(const char *section, const char *driver)
 
 
     /* register plugins */
-    /* Fixme */
+    AddFunction("LCD::GPO", -1, drv_generic_gpio_plugin_gpo);
 
     return 0;
 }
@@ -126,7 +166,7 @@ int drv_generic_gpio_clear(void)
 
     /* really clear GPO's */
     for (i = 0; i < GPOS; i++) {
-	drv_generic_gpio_real_set(i, 0);
+	GPO[i] = drv_generic_gpio_real_set(i, 0);
     }
 
     return 0;
@@ -145,8 +185,7 @@ int drv_generic_gpio_draw(WIDGET * W)
     }
 
     if (GPO[num] != val) {
-	drv_generic_gpio_real_set(num, val);
-	GPO[num] = val;
+	GPO[num] = drv_generic_gpio_real_set(num, val);
     }
 
     return 0;

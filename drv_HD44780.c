@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.57 2005/12/12 09:08:08 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.58 2005/12/20 07:07:44 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.58  2005/12/20 07:07:44  reinelt
+ * further work on GPO's, HD44780 GPO support
+ *
  * Revision 1.57  2005/12/12 09:08:08  reinelt
  * finally removed old udelay code path; read timing values from config
  *
@@ -288,6 +291,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_parport.h"
 
 #ifdef WITH_I2C
@@ -333,10 +337,8 @@ static unsigned char SIGNAL_GPO;
 /* flag for busy-waiting vs. busy flag checking */
 static int UseBusy = 0;
 
-
-/* Fixme: GPO's not yet implemented */
-static int GPOS;
-/* static int GPO=0; */
+/* buffer holding the GPO state */
+static unsigned char GPO = 0;
 
 
 typedef struct {
@@ -1115,24 +1117,32 @@ static int drv_HD_brightness(int brightness)
 }
 
 
-/* Fixme: GPO's */
-#if 0
-static void drv_HD_setGPO(const int bits)
+static int drv_HD_GPO(const int num, const int val)
 {
-    if (Lcd.gpos > 0) {
-
-	/* put data on DB1..DB8 */
-	drv_generic_parport_data(bits);
-
-	/* 74HCT573 set-up time */
-	ndelay(20);
-
-	/* send data */
-	/* 74HCT573 enable pulse width = 24ns */
-	drv_generic_parport_toggle(SIGNAL_GPO, 1, 230);
+    int v;
+    
+    if (val > 0) {
+	/* set bit */
+	v = 1;
+	GPO |= 1 << num;
+    } else {
+	/* clear bit */
+	v = 0;
+	GPO &= ~(1 << num);
     }
+
+    /* put data on DB1..DB8 */
+    drv_generic_parport_data(GPO);
+    
+    /* 74HCT573 set-up time */
+    ndelay(20);
+    
+    /* send data */
+    /* 74HCT573 enable pulse width = 24ns */
+    drv_generic_parport_toggle(SIGNAL_GPO, 1, 230);
+
+    return v;
 }
-#endif
 
 
 static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
@@ -1400,6 +1410,7 @@ static void plugin_brightness(RESULT * result, RESULT * arg1)
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -1436,6 +1447,7 @@ int drv_HD_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_HD_write;
     drv_generic_text_real_defchar = drv_HD_defchar;
+    drv_generic_gpio_real_set = drv_HD_GPO;
 
 
     /* start display */
@@ -1454,6 +1466,12 @@ int drv_HD_init(const char *section, const int quiet)
     if ((ret = drv_generic_text_bar_init(0)) != 0)
 	return ret;
 
+    /* initialize generic GPIO driver */
+    if (GPOS > 0) {
+	if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	    return ret;
+    }
+    
     /* add fixed chars to the bar driver */
     /* most displays have a full block on ascii 255, but some have kind of  */
     /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
@@ -1497,6 +1515,7 @@ int drv_HD_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_text_quit();
+    drv_generic_gpio_quit();
 
     /* clear display */
     drv_HD_clear();

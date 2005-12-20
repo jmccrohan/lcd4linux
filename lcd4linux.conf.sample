@@ -95,6 +95,7 @@ Display HD44780-generic {
     Port '/dev/parports/0'	
     Size '8x2'
     asc255bug 0
+    GPOs 8
     Wire {
 	RW      'GND'
 	RS      'AUTOFD'
@@ -863,7 +864,7 @@ Layout testMySQL {
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
-#Display 'HD44780-generic'
+Display 'HD44780-generic'
 #Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'
@@ -884,7 +885,7 @@ Layout testMySQL {
 #Display 'Image'
 #Display 'Trefon'
 #Display 'LPH7508-serdisplib'
-Display 'LPH7508'
+#Display 'LPH7508'
 
 #Layout 'Default'
 #Layout 'L8x2'

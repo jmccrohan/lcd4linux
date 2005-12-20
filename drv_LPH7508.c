@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.3 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.4 2005/12/20 07:07:44 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.4  2005/12/20 07:07:44  reinelt
+ * further work on GPO's, HD44780 GPO support
+ *
  * Revision 1.3  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -243,66 +246,78 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 
 static int drv_L7_GPO(const int num, const int val)
 {
+    int v = 0;
+    
     switch (num) {
     case 0:
 	/* battery symbol */
-	drv_L7_put(32, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(32, v);
 	break;
     case 1:
 	/* battery level */
 	if (val < 0) {
-	    drv_L7_put(46, 0);
-	    drv_L7_put(47, 0);
-	    drv_L7_put(48, 0);
-	    drv_L7_put(49, 0);
+	    v = 0;
+	    drv_L7_put(46, v);
+	    drv_L7_put(47, v);
+	    drv_L7_put(48, v);
+	    drv_L7_put(49, v);
 	} else {
-	    drv_L7_put(46, (val & 1) ? 1 : 0);
-	    drv_L7_put(47, (val & 2) ? 1 : 0);
-	    drv_L7_put(48, (val & 4) ? 1 : 0);
-	    drv_L7_put(49, (val & 8) ? 1 : 0);
+	    v = val & 0x0f;
+	    drv_L7_put(46, (v & 1) ? 1 : 0);
+	    drv_L7_put(47, (v & 2) ? 1 : 0);
+	    drv_L7_put(48, (v & 4) ? 1 : 0);
+	    drv_L7_put(49, (v & 8) ? 1 : 0);
 	}
 	break;
     case 2:
 	/* earpiece */
-	drv_L7_put(59, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(59, v);
 	break;
     case 3:
 	/* triangle */
-	drv_L7_put(69, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(69, v);
 	Buffer1[8 * SCOLS + 69 - 32] = (val > 0);
 	break;
     case 4:
 	/* head */
-	drv_L7_put(83, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(83, v);
 	Buffer1[8 * SCOLS + 83 - 32] = (val > 0);
 	break;
     case 5:
 	/* message */
-	drv_L7_put(98, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(98, v);
 	Buffer1[8 * SCOLS + 98 - 32] = (val > 0);
 	break;
     case 6:
 	/* antenna */
-	drv_L7_put(117, (val > 0) ? 1 : 0);
+	v = (val > 0) ? 1 : 0;
+	drv_L7_put(117, v);
 	Buffer1[8 * SCOLS + 117 - 32] = (val > 0);
 	break;
     case 7:
 	/* signal level */
 	if (val < 0) {
-	    drv_L7_put(112, 0);
-	    drv_L7_put(113, 0);
-	    drv_L7_put(114, 0);
-	    drv_L7_put(115, 0);
+	    v = 0;
+	    drv_L7_put(112, v);
+	    drv_L7_put(113, v);
+	    drv_L7_put(114, v);
+	    drv_L7_put(115, v);
 	} else {
-	    drv_L7_put(112, (val & 1) ? 1 : 0);
-	    drv_L7_put(113, (val & 2) ? 1 : 0);
-	    drv_L7_put(114, (val & 4) ? 1 : 0);
-	    drv_L7_put(115, (val & 8) ? 1 : 0);
+	    v = val & 0x0f;
+	    drv_L7_put(112, (v & 1) ? 1 : 0);
+	    drv_L7_put(113, (v & 2) ? 1 : 0);
+	    drv_L7_put(114, (v & 4) ? 1 : 0);
+	    drv_L7_put(115, (v & 8) ? 1 : 0);
 	}
 	break;
     }
 
-    return 0;
+    return v;
 }
 
 
@@ -432,9 +447,7 @@ static int drv_L7_start(const char *section)
 
 static void plugin_contrast(RESULT * result, RESULT * arg1)
 {
-    double contrast;
-
-    contrast = drv_L7_contrast(R2N(arg1));
+    double contrast = drv_L7_contrast(R2N(arg1));
     SetResult(&result, R_NUMBER, &contrast);
 }
 
