@@ -29,7 +29,7 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
-  [                        HD44780, LCDLinux, LCDTerm, LPH7508, M50530,]
+  [                        HD44780, LCDLinux, LCDTerm, LPH7508, LUIse, M50530,]
   [                        MatrixOrbital, MilfordInstruments, Noritake, NULL,]
   [                        PNG, PPM, RouterBoard, Sample, serdisplib, SimpleLCD,]
   [                        T6963, Trefon, USBLCD, WincorNixdorf, X11],
@@ -62,6 +62,7 @@ for driver in $drivers; do
 	 LCDLINUX="yes"
          LCDTERM="yes"
 	 LPH7508="yes"
+         LUISE="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
@@ -105,6 +106,9 @@ for driver in $drivers; do
 	 ;;
       LPH7508)
          LPH7508=$val
+         ;;
+      LUIse)
+         LUISE=$val
          ;;
       M50530)
          M50530=$val
@@ -251,6 +255,17 @@ if test "$LPH7508" = "yes"; then
    GPIO="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
    AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
+fi
+
+if test "$LUISE" = "yes"; then
+   if test "$has_luise" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_LUIse.o"
+      DRVLIBS="$DRVLIBS -L/usr/local/lib -lluise"
+      AC_DEFINE(WITH_LUISE,1,[LUIse driver])
+   else
+      AC_MSG_WARN(luise.h not found: LUIse driver disabled)
+   fi
 fi
 
 if test "$M50530" = "yes"; then

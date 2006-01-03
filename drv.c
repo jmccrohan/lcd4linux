@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.36 2005/11/05 06:26:51 reinelt Exp $
+/* $Id: drv.c,v 1.37 2006/01/03 13:20:06 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.37  2006/01/03 13:20:06  reinelt
+ * LUIse driver added
+ *
  * Revision 1.36  2005/11/05 06:26:51  reinelt
  * littly typo corrected
  *
@@ -220,6 +223,7 @@ extern DRIVER drv_Image;
 extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
 extern DRIVER drv_LPH7508;
+extern DRIVER drv_LUIse;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
@@ -271,6 +275,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_LPH7508
     &drv_LPH7508,
+#endif
+#ifdef WITH_LUISE
+    &drv_LUIse,
 #endif
 #ifdef WITH_M50530
     &drv_M50530,

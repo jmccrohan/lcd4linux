@@ -62,6 +62,9 @@ AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true"; break], [has_gd="false"])
 # check for usb.h
 AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 
+# check for luise.h
+AC_CHECK_HEADERS(luise.h, [has_luise="true"], [has_luise="false"])
+
 # check for serdisplib
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
 

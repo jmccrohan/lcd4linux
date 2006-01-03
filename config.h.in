@@ -64,6 +64,9 @@
 /* Define to 1 if you have the <linux/ppdev.h> header file. */
 #undef HAVE_LINUX_PPDEV_H
 
+/* Define to 1 if you have the <luise.h> header file. */
+#undef HAVE_LUISE_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -370,6 +373,9 @@
 
 /* LPH7508 driver */
 #undef WITH_LPH7508
+
+/* LUIse driver */
+#undef WITH_LUISE
 
 /* M50530 driver */
 #undef WITH_M50530
