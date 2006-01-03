@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.9 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.10 2006/01/03 06:13:46 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.10  2006/01/03 06:13:46  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.9  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -80,7 +83,7 @@ extern int XRES, YRES;		/* pixel width/height of one char  */
 extern unsigned char *drv_generic_graphic_FB;
 
 /* these functions must be implemented by the real driver */
-void (*drv_generic_graphic_real_blit) (const int row, const int col, const int height, const int width);
+extern void (*drv_generic_graphic_real_blit) (const int row, const int col, const int height, const int width);
 
 /* generic functions and widget callbacks */
 int drv_generic_graphic_init(const char *section, const char *driver);

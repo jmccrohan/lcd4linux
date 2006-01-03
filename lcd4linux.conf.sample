@@ -27,6 +27,22 @@ Display LCD-Linux {
     UseBusy 0
 }
 
+Display LCD2041 {
+    Driver 'MatrixOrbital'
+    Model 'LCD2041'
+    Port '/dev/tts/0'
+    Speed 19200
+    Contrast 160
+}
+
+Display LK202 {
+    Driver 'MatrixOrbital'
+    Model 'LK202-24-USB'
+    Port '/dev/tts/USB0'
+    Speed 19200
+    Contrast 256/2
+}
+
 Display LK204 {
     Driver 'MatrixOrbital'
     Model 'LK204-24-USB'
@@ -730,16 +746,46 @@ Widget Test2 {
     speed 150
 }
 
-Widget GPO_Test {
+Widget GPO_Val1 {
+    class 'Text'
+    expression LCD::GPO(1)
+    prefix 'GPO#1'
+    width 10
+    precision 0
+    align 'R'
+    update tick
+}
+
+Widget GPI_Val1 {
+    class 'Text'
+    expression LCD::GPI(1)
+    prefix 'GPI#1'
+    width 10
+    precision 0
+    align 'R'
+    update tick
+}
+
+Widget GPO_Val4 {
+    class 'Text'
+    expression LCD::GPO(4)
+    prefix 'GPO#4'
+    width 10
+    precision 0
+    align 'R'
+    update tick
+}
+
+Widget GPO_Test1 {
     class 'GPO'
-    expression test::onoff(1)
+    expression 255*test::onoff(1)
     update 300
 }
 
-Widget GPO_Test2 {
+Widget GPO_Test255 {
     class 'GPO'
-    expression test::bar(0,15, 0, 1)
-    update 300
+    expression test::bar(0,255, 0, 1)
+    update 100
 }
 
 Layout Default {
@@ -842,11 +888,11 @@ Layout Test2 {
 }
 
 Layout TestGPO {
-    Row1.Col1 'Test1'
-#   GPO7      'GPO_Test'
-    GPO2      'GPO_Test2'
-   GPO1      'GPO_Test'
-
+    Row1.Col1  'GPO_Val1'
+    Row1.Col10 'GPI_Val1'
+    Row2.Col1  'GPO_Val4'
+    GPO1       'GPO_Test255'
+    GPO4       'GPO_Test1'
 }
 
 Layout testMySQL {
@@ -861,10 +907,12 @@ Layout testMySQL {
 
 #Display 'SerDispLib'
 #Display 'LCD-Linux'
+#Display 'LCD2041'
+Display 'LK202'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
-Display 'HD44780-generic'
+#Display 'HD44780-generic'
 #Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'

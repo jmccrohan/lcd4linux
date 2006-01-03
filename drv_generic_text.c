@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.29 2005/11/06 09:54:43 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.30 2006/01/03 06:13:46 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.30  2006/01/03 06:13:46  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.29  2005/11/06 09:54:43  reinelt
  * fixed icon size removed, uses XRES & YRES (I hope this doesn't lead to problemes...)
  *
@@ -258,6 +261,9 @@ int GOTO_COST = 0;		/* number of bytes a goto command requires */
 int INVALIDATE = 0;		/* re-send a modified userdefined char? */
 
 
+void (*drv_generic_text_real_write) () = NULL;
+void (*drv_generic_text_real_defchar) () = NULL;
+
 static char *LayoutFB = NULL;
 static char *DisplayFB = NULL;
 
@@ -387,7 +393,8 @@ int drv_generic_text_greet(const char *msg1, const char *msg2)
 
     for (i = 0; line1[i]; i++) {
 	if (strlen(line1[i]) <= (unsigned) DCOLS) {
-	    drv_generic_text_real_write(0, (DCOLS - strlen(line1[i])) / 2, line1[i], strlen(line1[i]));
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(0, (DCOLS - strlen(line1[i])) / 2, line1[i], strlen(line1[i]));
 	    flag = 1;
 	    break;
 	}
@@ -396,7 +403,8 @@ int drv_generic_text_greet(const char *msg1, const char *msg2)
     if (DROWS >= 2) {
 	for (i = 0; line2[i]; i++) {
 	    if (strlen(line2[i]) <= (unsigned) DCOLS) {
-		drv_generic_text_real_write(1, (DCOLS - strlen(line2[i])) / 2, line2[i], strlen(line2[i]));
+		if (drv_generic_text_real_write)
+		    drv_generic_text_real_write(1, (DCOLS - strlen(line2[i])) / 2, line2[i], strlen(line2[i]));
 		flag = 1;
 		break;
 	    }
@@ -406,7 +414,8 @@ int drv_generic_text_greet(const char *msg1, const char *msg2)
     if (msg1 && DROWS >= 3) {
 	int len = strlen(msg1);
 	if (len <= DCOLS) {
-	    drv_generic_text_real_write(2, (DCOLS - len) / 2, msg1, len);
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(2, (DCOLS - len) / 2, msg1, len);
 	    flag = 1;
 	}
     }
@@ -414,7 +423,8 @@ int drv_generic_text_greet(const char *msg1, const char *msg2)
     if (msg2 && DROWS >= 4) {
 	int len = strlen(msg2);
 	if (len <= DCOLS) {
-	    drv_generic_text_real_write(3, (DCOLS - len) / 2, msg2, len);
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(3, (DCOLS - len) / 2, msg2, len);
 	    flag = 1;
 	}
     }
@@ -462,7 +472,8 @@ int drv_generic_text_draw(WIDGET * W)
 		}
 	    }
 	    memcpy(fb2 + pos1, fb1 + pos1, pos2 - pos1 + 1);
-	    drv_generic_text_real_write(row, col0, fb2 + pos1, pos2 - pos1 + 1);
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(row, col0, fb2 + pos1, pos2 - pos1 + 1);
 	}
     }
 
@@ -541,7 +552,8 @@ int drv_generic_text_icon_draw(WIDGET * W)
     /* maybe redefine icon */
     if (Icon->curmap != Icon->prvmap && Icon->visible) {
 	Icon->prvmap = Icon->curmap;
-	drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap + YRES * Icon->curmap);
+	if (drv_generic_text_real_defchar)
+	    drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap + YRES * Icon->curmap);
 	invalidate = INVALIDATE;
     }
 
@@ -558,7 +570,8 @@ int drv_generic_text_icon_draw(WIDGET * W)
     /* maybe send icon to the display */
     if (row < DROWS && col < DCOLS && (DisplayFB[d_idx] != ascii || invalidate)) {
 	DisplayFB[d_idx] = ascii;
-	drv_generic_text_real_write(row, col, DisplayFB + d_idx, 1);
+	if (drv_generic_text_real_write)
+	    drv_generic_text_real_write(row, col, DisplayFB + d_idx, 1);
     }
 
     return 0;
@@ -746,7 +759,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																																				                								                              break;
+																																																																																														                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;
@@ -954,7 +967,8 @@ static void drv_generic_text_bar_define_chars(void)
 	    }
 	    break;
 	}
-	drv_generic_text_real_defchar(CHAR0 + c, buffer);
+	if (drv_generic_text_real_defchar)
+	    drv_generic_text_real_defchar(CHAR0 + c, buffer);
 
 	/* maybe invalidate framebuffer */
 	if (INVALIDATE) {
@@ -1067,7 +1081,8 @@ int drv_generic_text_bar_draw(WIDGET * W)
 		}
 	    }
 	    memcpy(DisplayFB + row * DCOLS + pos1, LayoutFB + row * LCOLS + pos1, pos2 - pos1 + 1);
-	    drv_generic_text_real_write(row, col0, DisplayFB + row * DCOLS + pos1, pos2 - pos1 + 1);
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(row, col0, DisplayFB + row * DCOLS + pos1, pos2 - pos1 + 1);
 	}
     }
 

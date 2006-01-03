@@ -1,4 +1,4 @@
-/* $Id: drv_generic_gpio.h,v 1.1 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: drv_generic_gpio.h,v 1.2 2006/01/03 06:13:45 reinelt Exp $
  *
  * generic driver helper for GPIO's
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_gpio.h,v $
+ * Revision 1.2  2006/01/03 06:13:45  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.1  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -38,12 +41,13 @@ extern int GPIS;		/* number of GPO's */
 extern int GPOS;		/* number of GPO's */
 
 /* these function must be implemented by the real driver */
-int (*drv_generic_gpio_real_set) (const int num, const int val);
-int (*drv_generic_gpio_real_get) (const int num);
+extern int (*drv_generic_gpio_real_set) (const int num, const int val);
+extern int (*drv_generic_gpio_real_get) (const int num);
 
 /* generic functions and widget callbacks */
 int drv_generic_gpio_init(const char *section, const char *driver);
 int drv_generic_gpio_clear(void);
+int drv_generic_gpio_get(const int num);
 int drv_generic_gpio_draw(WIDGET * W);
 int drv_generic_gpio_quit(void);
 

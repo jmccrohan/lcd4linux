@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.39 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.40 2006/01/03 06:13:45 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.40  2006/01/03 06:13:45  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.39  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -203,6 +206,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -213,6 +217,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_serial.h"
 
 
@@ -221,16 +226,12 @@ static char Name[] = "MatrixOrbital";
 static int Model;
 static int Protocol;
 
-/* Fixme: GPO's not yet implemented */
-/* static int GPO[8]; */
-static int GPOS;
-
-
 typedef struct {
     int type;
     char *name;
     int rows;
     int cols;
+    int gpis;
     int gpos;
     int protocol;
 } MODEL;
@@ -239,32 +240,33 @@ typedef struct {
 /* Fixme #2: protocol should be verified */
 
 static MODEL Models[] = {
-    {0x01, "LCD0821", 2, 8, 0, 1},
-    {0x03, "LCD2021", 2, 20, 0, 1},
-    {0x04, "LCD1641", 4, 16, 0, 1},
-    {0x05, "LCD2041", 4, 20, 0, 1},
-    {0x06, "LCD4021", 2, 40, 0, 1},
-    {0x07, "LCD4041", 4, 40, 0, 1},
-    {0x08, "LK202-25", 2, 20, 0, 2},
-    {0x09, "LK204-25", 4, 20, 0, 2},
-    {0x0a, "LK404-55", 4, 40, 0, 2},
-    {0x0b, "VFD2021", 2, 20, 0, 1},
-    {0x0c, "VFD2041", 4, 20, 0, 1},
-    {0x0d, "VFD4021", 2, 40, 0, 1},
-    {0x0e, "VK202-25", 2, 20, 0, 1},
-    {0x0f, "VK204-25", 4, 20, 0, 1},
-    {0x10, "GLC12232", -1, -1, 0, 1},
-    {0x13, "GLC24064", -1, -1, 0, 1},
-    {0x15, "GLK24064-25", -1, -1, 0, 1},
-    {0x22, "GLK12232-25", -1, -1, 0, 1},
-    {0x31, "LK404-AT", 4, 40, 0, 2},
-    {0x32, "VFD1621", 2, 16, 0, 1},
-    {0x33, "LK402-12", 2, 40, 0, 2},
-    {0x34, "LK162-12", 2, 16, 0, 2},
-    {0x35, "LK204-25PC", 4, 20, 0, 2},
-    {0x36, "LK202-24-USB", 2, 20, 0, 2},
-    {0x38, "LK204-24-USB", 4, 20, 0, 2},
-    {0xff, "Unknown", -1, -1, 0, 0}
+    {0x01, "LCD0821", 2, 8, 0, 1, 1},
+    {0x03, "LCD2021", 2, 20, 0, 1, 1},
+    {0x04, "LCD1641", 4, 16, 0, 1, 1},
+    {0x05, "LCD2041", 4, 20, 0, 1, 1},
+    {0x06, "LCD4021", 2, 40, 0, 1, 1},
+    {0x07, "LCD4041", 4, 40, 0, 1, 1},
+    {0x08, "LK202-25", 2, 20, 8, 8, 2},
+    {0x09, "LK204-25", 4, 20, 8, 8, 2},
+    {0x0a, "LK404-55", 4, 40, 8, 8, 2},
+    {0x0b, "VFD2021", 2, 20, 0, 1, 1},
+    {0x0c, "VFD2041", 4, 20, 0, 1, 1},
+    {0x0d, "VFD4021", 2, 40, 0, 1, 1},
+    {0x0e, "VK202-25", 2, 20, 0, 1, 1},
+    {0x0f, "VK204-25", 4, 20, 0, 1, 1},
+    {0x10, "GLC12232", -1, -1, 0, 1, 1},
+    {0x13, "GLC24064", -1, -1, 0, 1, 1},
+    {0x15, "GLK24064-25", -1, -1, 0, 1, 1},
+    {0x22, "GLK12232-25", -1, -1, 0, 1, 1},
+    {0x31, "LK404-AT", 4, 40, 8, 8, 2},
+    {0x32, "VFD1621", 2, 16, 0, 1, 1},
+    {0x33, "LK402-12", 2, 40, 8, 8, 2},
+    {0x34, "LK162-12", 2, 16, 8, 8, 2},
+    {0x35, "LK204-25PC", 4, 20, 8, 8, 2},
+    {0x36, "LK202-24-USB", 2, 20, 8, 8, 2},
+    {0x38, "LK204-24-USB", 4, 20, 8, 8, 2},
+    {0x39, "VK204-24-USB", 4, 20, 8, 8, 2},
+    {0xff, "Unknown", -1, -1, 0, 0, 0}
 };
 
 
@@ -361,111 +363,87 @@ static int drv_MO_backlight(int backlight)
 }
 
 
-static int drv_MO_gpo(int num, int val)
+static int drv_MO_GPI(const int num)
 {
-    static int GPO[6] = { -1, -1, -1, -1, -1, -1 };
-    char cmd[3] = "\376";
+    static int GPI[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    static time_t T[8], now;
 
-    if (num < 1)
-	num = 1;
-    if (num > 6)
-	num = 6;
 
-    /* -1 is used to query the current GPO */
-    if (val == -1)
-	return GPO[num - 1];
+    if (num < 0 || num > 7) {
+	return 0;
+    }
+    
+    /* read RPM every two seconds */
+    if (time(&now) - T[num] >= 2) {
 
-    if (val < 0)
-	val = 0;
-    if (val > 1)
-	val = 1;
-    GPO[num - 1] = val;
+	char cmd[3];
+	unsigned char ans[7];
+
+	T[num] = now;
+	
+	cmd[0] = '\376';
+	cmd[1] = '\301';
+	cmd[2] = (char) num+1;
+	drv_generic_serial_write(cmd, 3);
+	usleep(100000);
+
+	if (drv_generic_serial_read((char*)ans, 7) == 7) {
+	    if (ans[0] == 0x23 && ans[1] == 0x2a && ans[2] == 0x03 && ans[3] == 0x52 && ans[4] == num+1) {
+		GPI[num] = 18750000 / (256*ans[5]+ans[6]);
+	    } else {
+		error ("%s: strange answer %02x %02x %02x %02x %02x %02x %02x", 
+		       Name, ans[0], ans[1], ans[2], ans[3], ans[4], ans[5], ans[6]);
+	    }
+	}
+    }
+
+    return GPI[num];
+}
+
+
+static int drv_MO_GPO(const int num, const int val)
+{
+    int v = 0;
+    char cmd[4];
 
     switch (Protocol) {
     case 1:
-	if (num == 1) {
+	if (num == 0) {
 	    if (val > 0) {
+		v = 1;
 		drv_generic_serial_write("\376W", 2);	/* GPO on */
 	    } else {
+		v = 0;
 		drv_generic_serial_write("\376V", 2);	/* GPO off */
 	    }
-	} else {
-	    GPO[num - 1] = -1;
 	}
 	break;
 
     case 2:
-	if (val > 0) {
-	    cmd[1] = 'W';	/* GPO on */
-	} else {
+	if (val <= 0) {
+	    v = 0;
+	    cmd[0] = '\376';
 	    cmd[1] = 'V';	/* GPO off */
+	    cmd[2] = (char) num + 1;
+	    drv_generic_serial_write(cmd, 3);
+	} else if (val >= 255) {
+	    v = 255;
+	    cmd[0] = '\376';
+	    cmd[1] = 'W';	/* GPO on */
+	    cmd[2] = (char) num + 1;
+	    drv_generic_serial_write(cmd, 3);
+	} else {
+	    v = val;
+	    cmd[0] = '\376';
+	    cmd[1] = '\300';	/* PWM control */
+	    cmd[2] = (char) num + 1;
+	    cmd[3] = (char) v;
+	    drv_generic_serial_write(cmd, 4);
 	}
-	cmd[2] = (char) num;
-	drv_generic_serial_write(cmd, 3);
 	break;
     }
 
-    return GPO[num - 1];
-}
-
-
-static int drv_MO_pwm(int num, int val)
-{
-    static int PWM[6] = { -1, -1, -1, -1, -1, -1 };
-    char cmd[4] = "\376\300";
-
-    if (num < 1)
-	num = 1;
-    if (num > 6)
-	num = 6;
-
-    /* -1 is used to query the current PWM */
-    if (val == -1)
-	return PWM[num - 1];
-
-    if (val < 0)
-	val = 0;
-    if (val > 255)
-	val = 255;
-    PWM[num - 1] = val;
-
-    cmd[2] = (char) num;
-    cmd[3] = (char) val;
-    drv_generic_serial_write(cmd, 4);
-
-    return val;
-}
-
-
-static int drv_MO_rpm(int num)
-{
-    static int RPM[6] = { -1, -1, -1, -1, -1, -1 };
-    char cmd[3] = "\376\301";
-    char buffer[7];
-
-    if (num < 1)
-	num = 1;
-    if (num > 6)
-	num = 6;
-
-    cmd[2] = (char) num;
-    drv_generic_serial_write(cmd, 3);
-
-    usleep(100000);
-    drv_generic_serial_read(buffer, 7);
-
-    debug("rpm: buffer[0]=0x%01x", buffer[0]);
-    debug("rpm: buffer[1]=0x%01x", buffer[1]);
-    debug("rpm: buffer[2]=0x%01x", buffer[2]);
-    debug("rpm: buffer[3]=0x%01x", buffer[3]);
-    debug("rpm: buffer[4]=0x%01x", buffer[4]);
-    debug("rpm: buffer[5]=0x%01x", buffer[5]);
-    debug("rpm: buffer[6]=0x%01x", buffer[6]);
-
-    /* Fixme: RPM calculations??? */
-    RPM[num - 1] = 42;
-
-    return RPM[num - 1];
+    return v;
 }
 
 
@@ -525,6 +503,7 @@ static int drv_MO_start(const char *section, const int quiet)
     /* initialize global variables */
     DROWS = Models[Model].rows;
     DCOLS = Models[Model].cols;
+    GPIS = Models[Model].gpis;
     GPOS = Models[Model].gpos;
     Protocol = Models[Model].protocol;
 
@@ -618,55 +597,6 @@ static void plugin_backlight(RESULT * result, const int argc, RESULT * argv[])
 }
 
 
-static void plugin_gpo(RESULT * result, const int argc, RESULT * argv[])
-{
-    double gpo;
-
-    switch (argc) {
-    case 1:
-	gpo = drv_MO_gpo(R2N(argv[0]), -1);
-	SetResult(&result, R_NUMBER, &gpo);
-	break;
-    case 2:
-	gpo = drv_MO_gpo(R2N(argv[0]), R2N(argv[1]));
-	SetResult(&result, R_NUMBER, &gpo);
-	break;
-    default:
-	error("%s:gpo(): wrong number of parameters", Name);
-	SetResult(&result, R_STRING, "");
-    }
-}
-
-
-static void plugin_pwm(RESULT * result, const int argc, RESULT * argv[])
-{
-    double pwm;
-
-    switch (argc) {
-    case 1:
-	pwm = drv_MO_pwm(R2N(argv[0]), -1);
-	SetResult(&result, R_NUMBER, &pwm);
-	break;
-    case 2:
-	pwm = drv_MO_pwm(R2N(argv[0]), R2N(argv[1]));
-	SetResult(&result, R_NUMBER, &pwm);
-	break;
-    default:
-	error("%s:pwm(): wrong number of parameters", Name);
-	SetResult(&result, R_STRING, "");
-    }
-}
-
-
-static void plugin_rpm(RESULT * result, RESULT * arg1)
-{
-    double rpm;
-
-    rpm = drv_MO_rpm(R2N(arg1));
-    SetResult(&result, R_NUMBER, &rpm);
-}
-
-
 /****************************************/
 /***        widget callbacks          ***/
 /****************************************/
@@ -674,6 +604,7 @@ static void plugin_rpm(RESULT * result, RESULT * arg1)
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -709,6 +640,8 @@ int drv_MO_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_MO_write;
     drv_generic_text_real_defchar = drv_MO_defchar;
+    drv_generic_gpio_real_get = drv_MO_GPI;
+    drv_generic_gpio_real_set = drv_MO_GPO;
 
 
     /* start display */
@@ -731,6 +664,12 @@ int drv_MO_init(const char *section, const int quiet)
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
     drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
 
+    /* initialize generic GPIO driver */
+    if (GPIS > 0 || GPOS > 0) {
+	if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	    return ret;
+    }
+
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_text_draw;
@@ -749,10 +688,7 @@ int drv_MO_init(const char *section, const int quiet)
     /* register plugins */
     AddFunction("LCD::contrast", -1, plugin_contrast);
     AddFunction("LCD::backlight", -1, plugin_backlight);
-    AddFunction("LCD::gpo", -1, plugin_gpo);
-    AddFunction("LCD::pwm", -1, plugin_pwm);
-    AddFunction("LCD::rpm", 1, plugin_rpm);
-
+    
     return 0;
 }
 
@@ -761,9 +697,14 @@ int drv_MO_init(const char *section, const int quiet)
 int drv_MO_quit(const int quiet)
 {
 
-    info("%s: shutting down.", Name);
+    info("%s: shutting down display.", Name);
 
     drv_generic_text_quit();
+    drv_generic_gpio_clear();
+
+    if (GPIS > 0 || GPOS > 0) {
+	drv_generic_gpio_quit();
+    }
 
     /* clear display */
     drv_MO_clear();

@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.58 2005/12/20 07:07:44 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.59 2006/01/03 06:13:44 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.59  2006/01/03 06:13:44  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.58  2005/12/20 07:07:44  reinelt
  * further work on GPO's, HD44780 GPO support
  *
@@ -1120,7 +1123,7 @@ static int drv_HD_brightness(int brightness)
 static int drv_HD_GPO(const int num, const int val)
 {
     int v;
-    
+
     if (val > 0) {
 	/* set bit */
 	v = 1;
@@ -1133,10 +1136,10 @@ static int drv_HD_GPO(const int num, const int val)
 
     /* put data on DB1..DB8 */
     drv_generic_parport_data(GPO);
-    
+
     /* 74HCT573 set-up time */
     ndelay(20);
-    
+
     /* send data */
     /* 74HCT573 enable pulse width = 24ns */
     drv_generic_parport_toggle(SIGNAL_GPO, 1, 230);
@@ -1471,7 +1474,7 @@ int drv_HD_init(const char *section, const int quiet)
 	if ((ret = drv_generic_gpio_init(section, Name)) != 0)
 	    return ret;
     }
-    
+
     /* add fixed chars to the bar driver */
     /* most displays have a full block on ascii 255, but some have kind of  */
     /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
@@ -1512,7 +1515,7 @@ int drv_HD_init(const char *section, const int quiet)
 int drv_HD_quit(const int quiet)
 {
 
-    info("%s: shutting down.", Name);
+    info("%s: shutting down display.", Name);
 
     drv_generic_text_quit();
     drv_generic_gpio_quit();

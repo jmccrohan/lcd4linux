@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.4 2005/12/20 07:07:44 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.5 2006/01/03 06:13:45 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.5  2006/01/03 06:13:45  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.4  2005/12/20 07:07:44  reinelt
  * further work on GPO's, HD44780 GPO support
  *
@@ -247,7 +250,7 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 static int drv_L7_GPO(const int num, const int val)
 {
     int v = 0;
-    
+
     switch (num) {
     case 0:
 	/* battery symbol */
@@ -534,7 +537,7 @@ int drv_L7_init(const char *section, const int quiet)
 int drv_L7_quit(const int quiet)
 {
 
-    info("%s: shutting down.", Name);
+    info("%s: shutting down display.", Name);
 
     drv_generic_graphic_clear();
     drv_generic_gpio_clear();

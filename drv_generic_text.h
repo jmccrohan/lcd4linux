@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.18 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.19 2006/01/03 06:13:46 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.19  2006/01/03 06:13:46  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.18  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -115,8 +118,8 @@ extern int GOTO_COST;		/* number of bytes a goto command requires */
 extern int INVALIDATE;		/* re-send a modified userdefined char? */
 
 /* these functions must be implemented by the real driver */
-void (*drv_generic_text_real_write) (const int row, const int col, const char *data, const int len);
-void (*drv_generic_text_real_defchar) (const int ascii, const unsigned char *matrix);
+extern void (*drv_generic_text_real_write) (const int row, const int col, const char *data, const int len);
+extern void (*drv_generic_text_real_defchar) (const int ascii, const unsigned char *matrix);
 
 /* generic functions and widget callbacks */
 int drv_generic_text_init(const char *section, const char *driver);

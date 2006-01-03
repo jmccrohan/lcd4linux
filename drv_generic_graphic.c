@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.17  2006/01/03 06:13:46  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.16  2005/12/13 14:07:28  reinelt
  * LPH7508 driver finished
  *
@@ -152,6 +155,7 @@ int XRES, YRES;			/* pixels of one char cell */
 
 unsigned char *drv_generic_graphic_FB = NULL;
 
+void (*drv_generic_graphic_real_blit) () = NULL;
 
 /****************************************/
 /*** generic Framebuffer stuff        ***/
@@ -195,7 +199,9 @@ static void drv_generic_graphic_resizeFB(int rows, int cols)
 int drv_generic_graphic_clear(void)
 {
     memset(drv_generic_graphic_FB, 0, LCOLS * LROWS * sizeof(*drv_generic_graphic_FB));
-    drv_generic_graphic_real_blit(0, 0, LROWS, LCOLS);
+    if (drv_generic_graphic_real_blit)
+	drv_generic_graphic_real_blit(0, 0, LROWS, LCOLS);
+
     return 0;
 }
 
@@ -229,7 +235,8 @@ static void drv_generic_graphic_render(const int row, const int col, const char 
     }
 
     /* flush area */
-    drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
+    if (drv_generic_graphic_real_blit)
+	drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
 
 }
 
@@ -334,7 +341,9 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
     }
 
     /* flush area */
-    drv_generic_graphic_real_blit(row, col, YRES, XRES);
+    if (drv_generic_graphic_real_blit)
+	drv_generic_graphic_real_blit(row, col, YRES, XRES);
+
 
     return 0;
 
@@ -413,9 +422,11 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
     /* flush area */
     if (dir & (DIR_EAST | DIR_WEST)) {
-	drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
+	if (drv_generic_graphic_real_blit)
+	    drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
     } else {
-	drv_generic_graphic_real_blit(row, col, YRES * len, XRES);
+	if (drv_generic_graphic_real_blit)
+	    drv_generic_graphic_real_blit(row, col, YRES * len, XRES);
     }
 
     return 0;

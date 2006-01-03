@@ -1,4 +1,4 @@
-/* $Id: drv_generic_gpio.c,v 1.2 2005/12/20 07:07:44 reinelt Exp $
+/* $Id: drv_generic_gpio.c,v 1.3 2006/01/03 06:13:45 reinelt Exp $
  *
  * generic driver helper for GPO's
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_gpio.c,v $
+ * Revision 1.3  2006/01/03 06:13:45  reinelt
+ * GPIO's for MatrixOrbital
+ *
  * Revision 1.2  2005/12/20 07:07:44  reinelt
  * further work on GPO's, HD44780 GPO support
  *
@@ -49,17 +52,20 @@
  *
  * exported fuctions:
  *
- * int drv_generic_gpio_init(const char *section, const char *driver);
+ * int drv_generic_gpio_init(const char *section, const char *driver)
  *   initializes the generic GPIO driver
  *
  * int drv_generic_gpio_clear(void);
  *   resets all GPO's
  *
- * int drv_generic_gpio_draw(WIDGET * W);
+ * int drv_generic_gpio_get (const int num)
+ *   returns value og GPI #num
+ *
+ * int drv_generic_gpio_draw(WIDGET * W)
  *   'draws' GPO widget
  *   calls drv_generic_gpio_real_set()
  * 
- * int drv_generic_gpio_quit(void);
+ * int drv_generic_gpio_quit(void)
  *   closes the generic GPIO driver
  *
  */
@@ -79,16 +85,39 @@
 #include <dmalloc.h>
 #endif
 
+#define MAX_GPIS 32
 #define MAX_GPOS 32
 
 
 static char *Section = NULL;
 static char *Driver = NULL;
 
+static int GPI[MAX_GPIS];
 static int GPO[MAX_GPOS];
 
 int GPOS = 0;
 int GPIS = 0;
+
+int (*drv_generic_gpio_real_set) () = NULL;
+int (*drv_generic_gpio_real_get) () = NULL;
+
+
+static void drv_generic_gpio_plugin_gpi(RESULT * result, RESULT * arg1)
+{
+    int num;
+    double val;
+
+    num = R2N(arg1);
+
+    if (num <= 0 || num > GPIS) {
+	error("%s::GPI(%d): GPI out of range (1..%d)", Driver, num, GPIS);
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    val = drv_generic_gpio_get(num - 1);
+    SetResult(&result, R_NUMBER, &val);
+}
 
 
 static void drv_generic_gpio_plugin_gpo(RESULT * result, const int argc, RESULT * argv[])
@@ -104,7 +133,7 @@ static void drv_generic_gpio_plugin_gpo(RESULT * result, const int argc, RESULT 
 	    SetResult(&result, R_STRING, "");
 	    return;
 	}
-	gpo = GPO[num-1];
+	gpo = GPO[num - 1];
 	SetResult(&result, R_NUMBER, &gpo);
 	break;
     case 2:
@@ -115,10 +144,11 @@ static void drv_generic_gpio_plugin_gpo(RESULT * result, const int argc, RESULT 
 	    SetResult(&result, R_STRING, "");
 	    return;
 	}
-	if (GPO[num-1] != val) {
-	    GPO[num-1] = drv_generic_gpio_real_set(num-1, val);
+	if (GPO[num - 1] != val) {
+	    if (drv_generic_gpio_real_set)
+		GPO[num - 1] = drv_generic_gpio_real_set(num - 1, val);
 	}
-	gpo = GPO[num-1];
+	gpo = GPO[num - 1];
 	SetResult(&result, R_NUMBER, &gpo);
 	break;
     default:
@@ -135,9 +165,7 @@ int drv_generic_gpio_init(const char *section, const char *driver)
     Section = (char *) section;
     Driver = (char *) driver;
 
-    if (GPIS <= 0 && GPOS <= 0) {
-	error("%s: Huh? gpio_init(GPIS=%d, GPOS=%d)", Driver, GPIS, GPOS);
-    }
+    info("%s: using %d GPI's and %d GPO's", Driver, GPIS, GPOS);
 
     /* reset all GPO's */
     drv_generic_gpio_clear();
@@ -147,8 +175,8 @@ int drv_generic_gpio_init(const char *section, const char *driver)
     wc.draw = drv_generic_gpio_draw;
     widget_register(&wc);
 
-
     /* register plugins */
+    AddFunction("LCD::GPI", 1, drv_generic_gpio_plugin_gpi);
     AddFunction("LCD::GPO", -1, drv_generic_gpio_plugin_gpo);
 
     return 0;
@@ -159,17 +187,42 @@ int drv_generic_gpio_clear(void)
 {
     int i;
 
-    /* init GPO bufferr */
+    /* clear GPI buffer */
+    for (i = 0; i < MAX_GPIS; i++) {
+	GPI[i] = 0;
+    }
+
+    /* clear GPO buffer */
     for (i = 0; i < MAX_GPOS; i++) {
 	GPO[i] = 0;
     }
 
     /* really clear GPO's */
     for (i = 0; i < GPOS; i++) {
-	GPO[i] = drv_generic_gpio_real_set(i, 0);
+	if (drv_generic_gpio_real_set)
+	    GPO[i] = drv_generic_gpio_real_set(i, 0);
+
     }
 
     return 0;
+}
+
+
+int drv_generic_gpio_get(const int num)
+{
+    int val = 0;
+
+    if (num < 0 || num >= GPIS) {
+	error("%s: gpio_get(%d): GPI out of range (0..%d)", Driver, num + 1, GPIS);
+	return -1;
+    }
+
+    if (drv_generic_gpio_real_get)
+	val = drv_generic_gpio_real_get(num);
+
+    GPI[num] = val;
+
+    return val;
 }
 
 
@@ -185,7 +238,8 @@ int drv_generic_gpio_draw(WIDGET * W)
     }
 
     if (GPO[num] != val) {
-	GPO[num] = drv_generic_gpio_real_set(num, val);
+	if (drv_generic_gpio_real_set)
+	    GPO[num] = drv_generic_gpio_real_set(num, val);
     }
 
     return 0;
@@ -194,5 +248,6 @@ int drv_generic_gpio_draw(WIDGET * W)
 
 int drv_generic_gpio_quit(void)
 {
+    info("%s: shutting down GPIO driver.", Driver);
     return 0;
 }
