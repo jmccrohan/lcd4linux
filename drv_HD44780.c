@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.60 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.61 2006/01/05 19:27:26 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.61  2006/01/05 19:27:26  reinelt
+ * HD44780 power supply from parport
+ *
  * Revision 1.60  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -313,8 +316,9 @@ static int Capabilities;
 
 /* Timings */
 static int T_CY, T_PW, T_AS, T_AH;
-static int T_INIT1, T_INIT2, T_EXEC, T_WRCG, T_CLEAR, T_HOME, T_ONOFF;
-
+static int T_POWER, T_INIT1, T_INIT2, T_EXEC, T_WRCG, T_CLEAR, T_HOME, T_ONOFF;
+static int T_GPO_ST, T_GPO_PW;
+static int T_POWER;
 
 static int Bits = 0;
 static int numControllers = 0;
@@ -333,6 +337,7 @@ static unsigned char SIGNAL_ENABLE3;
 static unsigned char SIGNAL_ENABLE4;
 static unsigned char SIGNAL_BACKLIGHT;
 static unsigned char SIGNAL_GPO;
+static unsigned char SIGNAL_POWER;
 
 /* maximum time to wait for the busy-flag (in usec) */
 #define MAX_BUSYFLAG_WAIT 10000
@@ -718,6 +723,8 @@ static int drv_HD_PP_load(const char *section)
 	    return -1;
 	if ((SIGNAL_GPO = drv_generic_parport_hardwire_ctrl("GPO", "GND")) == 0xff)
 	    return -1;
+	if ((SIGNAL_POWER = drv_generic_parport_hardwire_ctrl("POWER", "GND")) == 0xff)
+	    return -1;
     } else {
 	if (Bits == 8) {
 	    if ((SIGNAL_RS = drv_generic_parport_wire_ctrl("RS", "AUTOFD")) == 0xff)
@@ -746,10 +753,12 @@ static int drv_HD_PP_load(const char *section)
 	    if ((SIGNAL_ENABLE4 = drv_generic_parport_wire_data("ENABLE4", "GND")) == 0xff)
 		return -1;
 	}
-	/* backlight and GPO are always control signals */
+	/* backlight GPO and power are always control signals */
 	if ((SIGNAL_BACKLIGHT = drv_generic_parport_wire_ctrl("BACKLIGHT", "GND")) == 0xff)
 	    return -1;
 	if ((SIGNAL_GPO = drv_generic_parport_wire_ctrl("GPO", "GND")) == 0xff)
+	    return -1;
+	if ((SIGNAL_POWER = drv_generic_parport_wire_ctrl("POWER", "GND")) == 0xff)
 	    return -1;
     }
 
@@ -773,6 +782,15 @@ static int drv_HD_PP_load(const char *section)
     T_AS = timing(Name, section, "AS", 140, "ns");	/* Address setup time */
     T_AH = timing(Name, section, "AH", 20, "ns");	/* Address hold time */
 
+    /* GPO timing */
+    if (SIGNAL_GPO != 0) {
+	T_GPO_ST = timing(Name, section, "GPO_ST", 20, "ns");	/* 74HCT573 set-up time */
+	T_GPO_PW = timing(Name, section, "GPO_PW", 230, "ns");	/* 74HCT573 enable pulse width */
+    } else {
+	T_GPO_ST = 0;
+	T_GPO_PW = 0;
+    }
+    
     /* HD44780 execution timings [microseconds]
      * as these values differ from spec to spec,
      * we use the worst-case default values, but allow
@@ -785,17 +803,32 @@ static int drv_HD_PP_load(const char *section)
     T_CLEAR = timing(Name, section, "CLEAR", 2250, "us");	/* Clear Display */
     T_HOME = timing(Name, section, "HOME", 2250, "us");	/* Return Cursor Home */
     T_ONOFF = timing(Name, section, "ONOFF", 2250, "us");	/* Display On/Off Control */
+    
+    /* Power-on delay */
+    if (SIGNAL_POWER != 0) {
+	T_POWER = timing(Name, section, "POWER", 500, "ms");
+    } else {
+	T_POWER = 0;
+    }
 
     /* clear all signals */
     if (Bits == 8) {
-	drv_generic_parport_control(SIGNAL_RS |
-				    SIGNAL_RW | SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 | SIGNAL_BACKLIGHT | SIGNAL_GPO, 0);
+	drv_generic_parport_control(SIGNAL_RS | SIGNAL_RW | 
+				    SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 |
+				    SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
     } else {
+	drv_generic_parport_control(SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
 	drv_generic_parport_data(0);
     }
 
     /* set direction: write */
     drv_generic_parport_direction(0);
+
+    /* raise power pin */
+    if (SIGNAL_POWER != 0) {
+	drv_generic_parport_control(SIGNAL_POWER, SIGNAL_POWER);
+	udelay (1000*T_POWER);
+    }
 
     /* initialize *all* controllers */
     if (Bits == 8) {
@@ -851,6 +884,7 @@ static void drv_HD_PP_stop(void)
 				    SIGNAL_RW | SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 | SIGNAL_BACKLIGHT | SIGNAL_GPO, 0);
     } else {
 	drv_generic_parport_data(0);
+	drv_generic_parport_control(SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
     }
 
     drv_generic_parport_close();
@@ -1141,11 +1175,11 @@ static int drv_HD_GPO(const int num, const int val)
     drv_generic_parport_data(GPO);
 
     /* 74HCT573 set-up time */
-    ndelay(20);
+    ndelay(T_GPO_ST);
 
     /* send data */
-    /* 74HCT573 enable pulse width = 24ns */
-    drv_generic_parport_toggle(SIGNAL_GPO, 1, 230);
+    /* 74HCT573 enable pulse width */
+    drv_generic_parport_toggle(SIGNAL_GPO, 1, T_GPO_PW);
 
     return v;
 }

@@ -118,6 +118,7 @@ Display HD44780-generic {
 	ENABLE  'STROBE'
 	ENABLE2 'GND'
 	GPO     'INIT'
+	POWER   'GND'
     }
 }
 
@@ -135,6 +136,7 @@ Display HD44780-winamp {
 	ENABLE  'STROBE'
 	ENABLE2 'GND'
 	GPO     'GND'
+	POWER   'GND'
     }
     Timing {
 	# low-level communication [ns]
@@ -150,6 +152,11 @@ Display HD44780-winamp {
 	CLEAR 2250  # Clear Display
 	HOME  2250  # Return Cursor Home
 	ONOFF 2250  # Display On/Off Control
+	# GPO timing [ns]
+	GPO_ST  20  # 74HCT573 set-up time
+	GPO_PW 230  # 74HCT573 enable pulse width
+	# Power supply timing [ms]
+	POWER  500  # power-on delay
     }
 }
 
@@ -167,6 +174,7 @@ Display WDC2704M {
 	ENABLE  'STROBE'
 	ENABLE2 'SLCTIN'
 	GPO     'GND'
+	POWER   'GND'
     }
 }
 
@@ -183,6 +191,7 @@ Display HD44780-kernelconcepts {
 	ENABLE  'STROBE'
 	ENABLE2 'GND'
 	GPO     'GND'
+	POWER   'GND'
     }
 }
 
@@ -198,6 +207,7 @@ Display SC1602D {
 	RS     'AUTOFD'
 	ENABLE 'STROBE'
 	GPO    'INIT'
+	POWER  'GND'
     }
 }
 
@@ -908,12 +918,12 @@ Layout testMySQL {
 #Display 'SerDispLib'
 #Display 'LCD-Linux'
 #Display 'LCD2041'
-Display 'LK202'
+#Display 'LK202'
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
-#Display 'HD44780-WinAmp'
+Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
