@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.19 2005/06/09 17:41:47 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.20 2006/01/05 18:56:57 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.20  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.19  2005/06/09 17:41:47  reinelt
  * M50530 fixes (many thanks to Szymon Bieganski)
  *
@@ -136,6 +139,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_parport.h"
 
 static char Name[] = "M50530";
@@ -151,9 +155,8 @@ static int FONT5X11;
 static int DDRAM;
 static int DUTY;
 
-/* Fixme: GPO's not yet implemented */
-static int GPOS;
-/* static int GPO=0; */
+/* buffer holding the GPO state */
+static unsigned char GPO = 0;
 
 
 typedef struct {
@@ -234,24 +237,32 @@ static void drv_M5_defchar(const int ascii, const unsigned char *matrix)
 }
 
 
-/* Fixme: GPO's */
-#if 0
-static void drv_M5_setGPO(const int bits)
+static int drv_M5_GPO(const int num, const int val)
 {
-    if (Lcd.gpos > 0) {
+    int v;
 
-	/* put data on DB1..DB8 */
-	drv_generic_parport_data(bits);
-
-	/* 74HCT573 set-up time */
-	ndelay(20);
-
-	/* send data */
-	/* 74HCT573 enable pulse width = 24ns */
-	drv_generic_parport_toggle(SIGNAL_GPO, 1, 24);
+    if (val > 0) {
+	/* set bit */
+	v = 1;
+	GPO |= 1 << num;
+    } else {
+	/* clear bit */
+	v = 0;
+	GPO &= ~(1 << num);
     }
+
+    /* put data on DB1..DB8 */
+    drv_generic_parport_data(GPO);
+
+    /* 74HCT573 set-up time */
+    ndelay(20);
+
+    /* send data */
+    /* 74HCT573 enable pulse width = 24ns */
+    drv_generic_parport_toggle(SIGNAL_GPO, 1, 24);
+
+    return v;
 }
-#endif
 
 
 static int drv_M5_start(const char *section, const int quiet)
@@ -345,7 +356,9 @@ static int drv_M5_start(const char *section, const int quiet)
     if (cfg_number(section, "GPOs", 0, 0, 8, &n) < 0)
 	return -1;
     GPOS = n;
-    info("%s: controlling %d GPO's", Name, GPOS);
+    if (GPOS > 0) {
+	info("%s: controlling %d GPO's", Name, GPOS);
+    }
 
     if (drv_generic_parport_open(section, Name) != 0) {
 	error("%s: could not initialize parallel port!", Name);
@@ -491,6 +504,7 @@ static int drv_M5_start(const char *section, const int quiet)
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -526,6 +540,7 @@ int drv_M5_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_M5_write;
     drv_generic_text_real_defchar = drv_M5_defchar;
+    drv_generic_gpio_real_set = drv_M5_GPO;
 
 
     /* start display */
@@ -546,6 +561,10 @@ int drv_M5_init(const char *section, const int quiet)
 
     /* add fixed chars to the bar driver */
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
+
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
@@ -576,6 +595,7 @@ int drv_M5_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_text_quit();
+    drv_generic_gpio_quit();
 
     /* clear display */
     drv_M5_clear();

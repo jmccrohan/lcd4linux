@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.5 2006/01/03 06:13:45 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.6 2006/01/05 18:56:57 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.6  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.5  2006/01/03 06:13:45  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -540,7 +543,6 @@ int drv_L7_quit(const int quiet)
     info("%s: shutting down display.", Name);
 
     drv_generic_graphic_clear();
-    drv_generic_gpio_clear();
 
     if (!quiet) {
 	drv_generic_graphic_greet("goodbye!", NULL);

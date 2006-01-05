@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.22 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.23 2006/01/05 18:56:57 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.23  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.22  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -146,6 +149,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_serial.h"
 
 
@@ -153,11 +157,6 @@ static char Name[] = "Cwlinux";
 
 static int Model;
 static int Protocol;
-
-/* Fixme: GPO's not yet implemented */
-/* static int GPO[8]; */
-static int GPOS;
-
 
 typedef struct {
     int type;
@@ -234,6 +233,14 @@ static void drv_CW12232_defchar(const int ascii, const unsigned char *buffer)
 	}
     }
     drv_CW_send(cmd, 10);
+}
+
+
+static int drv_CW_GPO(const int num, const int val)
+{
+    /* Fixme: GPO's not yet implemented! */
+    error ("%s: GPO's not yet implemented!", Name);
+    return val;
 }
 
 
@@ -382,6 +389,7 @@ static void plugin_brightness(RESULT * result, const int argc, RESULT * argv[])
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -421,6 +429,7 @@ int drv_CW_init(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_text_real_write = drv_CW_write;
+    drv_generic_gpio_real_set = drv_CW_GPO;
 
     switch (Protocol) {
     case 1:
@@ -455,6 +464,10 @@ int drv_CW_init(const char *section, const int quiet)
     /* add fixed chars to the bar driver */
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII 32 = blank */
 
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
+
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_text_draw;
@@ -483,6 +496,7 @@ int drv_CW_quit(const int quiet)
 
     info("%s: shutting down.", Name);
     drv_generic_text_quit();
+    drv_generic_gpio_quit();
 
     /* clear display */
     drv_CW_clear();

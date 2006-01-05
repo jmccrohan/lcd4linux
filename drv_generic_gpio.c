@@ -1,4 +1,4 @@
-/* $Id: drv_generic_gpio.c,v 1.3 2006/01/03 06:13:45 reinelt Exp $
+/* $Id: drv_generic_gpio.c,v 1.4 2006/01/05 18:56:57 reinelt Exp $
  *
  * generic driver helper for GPO's
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_gpio.c,v $
+ * Revision 1.4  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.3  2006/01/03 06:13:45  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -249,5 +252,6 @@ int drv_generic_gpio_draw(WIDGET * W)
 int drv_generic_gpio_quit(void)
 {
     info("%s: shutting down GPIO driver.", Driver);
+    drv_generic_gpio_clear();
     return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.40 2006/01/03 06:13:45 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.41 2006/01/05 18:56:57 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.41  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.40  2006/01/03 06:13:45  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -372,7 +375,7 @@ static int drv_MO_GPI(const int num)
     if (num < 0 || num > 7) {
 	return 0;
     }
-    
+
     /* read RPM every two seconds */
     if (time(&now) - T[num] >= 2) {
 
@@ -380,19 +383,18 @@ static int drv_MO_GPI(const int num)
 	unsigned char ans[7];
 
 	T[num] = now;
-	
+
 	cmd[0] = '\376';
 	cmd[1] = '\301';
-	cmd[2] = (char) num+1;
+	cmd[2] = (char) num + 1;
 	drv_generic_serial_write(cmd, 3);
 	usleep(100000);
 
-	if (drv_generic_serial_read((char*)ans, 7) == 7) {
-	    if (ans[0] == 0x23 && ans[1] == 0x2a && ans[2] == 0x03 && ans[3] == 0x52 && ans[4] == num+1) {
-		GPI[num] = 18750000 / (256*ans[5]+ans[6]);
+	if (drv_generic_serial_read((char *) ans, 7) == 7) {
+	    if (ans[0] == 0x23 && ans[1] == 0x2a && ans[2] == 0x03 && ans[3] == 0x52 && ans[4] == num + 1) {
+		GPI[num] = 18750000 / (256 * ans[5] + ans[6]);
 	    } else {
-		error ("%s: strange answer %02x %02x %02x %02x %02x %02x %02x", 
-		       Name, ans[0], ans[1], ans[2], ans[3], ans[4], ans[5], ans[6]);
+		error("%s: strange answer %02x %02x %02x %02x %02x %02x %02x", Name, ans[0], ans[1], ans[2], ans[3], ans[4], ans[5], ans[6]);
 	    }
 	}
     }
@@ -665,10 +667,8 @@ int drv_MO_init(const char *section, const int quiet)
     drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
 
     /* initialize generic GPIO driver */
-    if (GPIS > 0 || GPOS > 0) {
-	if ((ret = drv_generic_gpio_init(section, Name)) != 0)
-	    return ret;
-    }
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
@@ -688,7 +688,7 @@ int drv_MO_init(const char *section, const int quiet)
     /* register plugins */
     AddFunction("LCD::contrast", -1, plugin_contrast);
     AddFunction("LCD::backlight", -1, plugin_backlight);
-    
+
     return 0;
 }
 
@@ -700,11 +700,7 @@ int drv_MO_quit(const int quiet)
     info("%s: shutting down display.", Name);
 
     drv_generic_text_quit();
-    drv_generic_gpio_clear();
-
-    if (GPIS > 0 || GPOS > 0) {
-	drv_generic_gpio_quit();
-    }
+    drv_generic_gpio_quit();
 
     /* clear display */
     drv_MO_clear();

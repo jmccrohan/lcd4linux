@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.2 2005/12/19 05:08:31 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.3 2006/01/05 18:56:57 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.3  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.2  2005/12/19 05:08:31  reinelt
  * GPO's added to the Sample driver
  *
@@ -243,7 +246,7 @@ static void drv_Sample_blit(const int row, const int col, const int height, cons
 static int drv_Sample_GPO(const int num, const int val)
 {
     char cmd[4];
-    
+
     /* assume 0x42 to be the 'GPO' command */
     cmd[0] = 0x42;
     cmd[1] = num;
@@ -559,11 +562,11 @@ int drv_Sample_quit(const int quiet)
 
     drv_generic_text_quit();
 
+    /* remove unless you have GPO's */
+    drv_generic_gpio_quit();
+
     /* clear display */
     drv_Sample_clear();
-
-    /* remove unless you have GPO's */
-    drv_generic_gpio_clear();
 
     /* say goodbye... */
     if (!quiet) {
@@ -587,7 +590,7 @@ int drv_Sample_quit2(const int quiet)
     drv_generic_graphic_clear();
 
     /* remove unless you have GPO's */
-    drv_generic_gpio_clear();
+    drv_generic_gpio_quit();
 
     /* say goodbye... */
     if (!quiet) {

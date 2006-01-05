@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.59 2006/01/03 06:13:44 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.60 2006/01/05 18:56:57 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.60  2006/01/05 18:56:57  reinelt
+ * more GPO stuff
+ *
  * Revision 1.59  2006/01/03 06:13:44  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -1324,7 +1327,7 @@ static int drv_HD_start(const char *section, const int quiet)
 	gpos = 0;
     }
     GPOS = gpos;
-    if (gpos > 0) {
+    if (GPOS > 0) {
 	info("%s: using %d GPO's", Name, GPOS);
     }
 
@@ -1469,12 +1472,6 @@ int drv_HD_init(const char *section, const int quiet)
     if ((ret = drv_generic_text_bar_init(0)) != 0)
 	return ret;
 
-    /* initialize generic GPIO driver */
-    if (GPOS > 0) {
-	if ((ret = drv_generic_gpio_init(section, Name)) != 0)
-	    return ret;
-    }
-
     /* add fixed chars to the bar driver */
     /* most displays have a full block on ascii 255, but some have kind of  */
     /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
@@ -1483,6 +1480,10 @@ int drv_HD_init(const char *section, const int quiet)
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
     if (!asc255bug)
 	drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
+
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
