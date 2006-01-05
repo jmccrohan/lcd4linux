@@ -1,4 +1,4 @@
-/* $Id: drv_BWCT.c,v 1.4 2005/12/11 14:55:28 reinelt Exp $
+/* $Id: drv_BWCT.c,v 1.5 2006/01/05 15:53:45 nicowallmeier Exp $
  *
  * new style driver for BWCT USB LCD displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_BWCT.c,v $
+ * Revision 1.5  2006/01/05 15:53:45  nicowallmeier
+ * fixed compatility with gcc 2.95
+ *
  * Revision 1.4  2005/12/11 14:55:28  reinelt
  * contrast range for BWCT is 0..255, not 0..100
  *
@@ -111,10 +114,10 @@ static int drv_BW_open(void)
 
     for (bus = busses; bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
+	    int c;
 	    if (dev->descriptor.idVendor != LCD_USB_VENDOR)
 		continue;
 	    /* Loop through all of the configurations */
-	    int c;
 	    for (c = 0; c < dev->descriptor.bNumConfigurations; c++) {
 		int i;
 		for (i = 0; i < dev->config[c].bNumInterfaces; i++) {
