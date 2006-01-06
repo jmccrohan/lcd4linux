@@ -90,7 +90,7 @@ Display CF632 {
 }
 
 Display CF633 {
-    Icons 4
+    Icons 1
     Driver 'Crystalfontz'
     Model '633'
     Port '/dev/tts/0'
@@ -923,13 +923,13 @@ Layout testMySQL {
 #Display 'MI240'
 #Display 'CW12232'
 #Display 'HD44780-generic'
-Display 'HD44780-WinAmp'
+#Display 'HD44780-WinAmp'
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
-#Display 'CF633'
+Display 'CF633'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'LCDTerm'

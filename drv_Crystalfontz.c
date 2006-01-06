@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.36 2005/09/07 06:51:44 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.37 2006/01/06 08:12:19 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.37  2006/01/06 08:12:19  reinelt
+ * GPO's for Crystalfontz
+ *
  * Revision 1.36  2005/09/07 06:51:44  reinelt
  * Support for CF635 added
  *
@@ -193,6 +196,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 #include "drv_generic_serial.h"
 
 
@@ -225,33 +229,29 @@ static double Fan_RPM[4] = { 0.0, };
 static double Temperature[32] = { 0.0, };
 
 
-/* Fixme: GPO's not yet implemented */
-/* static int GPO[8]; */
-static int GPOS;
-
-
 typedef struct {
     int type;
     char *name;
     int rows;
     int cols;
+    int gpis;
     int gpos;
     int protocol;
     int payload;
 } MODEL;
 
-/* Fixme #1: number of gpo's should be verified */
+/* Fixme #1: number of GPI's & GPO's should be verified */
 /* Fixme #2: protocol should be verified */
 
 static MODEL Models[] = {
-    {626, "626", 2, 16, 0, 1, 0},
-    {631, "631", 2, 20, 0, 3, 22},
-    {632, "632", 2, 16, 0, 1, 0},
-    {633, "633", 2, 16, 0, 2, 18},
-    {634, "634", 4, 20, 0, 1, 0},
-    {635, "635", 4, 20, 0, 3, 22},
-    {636, "636", 2, 16, 0, 1, 0},
-    {-1, "Unknown", -1, -1, 0, 0, 0}
+    {626, "626", 2, 16, 0, 0, 1, 0},
+    {631, "631", 2, 20, 0, 0, 3, 22},
+    {632, "632", 2, 16, 0, 0, 1, 0},
+    {633, "633", 2, 16, 4, 4, 2, 18},
+    {634, "634", 4, 20, 0, 0, 1, 0},
+    {635, "635", 4, 20, 0, 0, 3, 22},
+    {636, "636", 2, 16, 0, 0, 1, 0},
+    {-1, "Unknown", -1, -1, 0, 0, 0, 0}
 };
 
 
@@ -658,26 +658,27 @@ static int drv_CF_backlight(int backlight)
 }
 
 
-static int drv_CF_fan_pwm(int fan, int power)
+static int drv_CF_GPI(const int num)
 {
-    static unsigned char PWM[4] = { 100, };
+    if (num < 0 || num > 3) {
+	return 0;
+    }
+    return Fan_RPM[num];
+}
 
-    /* sanity check */
-    if (fan < 1 || fan > 4)
-	return -1;
 
-    /* fan ranges from 1 to 4 */
-    fan--;
+static int drv_CF_GPO(const int num, const int val)
+{
+    static unsigned char PWM[4] = { 0, };
 
-    /* -1 is used to query the current power */
-    if (power == -1)
-	return PWM[fan];
+    int v = val;
 
-    if (power < 0)
-	power = 0;
-    if (power > 100)
-	power = 100;
-    PWM[fan] = power;
+    if (v < 0)
+	v = 0;
+    if (v > 100)
+	v = 100;
+
+    PWM[num] = v;
 
     switch (Protocol) {
     case 2:
@@ -685,7 +686,7 @@ static int drv_CF_fan_pwm(int fan, int power)
 	break;
     }
 
-    return PWM[fan];
+    return v;
 }
 
 
@@ -909,6 +910,7 @@ static int drv_CF_start(const char *section)
     /* initialize global variables */
     DROWS = Models[Model].rows;
     DCOLS = Models[Model].cols;
+    GPIS = Models[Model].gpis;
     GPOS = Models[Model].gpos;
     Protocol = Models[Model].protocol;
     Payload = Models[Model].payload;
@@ -996,25 +998,6 @@ static void plugin_backlight(RESULT * result, const int argc, RESULT * argv[])
 }
 
 
-static void plugin_fan_pwm(RESULT * result, const int argc, RESULT * argv[])
-{
-    double pwm;
-
-    switch (argc) {
-    case 1:
-	pwm = drv_CF_fan_pwm(R2N(argv[0]), -1);
-	SetResult(&result, R_NUMBER, &pwm);
-	break;
-    case 2:
-	pwm = drv_CF_fan_pwm(R2N(argv[0]), R2N(argv[1]));
-	SetResult(&result, R_NUMBER, &pwm);
-	break;
-    default:
-	error("%s.pwm(): wrong number of parameters");
-	SetResult(&result, R_STRING, "");
-    }
-}
-
 /* Fixme: other plugins for Fans, Temperature sensors, ... */
 
 
@@ -1026,6 +1009,7 @@ static void plugin_fan_pwm(RESULT * result, const int argc, RESULT * argv[])
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -1074,12 +1058,16 @@ int drv_CF_init(const char *section, const int quiet)
 	GOTO_COST = -1;		/* there is no goto on 633 */
 	drv_generic_text_real_write = drv_CF_write2;
 	drv_generic_text_real_defchar = drv_CF_defchar23;
+	drv_generic_gpio_real_get = drv_CF_GPI;
+	drv_generic_gpio_real_set = drv_CF_GPO;
 	break;
     case 3:
 	CHAR0 = 0;		/* ASCII of first user-defineable char */
 	GOTO_COST = 3;		/* number of bytes a goto command requires */
 	drv_generic_text_real_write = drv_CF_write3;
 	drv_generic_text_real_defchar = drv_CF_defchar23;
+	drv_generic_gpio_real_get = drv_CF_GPI;
+	drv_generic_gpio_real_set = drv_CF_GPO;
 	break;
     }
 
@@ -1109,6 +1097,10 @@ int drv_CF_init(const char *section, const int quiet)
     if (Protocol == 2)
 	drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
 
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
+
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_text_draw;
@@ -1127,9 +1119,6 @@ int drv_CF_init(const char *section, const int quiet)
     /* register plugins */
     AddFunction("LCD::contrast", -1, plugin_contrast);
     AddFunction("LCD::backlight", -1, plugin_backlight);
-    if (Protocol == 2) {
-	AddFunction("LCD::fan_pwm", -1, plugin_fan_pwm);
-    }
 
     return 0;
 }
@@ -1139,9 +1128,10 @@ int drv_CF_init(const char *section, const int quiet)
 int drv_CF_quit(const int quiet)
 {
 
-    info("%s: shutting down.", Name);
+    info("%s: shutting down display.", Name);
 
     drv_generic_text_quit();
+    drv_generic_gpio_quit();
 
     /* clear display */
     drv_CF_clear();
