@@ -1,4 +1,4 @@
-/* $Id: drv_LUIse.c,v 1.1 2006/01/03 13:20:06 reinelt Exp $
+/* $Id: drv_LUIse.c,v 1.2 2006/01/06 16:56:49 tooly-bln Exp $
  *
  * LUIse lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LUIse.c,v $
+ * Revision 1.2  2006/01/06 16:56:49  tooly-bln
+ * *** empty log message ***
+ *
  * Revision 1.1  2006/01/03 13:20:06  reinelt
  * LUIse driver added
  *
@@ -79,8 +82,8 @@ static void drv_LUIse_clear(void)
     // clear picture
     for (x = 0; x < 9600; x++)
 	buf[x] = 0x00;
-    LUI_Bitmap(devNum, 0, 0, 0, 0, 0, 320, 240, 320, 240, buf);
-    LUI_Bitmap(devNum, 1, 0, 0, 0, 0, 320, 240, 320, 240, buf);
+    LUI_Bitmap(devNum, 0, 0, 0, 0, 0, DCOLS, DROWS, DCOLS, DROWS, buf);
+    LUI_Bitmap(devNum, 1, 0, 0, 0, 0, DCOLS, DROWS, DCOLS, DROWS, buf);
 }
 
 
@@ -177,23 +180,23 @@ static int drv_LUIse_start(const char *section)
 
     switch (ScreenRotation) {
     case 0:{
-	    DROWS = 240;
 	    DCOLS = 320;
+	    DROWS = 240;
 	    break;
 	}
     case 1:{
-	    DROWS = 320;
 	    DCOLS = 240;
+	    DROWS = 320;
 	    break;
 	}
     case 2:{
-	    DROWS = 240;
 	    DCOLS = 320;
+	    DROWS = 240;
 	    break;
 	}
     case 3:{
-	    DROWS = 320;
 	    DCOLS = 240;
+	    DROWS = 320;
 	    break;
 	}
     }
@@ -230,7 +233,7 @@ static int drv_LUIse_start(const char *section)
 	error("%s: no '%s.Backpicture' entry from %s", Name, section, cfg_source());
     } else {
 	drv_LUIse_clear();
-	if (LUI_BMPfile(devNum, 1, 0, 0, 0, 0, XRES, YRES, s)) {
+	if (LUI_BMPfile(devNum, 1, 0, 0, 0, 0, DCOLS, DROWS, s)) {
 	    error("%s: Sorry unable to load: %s", Name, s);
 	    return -1;
 	}
