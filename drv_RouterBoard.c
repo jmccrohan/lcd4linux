@@ -1,4 +1,4 @@
-/* $Id: drv_RouterBoard.c,v 1.5 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_RouterBoard.c,v 1.6 2006/01/06 07:06:57 reinelt Exp $
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_RouterBoard.c,v $
+ * Revision 1.6  2006/01/06 07:06:57  reinelt
+ * GPO's for RouterBoard
+ *
  * Revision 1.5  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -133,6 +136,7 @@
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_gpio.h"
 
 
 /* #define RB_WITH_LEDS 1 */
@@ -182,14 +186,12 @@ static int Capabilities;
 #define T_CLEAR 1680		/* Clear Display */
 #define T_AS      60		/* Address setup time */
 
-/* Fixme: GPO's not yet implemented */
-static int GPOS;
-/* static int GPO=0; */
 
-/* Fixme: This actually ARE the GPO's... */
-static unsigned RB_Leds = 0;
+/* buffer holding the GPO state */
+static unsigned char GPO = 0;
 
-static unsigned RB_BackLight = 0;
+/* buffor holding backlight and LED states */
+static unsigned int RB_Leds = 0;
 
 typedef struct {
     int type;
@@ -249,8 +251,8 @@ static void drv_RB_poll_data(void __attribute__ ((unused)) * notused)
 	len = sizeof(struct sockaddr_in);
 	if ((size = recvfrom(sock_c, sock_msg, MAXMSG_SIZE, 0, (struct sockaddr *) sacl, (socklen_t *) & len)) < 0);
 	else {
-	    RB_Leds = sock_msg[0] & 0x0F;
-	    RB_Leds = RB_Leds << 12;
+	    RB_Leds &= 0x0fff;
+	    RB_Leds |= (sock_msg[0] & 0x0F) << 12;
 	    /* fprintf(stderr, "Received data %s\n",sock_msg); */
 	}
     }
@@ -258,42 +260,43 @@ static void drv_RB_poll_data(void __attribute__ ((unused)) * notused)
 
 #endif
 
-/* IOCS0 port number can read from PCI Configuration Space Function 0 (F0) */
-/* at index 74h as 16 bit value (see [GEODE] 5.3.1 pg.151 and pg.176 Table 5-29 */
 
-static unsigned getIocs0Port(void)
+static void drv_RB_outw (const unsigned int data)
 {
-    static unsigned ret = 0;
-
-    /*get IO permission, here you can't use ioperm command */
-    iopl(3);
-
-    if (!ret) {
+    static unsigned int port = 0;
+    
+    /* IOCS0 port number can read from PCI Configuration Space Function 0 (F0) */
+    /* at index 74h as 16 bit value (see [GEODE] 5.3.1 pg.151 and pg.176 Table 5-29 */
+    if (port == 0) {
+	/* get IO permission, here you can't use ioperm command */
+	iopl(3);
 	outl(0x80009074, CAR);
-	ret = inw(CDR);
+	port = inw(CDR);
     }
-    return ret;
+
+    outw(data | RB_Leds, port);
 }
 
-
+    
 static int drv_RB_backlight(int backlight)
 {
     /* -1 is used to query  the current Backlight */
     if (backlight == -1) {
-	if (RB_BackLight > 0)
-	    return 1;		// because RB_Backlight actually is 0x0800 or 0
-	return 0;
+	return (RB_Leds & LCD_BACKLIGHT) ? 1 : 0;
+    }
+    
+    if (backlight > 0) {
+	/* set bit */
+	RB_Leds |= LCD_BACKLIGHT;
+	backlight = 1;
+    } else {
+	backlight = 0;
+	/* clear bit */
+	RB_Leds &= ~LCD_BACKLIGHT;
     }
 
-    if (backlight < 0)
-	backlight = 0;
-    if (backlight > 1)
-	backlight = 1;
-
-    RB_BackLight = backlight ? LCD_BACKLIGHT : 0;
-
     /* Set backlight output */
-    outw(RB_Leds | RB_BackLight, getIocs0Port());
+    drv_RB_outw(0);
 
     return backlight;
 }
@@ -304,11 +307,9 @@ static int drv_RB_backlight(int backlight)
 static void drv_RB_command(const unsigned char cmd, const int delay)
 {
 
-    outw(RB_Leds | LCD_INITX | RB_BackLight | cmd, getIocs0Port());
-
+    drv_RB_outw(LCD_INITX | cmd);
     ndelay(T_AS);
-
-    outw(RB_Leds | RB_BackLight | cmd, getIocs0Port());
+    drv_RB_outw(cmd);
 
     // wait for command completion
     udelay(delay);
@@ -329,11 +330,9 @@ static void drv_RB_data(const char *string, const int len, const int delay)
 
 	ch = *(string++);
 
-	outw(RB_Leds | LCD_AFDX | LCD_INITX | RB_BackLight | ch, getIocs0Port());
-
+	drv_RB_outw(ch | LCD_AFDX | LCD_INITX);
 	ndelay(T_AS);
-
-	outw(RB_Leds | LCD_AFDX | RB_BackLight | ch, getIocs0Port());
+	drv_RB_outw(ch | LCD_AFDX);
 
 	// wait for command completion
 	udelay(delay);
@@ -394,12 +393,28 @@ static void drv_RB_defchar(const int ascii, const unsigned char *matrix)
 }
 
 
-/* Fixme: GPO's */
-#if 0
-static void drv_RB_setGPO(const int bits)
+static int drv_RB_GPO(const int num, const int val)
 {
+    int v;
+
+    if (val > 0) {
+	/* set bit */
+	v = 1;
+	GPO |= 1 << num;
+    } else {
+	/* clear bit */
+	v = 0;
+	GPO &= ~(1 << num);
+    }
+
+    RB_Leds &= 0x0fff;
+    RB_Leds |= GPO << 12;
+
+    drv_RB_outw(0);
+    
+    return v;
 }
-#endif
+
 
 static int drv_RB_start(const char *section, const int quiet)
 {
@@ -445,9 +460,12 @@ static int drv_RB_start(const char *section, const int quiet)
 	drv_RB_backlight(l);
     }
 
-    if (cfg_number(section, "GPOs", 0, 0, 8, &gpos) < 0)
+    if (cfg_number(section, "GPOs", 0, 0, 4, &gpos) < 0)
 	return -1;
-    info("%s: controlling %d GPO's", Name, gpos);
+    GPOS = gpos;
+    if (GPOS > 0) {
+	info("%s: using %d GPO's", Name, GPOS);
+    }
 
 #ifdef RB_WITH_LEDS
 
@@ -461,7 +479,6 @@ static int drv_RB_start(const char *section, const int quiet)
 
     DROWS = rows;
     DCOLS = cols;
-    GPOS = gpos;
 
     drv_RB_command(0x30, T_INIT1);	/* 8 Bit mode, wait 4.1 ms */
     drv_RB_command(0x30, T_INIT2);	/* 8 Bit mode, wait 100 us */
@@ -525,6 +542,7 @@ static void plugin_backlight(RESULT * result, const int argc, RESULT * argv[])
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_gpio_draw(W) */
 
 
 /****************************************/
@@ -560,6 +578,7 @@ int drv_RB_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_RB_write;
     drv_generic_text_real_defchar = drv_RB_defchar;
+    drv_generic_gpio_real_set = drv_RB_GPO;
 
 
     /* start display */
@@ -586,6 +605,10 @@ int drv_RB_init(const char *section, const int quiet)
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
     if (!asc255bug)
 	drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
+
+    /* initialize generic GPIO driver */
+    if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
@@ -616,6 +639,7 @@ int drv_RB_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_text_quit();
+    drv_generic_gpio_quit();
 
     /* clear *both* displays */
     drv_RB_clear();
@@ -624,11 +648,10 @@ int drv_RB_quit(const int quiet)
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
     }
-#ifdef RB_WITH_LEDS
 
+#ifdef RB_WITH_LEDS
     close(sock_c);
     free(sacl);			/*close network socket */
-
 #endif
 
     return (0);
