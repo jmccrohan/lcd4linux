@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.7 2005/06/06 09:24:07 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.8 2006/01/16 15:39:58 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.8  2006/01/16 15:39:58  reinelt
+ * MySQL::queryvalue() extension from Harald Klemm
+ *
  * Revision 1.7  2005/06/06 09:24:07  reinelt
  * two bugs in plugin_mysql.c fixed
  *
@@ -189,6 +192,39 @@ static void my_MySQLquery(RESULT * result, RESULT * query)
     SetResult(&result, R_NUMBER, &value);
 }
 
+static void my_MySQLqueryValue(RESULT * result, RESULT * query)
+{
+    char *q;
+    double value;
+    MYSQL_RES *res;
+    MYSQL_ROW row=NULL;
+
+    if (configure_mysql() < 0) {
+	value = -1;
+	SetResult(&result, R_NUMBER, &value);
+	return;
+    }
+
+    q = R2S(query);
+
+    /* mysql_ping(MYSQL *mysql) checks whether the connection to the server is working. */
+    /* If it has gone down, an automatic reconnection is attempted. */
+    mysql_ping(&conex);
+    if (mysql_real_query(&conex, q, (unsigned int) strlen(q))) {
+	error("[MySQL] query error: %s", mysql_error(&conex));
+	value = -1;
+    } else {
+	/* We don't use res=mysql_use_result();  because mysql_num_rows() will not */
+	/* return the correct value until all the rows in the result set have been retrieved */
+	/* with mysql_fetch_row(), so we use res=mysql_store_result(); instead */
+	res = mysql_store_result(&conex);
+	row = mysql_fetch_row(res);
+	mysql_free_result(res);
+    }
+
+    SetResult(&result, R_STRING, row[0]);
+}
+
 
 static void my_MySQLstatus(RESULT * result)
 {
@@ -218,6 +254,7 @@ int plugin_init_mysql(void)
 {
 #ifdef HAVE_MYSQL_MYSQL_H
     AddFunction("MySQL::query", 1, my_MySQLquery);
+    AddFunction("MySQL::queryvalue", 1, my_MySQLqueryValue);
     AddFunction("MySQL::status", 0, my_MySQLstatus);
 #endif
     return 0;
