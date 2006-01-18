@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.10 2005/08/27 07:02:25 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.11 2006/01/18 11:49:48 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.11  2006/01/18 11:49:48  reinelt
+ * adopted to lcd-linux-0.9.2
+ *
  * Revision 1.10  2005/08/27 07:02:25  reinelt
  * LCD-Linux updated to 0.9.0
  *
@@ -88,8 +91,8 @@
 #include "drv_generic_text.h"
 
 #define LCD_LINUX_MAIN
-#include "drv_LCDLinux.h"
-
+#include <linux/lcd-linux.h>
+#include <linux/hd44780.h>
 
 static char Name[] = "LCD-Linux";
 static char Device[] = "/dev/lcd";
@@ -196,13 +199,12 @@ static int drv_LL_start(const char *section, const int quiet)
 	error("%s: Could not query display information!", Name);
 	return -1;
     }
-    info("%s: %dx%d display with %d controllers, flags=0x%02x:", 
-	 Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
+    info("%s: %dx%d display with %d controllers, flags=0x%02x:", Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
 
     info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
     info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
     info("%s:   font size %s", Name, buf.flags & HD44780_5X10_FONT ? "5x10" : "5x8");
-    
+
 
 
     /* overwrite with size from lcd4linux.conf */
@@ -231,7 +233,7 @@ static int drv_LL_start(const char *section, const int quiet)
     if (commit && ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
 	error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
 	return -1;
-     }
+    }
 
     /* initialize display */
     drv_LL_clear();		/* clear display */
@@ -240,7 +242,7 @@ static int drv_LL_start(const char *section, const int quiet)
     /* No return value check since this ioctl cannot fail */
     raw_mode = 1;
     ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
-    
+
     if (!quiet) {
 	char buffer[40];
 	qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
@@ -365,12 +367,12 @@ int drv_LL_quit(const int quiet)
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
     }
- 
+
     /* Enable control characters interpretation. */
     /* No return value check since this ioctl cannot fail */
     raw_mode = 0;
     ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
- 
+
     /* close device */
     close(lcdlinux_fd);
 

@@ -238,7 +238,7 @@ if test "$LCDLINUX" = "yes"; then
       DRIVERS="$DRIVERS drv_LCDLinux.o"
       AC_DEFINE(WITH_LCDLINUX,1,[LCD-Linux driver])
    else
-      AC_MSG_WARN(lcd-linux.h not found: LCD-Linux driver disabled)
+      AC_MSG_WARN(linux/lcd-linux.h or linux/hd44780.h not found: LCD-Linux driver disabled)
    fi   
 fi
 

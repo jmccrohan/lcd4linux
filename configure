@@ -5921,7 +5921,8 @@ done
 
 # check for LCD-Linux
 
-for ac_header in linux/lcd-linux.h
+
+for ac_header in linux/lcd-linux.h linux/hd44780.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -6066,7 +6067,7 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
 _ACEOF
  has_lcd_linux="true"
 else
-  has_lcd_linux="false"
+  has_lcd_linux="false"; break
 fi
 
 done
@@ -6402,8 +6403,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
    else
-      { echo "$as_me:$LINENO: WARNING: lcd-linux.h not found: LCD-Linux driver disabled" >&5
-echo "$as_me: WARNING: lcd-linux.h not found: LCD-Linux driver disabled" >&2;}
+      { echo "$as_me:$LINENO: WARNING: linux/lcd-linux.h or linux/hd44780.h not found: LCD-Linux driver disabled" >&5
+echo "$as_me: WARNING: linux/lcd-linux.h or linux/hd44780.h not found: LCD-Linux driver disabled" >&2;}
    fi
 fi
 

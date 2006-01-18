@@ -61,7 +61,6 @@ drv_Cwlinux.c               \
 drv_HD44780.c               \
 drv_Image.c                 \
 drv_LCDLinux.c              \
-drv_LCDLinux.h              \
 drv_LCDTerm.c               \
 drv_LPH7508.c               \
 drv_LUIse.c                 \

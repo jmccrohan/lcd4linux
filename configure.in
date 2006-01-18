@@ -69,7 +69,7 @@ AC_CHECK_HEADERS(luise.h, [has_luise="true"], [has_luise="false"])
 AC_CHECK_HEADERS(serdisplib/serdisp.h, [has_serdisplib="true"], [has_serdisplib="false"])
 
 # check for LCD-Linux
-AC_CHECK_HEADERS(linux/lcd-linux.h, [has_lcd_linux="true"], [has_lcd_linux="false"])
+AC_CHECK_HEADERS(linux/lcd-linux.h linux/hd44780.h, [has_lcd_linux="true"], [has_lcd_linux="false"; break])
 
 # check for python
 AC_MSG_CHECKING(if python support is wanted)
