@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.8 2006/01/16 15:39:58 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.9 2006/01/20 15:43:25 reinelt Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.9  2006/01/20 15:43:25  reinelt
+ * MySQL::query() returns a value, not the number of rows
+ *
  * Revision 1.8  2006/01/16 15:39:58  reinelt
  * MySQL::queryvalue() extension from Harald Klemm
  *
@@ -159,13 +162,14 @@ static int configure_mysql(void)
     return configured;
 }
 
-
+#if 0
+/* removed because you can use 'query("select count(*)")' */
 static void my_MySQLquery(RESULT * result, RESULT * query)
 {
     char *q;
     double value;
     MYSQL_RES *res;
-
+    
     if (configure_mysql() < 0) {
 	value = -1;
 	SetResult(&result, R_NUMBER, &value);
@@ -191,8 +195,10 @@ static void my_MySQLquery(RESULT * result, RESULT * query)
 
     SetResult(&result, R_NUMBER, &value);
 }
+#endif
 
-static void my_MySQLqueryValue(RESULT * result, RESULT * query)
+
+static void my_MySQLquery(RESULT * result, RESULT * query)
 {
     char *q;
     double value;
@@ -254,7 +260,6 @@ int plugin_init_mysql(void)
 {
 #ifdef HAVE_MYSQL_MYSQL_H
     AddFunction("MySQL::query", 1, my_MySQLquery);
-    AddFunction("MySQL::queryvalue", 1, my_MySQLqueryValue);
     AddFunction("MySQL::status", 0, my_MySQLstatus);
 #endif
     return 0;
