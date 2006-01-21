@@ -58,6 +58,7 @@ drv_BWCT.c                  \
 drv_Crystalfontz.c          \
 drv_Curses.c                \
 drv_Cwlinux.c               \
+drv_G15.c                   \
 drv_HD44780.c               \
 drv_Image.c                 \
 drv_LCDLinux.c              \

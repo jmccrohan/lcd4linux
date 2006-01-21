@@ -29,10 +29,10 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
-  [                        HD44780, LCDLinux, LCDTerm, LPH7508, LUIse, M50530,]
-  [                        MatrixOrbital, MilfordInstruments, Noritake, NULL,]
-  [                        PNG, PPM, RouterBoard, Sample, serdisplib, SimpleLCD,]
-  [                        T6963, Trefon, USBLCD, WincorNixdorf, X11],
+  [                        G15, HD44780, LCDLinux, LCDTerm, LPH7508, LUIse,]
+  [                        M50530, MatrixOrbital, MilfordInstruments, Noritake,]
+  [                        NULL, PNG, PPM, RouterBoard, Sample, serdisplib,]
+  [                        SimpleLCD, T6963, Trefon, USBLCD, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -58,6 +58,7 @@ for driver in $drivers; do
          CRYSTALFONTZ="yes"
          CURSES="yes"
          CWLINUX="yes"
+         G15="yes"
          HD44780="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
@@ -94,6 +95,9 @@ for driver in $drivers; do
          ;;
       Cwlinux)
          CWLINUX=$val
+         ;;
+      G15)
+         G15=$val
          ;;
       HD44780)
          HD44780=$val
@@ -221,6 +225,17 @@ if test "$CWLINUX" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
+fi
+
+if test "$G15" = "yes"; then
+   if test "$has_usb" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_G15.o"
+      DRVLIBS="$DRVLIBS -lusb"
+      AC_DEFINE(WITH_G15,1,[G-15 driver])
+   else
+      AC_MSG_WARN(usb.h not found: G15 driver disabled)
+   fi
 fi
 
 if test "$HD44780" = "yes"; then

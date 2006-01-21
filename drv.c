@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.37 2006/01/03 13:20:06 reinelt Exp $
+/* $Id: drv.c,v 1.38 2006/01/21 13:26:44 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.38  2006/01/21 13:26:44  reinelt
+ * Logitech G-15 keyboard LCD driver from Dave Ingram
+ *
  * Revision 1.37  2006/01/03 13:20:06  reinelt
  * LUIse driver added
  *
@@ -218,6 +221,7 @@ extern DRIVER drv_BWCT;
 extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
+extern DRIVER drv_G15;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
 extern DRIVER drv_LCDLinux;
@@ -260,6 +264,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_CURSES
     &drv_Curses,
+#endif
+#ifdef WITH_G15
+    &drv_G15,
 #endif
 #ifdef WITH_HD44780
     &drv_HD44780,

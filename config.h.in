@@ -362,6 +362,9 @@
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
 
+/* G-15 driver */
+#undef WITH_G15
+
 /* HD44780 driver */
 #undef WITH_HD44780
 
