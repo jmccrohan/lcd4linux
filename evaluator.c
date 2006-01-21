@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.25 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: evaluator.c,v 1.26 2006/01/21 09:40:20 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.26  2006/01/21 09:40:20  reinelt
+ * Big Memory Leak in Evaluator fixed (thanks to Oliver Gehrke)
+ *
  * Revision 1.25  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -340,29 +343,6 @@ static RESULT *NewResult(void)
 }
 
 
-static RESULT *DupResult(RESULT * result)
-{
-    RESULT *result2;
-
-    if ((result2 = NewResult()) == NULL)
-	return NULL;
-
-    result2->type = result->type;
-    result2->number = result->number;
-
-    if (result->length >= 0) {
-	result2->length = result->length;
-	result2->string = malloc(result2->length);
-	strcpy(result2->string, result->string);
-    } else {
-	result2->length = -1;
-	result2->string = NULL;
-    }
-
-    return result2;
-}
-
-
 RESULT *SetResult(RESULT ** result, const int type, const void *value)
 {
     if (*result == NULL) {
@@ -392,12 +372,42 @@ RESULT *SetResult(RESULT ** result, const int type, const void *value)
 	    (*result)->length = CHUNK_SIZE * (len / CHUNK_SIZE + 1) - 1;
 	    (*result)->string = malloc((*result)->length + 1);
 	}
-	strcpy((*result)->string, value);
+	strncpy((*result)->string, value, (*result)->length + 1);
     } else {
 	error("Evaluator: internal error: invalid result type %d", type);
 	return NULL;
     }
 
+    return *result;
+}
+
+
+static RESULT *CopyResult(RESULT ** result, RESULT * value)
+{
+    if (*result == NULL) {
+	if ((*result = NewResult()) == NULL)
+	    return NULL;
+    }
+
+    (*result)->type = value->type;
+    (*result)->number = value->number;
+
+    if (value->string == NULL) {
+	if ((*result)->string)
+	    free((*result)->string);
+	(*result)->string = NULL;
+	(*result)->length = -1;
+    } else {
+	/* is buffer large enough? */
+	if ((*result)->string == NULL || value->length > (*result)->length) {
+	    if ((*result)->string)
+		free((*result)->string);
+	    (*result)->length = value->length;
+	    (*result)->string = malloc((*result)->length + 1);
+	    /* length does not count the trailing \0 */
+	}
+	strncpy((*result)->string, value->string, (*result)->length + 1);
+    }
     return *result;
 }
 
@@ -440,8 +450,8 @@ char *R2S(RESULT * result)
 	if (result->string)
 	    free(result->string);
 	result->length = CHUNK_SIZE - 1;
-	result->string = malloc(CHUNK_SIZE);
-	snprintf(result->string, CHUNK_SIZE, "%g", result->number);
+	result->string = malloc(result->length+1);
+	snprintf(result->string, result->length, "%g", result->number);
 	return result->string;
     }
 
@@ -483,15 +493,15 @@ int SetVariable(const char *name, RESULT * value)
 
     V = FindVariable(name);
     if (V != NULL) {
-	FreeResult(V->value);
-	V->value = DupResult(value);
+	CopyResult (&V->value, value);
 	return 1;
     }
 
     nVariable++;
     Variable = realloc(Variable, nVariable * sizeof(VARIABLE));
     Variable[nVariable - 1].name = strdup(name);
-    Variable[nVariable - 1].value = DupResult(value);
+    Variable[nVariable - 1].value = NULL;
+    CopyResult (&Variable[nVariable - 1].value, value);
 
     qsort(Variable, nVariable, sizeof(VARIABLE), SortVariable);
 
@@ -1064,8 +1074,7 @@ static int EvalTree(NODE * Root)
 	return 0;
 
     case T_VARIABLE:
-	DelResult(Root->Result);
-	Root->Result = DupResult(Root->Variable->value);
+	CopyResult (&Root->Result, Root->Variable->value);
 	return 0;
 
     case T_FUNCTION:
@@ -1097,8 +1106,7 @@ static int EvalTree(NODE * Root)
 	    break;
 
 	case O_SET:		/* variable assignment */
-	    DelResult(Root->Variable->value);
-	    Root->Variable->value = DupResult(Root->Child[0]->Result);
+	    CopyResult(&Root->Variable->value, Root->Child[0]->Result);
 	    type = Root->Child[0]->Result->type;
 	    number = Root->Child[0]->Result->number;
 	    string = Root->Child[0]->Result->string;
@@ -1297,9 +1305,9 @@ int Eval(void *tree, RESULT * result)
     result->number = Tree->Result->number;
     result->length = Tree->Result->length;
     if (result->length >= 0) {
-	result->string = malloc(result->length);
+	result->string = malloc(result->length+1);
 	if (Tree->Result->string != NULL)
-	    strcpy(result->string, Tree->Result->string);
+	    strncpy(result->string, Tree->Result->string, result->length);
 	else
 	    result->string[0] = '\0';
     } else {
