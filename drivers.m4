@@ -185,6 +185,7 @@ I2C="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_BeckmannEgle.o"
    AC_DEFINE(WITH_BECKMANNEGLE,1,[Beckmann&Egle driver])
@@ -203,6 +204,7 @@ fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[Crystalfontz driver])
@@ -222,6 +224,7 @@ fi
 
 if test "$CWLINUX" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
@@ -266,8 +269,8 @@ fi
 
 if test "$LPH7508" = "yes"; then
    GRAPHICS="yes"
-   PARPORT="yes"
    GPIO="yes"
+   PARPORT="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
    AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
 fi
@@ -285,6 +288,7 @@ fi
 
 if test "$M50530" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    PARPORT="yes"
    DRIVERS="$DRIVERS drv_M50530.o"
    AC_DEFINE(WITH_M50530,1,[M50530 driver])
@@ -292,6 +296,7 @@ fi
 
 if test "$MATRIXORBITAL" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[MatrixOrbital driver])
@@ -340,6 +345,7 @@ fi
 
 if test "$ROUTERBOARD" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    DRIVERS="$DRIVERS drv_RouterBoard.o"
    AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
 fi
