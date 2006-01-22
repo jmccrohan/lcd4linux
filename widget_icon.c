@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.20 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: widget_icon.c,v 1.21 2006/01/22 10:01:09 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.21  2006/01/22 10:01:09  reinelt
+ * allow 'static' icons with speed=0
+ *
  * Revision 1.20  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -187,7 +190,9 @@ void widget_icon_update(void *Self)
 	if (Icon->speed_tree != NULL) {
 	    Eval(Icon->speed_tree, &result);
 	    Icon->speed = R2N(&result);
-	    if (Icon->speed < 10)
+	    if (Icon->speed <= 0)
+		Icon->speed = 0;
+	    else if (Icon->speed < 10)
 		Icon->speed = 10;
 	    DelResult(&result);
 	}
@@ -196,24 +201,25 @@ void widget_icon_update(void *Self)
 	if (Icon->visible_tree != NULL) {
 	    Eval(Icon->visible_tree, &result);
 	    Icon->visible = R2N(&result);
-	    if (Icon->visible < 1)
+	    if (Icon->visible < 0)
 		Icon->visible = 0;
 	    DelResult(&result);
 	}
-
+	
 	/* rotate icon bitmap */
 	Icon->curmap++;
 	if (Icon->curmap >= Icon->maxmap)
 	    Icon->curmap = 0;
     }
-
+    
     /* finally, draw it! */
     if (W->class->draw)
 	W->class->draw(W);
-
+    
     /* add a new one-shot timer */
-    timer_add(widget_icon_update, Self, Icon->speed, 1);
-
+    if (Icon->speed > 0) {
+	timer_add(widget_icon_update, Self, Icon->speed, 1);
+    }
 }
 
 
