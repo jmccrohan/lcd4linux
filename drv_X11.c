@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.11 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_X11.c,v 1.12 2006/01/22 09:16:11 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.12  2006/01/22 09:16:11  reinelt
+ * Image Widget framework added
+ *
  * Revision 1.11  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -102,6 +105,7 @@
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_icon.h"
+#include "widget_image.h"
 #include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
@@ -366,6 +370,7 @@ static int drv_X11_start(const char *section)
 
 /* using drv_generic_graphic_draw(W) */
 /* using drv_generic_graphic_icon_draw(W) */
+/* using drv_generic_graphic_image_draw(W) */
 /* using drv_generic_graphic_bar_draw(W) */
 
 
@@ -420,6 +425,11 @@ int drv_X11_init(const char *section, const int quiet)
     /* register icon widget */
     wc = Widget_Icon;
     wc.draw = drv_generic_graphic_icon_draw;
+    widget_register(&wc);
+
+    /* register image widget */
+    wc = Widget_Image;
+    /* Fixme: wc.draw = drv_generic_graphic_image_draw; */
     widget_register(&wc);
 
     /* register bar widget */

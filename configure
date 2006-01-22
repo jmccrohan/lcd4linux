@@ -6320,6 +6320,7 @@ I2C="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_BeckmannEgle.o"
 
@@ -6347,6 +6348,7 @@ fi
 
 if test "$CRYSTALFONTZ" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
 
@@ -6375,6 +6377,7 @@ fi
 
 if test "$CWLINUX" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
 
@@ -6441,8 +6444,8 @@ fi
 
 if test "$LPH7508" = "yes"; then
    GRAPHICS="yes"
-   PARPORT="yes"
    GPIO="yes"
+   PARPORT="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -6469,6 +6472,7 @@ fi
 
 if test "$M50530" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    PARPORT="yes"
    DRIVERS="$DRIVERS drv_M50530.o"
 
@@ -6480,6 +6484,7 @@ fi
 
 if test "$MATRIXORBITAL" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
 
@@ -6553,6 +6558,7 @@ fi
 
 if test "$ROUTERBOARD" = "yes"; then
    TEXT="yes"
+   GPIO="yes"
    DRIVERS="$DRIVERS drv_RouterBoard.o"
 
 cat >>confdefs.h <<\_ACEOF

@@ -31,6 +31,7 @@ widget.c      widget.h      \
 widget_text.c widget_text.h \
 widget_bar.c  widget_bar.h  \
 widget_icon.c widget_icon.h \
+widget_image.c widget_image.h \
 widget_gpo.c  widget_gpo.h  \
                             \
 plugin.c      plugin.h      \
