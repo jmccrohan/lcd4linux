@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.1 2006/01/22 09:16:11 reinelt Exp $
+/* $Id: widget_image.c,v 1.2 2006/01/23 06:17:18 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.2  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.1  2006/01/22 09:16:11  reinelt
  * Image Widget framework added
  *
@@ -115,15 +118,15 @@ int widget_image_init(WIDGET * Self)
 	Image->update_expr = cfg_get_raw(section, "update", NULL);
 	Image->visible_expr = cfg_get_raw(section, "visible", NULL);
 
-	/* compile'em */
-	Compile(Image->update_expr, &Image->update_tree);
-	Compile(Image->visible_expr, &Image->visible_tree);
-
 	/* sanity check */
 	if (Image->update_expr == NULL || *Image->update_expr == '\0') {
 	    error("Image %s has no update, using '100'", Self->name);
 	    Image->update_expr = "100";
 	}
+
+	/* compile'em */
+	Compile(Image->update_expr, &Image->update_tree);
+	Compile(Image->visible_expr, &Image->visible_tree);
 
 	free(section);
 	Self->data = Image;
@@ -167,7 +170,7 @@ int widget_image_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Image = {
   name:"image",
-  type:WIDGET_TYPE_VIS,
+  type:WIDGET_TYPE_XY,
   init:widget_image_init,
   draw:NULL,
   quit:widget_image_quit,

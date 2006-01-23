@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.79 2005/09/02 05:27:08 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.80 2006/01/23 06:17:18 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.80  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.79  2005/09/02 05:27:08  reinelt
  * double-fork daemonize patch from Petri Damsten
  *
@@ -389,6 +392,8 @@
 #include "layout.h"
 #include "plugin.h"
 
+#include "widget.h"
+#include "widget_timer.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -651,6 +656,9 @@ int main(int argc, char *argv[])
 	exit(1);
     }
     free(driver);
+
+    /* register timer widget */
+    widget_timer_register();
 
     /* go into interactive mode (display has been initialized) */
     if (interactive >= 1) {

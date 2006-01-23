@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.23 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: widget_text.c,v 1.24 2006/01/23 06:17:18 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.24  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.23  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -481,7 +484,7 @@ int widget_text_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Text = {
   name:"text",
-  type:WIDGET_TYPE_VIS,
+  type:WIDGET_TYPE_RC,
   init:widget_text_init,
   draw:NULL,
   quit:widget_text_quit,

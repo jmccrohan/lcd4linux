@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.17 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: widget_bar.c,v 1.18 2006/01/23 06:17:18 reinelt Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.18  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.17  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -299,7 +302,7 @@ int widget_bar_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Bar = {
   name:"bar",
-  type:WIDGET_TYPE_VIS,
+  type:WIDGET_TYPE_RC,
   init:widget_bar_init,
   draw:NULL,
   quit:widget_bar_quit,

@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.17 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: layout.c,v 1.18 2006/01/23 06:17:18 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.18  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.17  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -124,7 +127,7 @@ int layout_init(const char *layout)
     char *section;
     char *list, *l;
     char *widget;
-    int row, col, gpo;
+    int row, col, num;
 
     info("initializing layout '%s'", layout);
 
@@ -143,31 +146,46 @@ int layout_init(const char *layout)
 
     l = list;
     while (l != NULL) {
+
 	char *p;
 	int i, n;
+
 	/* list is delimited by | */
 	while (*l == '|')
 	    l++;
 	if ((p = strchr(l, '|')) != NULL)
 	    *p = '\0';
-	/* visible widgets */
+
+	/* row/col widgets */
 	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
 	if (i == 2 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_VIS, row - 1, col - 1);
+		widget_add(widget, WIDGET_TYPE_RC, row - 1, col - 1);
 	    }
 	    free(widget);
 	}
+
 	/* GPO widgets */
-	i = sscanf(l, "gpo%d%n", &gpo, &n);
+	i = sscanf(l, "gpo%d%n", &num, &n);
 	if (i == 1 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_GPO, gpo - 1, 0);
+		widget_add(widget, WIDGET_TYPE_GPO, num - 1, 0);
 	    }
 	    free(widget);
 	}
+
+	/* timer widgets */
+	i = sscanf(l, "timer%d%n", &num, &n);
+	if (i == 1 && l[n] == '\0') {
+	    widget = cfg_get(section, l, NULL);
+	    if (widget != NULL && *widget != '\0') {
+		widget_add(widget, WIDGET_TYPE_TIMER, num - 1, 0);
+	    }
+	    free(widget);
+	}
+
 	/* next field */
 	l = p ? p + 1 : NULL;
     }

@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.21 2006/01/22 10:01:09 reinelt Exp $
+/* $Id: widget_icon.c,v 1.22 2006/01/23 06:17:18 reinelt Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.22  2006/01/23 06:17:18  reinelt
+ * timer widget added
+ *
  * Revision 1.21  2006/01/22 10:01:09  reinelt
  * allow 'static' icons with speed=0
  *
@@ -245,15 +248,15 @@ int widget_icon_init(WIDGET * Self)
 	Icon->speed_expr = cfg_get_raw(section, "speed", NULL);
 	Icon->visible_expr = cfg_get_raw(section, "visible", NULL);
 
-	/* compile'em */
-	Compile(Icon->speed_expr, &Icon->speed_tree);
-	Compile(Icon->visible_expr, &Icon->visible_tree);
-
 	/* sanity check */
 	if (Icon->speed_expr == NULL || *Icon->speed_expr == '\0') {
 	    error("Icon %s has no speed, using '100'", Self->name);
 	    Icon->speed_expr = "100";
 	}
+
+	/* compile'em */
+	Compile(Icon->speed_expr, &Icon->speed_tree);
+	Compile(Icon->visible_expr, &Icon->visible_tree);
 
 	/* read bitmap */
 	widget_icon_read_bitmap(section, Icon);
@@ -308,7 +311,7 @@ int widget_icon_quit(WIDGET * Self)
 
 WIDGET_CLASS Widget_Icon = {
   name:"icon",
-  type:WIDGET_TYPE_VIS,
+  type:WIDGET_TYPE_RC,
   init:widget_icon_init,
   draw:NULL,
   quit:widget_icon_quit,
