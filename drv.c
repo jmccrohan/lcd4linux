@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.38 2006/01/21 13:26:44 reinelt Exp $
+/* $Id: drv.c,v 1.39 2006/01/26 19:26:27 harbaum Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.39  2006/01/26 19:26:27  harbaum
+ * Added LCD2USB support
+ *
  * Revision 1.38  2006/01/21 13:26:44  reinelt
  * Logitech G-15 keyboard LCD driver from Dave Ingram
  *
@@ -224,6 +227,7 @@ extern DRIVER drv_Cwlinux;
 extern DRIVER drv_G15;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
+extern DRIVER drv_LCD2USB;
 extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
 extern DRIVER drv_LPH7508;
@@ -273,6 +277,9 @@ DRIVER *Driver[] = {
 #endif
 #if defined (WITH_PNG) || defined(WITH_PPM)
     &drv_Image,
+#endif
+#ifdef WITH_LCD2USB
+    &drv_LCD2USB,
 #endif
 #ifdef WITH_LCDLINUX
     &drv_LCDLinux,

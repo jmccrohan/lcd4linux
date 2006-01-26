@@ -371,6 +371,9 @@
 /* I2C bus driver */
 #undef WITH_I2C
 
+/* LCD2USB driver */
+#undef WITH_LCD2USB
+
 /* LCD-Linux driver */
 #undef WITH_LCDLINUX
 

@@ -29,10 +29,11 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]	
   [                        possible drivers are:]	
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
-  [                        G15, HD44780, LCDLinux, LCDTerm, LPH7508, LUIse,]
-  [                        M50530, MatrixOrbital, MilfordInstruments, Noritake,]
-  [                        NULL, PNG, PPM, RouterBoard, Sample, serdisplib,]
-  [                        SimpleLCD, T6963, Trefon, USBLCD, WincorNixdorf, X11],
+  [                        G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,]
+  [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
+  [                        Noritake, NULL, PNG, PPM, RouterBoard, Sample,]
+  [                        serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
+  [                        WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -60,6 +61,7 @@ for driver in $drivers; do
          CWLINUX="yes"
          G15="yes"
          HD44780="yes"
+         LCD2USB="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
 	 LPH7508="yes"
@@ -102,6 +104,9 @@ for driver in $drivers; do
       HD44780)
          HD44780=$val
 	 ;;
+      LCD2USB)
+         LCD2USB=$val
+         ;;
       LCDLINUX)
          LCDLINUX=$val
 	 ;;
@@ -248,6 +253,18 @@ if test "$HD44780" = "yes"; then
    GPIO="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+fi
+
+if test "$LCD2USB" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      SERIAL="yes"
+      DRIVERS="$DRIVERS drv_LCD2USB.o"
+      DRVLIBS="$DRVLIBS -lusb"
+      AC_DEFINE(WITH_LCD2USB,1,[LCD2USB driver])
+   else
+      AC_MSG_WARN(usb.h not found: LCD2USB driver disabled)
+   fi
 fi
 
 if test "$LCDLINUX" = "yes"; then
