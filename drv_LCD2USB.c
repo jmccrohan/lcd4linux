@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.1 2006/01/26 19:26:27 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.2 2006/01/28 15:36:17 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.2  2006/01/28 15:36:17  harbaum
+ * Fix: string termination bug in eval()
+ *
  * Revision 1.1  2006/01/26 19:26:27  harbaum
  * Added LCD2USB support
  *
@@ -163,7 +166,7 @@ static int drv_L2U_send(int request, int value, int index)
 }
 
 /* to increase performance, a little buffer is being used to */
-/* collect command bytes of the same type before transmissing them */
+/* collect command bytes of the same type before transmitting them */
 #define BUFFER_MAX_CMD 4	/* current protocol supports up to 4 bytes */
 int buffer_current_type = -1;	/* nothing in buffer yet */
 int buffer_current_fill = 0;	/* -"- */
@@ -235,6 +238,8 @@ static void drv_L2U_clear(void)
 static void drv_L2U_write(const int row, const int col, const char *data, int len)
 {
     int pos;
+
+//    printf("write %d/%d %s(%d)\n", row, col, data, len);
 
     /* 16x4 Displays use a slightly different layout */
     if (DCOLS == 16 && DROWS == 4) {

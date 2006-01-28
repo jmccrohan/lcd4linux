@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.26 2006/01/21 09:40:20 reinelt Exp $
+/* $Id: evaluator.c,v 1.27 2006/01/28 15:36:18 harbaum Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.27  2006/01/28 15:36:18  harbaum
+ * Fix: string termination bug in eval()
+ *
  * Revision 1.26  2006/01/21 09:40:20  reinelt
  * Big Memory Leak in Evaluator fixed (thanks to Oliver Gehrke)
  *
@@ -1306,9 +1309,10 @@ int Eval(void *tree, RESULT * result)
     result->length = Tree->Result->length;
     if (result->length >= 0) {
 	result->string = malloc(result->length+1);
-	if (Tree->Result->string != NULL)
+	if (Tree->Result->string != NULL) {
 	    strncpy(result->string, Tree->Result->string, result->length);
-	else
+	    result->string[result->length] = 0;
+	} else
 	    result->string[0] = '\0';
     } else {
 	result->string = NULL;
