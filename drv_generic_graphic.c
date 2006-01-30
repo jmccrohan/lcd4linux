@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.18  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.17  2006/01/03 06:13:46  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -137,6 +140,7 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "rgb.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 #include "font_6x8.h"
@@ -145,17 +149,29 @@
 #include <dmalloc.h>
 #endif
 
+/* number of layers */
+#define LAYERS 4
+
+int DROWS, DCOLS;		/* display size (pixels!) */
+int XRES, YRES;			/* pixels of one char cell */
+
+/* pixel colors */
+RGBA FG_COL = { R: 0xff, G: 0xff, B: 0xff, A:0xff };
+RGBA BG_COL = { R: 0x00, G: 0x00, B: 0x00, A:0xff };
+RGBA BL_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+RGBA NO_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 
 static char *Section = NULL;
 static char *Driver = NULL;
 
-int DROWS, DCOLS;		/* display size (pixels!) */
-int LROWS, LCOLS;		/* layout size  (pixels!) */
-int XRES, YRES;			/* pixels of one char cell */
+static int LROWS = 0;		/* layout size  (pixels!) */
+static int LCOLS = 0;		/* layout size  (pixels!) */
 
-unsigned char *drv_generic_graphic_FB = NULL;
+static RGBA *drv_generic_graphic_FB[LAYERS] = { NULL, };
 
+/* must be implemented by the real driver */
 void (*drv_generic_graphic_real_blit) () = NULL;
+
 
 /****************************************/
 /*** generic Framebuffer stuff        ***/
@@ -163,8 +179,8 @@ void (*drv_generic_graphic_real_blit) () = NULL;
 
 static void drv_generic_graphic_resizeFB(int rows, int cols)
 {
-    unsigned char *newFB;
-    int row, col;
+    RGBA *newFB;
+    int i, l, row, col;
 
     /* Layout FB is large enough */
     if (rows <= LROWS && cols <= LCOLS)
@@ -176,33 +192,56 @@ static void drv_generic_graphic_resizeFB(int rows, int cols)
     if (cols < LCOLS)
 	cols = LCOLS;
 
-    /* allocate new Layout FB */
-    newFB = malloc(cols * rows * sizeof(char));
-    memset(newFB, 0, rows * cols * sizeof(char));
+    for (l = 0; l < LAYERS; l++) {
 
-    /* transfer contents */
-    if (drv_generic_graphic_FB != NULL) {
-	for (row = 0; row < LROWS; row++) {
-	    for (col = 0; col < LCOLS; col++) {
-		newFB[row * cols + col] = drv_generic_graphic_FB[row * LCOLS + col];
+	/* allocate and initialize new Layout FB */
+	newFB = malloc(cols * rows * sizeof(*newFB));
+	for (i = 0; i < rows * cols; i++)
+	    newFB[i] = (l == 0) ? BG_COL : NO_COL;
+
+	/* transfer contents */
+	if (drv_generic_graphic_FB[l] != NULL) {
+	    for (row = 0; row < LROWS; row++) {
+		for (col = 0; col < LCOLS; col++) {
+		    newFB[row * cols + col] = drv_generic_graphic_FB[l][row * LCOLS + col];
+		}
 	    }
+	    free(drv_generic_graphic_FB[l]);
 	}
-	free(drv_generic_graphic_FB);
+	drv_generic_graphic_FB[l] = newFB;
     }
-    drv_generic_graphic_FB = newFB;
 
     LCOLS = cols;
     LROWS = rows;
 }
 
 
-int drv_generic_graphic_clear(void)
+static void drv_generic_graphic_blit(const int row, const int col, const int height, const int width)
 {
-    memset(drv_generic_graphic_FB, 0, LCOLS * LROWS * sizeof(*drv_generic_graphic_FB));
     if (drv_generic_graphic_real_blit)
-	drv_generic_graphic_real_blit(0, 0, LROWS, LCOLS);
+	drv_generic_graphic_real_blit(row, col, height, width);
+}
 
-    return 0;
+
+static RGBA drv_generic_graphic_blend(const int row, const int col)
+{
+    int l;
+    RGBA p;
+    RGBA ret;
+
+    ret.R = BL_COL.R;
+    ret.G = BL_COL.G;
+    ret.B = BL_COL.B;
+    ret.A = 0xff;
+    for (l = LAYERS - 1; l >= 0; l--) {
+	p = drv_generic_graphic_FB[l][row * LCOLS + col];
+	if (p.A > 0) {
+	    ret.R = (p.R * p.A + ret.R * (255 - p.A)) / 255;
+	    ret.G = (p.G * p.A + ret.G * (255 - p.A)) / 255;
+	    ret.B = (p.B * p.A + ret.B * (255 - p.A)) / 255;
+	}
+    }
+    return ret;
 }
 
 
@@ -210,10 +249,17 @@ int drv_generic_graphic_clear(void)
 /*** generic text handling            ***/
 /****************************************/
 
-static void drv_generic_graphic_render(const int row, const int col, const char *txt)
+static void drv_generic_graphic_render(const int layer, const int row, const int col, const RGBA fg, const RGBA bg,
+				       const char *txt)
 {
-    int c, r, x, y;
-    int len = strlen(txt);
+    int c, r, x, y, len;
+
+    /* sanity checks */
+    if (layer < 0 || layer >= LAYERS) {
+	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+    }
+
+    len = strlen(txt);
 
     /* maybe grow layout framebuffer */
     drv_generic_graphic_resizeFB(row + YRES, col + XRES * len);
@@ -227,7 +273,10 @@ static void drv_generic_graphic_render(const int row, const int col, const char 
 	    int mask = 1 << XRES;
 	    for (x = 0; x < XRES; x++) {
 		mask >>= 1;
-		drv_generic_graphic_FB[(r + y) * LCOLS + c + x] = Font_6x8[(int) *txt][y] & mask ? 1 : 0;
+		if (Font_6x8[(int) *txt][y] & mask)
+		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = fg;
+		else
+		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = bg;
 	    }
 	}
 	c += XRES;
@@ -235,8 +284,7 @@ static void drv_generic_graphic_render(const int row, const int col, const char 
     }
 
     /* flush area */
-    if (drv_generic_graphic_real_blit)
-	drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
+    drv_generic_graphic_blit(row, col, YRES, XRES * len);
 
 }
 
@@ -265,7 +313,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
 
     for (i = 0; line1[i]; i++) {
 	if (strlen(line1[i]) <= cols) {
-	    drv_generic_graphic_render(YRES * 0, XRES * (cols - strlen(line1[i])) / 2, line1[i]);
+	    drv_generic_graphic_render(0, YRES * 0, XRES * ((cols - strlen(line1[i])) / 2), FG_COL, BG_COL, line1[i]);
 	    flag = 1;
 	    break;
 	}
@@ -274,7 +322,8 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (rows >= 2) {
 	for (i = 0; line2[i]; i++) {
 	    if (strlen(line2[i]) <= cols) {
-		drv_generic_graphic_render(YRES * 1, XRES * (cols - strlen(line2[i])) / 2, line2[i]);
+		drv_generic_graphic_render(0, YRES * 1, XRES * ((cols - strlen(line2[i])) / 2), FG_COL, BG_COL,
+					   line2[i]);
 		flag = 1;
 		break;
 	    }
@@ -284,7 +333,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (msg1 && rows >= 3) {
 	unsigned int len = strlen(msg1);
 	if (len <= cols) {
-	    drv_generic_graphic_render(YRES * 2, XRES * (cols - len) / 2, msg1);
+	    drv_generic_graphic_render(0, YRES * 2, XRES * ((cols - len) / 2), FG_COL, BG_COL, msg1);
 	    flag = 1;
 	}
     }
@@ -292,7 +341,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (msg2 && rows >= 4) {
 	unsigned int len = strlen(msg2);
 	if (len <= cols) {
-	    drv_generic_graphic_render(YRES * 3, XRES * (cols - len) / 2, msg2);
+	    drv_generic_graphic_render(0, YRES * 3, XRES * ((cols - len) / 2), FG_COL, BG_COL, msg2);
 	    flag = 1;
 	}
     }
@@ -304,7 +353,13 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
 int drv_generic_graphic_draw(WIDGET * W)
 {
     WIDGET_TEXT *Text = W->data;
-    drv_generic_graphic_render(YRES * W->row, XRES * W->col, Text->buffer);
+    RGBA fg, bg;
+
+    fg = W->fg_valid ? W->fg_color : FG_COL;
+    bg = W->bg_valid ? W->bg_color : BG_COL;
+
+    drv_generic_graphic_render(W->layer, YRES * W->row, XRES * W->col, fg, bg, Text->buffer);
+
     return 0;
 }
 
@@ -316,12 +371,22 @@ int drv_generic_graphic_draw(WIDGET * W)
 int drv_generic_graphic_icon_draw(WIDGET * W)
 {
     WIDGET_ICON *Icon = W->data;
+    RGBA fg, bg;
     unsigned char *bitmap = Icon->bitmap + YRES * Icon->curmap;
-    int row, col;
+    int layer, row, col;
     int x, y;
 
+    layer = W->layer;
     row = YRES * W->row;
     col = XRES * W->col;
+
+    fg = W->fg_valid ? W->fg_color : FG_COL;
+    bg = W->bg_valid ? W->bg_color : BG_COL;
+
+    /* sanity check */
+    if (layer < 0 || layer >= LAYERS) {
+	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+    }
 
     /* maybe grow layout framebuffer */
     drv_generic_graphic_resizeFB(row + YRES, col + XRES);
@@ -333,17 +398,18 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 	    int i = (row + y) * LCOLS + col + x;
 	    mask >>= 1;
 	    if (Icon->visible) {
-		drv_generic_graphic_FB[i] = bitmap[y] & mask ? 1 : 0;
+		if (bitmap[y] & mask)
+		    drv_generic_graphic_FB[layer][i] = fg;
+		else
+		    drv_generic_graphic_FB[layer][i] = bg;
 	    } else {
-		drv_generic_graphic_FB[i] = 0;
+		drv_generic_graphic_FB[layer][i] = BG_COL;
 	    }
 	}
     }
 
     /* flush area */
-    if (drv_generic_graphic_real_blit)
-	drv_generic_graphic_real_blit(row, col, YRES, XRES);
-
+    drv_generic_graphic_blit(row, col, YRES, XRES);
 
     return 0;
 
@@ -357,14 +423,24 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 int drv_generic_graphic_bar_draw(WIDGET * W)
 {
     WIDGET_BAR *Bar = W->data;
-    int row, col, len, res, rev, max, val1, val2;
+    RGBA fg, bg;
+    int layer, row, col, len, res, rev, max, val1, val2;
     int x, y;
     DIRECTION dir;
 
+    layer = W->layer;
     row = YRES * W->row;
     col = XRES * W->col;
     dir = Bar->direction;
     len = Bar->length;
+
+    fg = W->fg_valid ? W->fg_color : FG_COL;
+    bg = W->bg_valid ? W->bg_color : BG_COL;
+
+    /* sanity check */
+    if (layer < 0 || layer >= LAYERS) {
+	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+    }
 
     /* maybe grow layout framebuffer */
     if (dir & (DIR_EAST | DIR_WEST)) {
@@ -400,7 +476,10 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 	for (y = 0; y < YRES; y++) {
 	    int val = y < YRES / 2 ? val1 : val2;
 	    for (x = 0; x < max; x++) {
-		drv_generic_graphic_FB[(row + y) * LCOLS + col + x] = x < val ? !rev : rev;
+		if (x < val)
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
+		else
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
 	    }
 	}
 	break;
@@ -414,7 +493,10 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 	for (y = 0; y < max; y++) {
 	    for (x = 0; x < XRES; x++) {
 		int val = x < XRES / 2 ? val1 : val2;
-		drv_generic_graphic_FB[(row + y) * LCOLS + col + x] = y < val ? !rev : rev;
+		if (x < val)
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
+		else
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
 	    }
 	}
 	break;
@@ -422,11 +504,9 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
     /* flush area */
     if (dir & (DIR_EAST | DIR_WEST)) {
-	if (drv_generic_graphic_real_blit)
-	    drv_generic_graphic_real_blit(row, col, YRES, XRES * len);
+	drv_generic_graphic_blit(row, col, YRES, XRES * len);
     } else {
-	if (drv_generic_graphic_real_blit)
-	    drv_generic_graphic_real_blit(row, col, YRES * len, XRES);
+	drv_generic_graphic_blit(row, col, YRES * len, XRES);
     }
 
     return 0;
@@ -439,32 +519,95 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
 int drv_generic_graphic_init(const char *section, const char *driver)
 {
+    int l;
+    char *color;
+
     Section = (char *) section;
     Driver = (char *) driver;
 
     /* init layout framebuffer */
     LROWS = 0;
     LCOLS = 0;
-    drv_generic_graphic_FB = NULL;
+
+    for (l = 0; l < LAYERS; l++)
+	drv_generic_graphic_FB[l] = NULL;
+
     drv_generic_graphic_resizeFB(DROWS, DCOLS);
 
     /* sanity check */
-    if (drv_generic_graphic_FB == NULL) {
-	error("%s: framebuffer could not be allocated: malloc() failed", Driver);
-	return -1;
+    for (l = 0; l < LAYERS; l++) {
+	if (drv_generic_graphic_FB[l] == NULL) {
+	    error("%s: framebuffer could not be allocated: malloc() failed", Driver);
+	    return -1;
+	}
     }
+
+    /* set default colors */
+    color = cfg_get(Section, "foreground", "000000ff");
+    if (color2RGBA(color, &FG_COL) < 0) {
+	error("%s: ignoring illegal color '%s'", Driver, color);
+    }
+    if (color)
+	free(color);
+
+    color = cfg_get(Section, "background", "ffffffff");
+    if (color2RGBA(color, &BG_COL) < 0) {
+	error("%s: ignoring illegal color '%s'", Driver, color);
+    }
+    if (color)
+	free(color);
+
+    color = cfg_get(Section, "basecolor", "000000ff");
+    if (color2RGBA(color, &BL_COL) < 0) {
+	error("%s: ignoring illegal color '%s'", Driver, color);
+    }
+    if (color)
+	free(color);
 
     return 0;
 }
 
 
+int drv_generic_graphic_clear(void)
+{
+    int i, l;
+
+    for (i = 0; i < LCOLS * LROWS; i++)
+	drv_generic_graphic_FB[0][i] = BG_COL;
+
+    for (l = 1; l < LAYERS; l++)
+	for (i = 0; i < LCOLS * LROWS; i++)
+	    drv_generic_graphic_FB[l][i] = NO_COL;
+
+    drv_generic_graphic_blit(0, 0, LROWS, LCOLS);
+
+    return 0;
+}
+
+
+unsigned char drv_generic_graphic_gray(const int row, const int col)
+{
+    RGBA p = drv_generic_graphic_blend(row, col);
+    return (77 * p.R + 150 * p.G + 28 * p.B) / 255;
+}
+
+
+RGBA drv_generic_graphic_rgb(const int row, const int col)
+{
+    return drv_generic_graphic_blend(row, col);
+}
+
+
 int drv_generic_graphic_quit(void)
 {
-    if (drv_generic_graphic_FB) {
-	free(drv_generic_graphic_FB);
-	drv_generic_graphic_FB = NULL;
-    }
+    int l;
 
+    for (l = 0; l < LAYERS; l++) {
+	if (drv_generic_graphic_FB[l]) {
+	    free(drv_generic_graphic_FB[l]);
+	    drv_generic_graphic_FB[l] = NULL;
+	}
+    }
     widget_unregister();
     return (0);
 }

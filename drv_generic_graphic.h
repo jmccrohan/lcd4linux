@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.10 2006/01/03 06:13:46 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.11 2006/01/30 05:47:38 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.11  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.10  2006/01/03 06:13:46  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -70,20 +73,23 @@
 #ifndef _DRV_GENERIC_GRAPHIC_H_
 #define _DRV_GENERIC_GRAPHIC_H_
 
-
-#include <termios.h>
 #include "widget.h"
-
+#include "rgb.h"
 
 extern int DROWS, DCOLS;	/* display size */
-extern int LROWS, LCOLS;	/* layout size */
 extern int XRES, YRES;		/* pixel width/height of one char  */
 
-/* framebuffer */
-extern unsigned char *drv_generic_graphic_FB;
+extern RGBA FG_COL;		/* foreground color */
+extern RGBA HG_COL;		/* halfground color */
+extern RGBA BG_COL;		/* background color */
 
 /* these functions must be implemented by the real driver */
 extern void (*drv_generic_graphic_real_blit) (const int row, const int col, const int height, const int width);
+
+/* helper function to get pixel color or gray value */
+extern RGBA drv_generic_graphic_rgb(const int row, const int col);
+extern unsigned char drv_generic_graphic_gray(const int row, const int col);
+
 
 /* generic functions and widget callbacks */
 int drv_generic_graphic_init(const char *section, const char *driver);

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.21 2005/12/18 16:18:36 reinelt Exp $
+/* $Id: widget.c,v 1.22 2006/01/30 05:47:38 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.22  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.21  2005/12/18 16:18:36  reinelt
  * GPO's added again
  *
@@ -182,11 +185,41 @@ void widget_unregister(void)
     nClasses = 0;
 }
 
-int widget_add(const char *name, const int type, const int row, const int col)
+int widget_color(const char *section, const char *name, const char *key, RGBA * C)
+{
+    char *color;
+
+    C->R = 0;
+    C->G = 0;
+    C->B = 0;
+    C->A = 0;
+
+    color = cfg_get(section, key, NULL);
+
+    if (color == NULL)
+	return 0;
+
+    if (*color == '\0') {
+	free(color);
+	return 0;
+    }
+
+    if (color2RGBA(color, C) < 0) {
+	error("widget '%s': ignoring illegal %s color '%s'", name, key, color);
+	free(color);
+	return 0;
+    }
+    free(color);
+    return 1;
+}
+
+int widget_add(const char *name, const int type, const int layer, const int row, const int col)
 {
     int i;
     char *section;
     char *class;
+    int fg_valid, bg_valid;
+    RGBA FG, BG;
 
     WIDGET_CLASS *Class;
     WIDGET *Widget;
@@ -204,8 +237,14 @@ int widget_add(const char *name, const int type, const int row, const int col)
 	error("error: widget '%s' has no class!", name);
 	if (class)
 	    free(class);
+	free(section);
 	return -1;
     }
+
+    /* get widget foreground color */
+    fg_valid = widget_color(section, name, "foreground", &FG);
+    bg_valid = widget_color(section, name, "background", &BG);
+
     free(section);
 
     /* lookup widget class */
@@ -265,6 +304,11 @@ int widget_add(const char *name, const int type, const int row, const int col)
     Widget->name = strdup(name);
     Widget->class = Class;
     Widget->parent = Parent;
+    Widget->fg_color = FG;
+    Widget->bg_color = BG;
+    Widget->fg_valid = fg_valid;
+    Widget->bg_valid = bg_valid;
+    Widget->layer = layer;
     Widget->row = row;
     Widget->col = col;
 

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.16 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget.h,v 1.17 2006/01/30 05:47:38 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.17  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.16  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -93,6 +96,8 @@
 #ifndef _WIDGET_H_
 #define _WIDGET_H_
 
+#include "rgb.h"
+
 
 struct WIDGET;			/* forward declaration */
 
@@ -110,6 +115,11 @@ typedef struct WIDGET {
     char *name;
     WIDGET_CLASS *class;
     struct WIDGET *parent;
+    RGBA fg_color;
+    RGBA bg_color;
+    int fg_valid;
+    int bg_valid;
+    int layer;
     int row;
     int col;
     void *data;
@@ -124,6 +134,6 @@ typedef struct WIDGET {
 
 int widget_register(WIDGET_CLASS * widget);
 void widget_unregister(void);
-int widget_add(const char *name, const int type, const int row, const int col);
+int widget_add(const char *name, const int type, const int layer, const int row, const int col);
 
 #endif

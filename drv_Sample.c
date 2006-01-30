@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.3 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.4 2006/01/30 05:47:38 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.4  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.3  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -232,7 +235,9 @@ static void drv_Sample_blit(const int row, const int col, const int height, cons
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    if (drv_generic_graphic_FB[r * LCOLS + c]) {
+	    /* drv_generic_graphic_gray() returns a gray value 0..255 */
+	    /* drv_generic_graphic_rgb() returns a RGB color */
+	    if (drv_generic_graphic_gray(r, c)) {
 		/* set bit */
 	    } else {
 		/* clear bit */

@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.13 2005/11/04 04:44:52 reinelt Exp $
+/* $Id: drv_Image.c,v 1.14 2006/01/30 05:47:38 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.14  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.13  2005/11/04 04:44:52  reinelt
  * LPH7508 driver (not yet finished)
  *
@@ -355,7 +358,7 @@ static void drv_IMG_blit(const int row, const int col, const int height, const i
 
     for (r = row; r < row + height && r < DROWS; r++) {
 	for (c = col; c < col + width && c < DCOLS; c++) {
-	    unsigned char p = drv_generic_graphic_FB[r * LCOLS + c];
+	    unsigned char p = drv_generic_graphic_gray(r, c);
 	    if (drv_IMG_FB[r * DCOLS + c] != p) {
 		drv_IMG_FB[r * DCOLS + c] = p;
 		dirty = 1;

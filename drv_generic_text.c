@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.30 2006/01/03 06:13:46 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.31 2006/01/30 05:47:38 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.31  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.30  2006/01/03 06:13:46  reinelt
  * GPIO's for MatrixOrbital
  *
@@ -152,7 +155,6 @@
  * exported variables:
  *
  * extern int DROWS, DCOLS;    display size
- * extern int LROWS, LCOLS;    layout size
  * extern int XRES,  YRES;     pixel width/height of one char
  * extern int CHARS, CHAR0;    number of user-defineable characters, ASCII of first char
  * extern int ICONS;           number of user-defineable characters reserved for icons
@@ -249,8 +251,6 @@ static char *Driver = NULL;
 
 int DROWS = 20;			/* display size: rows */
 int DCOLS = 4;			/* display size: columns */
-int LROWS = 20;			/* layout size: rows */
-int LCOLS = 4;			/* layout size: columns */
 int XRES = 6;			/* pixels of one char cell */
 int YRES = 8;			/* pixels of one char cell */
 int CHARS = 0;			/* number of user-defineable characters */
@@ -263,6 +263,10 @@ int INVALIDATE = 0;		/* re-send a modified userdefined char? */
 
 void (*drv_generic_text_real_write) () = NULL;
 void (*drv_generic_text_real_defchar) () = NULL;
+
+
+static int LROWS = 20;		/* layout size: rows */
+static int LCOLS = 4;		/* layout size: columns */
 
 static char *LayoutFB = NULL;
 static char *DisplayFB = NULL;
@@ -640,7 +644,8 @@ void drv_generic_text_bar_add_segment(const int val1, const int val2, const DIRE
 }
 
 
-static void drv_generic_text_bar_create_bar(int row, int col, const DIRECTION dir, STYLE style, int len, int val1, int val2)
+static void drv_generic_text_bar_create_bar(int row, int col, const DIRECTION dir, STYLE style, int len, int val1,
+					    int val2)
 {
     int rev = 0, max;
     if (style)
@@ -759,7 +764,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																																																																														                								                              break;
+																																																																																																																																						                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;
@@ -885,7 +890,8 @@ static void drv_generic_text_bar_pack_segments(void)
 	}
 #if 0
 	debug("pack_segment: n=%d i=%d j=%d min=%d", nSegment, pack_i, pack_j, min);
-	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", Segment[pack_i].val1, Segment[pack_i].val2, Segment[pack_j].val1, Segment[pack_j].val2);
+	debug("Pack_segment: i1=%d i2=%d j1=%d j2=%d\n", Segment[pack_i].val1, Segment[pack_i].val2,
+	      Segment[pack_j].val1, Segment[pack_j].val2);
 #endif
 
 	nSegment--;

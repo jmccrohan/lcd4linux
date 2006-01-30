@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.5 2005/05/28 09:06:14 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.6 2006/01/30 05:47:38 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.6  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.5  2005/05/28 09:06:14  reinelt
  * serdisplib cosmetics
  *
@@ -98,7 +101,7 @@ static void drv_SD_blit(const int row, const int col, const int height, const in
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    color = drv_generic_graphic_FB[r * LCOLS + c] ? SD_COL_BLACK : SD_COL_WHITE;
+	    color = drv_generic_graphic_gray(r, c) ? SD_COL_BLACK : SD_COL_WHITE;
 	    serdisp_setcolour(dd, c, r, color);
 	}
     }
@@ -352,10 +355,10 @@ int drv_SD_init(const char *section, const int quiet)
     widget_register(&wc);
 
     /* register plugins */
-    AddFunction("LCD::contrast",  1, plugin_contrast);
+    AddFunction("LCD::contrast", 1, plugin_contrast);
     AddFunction("LCD::backlight", 1, plugin_backlight);
-    AddFunction("LCD::reverse",   1, plugin_reverse);
-    AddFunction("LCD::rotate",    1, plugin_rotate);
+    AddFunction("LCD::reverse", 1, plugin_reverse);
+    AddFunction("LCD::rotate", 1, plugin_rotate);
 
     return 0;
 }

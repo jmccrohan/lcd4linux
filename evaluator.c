@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.27 2006/01/28 15:36:18 harbaum Exp $
+/* $Id: evaluator.c,v 1.28 2006/01/30 05:47:38 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.28  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.27  2006/01/28 15:36:18  harbaum
  * Fix: string termination bug in eval()
  *
@@ -453,7 +456,7 @@ char *R2S(RESULT * result)
 	if (result->string)
 	    free(result->string);
 	result->length = CHUNK_SIZE - 1;
-	result->string = malloc(result->length+1);
+	result->string = malloc(result->length + 1);
 	snprintf(result->string, result->length, "%g", result->number);
 	return result->string;
     }
@@ -496,7 +499,7 @@ int SetVariable(const char *name, RESULT * value)
 
     V = FindVariable(name);
     if (V != NULL) {
-	CopyResult (&V->value, value);
+	CopyResult(&V->value, value);
 	return 1;
     }
 
@@ -504,7 +507,7 @@ int SetVariable(const char *name, RESULT * value)
     Variable = realloc(Variable, nVariable * sizeof(VARIABLE));
     Variable[nVariable - 1].name = strdup(name);
     Variable[nVariable - 1].value = NULL;
-    CopyResult (&Variable[nVariable - 1].value, value);
+    CopyResult(&Variable[nVariable - 1].value, value);
 
     qsort(Variable, nVariable, sizeof(VARIABLE), SortVariable);
 
@@ -1077,7 +1080,7 @@ static int EvalTree(NODE * Root)
 	return 0;
 
     case T_VARIABLE:
-	CopyResult (&Root->Result, Root->Variable->value);
+	CopyResult(&Root->Result, Root->Variable->value);
 	return 0;
 
     case T_FUNCTION:
@@ -1094,7 +1097,8 @@ static int EvalTree(NODE * Root)
 	    /* pass number of arguments as first parameter */
 	    Root->Function->func(Root->Result, argc, &param);
 	} else {
-	    Root->Function->func(Root->Result, param[0], param[1], param[2], param[3], param[4], param[5], param[6], param[7], param[8], param[9]);
+	    Root->Function->func(Root->Result, param[0], param[1], param[2], param[3], param[4], param[5], param[6],
+				 param[7], param[8], param[9]);
 	}
 	return 0;
 
@@ -1308,10 +1312,9 @@ int Eval(void *tree, RESULT * result)
     result->number = Tree->Result->number;
     result->length = Tree->Result->length;
     if (result->length >= 0) {
-	result->string = malloc(result->length+1);
+	result->string = malloc(result->length + 1);
 	if (Tree->Result->string != NULL) {
-	    strncpy(result->string, Tree->Result->string, result->length);
-	    result->string[result->length] = 0;
+	    strncpy(result->string, Tree->Result->string, result->length + 1);
 	} else
 	    result->string[0] = '\0';
     } else {

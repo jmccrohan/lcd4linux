@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.6 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.7 2006/01/30 05:47:38 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.7  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.6  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -203,7 +206,7 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 	    int a = p * SCOLS + c;
 	    /* bit mask */
 	    unsigned char m = 1 << (r % 8);
-	    if (drv_generic_graphic_FB[r * LCOLS + c]) {
+	    if (drv_generic_graphic_gray(r, c)) {
 		/* set bit */
 		Buffer1[a] |= m;
 	    } else {
@@ -405,7 +408,8 @@ static int drv_L7_start(const char *section)
 	return -1;
 
     /* rise RES, CS1, RW and A0 */
-    drv_generic_parport_control(SIGNAL_RES | SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0, SIGNAL_RES | SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0);
+    drv_generic_parport_control(SIGNAL_RES | SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0,
+				SIGNAL_RES | SIGNAL_CS1 | SIGNAL_RW | SIGNAL_A0);
 
     /* set direction: write */
     drv_generic_parport_direction(0);

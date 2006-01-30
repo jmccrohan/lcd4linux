@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.12 2006/01/22 09:16:11 reinelt Exp $
+/* $Id: drv_X11.c,v 1.13 2006/01/30 05:47:38 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.13  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.12  2006/01/22 09:16:11  reinelt
  * Image Widget framework added
  *
@@ -116,8 +119,6 @@
 
 static char Name[] = "X11";
 
-static char *fg_col, *bg_col, *hg_col;
-
 static int pixel = -1;		/* pointsize in pixel */
 static int pgap = 0;		/* gap between points */
 static int rgap = 0;		/* row gap between lines */
@@ -126,21 +127,36 @@ static int border = 0;		/* window border */
 
 static int dimx, dimy;		/* total window dimension in pixel */
 
-static unsigned char *drv_X11_FB = NULL;
+static RGBA *drv_X11_FB = NULL;
 
 static Display *dp;
 static int sc, dd;
 static Window w, rw;
 static Visual *vi;
-static GC fg_gc, bg_gc, hg_gc;
+static GC gc;
 static Colormap cm;
-static XColor fg_xc, bg_xc, hg_xc;
+static XColor xc;
 static Pixmap pm;
 
 
 /****************************************/
 /***  hardware dependant functions    ***/
 /****************************************/
+
+static void drv_X11_color(RGBA c)
+{
+    xc.red = 255 * c.R;
+    xc.green = 255 * c.G;
+    xc.blue = 255 * c.B;
+    xc.flags = DoRed | DoGreen | DoBlue;
+    if (XAllocColor(dp, cm, &xc) == False) {
+	error("%s: XAllocColor(%02x%02x%02x) failed!", Name, c.R, c.G, c.B);
+    }
+    XSetForeground(dp, gc, xc.pixel);
+    XSetBackground(dp, gc, xc.pixel);
+
+}
+
 
 static void drv_X11_blit(const int row, const int col, const int height, const int width)
 {
@@ -151,10 +167,12 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 	int y = border + (r / YRES) * rgap + r * (pixel + pgap);
 	for (c = col; c < col + width && c < DCOLS; c++) {
 	    int x = border + (c / XRES) * cgap + c * (pixel + pgap);
-	    unsigned char p = drv_generic_graphic_FB[r * LCOLS + c];
-	    if (drv_X11_FB[r * DCOLS + c] != p) {
-		XFillRectangle(dp, w, p ? fg_gc : hg_gc, x, y, pixel, pixel);
-		drv_X11_FB[r * DCOLS + c] = p;
+	    RGBA p1 = drv_X11_FB[r * DCOLS + c];
+	    RGBA p2 = drv_generic_graphic_rgb(r, c);
+	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
+		drv_X11_color(p2);
+		XFillRectangle(dp, w, gc, x, y, pixel, pixel);
+		drv_X11_FB[r * DCOLS + c] = p2;
 		dirty = 1;
 	    }
 	}
@@ -192,7 +210,8 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    int xc = border + (c / XRES) * cgap + c * (pixel + pgap);
 	    if (xc < x0 || xc > x1)
 		continue;
-	    XFillRectangle(dp, w, drv_generic_graphic_FB[r * LCOLS + c] ? fg_gc : hg_gc, xc, yc, pixel, pixel);
+	    drv_X11_color(drv_generic_graphic_rgb(r, c));
+	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
     XSync(dp, False);
@@ -214,12 +233,12 @@ static void drv_X11_timer( __attribute__ ((unused))
 
 static int drv_X11_start(const char *section)
 {
+    int i;
     char *s;
+    RGBA BC;
     XSetWindowAttributes wa;
     XSizeHints sh;
-    XColor dummy;
     XEvent ev;
-
 
     /* read display size from config */
     if (sscanf(s = cfg_get(section, "Size", "120x32"), "%dx%d", &DCOLS, &DROWS) != 2 || DCOLS < 1 || DROWS < 1) {
@@ -258,25 +277,21 @@ static int drv_X11_start(const char *section)
     if (cfg_number(section, "border", 0, 0, -1, &border) < 0)
 	return -1;
 
-    fg_col = cfg_get(section, "foreground", "#000000");
-    bg_col = cfg_get(section, "background", "#80d000");
-    hg_col = cfg_get(section, "halfground", "#70c000");
-    if (*fg_col == '\\')
-	fg_col++;
-    if (*bg_col == '\\')
-	bg_col++;
-    if (*hg_col == '\\')
-	hg_col++;
+    s = cfg_get(section, "basecolor", "000000ff");
+    if (color2RGBA(s, &BC) < 0) {
+	error("%s: ignoring illegal color '%s'", Name, s);
+    }
+    free(s);
 
-
-    drv_X11_FB = malloc(DCOLS * DROWS);
+    drv_X11_FB = malloc(DCOLS * DROWS * sizeof(*drv_X11_FB));
     if (drv_X11_FB == NULL) {
 	error("%s: framebuffer could not be allocated: malloc() failed", Name);
 	return -1;
     }
 
-    /* init with 255 so all 'halfground' pixels will be drawn */
-    memset(drv_X11_FB, 255, DCOLS * DROWS * sizeof(*drv_X11_FB));
+    for (i = 0; i < DCOLS * DROWS; i++) {
+	drv_X11_FB[i] = BC;
+    }
 
     if ((dp = XOpenDisplay(NULL)) == NULL) {
 	error("%s: can't open display", Name);
@@ -284,26 +299,11 @@ static int drv_X11_start(const char *section)
     }
 
     sc = DefaultScreen(dp);
-    fg_gc = DefaultGC(dp, sc);
+    gc = DefaultGC(dp, sc);
     vi = DefaultVisual(dp, sc);
     dd = DefaultDepth(dp, sc);
     rw = DefaultRootWindow(dp);
     cm = DefaultColormap(dp, sc);
-
-    if (XAllocNamedColor(dp, cm, fg_col, &fg_xc, &dummy) == False) {
-	error("%s: can't alloc foreground color '%s'", Name, fg_col);
-	return -1;
-    }
-
-    if (XAllocNamedColor(dp, cm, bg_col, &bg_xc, &dummy) == False) {
-	error("%s: can't alloc background color '%s'", Name, bg_col);
-	return -1;
-    }
-
-    if (XAllocNamedColor(dp, cm, hg_col, &hg_xc, &dummy) == False) {
-	error("%s: can't alloc halfground color '%s'", Name, hg_col);
-	return -1;
-    }
 
     dimx = DCOLS * pixel + (DCOLS - 1) * pgap + (DCOLS / XRES - 1) * cgap;
     dimy = DROWS * pixel + (DROWS - 1) * pgap + (DROWS / YRES - 1) * rgap;
@@ -320,20 +320,10 @@ static int drv_X11_start(const char *section)
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
 
+    drv_X11_color(BC);
 
-    XSetForeground(dp, fg_gc, fg_xc.pixel);
-    XSetBackground(dp, fg_gc, bg_xc.pixel);
-
-    bg_gc = XCreateGC(dp, w, 0, NULL);
-    XSetForeground(dp, bg_gc, bg_xc.pixel);
-    XSetBackground(dp, bg_gc, fg_xc.pixel);
-
-    hg_gc = XCreateGC(dp, w, 0, NULL);
-    XSetForeground(dp, hg_gc, hg_xc.pixel);
-    XSetBackground(dp, hg_gc, fg_xc.pixel);
-
-    XFillRectangle(dp, pm, bg_gc, 0, 0, dimx + 2 * border, dimy + 2 * border);
-    XSetWindowBackground(dp, w, bg_xc.pixel);
+    XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border, dimy + 2 * border);
+    XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
 
     XStoreName(dp, w, "LCD4Linux");
@@ -393,19 +383,20 @@ int drv_X11_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    /* real worker functions */
-    drv_generic_graphic_real_blit = drv_X11_blit;
-
     /* start display */
     if ((ret = drv_X11_start(section)) != 0)
 	return ret;
+
+    /* real worker functions */
+    drv_generic_graphic_real_blit = drv_X11_blit;
 
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
 
-    /* initially expose window */
     drv_generic_graphic_clear();
+
+    /* initially expose window */
     drv_X11_expose(0, 0, dimx + 2 * border, dimy + 2 * border);
 
     if (!quiet) {

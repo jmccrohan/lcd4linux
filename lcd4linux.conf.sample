@@ -340,13 +340,16 @@ Display LPH7508-serdisplib {
 Display XWindow {
     Driver 'X11'
     Size   '120x32'
-    Font   '6x8'
+    Font   '5x8'
     Pixel  '4+1'
     Gap    '-1x-1'
     Border 20
-    Foreground '#000000'
-    Background '#80d000'
-    Halfground '#70c000'
+#   Foreground '#000000'
+#   Background '#80d000'
+#   Halfground '#70c000'
+    Foreground '000000cc'
+    Background '00000022'
+    Basecolor  '80d000'
 }
 
 Display Image {
@@ -422,6 +425,7 @@ Widget Busy {
     precision 1
     align 'R'	
     update tick	
+    foreground '0000ffaa'
 }	
 
 Widget BusyBar {
@@ -929,7 +933,7 @@ Layout testMySQL {
 #Display 'LCM-162'
 #Display 'CF631'
 #Display 'CF632'
-Display 'CF633'
+#Display 'CF633'
 #Display 'Curses'
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
@@ -937,7 +941,7 @@ Display 'CF633'
 #Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-#Display 'XWindow'
+Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'

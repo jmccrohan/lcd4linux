@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.18 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: layout.c,v 1.19 2006/01/30 05:47:38 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.19  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.18  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -161,7 +164,7 @@ int layout_init(const char *layout)
 	if (i == 2 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_RC, row - 1, col - 1);
+		widget_add(widget, WIDGET_TYPE_RC, 0, row - 1, col - 1);
 	    }
 	    free(widget);
 	}
@@ -171,7 +174,7 @@ int layout_init(const char *layout)
 	if (i == 1 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_GPO, num - 1, 0);
+		widget_add(widget, WIDGET_TYPE_GPO, 0, num - 1, 0);
 	    }
 	    free(widget);
 	}
@@ -181,7 +184,7 @@ int layout_init(const char *layout)
 	if (i == 1 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_TIMER, num - 1, 0);
+		widget_add(widget, WIDGET_TYPE_TIMER, 0, num - 1, 0);
 	    }
 	    free(widget);
 	}

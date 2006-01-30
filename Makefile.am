@@ -26,6 +26,7 @@ timer.c       timer.h         \
 thread.c      thread.h        \
 udelay.c      udelay.h        \
 qprintf.c     qprintf.h       \
+rgb.c         rgb.h           \
                               \
 widget.c      widget.h        \
 widget_text.c widget_text.h   \

@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.16 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.17 2006/01/30 05:47:38 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.17  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.16  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -369,7 +372,7 @@ static void drv_T6_blit(const int row, const int col, const int height, const in
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
 	    unsigned char mask = 1 << (XRES - 1 - c % XRES);
-	    if (drv_generic_graphic_FB[r * LCOLS + c]) {
+	    if (drv_generic_graphic_gray(r, c)) {
 		/* set bit */
 		Buffer1[(r * DCOLS + c) / XRES] |= mask;
 	    } else {
@@ -515,7 +518,8 @@ static int drv_T6_start(const char *section)
 	return -1;
 
     /* rise CE, CD, RD and WR */
-    drv_generic_parport_control(SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR, SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR);
+    drv_generic_parport_control(SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR,
+				SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR);
     /* set direction: write */
     drv_generic_parport_direction(0);
 

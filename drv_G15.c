@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.2 2006/01/21 17:43:25 reinelt Exp $
+/* $Id: drv_G15.c,v 1.3 2006/01/30 05:47:38 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.3  2006/01/30 05:47:38  reinelt
+ * graphic subsystem changed to full-color RGBA
+ *
  * Revision 1.2  2006/01/21 17:43:25  reinelt
  * minor cosmetic fixes
  *
@@ -157,7 +160,7 @@ static void drv_G15_update_img()
 
     DEBUG("output array prepared");
 
-    usb_bulk_write(g15_lcd, 0x02, (char*)output, 992, 1000);
+    usb_bulk_write(g15_lcd, 0x02, (char *) output, 992, 1000);
     usleep(300);
 
     DEBUG("data written to LCD");
@@ -179,7 +182,7 @@ static void drv_G15_blit(const int row, const int col, const int height, const i
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    g15_image[r * 160 + c] = (drv_generic_graphic_FB[r * LCOLS + c]);
+	    g15_image[r * 160 + c] = drv_generic_graphic_gray(r, c);
 	}
     }
 
