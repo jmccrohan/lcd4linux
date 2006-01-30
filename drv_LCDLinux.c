@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.11 2006/01/18 11:49:48 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.12 2006/01/30 06:25:52 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.12  2006/01/30 06:25:52  reinelt
+ * added CVS Revision
+ *
  * Revision 1.11  2006/01/18 11:49:48  reinelt
  * adopted to lcd-linux-0.9.2
  *
@@ -199,7 +202,8 @@ static int drv_LL_start(const char *section, const int quiet)
 	error("%s: Could not query display information!", Name);
 	return -1;
     }
-    info("%s: %dx%d display with %d controllers, flags=0x%02x:", Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
+    info("%s: %dx%d display with %d controllers, flags=0x%02x:", Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr,
+	 buf.flags);
 
     info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
     info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
@@ -292,6 +296,8 @@ int drv_LL_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.12 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

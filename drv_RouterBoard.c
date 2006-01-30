@@ -1,4 +1,4 @@
-/* $Id: drv_RouterBoard.c,v 1.6 2006/01/06 07:06:57 reinelt Exp $
+/* $Id: drv_RouterBoard.c,v 1.7 2006/01/30 06:25:53 reinelt Exp $
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_RouterBoard.c,v $
+ * Revision 1.7  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.6  2006/01/06 07:06:57  reinelt
  * GPO's for RouterBoard
  *
@@ -261,10 +264,10 @@ static void drv_RB_poll_data(void __attribute__ ((unused)) * notused)
 #endif
 
 
-static void drv_RB_outw (const unsigned int data)
+static void drv_RB_outw(const unsigned int data)
 {
     static unsigned int port = 0;
-    
+
     /* IOCS0 port number can read from PCI Configuration Space Function 0 (F0) */
     /* at index 74h as 16 bit value (see [GEODE] 5.3.1 pg.151 and pg.176 Table 5-29 */
     if (port == 0) {
@@ -277,14 +280,14 @@ static void drv_RB_outw (const unsigned int data)
     outw(data | RB_Leds, port);
 }
 
-    
+
 static int drv_RB_backlight(int backlight)
 {
     /* -1 is used to query  the current Backlight */
     if (backlight == -1) {
 	return (RB_Leds & LCD_BACKLIGHT) ? 1 : 0;
     }
-    
+
     if (backlight > 0) {
 	/* set bit */
 	RB_Leds |= LCD_BACKLIGHT;
@@ -411,7 +414,7 @@ static int drv_RB_GPO(const int num, const int val)
     RB_Leds |= GPO << 12;
 
     drv_RB_outw(0);
-    
+
     return v;
 }
 
@@ -466,7 +469,6 @@ static int drv_RB_start(const char *section, const int quiet)
     if (GPOS > 0) {
 	info("%s: using %d GPO's", Name, GPOS);
     }
-
 #ifdef RB_WITH_LEDS
 
     if (drv_RB_sock_init() < 0) {
@@ -568,6 +570,8 @@ int drv_RB_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
+    info("%s: %s", Name, "$Revision: 1.7 $");
+
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
     YRES = 8;			/* pixel height of one char  */
@@ -648,7 +652,6 @@ int drv_RB_quit(const int quiet)
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
     }
-
 #ifdef RB_WITH_LEDS
     close(sock_c);
     free(sacl);			/*close network socket */

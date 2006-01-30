@@ -1,4 +1,4 @@
-/* $Id: drv_WincorNixdorf.c,v 1.1 2005/08/22 05:44:43 reinelt Exp $
+/* $Id: drv_WincorNixdorf.c,v 1.2 2006/01/30 06:25:54 reinelt Exp $
  * 
  * driver for WincorNixdorf serial cashier displays BA63 and BA66
  * 
@@ -25,6 +25,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_WincorNixdorf.c,v $
+ * Revision 1.2  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.1  2005/08/22 05:44:43  reinelt
  * new driver 'WincorNixdorf'
  * some fixes to the bar code
@@ -205,14 +208,15 @@ int drv_WN_init(const char *section, const int quiet)
     int ascii;
     int ret;
 
+    info("%s: %s", Name, "$Revision: 1.2 $");
+
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
     YRES = 7;			/* pixel height of one char  */
     CHARS = 0;			/* number of user-defineable characters */
     CHAR0 = 0;			/* ASCII of first user-defineable char */
-    ICONS = 0;                  /* number of user-defineable characters reserved for icons */
+    ICONS = 0;			/* number of user-defineable characters reserved for icons */
     GOTO_COST = 6;		/* number of bytes a goto command requires */
-
 
     /* start display */
     if ((ret = drv_WN_start(section, quiet)) != 0)

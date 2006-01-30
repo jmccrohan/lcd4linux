@@ -1,4 +1,4 @@
-/* $Id: drv_MilfordInstruments.c,v 1.14 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_MilfordInstruments.c,v 1.15 2006/01/30 06:25:53 reinelt Exp $
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.
@@ -27,6 +27,9 @@
  *
  *
  * $Log: drv_MilfordInstruments.c,v $
+ * Revision 1.15  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.14  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -251,6 +254,8 @@ int drv_MI_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.15 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

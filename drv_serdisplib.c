@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.6 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.7 2006/01/30 06:25:54 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.7  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.6  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -318,6 +321,8 @@ int drv_SD_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.7 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_SD_blit;

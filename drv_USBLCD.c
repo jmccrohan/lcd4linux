@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.23 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.24 2006/01/30 06:25:54 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.24  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.23  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -500,6 +503,8 @@ int drv_UL_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.24 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

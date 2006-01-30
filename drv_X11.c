@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.14 2006/01/30 06:17:17 reinelt Exp $
+/* $Id: drv_X11.c,v 1.15 2006/01/30 06:25:54 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.15  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.14  2006/01/30 06:17:17  reinelt
  * added CVS Revision
  *
@@ -386,7 +389,7 @@ int drv_X11_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: Revision %s", Name, "$Revision: 1.14 $");
+    info("%s: %s", Name, "$Revision: 1.15 $");
 
     /* start display */
     if ((ret = drv_X11_start(section)) != 0)

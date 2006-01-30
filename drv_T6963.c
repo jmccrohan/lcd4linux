@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.17 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.18 2006/01/30 06:25:54 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.18  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.17  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -596,6 +599,8 @@ int drv_T6_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.18 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;

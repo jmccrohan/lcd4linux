@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.37 2006/01/06 08:12:19 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.38 2006/01/30 06:25:49 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.38  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.37  2006/01/06 08:12:19  reinelt
  * GPO's for Crystalfontz
  *
@@ -315,7 +318,8 @@ static void drv_CF_process_packet(void)
 	    } else if (Packet.data[1] < 4) {
 		Fan_RPM[Packet.data[0]] = 0.0;
 	    } else {
-		Fan_RPM[Packet.data[0]] = (double) 27692308L *(Packet.data[1] - 3) / (Packet.data[2] + 256 * Packet.data[3]);
+		Fan_RPM[Packet.data[0]] =
+		    (double) 27692308L *(Packet.data[1] - 3) / (Packet.data[2] + 256 * Packet.data[3]);
 	    }
 	    break;
 
@@ -471,7 +475,8 @@ static void drv_CF_send(const unsigned char cmd, const unsigned char len, const 
 		/* this is the ack we're waiting for */
 		if (0) {
 		    gettimeofday(&end, NULL);
-		    debug("%s: ACK after %d usec", Name, 1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
+		    debug("%s: ACK after %d usec", Name,
+			  1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
 		}
 		break;
 	    } else {
@@ -733,7 +738,8 @@ static char *drv_CF_print_ROM(void)
     static char buffer[17];
 
     snprintf(buffer, sizeof(buffer), "0x%02x%02x%02x%02x%02x%02x%02x%02x",
-	     Packet.data[1], Packet.data[2], Packet.data[3], Packet.data[4], Packet.data[5], Packet.data[6], Packet.data[7], Packet.data[8]);
+	     Packet.data[1], Packet.data[2], Packet.data[3], Packet.data[4], Packet.data[5], Packet.data[6],
+	     Packet.data[7], Packet.data[8]);
 
     return buffer;
 }
@@ -759,10 +765,12 @@ static int drv_CF_scan_DOW(unsigned char index)
 		    /* no device found */
 		    return 0;
 		case 0x22:
-		    info("%s: 1-Wire device #%d: DS1822 temperature sensor found at %s", Name, Packet.data[0], drv_CF_print_ROM());
+		    info("%s: 1-Wire device #%d: DS1822 temperature sensor found at %s", Name, Packet.data[0],
+			 drv_CF_print_ROM());
 		    return 1;
 		case 0x28:
-		    info("%s: 1-Wire device #%d: DS18B20 temperature sensor found at %s", Name, Packet.data[0], drv_CF_print_ROM());
+		    info("%s: 1-Wire device #%d: DS18B20 temperature sensor found at %s", Name, Packet.data[0],
+			 drv_CF_print_ROM());
 		    return 1;
 		default:
 		    info("%s: 1-Wire device #%d: unknown device found at %s", Name, Packet.data[0], drv_CF_print_ROM());
@@ -903,7 +911,8 @@ static int drv_CF_start(const char *section)
 	return -1;
     }
     if (i != -1 && Model != i) {
-	error("%s: %s.Model '%s' from %s does not match detected model '%s'", Name, section, model, cfg_source(), Models[i].name);
+	error("%s: %s.Model '%s' from %s does not match detected model '%s'", Name, section, model, cfg_source(),
+	      Models[i].name);
 	return -1;
     }
 
@@ -1034,6 +1043,8 @@ int drv_CF_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.38 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {

@@ -1,4 +1,4 @@
-/* $Id: drv_MatrixOrbital.c,v 1.41 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_MatrixOrbital.c,v 1.42 2006/01/30 06:25:53 reinelt Exp $
  *
  * new style driver for Matrix Orbital serial display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_MatrixOrbital.c,v $
+ * Revision 1.42  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.41  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -394,7 +397,8 @@ static int drv_MO_GPI(const int num)
 	    if (ans[0] == 0x23 && ans[1] == 0x2a && ans[2] == 0x03 && ans[3] == 0x52 && ans[4] == num + 1) {
 		GPI[num] = 18750000 / (256 * ans[5] + ans[6]);
 	    } else {
-		error("%s: strange answer %02x %02x %02x %02x %02x %02x %02x", Name, ans[0], ans[1], ans[2], ans[3], ans[4], ans[5], ans[6]);
+		error("%s: strange answer %02x %02x %02x %02x %02x %02x %02x", Name, ans[0], ans[1], ans[2], ans[3],
+		      ans[4], ans[5], ans[6]);
 	    }
 	}
     }
@@ -493,7 +497,8 @@ static int drv_MO_start(const char *section, const int quiet)
 
 	    /* auto-dedection matches specified model? */
 	    if (Models[i].type != 0xff && Model != i) {
-		error("%s: %s.Model '%s' from %s does not match dedected Model '%s'", Name, section, model, cfg_source(), Models[i].name);
+		error("%s: %s.Model '%s' from %s does not match dedected Model '%s'", Name, section, model,
+		      cfg_source(), Models[i].name);
 		return -1;
 	    }
 
@@ -631,6 +636,8 @@ int drv_MO_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.42 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

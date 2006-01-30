@@ -1,4 +1,4 @@
-/* $Id: drv_LUIse.c,v 1.2 2006/01/06 16:56:49 tooly-bln Exp $
+/* $Id: drv_LUIse.c,v 1.3 2006/01/30 06:25:53 reinelt Exp $
  *
  * LUIse lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LUIse.c,v $
+ * Revision 1.3  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.2  2006/01/06 16:56:49  tooly-bln
  * *** empty log message ***
  *
@@ -290,6 +293,8 @@ int drv_LUIse_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.3 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_LUIse_blit;

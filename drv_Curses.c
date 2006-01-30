@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.10 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.11 2006/01/30 06:25:49 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.11  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.10  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -276,6 +279,8 @@ int drv_Curs_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.11 $");
 
     /* display preferences */
     XRES = 1;			/* pixel width of one char  */

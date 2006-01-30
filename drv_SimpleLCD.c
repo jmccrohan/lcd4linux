@@ -1,4 +1,4 @@
-/* $Id: drv_SimpleLCD.c,v 1.6 2005/08/22 05:44:43 reinelt Exp $
+/* $Id: drv_SimpleLCD.c,v 1.7 2006/01/30 06:25:53 reinelt Exp $
  * 
  * driver for a simple serial terminal.
  * 
@@ -22,6 +22,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_SimpleLCD.c,v $
+ * Revision 1.7  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.6  2005/08/22 05:44:43  reinelt
  * new driver 'WincorNixdorf'
  * some fixes to the bar code
@@ -304,6 +307,8 @@ int drv_SL_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.7 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

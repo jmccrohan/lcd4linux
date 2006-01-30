@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.4 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.5 2006/01/30 06:25:53 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.5  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.4  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -432,6 +435,8 @@ int drv_Sample_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.5 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

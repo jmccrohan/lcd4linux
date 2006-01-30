@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.61 2006/01/05 19:27:26 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.62 2006/01/30 06:25:49 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.62  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.61  2006/01/05 19:27:26  reinelt
  * HD44780 power supply from parport
  *
@@ -387,7 +390,8 @@ static MODEL Models[] = {
 
 static int (*drv_HD_load) (const char *section);
 static void (*drv_HD_command) (const unsigned char controller, const unsigned char cmd, const unsigned long delay);
-static void (*drv_HD_data) (const unsigned char controller, const char *string, const int len, const unsigned long delay);
+static void (*drv_HD_data) (const unsigned char controller, const char *string, const int len,
+			    const unsigned long delay);
 static void (*drv_HD_stop) (void);
 
 
@@ -790,7 +794,7 @@ static int drv_HD_PP_load(const char *section)
 	T_GPO_ST = 0;
 	T_GPO_PW = 0;
     }
-    
+
     /* HD44780 execution timings [microseconds]
      * as these values differ from spec to spec,
      * we use the worst-case default values, but allow
@@ -803,7 +807,7 @@ static int drv_HD_PP_load(const char *section)
     T_CLEAR = timing(Name, section, "CLEAR", 2250, "us");	/* Clear Display */
     T_HOME = timing(Name, section, "HOME", 2250, "us");	/* Return Cursor Home */
     T_ONOFF = timing(Name, section, "ONOFF", 2250, "us");	/* Display On/Off Control */
-    
+
     /* Power-on delay */
     if (SIGNAL_POWER != 0) {
 	T_POWER = timing(Name, section, "POWER", 500, "ms");
@@ -813,7 +817,7 @@ static int drv_HD_PP_load(const char *section)
 
     /* clear all signals */
     if (Bits == 8) {
-	drv_generic_parport_control(SIGNAL_RS | SIGNAL_RW | 
+	drv_generic_parport_control(SIGNAL_RS | SIGNAL_RW |
 				    SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 |
 				    SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
     } else {
@@ -827,7 +831,7 @@ static int drv_HD_PP_load(const char *section)
     /* raise power pin */
     if (SIGNAL_POWER != 0) {
 	drv_generic_parport_control(SIGNAL_POWER, SIGNAL_POWER);
-	udelay (1000*T_POWER);
+	udelay(1000 * T_POWER);
     }
 
     /* initialize *all* controllers */
@@ -881,7 +885,8 @@ static void drv_HD_PP_stop(void)
     /* clear all signals */
     if (Bits == 8) {
 	drv_generic_parport_control(SIGNAL_RS |
-				    SIGNAL_RW | SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 | SIGNAL_BACKLIGHT | SIGNAL_GPO, 0);
+				    SIGNAL_RW | SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 |
+				    SIGNAL_BACKLIGHT | SIGNAL_GPO, 0);
     } else {
 	drv_generic_parport_data(0);
 	drv_generic_parport_control(SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
@@ -1068,7 +1073,8 @@ static int drv_HD_goto(int row, int col)
 	return -1;
 
     if (0) {
-	debug("goto: [%d,%d] mask=%d, controller=%d, size:%dx%d", row, col, currController, controller, CROWS[controller], CCOLS[controller]);
+	debug("goto: [%d,%d] mask=%d, controller=%d, size:%dx%d", row, col, currController, controller,
+	      CROWS[controller], CCOLS[controller]);
     }
 
     /* 16x1 Displays are organized as 8x2 :-( */
@@ -1476,6 +1482,8 @@ int drv_HD_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.62 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

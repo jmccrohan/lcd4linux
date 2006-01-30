@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.14 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_Image.c,v 1.15 2006/01/30 06:25:52 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.15  2006/01/30 06:25:52  reinelt
+ * added CVS Revision
+ *
  * Revision 1.14  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -516,6 +519,8 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.15 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;

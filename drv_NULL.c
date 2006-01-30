@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.8 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.9 2006/01/30 06:25:53 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.9  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.8  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -163,6 +166,8 @@ int drv_NULL_init(const char *section, const __attribute__ ((unused))
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.9 $");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

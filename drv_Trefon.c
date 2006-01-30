@@ -1,4 +1,4 @@
-/* $Id: drv_Trefon.c,v 1.5 2005/08/21 08:18:56 reinelt Exp $
+/* $Id: drv_Trefon.c,v 1.6 2006/01/30 06:25:54 reinelt Exp $
  *
  * driver for TREFON USB LCD displays - http://www.trefon.de
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Trefon.c,v $
+ * Revision 1.6  2006/01/30 06:25:54  reinelt
+ * added CVS Revision
+ *
  * Revision 1.5  2005/08/21 08:18:56  reinelt
  * CrystalFontz ACK processing
  *
@@ -347,6 +350,8 @@ int drv_TF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

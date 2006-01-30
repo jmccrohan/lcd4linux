@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.7 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.8 2006/01/30 06:25:53 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.8  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.7  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -491,6 +494,8 @@ int drv_L7_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.8 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_L7_blit;

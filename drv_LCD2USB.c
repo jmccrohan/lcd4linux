@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.2 2006/01/28 15:36:17 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.3 2006/01/30 06:25:52 reinelt Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.3  2006/01/30 06:25:52  reinelt
+ * added CVS Revision
+ *
  * Revision 1.2  2006/01/28 15:36:17  harbaum
  * Fix: string termination bug in eval()
  *
@@ -401,6 +404,8 @@ int drv_L2U_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.3 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

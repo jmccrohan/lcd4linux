@@ -1,4 +1,4 @@
-/* $Id: drv_LCDTerm.c,v 1.4 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_LCDTerm.c,v 1.5 2006/01/30 06:25:52 reinelt Exp $
  *
  * driver for the LCDTerm serial-to-HD44780 adapter boards
  * http://www.bobblick.com/techref/projects/lcdterm/lcdterm.html
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDTerm.c,v $
+ * Revision 1.5  2006/01/30 06:25:52  reinelt
+ * added CVS Revision
+ *
  * Revision 1.4  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -210,6 +213,8 @@ int drv_LT_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.5 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

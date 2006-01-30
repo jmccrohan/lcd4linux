@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.15 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.16 2006/01/30 06:25:49 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright (C) 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,9 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.16  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.15  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -692,6 +695,8 @@ int drv_BuE_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.16 $");
 
     /* start display */
     if ((ret = drv_BuE_start(section)) != 0) {

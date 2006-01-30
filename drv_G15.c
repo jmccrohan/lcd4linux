@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.3 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_G15.c,v 1.4 2006/01/30 06:25:49 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.4  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.3  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -298,6 +301,8 @@ int drv_G15_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.4 $");
 
     DEBUG("entered");
 

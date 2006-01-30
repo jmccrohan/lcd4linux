@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.20 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.21 2006/01/30 06:25:53 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.21  2006/01/30 06:25:53  reinelt
+ * added CVS Revision
+ *
  * Revision 1.20  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -182,7 +185,8 @@ static void drv_M5_command(const unsigned int cmd, const int delay)
 
     /* set I/OC1 */
     /* set I/OC2 */
-    drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2, (cmd & 0x100 ? SIGNAL_IOC1 : 0) | (cmd & 0x200 ? SIGNAL_IOC2 : 0));
+    drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2,
+				(cmd & 0x100 ? SIGNAL_IOC1 : 0) | (cmd & 0x200 ? SIGNAL_IOC2 : 0));
 
     /* Control data setup time */
     ndelay(200);
@@ -331,7 +335,8 @@ static int drv_M5_start(const char *section, const int quiet)
 
 
     if (DCOLS * DROWS > 256) {
-	error("%s: %s.Size '%dx%d' is too big, would require %d bytes", Name, section, DCOLS, DROWS, DCOLS * DROWS, cfg_source());
+	error("%s: %s.Size '%dx%d' is too big, would require %d bytes", Name, section, DCOLS, DROWS, DCOLS * DROWS,
+	      cfg_source());
 	return -1;
     } else if (DCOLS * DROWS > 224) {
 	DDRAM = 256;
@@ -529,6 +534,8 @@ int drv_M5_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.21 $");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */

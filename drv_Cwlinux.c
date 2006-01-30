@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.23 2006/01/05 18:56:57 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.24 2006/01/30 06:25:49 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.24  2006/01/30 06:25:49  reinelt
+ * added CVS Revision
+ *
  * Revision 1.23  2006/01/05 18:56:57  reinelt
  * more GPO stuff
  *
@@ -239,7 +242,7 @@ static void drv_CW12232_defchar(const int ascii, const unsigned char *buffer)
 static int drv_CW_GPO(const int num, const int val)
 {
     /* Fixme: GPO's not yet implemented! */
-    error ("%s: GPO's not yet implemented!", Name);
+    error("%s: GPO's not yet implemented!", Name);
     return val;
 }
 
@@ -414,6 +417,8 @@ int drv_CW_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.24 $");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

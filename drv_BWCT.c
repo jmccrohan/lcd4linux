@@ -1,4 +1,4 @@
-/* $Id: drv_BWCT.c,v 1.5 2006/01/05 15:53:45 nicowallmeier Exp $
+/* $Id: drv_BWCT.c,v 1.6 2006/01/30 06:25:48 reinelt Exp $
  *
  * new style driver for BWCT USB LCD displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_BWCT.c,v $
+ * Revision 1.6  2006/01/30 06:25:48  reinelt
+ * added CVS Revision
+ *
  * Revision 1.5  2006/01/05 15:53:45  nicowallmeier
  * fixed compatility with gcc 2.95
  *
@@ -325,6 +328,8 @@ int drv_BW_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int asc255bug;
     int ret;
+
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
