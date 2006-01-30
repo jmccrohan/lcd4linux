@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.3 2006/01/30 06:25:52 reinelt Exp $
+/* $Id: drv_LCD2USB.c,v 1.4 2006/01/30 20:21:51 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.4  2006/01/30 20:21:51  harbaum
+ * LCD2USB: Added support for displays with two controllers
+ *
  * Revision 1.3  2006/01/30 06:25:52  reinelt
  * added CVS Revision
  *
@@ -52,6 +55,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
@@ -79,9 +83,9 @@
 #define LCD_GET            (4<<5)
 
 /* target is a bit map for CMD/DATA */
-#define LCD_ENABLE0        (1<<3)
-#define LCD_ENABLE1        (1<<4)
-#define LCD_BOTH           (LCD_ENABLE0 | LCD_ENABLE1)
+#define LCD_CTRL_0              (1<<3)
+#define LCD_CTRL_1              (1<<4)
+#define LCD_BOTH           (LCD_CTRL_0 | LCD_CTRL_1)
 
 /* target is value to set */
 #define LCD_SET_CONTRAST   (LCD_SET | (0<<3))
@@ -195,7 +199,7 @@ static void drv_L2U_flush(void)
 	return;
 
     /* build request byte */
-    request = buffer_current_type | LCD_ENABLE0 | (buffer_current_fill - 1);
+    request = buffer_current_type | (buffer_current_fill - 1);
 
     /* fill value and index with buffer contents. endianess should IMHO not */
     /* be a problem, since usb_control_msg() will handle this. */
@@ -225,24 +229,29 @@ static void drv_L2U_enqueue(int command_type, int value)
 	drv_L2U_flush();
 }
 
-static void drv_L2U_command(const unsigned char cmd)
+static void drv_L2U_command(const unsigned char ctrl, const unsigned char cmd)
 {
-    drv_L2U_enqueue(LCD_CMD, cmd);
+    drv_L2U_enqueue(LCD_CMD | ctrl, cmd);
 }
 
 
 static void drv_L2U_clear(void)
 {
-    drv_L2U_command(0x01);	/* clear display */
-    drv_L2U_command(0x03);	/* return home */
+    drv_L2U_command(LCD_BOTH, 0x01);	/* clear display */
+    drv_L2U_command(LCD_BOTH, 0x03);	/* return home */
 }
 
-
-static void drv_L2U_write(const int row, const int col, const char *data, int len)
+static void drv_L2U_write(int row, const int col, const char *data, int len)
 {
-    int pos;
+    int pos, ctrl = LCD_CTRL_0;
 
-//    printf("write %d/%d %s(%d)\n", row, col, data, len);
+    /* displays with more two rows and 20 columns have a logical width */
+    /* of 40 chars and use more than one controller */
+    if ((DROWS > 2) && (DCOLS > 20) && (row > 1)) {
+	/* use second controller */
+	row -= 2;
+	ctrl = LCD_CTRL_1;
+    }
 
     /* 16x4 Displays use a slightly different layout */
     if (DCOLS == 16 && DROWS == 4) {
@@ -251,10 +260,10 @@ static void drv_L2U_write(const int row, const int col, const char *data, int le
 	pos = (row % 2) * 64 + (row / 2) * 20 + col;
     }
 
-    drv_L2U_command(0x80 | pos);
+    drv_L2U_command(ctrl, 0x80 | pos);
 
     while (len--) {
-	drv_L2U_enqueue(LCD_DATA, *data++);
+	drv_L2U_enqueue(LCD_DATA | ctrl, *data++);
     }
 
     drv_L2U_flush();
@@ -264,10 +273,10 @@ static void drv_L2U_defchar(const int ascii, const unsigned char *matrix)
 {
     int i;
 
-    drv_L2U_command(0x40 | 8 * ascii);
+    drv_L2U_command(LCD_BOTH, 0x40 | 8 * ascii);
 
     for (i = 0; i < 8; i++) {
-	drv_L2U_enqueue(LCD_DATA, *matrix++ & 0x1f);
+	drv_L2U_enqueue(LCD_DATA | LCD_BOTH, *matrix++ & 0x1f);
     }
 
     drv_L2U_flush();
@@ -322,13 +331,13 @@ static int drv_L2U_start(const char *section, const int quiet)
 	error("%s: could not find a LCD2USB USB LCD", Name);
 	return -1;
     }
-
+#if 0				// already done by driver
     /* initialize display */
-    drv_L2U_command(0x29);	/* 8 Bit mode, 1/16 duty cycle, 5x8 font */
-    drv_L2U_command(0x08);	/* Display off, cursor off, blink off */
-    drv_L2U_command(0x0c);	/* Display on, cursor off, blink off */
-    drv_L2U_command(0x06);	/* curser moves to right, no shift */
-
+    drv_L2U_command(LCD_BOTH, 0x29);	/* 8 Bit mode, 1/16 duty cycle, 5x8 fnt */
+    drv_L2U_command(LCD_BOTH, 0x08);	/* Display off, cursor off, blink off */
+    drv_L2U_command(LCD_BOTH, 0x0c);	/* Display on, cursor off, blink off */
+    drv_L2U_command(LCD_BOTH, 0x06);	/* curser moves to right, no shift */
+#endif
 
     if (cfg_number(section, "Contrast", 0, 0, 255, &contrast) > 0) {
 	drv_L2U_contrast(contrast);
@@ -405,7 +414,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.3 $");
+    info("%s: %s", Name, "$Revision: 1.4 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
