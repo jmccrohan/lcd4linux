@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.11 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: evaluator.h,v 1.12 2006/01/30 06:11:36 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.12  2006/01/30 06:11:36  reinelt
+ * changed Result->length to Result->size
+ *
  * Revision 1.11  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -90,8 +93,8 @@
 
 typedef struct {
     int type;
+    int size;
     double number;
-    int length;
     char *string;
 } RESULT;
 

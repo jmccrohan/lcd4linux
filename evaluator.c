@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.28 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: evaluator.c,v 1.29 2006/01/30 06:11:36 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.29  2006/01/30 06:11:36  reinelt
+ * changed Result->length to Result->size
+ *
  * Revision 1.28  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -315,8 +318,8 @@ static int nFunction = 0;
 void DelResult(RESULT * result)
 {
     result->type = 0;
+    result->size = 0;
     result->number = 0.0;
-    result->length = -1;
     if (result->string) {
 	free(result->string);
 	result->string = NULL;
@@ -341,8 +344,8 @@ static RESULT *NewResult(void)
 	return NULL;
     }
     result->type = 0;
+    result->size = 0;
     result->number = 0.0;
-    result->length = -1;
     result->string = NULL;
 
     return result;
@@ -360,8 +363,8 @@ RESULT *SetResult(RESULT ** result, const int type, const void *value)
 
     if (type == R_NUMBER) {
 	(*result)->type = R_NUMBER;
+	(*result)->size = 0;
 	(*result)->number = *(double *) value;
-	(*result)->length = -1;
 	(*result)->string = NULL;
     }
 
@@ -369,16 +372,15 @@ RESULT *SetResult(RESULT ** result, const int type, const void *value)
 	int len = strlen((char *) value);
 	(*result)->type = R_STRING;
 	(*result)->number = 0.0;
-	if ((*result)->string == NULL || len > (*result)->length) {
+	if ((*result)->string == NULL || len >= (*result)->size) {
 	    /* buffer is either empty or too small */
 	    if ((*result)->string)
 		free((*result)->string);
 	    /* allocate memory in multiples of CHUNK_SIZE */
-	    /* note that length does not count the trailing \0 */
-	    (*result)->length = CHUNK_SIZE * (len / CHUNK_SIZE + 1) - 1;
-	    (*result)->string = malloc((*result)->length + 1);
+	    (*result)->size = CHUNK_SIZE * (len / CHUNK_SIZE + 1);
+	    (*result)->string = malloc((*result)->size);
 	}
-	strncpy((*result)->string, value, (*result)->length + 1);
+	strncpy((*result)->string, value, (*result)->size);
     } else {
 	error("Evaluator: internal error: invalid result type %d", type);
 	return NULL;
@@ -399,20 +401,19 @@ static RESULT *CopyResult(RESULT ** result, RESULT * value)
     (*result)->number = value->number;
 
     if (value->string == NULL) {
+	(*result)->size = 0;
 	if ((*result)->string)
 	    free((*result)->string);
 	(*result)->string = NULL;
-	(*result)->length = -1;
     } else {
 	/* is buffer large enough? */
-	if ((*result)->string == NULL || value->length > (*result)->length) {
+	if ((*result)->string == NULL || value->size > (*result)->size) {
 	    if ((*result)->string)
 		free((*result)->string);
-	    (*result)->length = value->length;
-	    (*result)->string = malloc((*result)->length + 1);
-	    /* length does not count the trailing \0 */
+	    (*result)->size = value->size;
+	    (*result)->string = malloc((*result)->size);
 	}
-	strncpy((*result)->string, value->string, (*result)->length + 1);
+	strncpy((*result)->string, value->string, (*result)->size);
     }
     return *result;
 }
@@ -455,9 +456,9 @@ char *R2S(RESULT * result)
 	result->type |= R_STRING;
 	if (result->string)
 	    free(result->string);
-	result->length = CHUNK_SIZE - 1;
-	result->string = malloc(result->length + 1);
-	snprintf(result->string, result->length, "%g", result->number);
+	result->size = CHUNK_SIZE;
+	result->string = malloc(result->size);
+	snprintf(result->string, result->size, "%g", result->number);
 	return result->string;
     }
 
@@ -1309,12 +1310,12 @@ int Eval(void *tree, RESULT * result)
     ret = EvalTree(Tree);
 
     result->type = Tree->Result->type;
+    result->size = Tree->Result->size;
     result->number = Tree->Result->number;
-    result->length = Tree->Result->length;
-    if (result->length >= 0) {
-	result->string = malloc(result->length + 1);
+    if (result->size > 0) {
+	result->string = malloc(result->size);
 	if (Tree->Result->string != NULL) {
-	    strncpy(result->string, Tree->Result->string, result->length + 1);
+	    strncpy(result->string, Tree->Result->string, result->size);
 	} else
 	    result->string[0] = '\0';
     } else {
