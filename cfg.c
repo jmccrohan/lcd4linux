@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.47 2005/05/08 04:32:43 reinelt Exp $^
+/* $Id: cfg.c,v 1.48 2006/01/30 12:53:07 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.48  2006/01/30 12:53:07  reinelt
+ * replaced strncpy with strcpy where possible
+ *
  * Revision 1.47  2005/05/08 04:32:43  reinelt
  * CodingStyle added and applied
  *
@@ -334,6 +337,7 @@ static char *strip(char *s, const int strip_comments)
 
     while (isblank(*s))
 	s++;
+
     for (p = s; *p; p++) {
 	if (*p == '"')
 	    do
@@ -348,8 +352,10 @@ static char *strip(char *s, const int strip_comments)
 	    break;
 	}
     }
+
     for (p--; p > s && isblank(*p); p--)
 	*p = '\0';
+
     return s;
 }
 
@@ -452,9 +458,9 @@ static void cfg_add(const char *section, const char *key, const char *val, const
 int cfg_cmd(const char *arg)
 {
     char *key, *val;
-    char buffer[256];
+    char *buffer;
 
-    strncpy(buffer, arg, sizeof(buffer));
+    buffer = strdup (arg);
     key = strip(buffer, 0);
     for (val = key; *val; val++) {
 	if (*val == '=') {
@@ -462,11 +468,19 @@ int cfg_cmd(const char *arg)
 	    break;
 	}
     }
-    if (*key == '\0' || *val == '\0')
+    if (*key == '\0' || *val == '\0') {
+	free (buffer);
 	return -1;
-    if (!validchars(key))
+    }
+
+    if (!validchars(key)) {
+	free (buffer);
 	return -1;
+    }
+
     cfg_add("", key, val, 1);
+
+    free (buffer);
     return 0;
 }
 
