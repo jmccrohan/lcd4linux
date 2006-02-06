@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.24 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.25 2006/02/06 06:29:30 reinelt Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.25  2006/02/06 06:29:30  reinelt
+ * Image driver uses RGBA
+ *
  * Revision 1.24  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -243,7 +246,8 @@ static int drv_CW_GPO(const int num, const int val)
 {
     /* Fixme: GPO's not yet implemented! */
     error("%s: GPO's not yet implemented!", Name);
-    return val;
+    /* Fixme: num*val to avoid compiler warning */
+    return num*val;
 }
 
 
@@ -418,7 +422,7 @@ int drv_CW_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.24 $");
+    info("%s: %s", Name, "$Revision: 1.25 $");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

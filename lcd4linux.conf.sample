@@ -361,9 +361,12 @@ Display Image {
     Pixel  '4+1'
     Gap    '-1x-1'
     Border 20
-    Foreground '#000000'
-    Background '#80d000'
-    Halfground '#70c000'
+#   Foreground '#000000'
+#   Background '#80d000'
+#   Halfground '#70c000'
+    Foreground '000000cc'
+    Background '00000022'
+    Basecolor  '80d000'
 }
 
 Plugin Seti {
@@ -941,10 +944,10 @@ Layout testMySQL {
 #Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-Display 'XWindow'
+#Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
-#Display 'Image'
+Display 'Image'
 #Display 'Trefon'
 #Display 'LPH7508-serdisplib'
 #Display 'LPH7508'

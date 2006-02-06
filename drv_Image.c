@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.15 2006/01/30 06:25:52 reinelt Exp $
+/* $Id: drv_Image.c,v 1.16 2006/02/06 06:29:30 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.16  2006/02/06 06:29:30  reinelt
+ * Image driver uses RGBA
+ *
  * Revision 1.15  2006/01/30 06:25:52  reinelt
  * added CVS Revision
  *
@@ -136,8 +139,6 @@ static char Name[] = "Image";
 
 static enum { PPM, PNG } Format;
 
-static unsigned int fg_col, bg_col, hg_col;
-
 static int pixel = -1;		/* pointsize in pixel */
 static int pgap = 0;		/* gap between points */
 static int rgap = 0;		/* row gap between lines */
@@ -146,7 +147,8 @@ static int border = 0;		/* window border */
 
 static int dimx, dimy;		/* total window dimension in pixel */
 
-static unsigned char *drv_IMG_FB = NULL;
+static RGBA BC;
+static RGBA *drv_IMG_FB = NULL;
 
 static int dirty = 1;
 
@@ -158,10 +160,9 @@ static int dirty = 1;
 static int drv_IMG_flush_PPM(void)
 {
     static int seq = 0;
-    static unsigned char *bitbuf = NULL;
+    static RGBA *bitbuf = NULL;
     static unsigned char *rowbuf = NULL;
-    int xsize, ysize, row, col;
-    unsigned char R[3], G[3], B[3];
+    int xsize, ysize, row, col, i;
     char path[256], tmp[256], buffer[256];
     int fd;
 
@@ -182,7 +183,9 @@ static int drv_IMG_flush_PPM(void)
 	}
     }
 
-    memset(bitbuf, 0, xsize * ysize * sizeof(*bitbuf));
+    for (i = 0; i < xsize * ysize; i++) {
+	bitbuf[i] = BC;
+    }
 
     for (row = 0; row < DROWS; row++) {
 	int y = border + (row / YRES) * rgap + row * (pixel + pgap);
@@ -191,7 +194,7 @@ static int drv_IMG_flush_PPM(void)
 	    int a, b;
 	    for (a = 0; a < pixel; a++)
 		for (b = 0; b < pixel; b++)
-		    bitbuf[y * xsize + x + a * xsize + b] = drv_IMG_FB[row * DCOLS + col] + 1;
+		    bitbuf[y * xsize + x + a * xsize + b] = drv_IMG_FB[row * DCOLS + col];
 	}
     }
 
@@ -215,25 +218,13 @@ static int drv_IMG_flush_PPM(void)
 	return -1;
     }
 
-    R[0] = 0xff & bg_col >> 16;
-    G[0] = 0xff & bg_col >> 8;
-    B[0] = 0xff & bg_col;
-
-    R[1] = 0xff & hg_col >> 16;
-    G[1] = 0xff & hg_col >> 8;
-    B[1] = 0xff & hg_col;
-
-    R[2] = 0xff & fg_col >> 16;
-    G[2] = 0xff & fg_col >> 8;
-    B[2] = 0xff & fg_col;
-
     for (row = 0; row < ysize; row++) {
 	int c = 0;
 	for (col = 0; col < xsize; col++) {
-	    int i = bitbuf[row * xsize + col];
-	    rowbuf[c++] = R[i];
-	    rowbuf[c++] = G[i];
-	    rowbuf[c++] = B[i];
+	    RGBA p = bitbuf[row * xsize + col];
+	    rowbuf[c++] = p.R;
+	    rowbuf[c++] = p.G;
+	    rowbuf[c++] = p.B;
 	}
 	if (write(fd, rowbuf, c) < 0) {
 	    error("%s: write(%s) failed: %s", Name, tmp, strerror(errno));
@@ -263,27 +254,20 @@ static int drv_IMG_flush_PNG(void)
     FILE *fp;
     int fd;
     gdImagePtr im;
-    int bg, hg, fg;
 
     xsize = 2 * border + (DCOLS / XRES - 1) * cgap + DCOLS * pixel + (DCOLS - 1) * pgap;
     ysize = 2 * border + (DROWS / YRES - 1) * rgap + DROWS * pixel + (DROWS - 1) * pgap;
 
-    im = gdImageCreate(xsize, ysize);
-
-    /* first color = background */
-    bg = gdImageColorAllocate(im, 0xff & bg_col >> 16, 0xff & bg_col >> 8, 0xff & bg_col);
-
-    hg = gdImageColorAllocate(im, 0xff & hg_col >> 16, 0xff & hg_col >> 8, 0xff & hg_col);
-
-
-    fg = gdImageColorAllocate(im, 0xff & fg_col >> 16, 0xff & fg_col >> 8, 0xff & fg_col);
-
+    im = gdImageCreateTrueColor(xsize, ysize);
+    gdImageFilledRectangle(im, 0, 0, xsize, ysize, gdTrueColor(BC.R, BC.G, BC.B));
 
     for (row = 0; row < DROWS; row++) {
 	int y = border + (row / YRES) * rgap + row * (pixel + pgap);
 	for (col = 0; col < DCOLS; col++) {
 	    int x = border + (col / XRES) * cgap + col * (pixel + pgap);
-	    gdImageFilledRectangle(im, x, y, x + pixel - 1, y + pixel - 1, drv_IMG_FB[row * DCOLS + col] ? fg : hg);
+	    RGBA p = drv_IMG_FB[row * DCOLS + col];
+	    int c = gdTrueColor(p.R, p.G, p.B);
+	    gdImageFilledRectangle(im, x, y, x + pixel - 1, y + pixel - 1, c);
 	}
     }
 
@@ -343,11 +327,9 @@ static void drv_IMG_flush(void)
 }
 
 
-static void drv_IMG_timer(void *notused)
+static void drv_IMG_timer( __attribute__ ((unused))
+			  void *notused)
 {
-    /* avoid compiler warning */
-    notused = notused;
-
     if (dirty) {
 	drv_IMG_flush();
 	dirty = 0;
@@ -361,9 +343,10 @@ static void drv_IMG_blit(const int row, const int col, const int height, const i
 
     for (r = row; r < row + height && r < DROWS; r++) {
 	for (c = col; c < col + width && c < DCOLS; c++) {
-	    unsigned char p = drv_generic_graphic_gray(r, c);
-	    if (drv_IMG_FB[r * DCOLS + c] != p) {
-		drv_IMG_FB[r * DCOLS + c] = p;
+	    RGBA p1 = drv_IMG_FB[r * DCOLS + c];
+	    RGBA p2 = drv_generic_graphic_rgb(r, c);
+	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
+		drv_IMG_FB[r * DCOLS + c] = p2;
 		dirty = 1;
 	    }
 	}
@@ -373,6 +356,7 @@ static void drv_IMG_blit(const int row, const int col, const int height, const i
 
 static int drv_IMG_start(const char *section)
 {
+    int i;
     char *s;
 
     if (output == NULL || *output == '\0') {
@@ -436,35 +420,21 @@ static int drv_IMG_start(const char *section)
     if (cfg_number(section, "border", 0, 0, -1, &border) < 0)
 	return -1;
 
-    if (sscanf(s = cfg_get(section, "foreground", "#102000"), "#%x", &fg_col) != 1) {
-	error("%s: bad %s.foreground color '%s' from %s", Name, section, s, cfg_source());
-	free(s);
-	return -1;
+    s = cfg_get(section, "basecolor", "000000ff");
+    if (color2RGBA(s, &BC) < 0) {
+	error("%s: ignoring illegal color '%s'", Name, s);
     }
     free(s);
 
-    if (sscanf(s = cfg_get(section, "halfground", "#70c000"), "#%x", &hg_col) != 1) {
-	error("%s: bad %s.halfground color '%s' from %s", Name, section, s, cfg_source());
-	free(s);
-	return -1;
-    }
-    free(s);
-
-    if (sscanf(s = cfg_get(section, "background", "#80d000"), "#%x", &bg_col) != 1) {
-	error("%s: bad %s.background color '%s' from %s", Name, section, s, cfg_source());
-	free(s);
-	return -1;
-    }
-    free(s);
-
-    drv_IMG_FB = malloc(DCOLS * DROWS);
+    drv_IMG_FB = malloc(DCOLS * DROWS * sizeof(*drv_IMG_FB));
     if (drv_IMG_FB == NULL) {
 	error("%s: framebuffer could not be allocated: malloc() failed", Name);
 	return -1;
     }
 
-    memset(drv_IMG_FB, 0, DCOLS * DROWS * sizeof(*drv_IMG_FB));
-
+    for (i = 0; i < DCOLS * DROWS; i++) {
+	drv_IMG_FB[i] = BC;
+    }
 
     dimx = DCOLS * pixel + (DCOLS - 1) * pgap + (DCOLS / XRES - 1) * cgap;
     dimy = DROWS * pixel + (DROWS - 1) * pgap + (DROWS / YRES - 1) * rgap;
@@ -520,7 +490,7 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.15 $");
+    info("%s: %s", Name, "$Revision: 1.16 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;
