@@ -745,6 +745,7 @@ Widget Test {
     class 'Text'
     expression '1234567890123456789012345678901234567890'
     width 40
+    foreground 'ff0000ff'
 }
 
 Widget Test1 {
@@ -829,6 +830,38 @@ Layout Default {
     Row6 {
 	Col1  'Eth0'
 	Col11 'Eth0Bar'
+    }
+}
+
+Layout TestLayer {
+    Row1 {
+	Col1  'OS'
+    }
+    Row2 {
+	Col1  'CPU'
+	Col10 'RAM'
+    }
+    Row3 {
+	Col1  'Busy'
+	Col10 'Rain'
+	Col11 'BusyBar'
+    }
+    Row4 {
+	Col1 'Load'
+	Col11 'LoadBar'
+    }
+    Row5 {
+	Col1  'Disk'
+	Col11 'DiskBar'
+    }
+    Row6 {
+	Col1  'Eth0'
+	Col11 'Eth0Bar'
+    }
+    Layer 0 {
+	Row3 {
+	    Col1  'Test'
+	}
     }
 }
 
@@ -944,15 +977,16 @@ Layout testMySQL {
 #Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-#Display 'XWindow'
+Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
-Display 'Image'
+#Display 'Image'
 #Display 'Trefon'
 #Display 'LPH7508-serdisplib'
 #Display 'LPH7508'
 
-Layout 'Default'
+#Layout 'Default'
+Layout 'TestLayer'
 #Layout 'L8x2'
 #Layout 'L16x2'
 #Layout 'L20x2'

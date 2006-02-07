@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.19  2006/02/07 05:36:13  reinelt
+ * Layers added to Layout
+ *
  * Revision 1.18  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -136,6 +139,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "plugin.h"
+#include "layout.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_icon.h"
@@ -148,9 +152,6 @@
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
-
-/* number of layers */
-#define LAYERS 4
 
 int DROWS, DCOLS;		/* display size (pixels!) */
 int XRES, YRES;			/* pixels of one char cell */
@@ -257,6 +258,7 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
     /* sanity checks */
     if (layer < 0 || layer >= LAYERS) {
 	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+	return;
     }
 
     len = strlen(txt);
@@ -386,6 +388,7 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
     /* sanity check */
     if (layer < 0 || layer >= LAYERS) {
 	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+	return -1;
     }
 
     /* maybe grow layout framebuffer */
@@ -440,6 +443,7 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
     /* sanity check */
     if (layer < 0 || layer >= LAYERS) {
 	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+	return -1;
     }
 
     /* maybe grow layout framebuffer */

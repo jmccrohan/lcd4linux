@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.19 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: layout.c,v 1.20 2006/02/07 05:36:13 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.20  2006/02/07 05:36:13  reinelt
+ * Layers added to Layout
+ *
  * Revision 1.19  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -130,7 +133,7 @@ int layout_init(const char *layout)
     char *section;
     char *list, *l;
     char *widget;
-    int row, col, num;
+    int lay, row, col, num;
 
     info("initializing layout '%s'", layout);
 
@@ -159,12 +162,27 @@ int layout_init(const char *layout)
 	if ((p = strchr(l, '|')) != NULL)
 	    *p = '\0';
 
-	/* row/col widgets */
+	/* layer/row/col widgets */
+	i = sscanf(l, "layer:%d.row%d.col%d%n", &lay, &row, &col, &n);
+	if (i == 3 && l[n] == '\0') {
+	    if (lay < 0 || lay >= LAYERS) {
+		error ("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS-1);
+	    } else {
+		widget = cfg_get(section, l, NULL);
+		if (widget != NULL && *widget != '\0') {
+		    widget_add(widget, WIDGET_TYPE_RC, lay, row - 1, col - 1);
+		}
+		free(widget);
+	    }
+	}
+
+	/* row/col widgets w/o layer*/
 	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
 	if (i == 2 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
-		widget_add(widget, WIDGET_TYPE_RC, 0, row - 1, col - 1);
+		/* default is layer 1 if outside layer section */
+		widget_add(widget, WIDGET_TYPE_RC, 1, row - 1, col - 1);
 	    }
 	    free(widget);
 	}

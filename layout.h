@@ -1,4 +1,4 @@
-/* $Id: layout.h,v 1.3 2005/01/18 06:30:23 reinelt Exp $
+/* $Id: layout.h,v 1.4 2006/02/07 05:36:13 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.h,v $
+ * Revision 1.4  2006/02/07 05:36:13  reinelt
+ * Layers added to Layout
+ *
  * Revision 1.3  2005/01/18 06:30:23  reinelt
  * added (C) to all copyright statements
  *
@@ -40,6 +43,9 @@
 
 #ifndef _LAYOUT_H_
 #define _LAYOUT_H_
+
+/* number of layers */
+#define LAYERS 4
 
 int layout_init(const char *section);
 

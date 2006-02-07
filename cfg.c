@@ -1,4 +1,4 @@
-/* $Id: cfg.c,v 1.48 2006/01/30 12:53:07 reinelt Exp $^
+/* $Id: cfg.c,v 1.49 2006/02/07 05:36:13 reinelt Exp $^
  *
  * config file stuff
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: cfg.c,v $
+ * Revision 1.49  2006/02/07 05:36:13  reinelt
+ * Layers added to Layout
+ *
  * Revision 1.48  2006/01/30 12:53:07  reinelt
  * replaced strncpy with strcpy where possible
  *
@@ -397,7 +400,7 @@ static char *dequote(char *string)
 
 /* which if a string contains only valid chars */
 /* i.e. start with a char and contains chars and nums */
-static int validchars(const char *string)
+static int validchars(const char *string, const int numstart)
 {
     const char *c;
 
@@ -405,8 +408,11 @@ static int validchars(const char *string)
 	/* first and following chars */
 	if ((*c >= 'A' && *c <= 'Z') || (*c >= 'a' && *c <= 'z') || (*c == '_'))
 	    continue;
+	/* number as first or following char */
+	if ((numstart || c > string) && *c >= '0' && *c <= '9')
+	    continue;
 	/* only following chars */
-	if ((c > string) && ((*c >= '0' && *c <= '9') || (*c == '.') || (*c == '-')))
+	if ((c > string) && ((*c == '.') || (*c == '-')))
 	    continue;
 	return 0;
     }
@@ -460,7 +466,7 @@ int cfg_cmd(const char *arg)
     char *key, *val;
     char *buffer;
 
-    buffer = strdup (arg);
+    buffer = strdup(arg);
     key = strip(buffer, 0);
     for (val = key; *val; val++) {
 	if (*val == '=') {
@@ -469,18 +475,18 @@ int cfg_cmd(const char *arg)
 	}
     }
     if (*key == '\0' || *val == '\0') {
-	free (buffer);
+	free(buffer);
 	return -1;
     }
 
-    if (!validchars(key)) {
-	free (buffer);
+    if (!validchars(key, 0)) {
+	free(buffer);
 	return -1;
     }
 
     cfg_add("", key, val, 1);
 
-    free (buffer);
+    free(buffer);
     return 0;
 }
 
@@ -755,14 +761,14 @@ static int cfg_read(const char *file)
 	}
 
 	/* check key for valid chars */
-	if (!validchars(key)) {
+	if (!validchars(key, 0)) {
 	    error("error in config file '%s' line %d: key '%s' is invalid", file, lineno, key);
 	    error = 1;
 	    break;
 	}
 
 	/* on section-open, check value for valid chars */
-	if (section_open && !validchars(val)) {
+	if (section_open && !validchars(val, 1)) {
 	    error("error in config file '%s' line %d: section '%s' is invalid", file, lineno, val);
 	    error = 1;
 	    break;
