@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.7 2006/01/30 06:25:54 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.8 2006/02/08 04:55:05 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.8  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.7  2006/01/30 06:25:54  reinelt
  * added CVS Revision
  *
@@ -76,10 +79,6 @@
 #include "cfg.h"
 #include "qprintf.h"
 #include "plugin.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 
@@ -294,16 +293,6 @@ static void plugin_rotate(RESULT * result, RESULT * arg1)
 
 
 /****************************************/
-/***        widget callbacks          ***/
-/****************************************/
-
-
-/* using drv_generic_graphic_draw(W) */
-/* using drv_generic_graphic_icon_draw(W) */
-/* using drv_generic_graphic_bar_draw(W) */
-
-
-/****************************************/
 /***        exported functions        ***/
 /****************************************/
 
@@ -319,10 +308,9 @@ int drv_SD_list(void)
 /* initialize driver & display */
 int drv_SD_init(const char *section, const int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.7 $");
+    info("%s: %s", Name, "$Revision: 1.8 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_SD_blit;
@@ -343,21 +331,6 @@ int drv_SD_init(const char *section, const int quiet)
 	    drv_generic_graphic_clear();
 	}
     }
-
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
-
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
 
     /* register plugins */
     AddFunction("LCD::contrast", 1, plugin_contrast);

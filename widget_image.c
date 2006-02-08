@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.2 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_image.c,v 1.3 2006/02/08 04:55:05 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.3  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.2  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -53,11 +56,29 @@
 #include "widget.h"
 #include "widget_image.h"
 
+#ifdef HAVE_GD_GD_H
+#include <gd/gd.h>
+#define WITH_GD
+#else
+#ifdef HAVE_GD_H
+#include <gd.h>
+#define WITH_GD
+#endif
+#endif
+
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
 
-void widget_image_update(void *Self)
+static void widget_image_render (WIDGET_IMAGE *Image)
+{
+    /* try to open file */
+
+    if (Image->file == NULL || Image->file[0] == '\0') {
+    }
+}
+
+static void widget_image_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_IMAGE *Image = W->data;
@@ -67,6 +88,16 @@ void widget_image_update(void *Self)
     if (W->parent == NULL) {
 
 	/* evaluate expressions */
+	if (Image->file) {
+	    free (Image->file);
+	    Image->file = NULL;
+	}
+	if (Image->file_tree != NULL) {
+	    Eval(Image->file_tree, &result);
+	    Image->file = strdup(R2S(&result));
+	    DelResult(&result);
+	}
+
 	Image->update = 0;
 	if (Image->update_tree != NULL) {
 	    Eval(Image->update_tree, &result);
@@ -84,7 +115,12 @@ void widget_image_update(void *Self)
 		Image->visible = 0;
 	    DelResult(&result);
 	}
+	
+	/* render image into bitmap */
+	widget_image_render(Image);
     }
+
+    error ("Fixme: We are at image_update");
 
     /* finally, draw it! */
     if (W->class->draw)
@@ -114,17 +150,28 @@ int widget_image_init(WIDGET * Self)
 	Image = malloc(sizeof(WIDGET_IMAGE));
 	memset(Image, 0, sizeof(WIDGET_IMAGE));
 
+	/* initial size */
+	Image->width = 0;
+	Image->height = 0;
+	Image->bitmap = NULL;
+	Image->file = NULL;
+
 	/* get raw expressions (we evaluate them ourselves) */
+	Image->file_expr = cfg_get_raw(section, "file", NULL);
 	Image->update_expr = cfg_get_raw(section, "update", NULL);
 	Image->visible_expr = cfg_get_raw(section, "visible", NULL);
 
-	/* sanity check */
+	/* sanity checks */
+	if (Image->file_expr == NULL || *Image->file_expr == '\0') {
+	    error("Warning: Image %s has no file", Self->name);
+	}
 	if (Image->update_expr == NULL || *Image->update_expr == '\0') {
 	    error("Image %s has no update, using '100'", Self->name);
 	    Image->update_expr = "100";
 	}
 
 	/* compile'em */
+	Compile(Image->file_expr, &Image->file_tree);
 	Compile(Image->update_expr, &Image->update_tree);
 	Compile(Image->visible_expr, &Image->visible_tree);
 
@@ -152,10 +199,13 @@ int widget_image_quit(WIDGET * Self)
 	if (Self->parent == NULL) {
 	    if (Self->data) {
 		WIDGET_IMAGE *Image = Self->data;
-		DelTree(Image->update_tree);
-		DelTree(Image->visible_tree);
+		if (Image->bitmap)
+		    free(Image->bitmap);
 		if (Image->file)
 		    free(Image->file);
+		DelTree(Image->file_tree);
+		DelTree(Image->update_tree);
+		DelTree(Image->visible_tree);
 		free(Self->data);
 		Self->data = NULL;
 	    }

@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.8 2006/01/30 06:25:53 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.9 2006/02/08 04:55:04 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.9  2006/02/08 04:55:04  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.8  2006/01/30 06:25:53  reinelt
  * added CVS Revision
  *
@@ -73,10 +76,6 @@
 #include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 #include "drv_generic_gpio.h"
@@ -466,17 +465,6 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 
 
 /****************************************/
-/***        widget callbacks          ***/
-/****************************************/
-
-
-/* using drv_generic_graphic_draw(W) */
-/* using drv_generic_graphic_icon_draw(W) */
-/* using drv_generic_graphic_bar_draw(W) */
-/* using drv_generic_gpio_draw(W) */
-
-
-/****************************************/
 /***        exported functions        ***/
 /****************************************/
 
@@ -492,10 +480,9 @@ int drv_L7_list(void)
 /* initialize driver & display */
 int drv_L7_init(const char *section, const int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.8 $");
+    info("%s: %s", Name, "$Revision: 1.9 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_L7_blit;
@@ -521,21 +508,6 @@ int drv_L7_init(const char *section, const int quiet)
 	    drv_generic_graphic_clear();
 	}
     }
-
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
-
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
 
     /* register plugins */
     AddFunction("LCD::contrast", 1, plugin_contrast);

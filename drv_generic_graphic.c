@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.20  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.19  2006/02/07 05:36:13  reinelt
  * Layers added to Layout
  *
@@ -144,6 +147,7 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_image.h"
 #include "rgb.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
@@ -518,6 +522,51 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
 
 /****************************************/
+/*** generic image handling           ***/
+/****************************************/
+
+int drv_generic_graphic_image_draw(WIDGET * W)
+{
+    WIDGET_IMAGE *Image = W->data;
+    int layer, row, col, width, height;
+    int x, y;
+
+    layer = W->layer;
+    row = W->row;
+    col = W->col;
+    width = Image->width;
+    height = Image->height;
+    
+    /* sanity check */
+    if (layer < 0 || layer >= LAYERS) {
+	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
+	return -1;
+    }
+
+    /* maybe grow layout framebuffer */
+    drv_generic_graphic_resizeFB(row + height, col + width);
+
+    /* render image */
+    for (y = 0; y < height; y++) {
+	for (x = 0; x < width; x++) {
+	    int i = (row + y) * LCOLS + col + x;
+	    if (Image->visible && Image->bitmap) {
+		drv_generic_graphic_FB[layer][i] = Image->bitmap[y*width+x];
+	    } else {
+		drv_generic_graphic_FB[layer][i] = BG_COL;
+	    }
+	}
+    }
+    
+    /* flush area */
+    drv_generic_graphic_blit(row, col, height, width);
+
+    return 0;
+
+}
+
+
+/****************************************/
 /*** generic init/quit                ***/
 /****************************************/
 
@@ -525,6 +574,7 @@ int drv_generic_graphic_init(const char *section, const char *driver)
 {
     int l;
     char *color;
+    WIDGET_CLASS wc;
 
     Section = (char *) section;
     Driver = (char *) driver;
@@ -567,6 +617,26 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     }
     if (color)
 	free(color);
+
+    /* register text widget */
+    wc = Widget_Text;
+    wc.draw = drv_generic_graphic_draw;
+    widget_register(&wc);
+
+    /* register icon widget */
+    wc = Widget_Icon;
+    wc.draw = drv_generic_graphic_icon_draw;
+    widget_register(&wc);
+
+    /* register bar widget */
+    wc = Widget_Bar;
+    wc.draw = drv_generic_graphic_bar_draw;
+    widget_register(&wc);
+
+    /* register image widget */
+    wc = Widget_Image;
+    wc.draw = drv_generic_graphic_image_draw;
+    widget_register(&wc);
 
     return 0;
 }

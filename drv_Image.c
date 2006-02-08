@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.16 2006/02/06 06:29:30 reinelt Exp $
+/* $Id: drv_Image.c,v 1.17 2006/02/08 04:55:04 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.17  2006/02/08 04:55:04  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.16  2006/02/06 06:29:30  reinelt
  * Image driver uses RGBA
  *
@@ -124,10 +127,6 @@
 #include "timer.h"
 #include "qprintf.h"
 #include "plugin.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 
@@ -461,16 +460,6 @@ static int drv_IMG_start(const char *section)
 
 
 /****************************************/
-/***        widget callbacks          ***/
-/****************************************/
-
-
-/* using drv_generic_graphic_draw(W) */
-/* using drv_generic_graphic_icon_draw(W) */
-/* using drv_generic_graphic_bar_draw(W) */
-
-
-/****************************************/
 /***        exported functions        ***/
 /****************************************/
 
@@ -487,10 +476,9 @@ int drv_IMG_list(void)
 int drv_IMG_init(const char *section, const __attribute__ ((unused))
 		 int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.16 $");
+    info("%s: %s", Name, "$Revision: 1.17 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;
@@ -502,21 +490,6 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
-
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
-
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
 
     /* register plugins */
     /* none at the moment... */

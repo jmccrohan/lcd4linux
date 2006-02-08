@@ -806,6 +806,12 @@ Widget GPO_Test255 {
     update 100
 }
 
+Widget ImageTest {
+    class 'Image'
+    update 1000
+    visible 1
+}
+
 Layout Default {
     Row1 {
 	Col1  'OS'
@@ -858,10 +864,8 @@ Layout TestLayer {
 	Col1  'Eth0'
 	Col11 'Eth0Bar'
     }
-    Layer 0 {
-	Row3 {
-	    Col1  'Test'
-	}
+    Layer 2 {
+	X0.Y0 'ImageTest'
     }
 }
 
@@ -976,8 +980,8 @@ Layout testMySQL {
 #Display 'SimpleLCD'
 #Display 'BA63'
 #Display 'CT20x4'
-#Display 'T6963-240x64'
-Display 'XWindow'
+Display 'T6963-240x64'
+#Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'

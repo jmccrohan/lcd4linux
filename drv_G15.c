@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.4 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_G15.c,v 1.5 2006/02/08 04:55:03 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.5  2006/02/08 04:55:03  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.4  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -60,10 +63,6 @@
 #include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 
@@ -273,17 +272,6 @@ static int drv_G15_start(const char *section)
 
 
 /****************************************/
-/***        widget callbacks          ***/
-/****************************************/
-
-
-/* using drv_generic_text_draw(W) */
-/* using drv_generic_text_icon_draw(W) */
-/* using drv_generic_text_bar_draw(W) */
-/* using drv_generic_gpio_draw(W) */
-
-
-/****************************************/
 /***        exported functions        ***/
 /****************************************/
 
@@ -299,10 +287,9 @@ int drv_G15_list(void)
 /* initialize driver & display */
 int drv_G15_init(const char *section, const int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.4 $");
+    info("%s: %s", Name, "$Revision: 1.5 $");
 
     DEBUG("entered");
 
@@ -327,20 +314,9 @@ int drv_G15_init(const char *section, const int quiet)
 	}
     }
 
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
+    /* register plugins */
+    /* none at the moment... */
 
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
 
     DEBUG("left");
 

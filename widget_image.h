@@ -1,4 +1,4 @@
-/* $Id: widget_image.h,v 1.1 2006/01/22 09:16:11 reinelt Exp $
+/* $Id: widget_image.h,v 1.2 2006/02/08 04:55:05 reinelt Exp $
  *
  * image widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_image.h,v $
+ * Revision 1.2  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.1  2006/01/22 09:16:11  reinelt
  * Image Widget framework added
  *
@@ -32,14 +35,20 @@
 #ifndef _WIDGET_IMAGE_H_
 #define _WIDGET_IMAGE_H_
 
+#include "rgb.h"
+
 typedef struct WIDGET_IMAGE {
+    RGBA *bitmap;               /* image bitmap */
+    int width, height;          /* size of the image */
+    char *file_expr;		/* expression for image filename */
+    void *file_tree;		/* pre-compiled expression for image filename */
+    char *file;                 /* evaluated filename */
     char *update_expr;		/* expression for update interval */
     void *update_tree;		/* pre-compiled expression for update interval */
     int update;			/* update interval (msec) */
     char *visible_expr;		/* expression for visibility */
     void *visible_tree;		/* pre-compiled expression for visibility */
     int visible;		/* icon visible? */
-    char *file;	                /* file containing the image */
 } WIDGET_IMAGE;
 
 extern WIDGET_CLASS Widget_Image;

@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.5 2006/01/30 06:25:53 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.6 2006/02/08 04:55:05 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.6  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.5  2006/01/30 06:25:53  reinelt
  * added CVS Revision
  *
@@ -436,7 +439,7 @@ int drv_Sample_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
@@ -513,7 +516,6 @@ int drv_Sample_init(const char *section, const int quiet)
 /* use this function for a graphic display */
 int drv_Sample_init2(const char *section, const int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
     /* real worker functions */
@@ -539,24 +541,8 @@ int drv_Sample_init2(const char *section, const int quiet)
 	}
     }
 
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
-
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
-
     /* register plugins */
     AddFunction("LCD::contrast", 1, plugin_contrast);
-
 
     return 0;
 }

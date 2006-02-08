@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.18 2006/01/30 06:25:54 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.19 2006/02/08 04:55:05 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.19  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.18  2006/01/30 06:25:54  reinelt
  * added CVS Revision
  *
@@ -119,10 +122,6 @@
 #include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 #include "drv_generic_graphic.h"
 #include "drv_generic_parport.h"
@@ -568,16 +567,6 @@ static int drv_T6_start(const char *section)
 
 
 /****************************************/
-/***        widget callbacks          ***/
-/****************************************/
-
-
-/* using drv_generic_graphic_draw(W) */
-/* using drv_generic_graphic_icon_draw(W) */
-/* using drv_generic_graphic_bar_draw(W) */
-
-
-/****************************************/
 /***        exported functions        ***/
 /****************************************/
 
@@ -597,10 +586,9 @@ int drv_T6_list(void)
 /* initialize driver & display */
 int drv_T6_init(const char *section, const int quiet)
 {
-    WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.18 $");
+    info("%s: %s", Name, "$Revision: 1.19 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;
@@ -621,21 +609,6 @@ int drv_T6_init(const char *section, const int quiet)
 	    drv_generic_graphic_clear();
 	}
     }
-
-    /* register text widget */
-    wc = Widget_Text;
-    wc.draw = drv_generic_graphic_draw;
-    widget_register(&wc);
-
-    /* register icon widget */
-    wc = Widget_Icon;
-    wc.draw = drv_generic_graphic_icon_draw;
-    widget_register(&wc);
-
-    /* register bar widget */
-    wc = Widget_Bar;
-    wc.draw = drv_generic_graphic_bar_draw;
-    widget_register(&wc);
 
     /* register plugins */
     /* none at the moment... */

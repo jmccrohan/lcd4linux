@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.20 2006/02/07 05:36:13 reinelt Exp $
+/* $Id: layout.c,v 1.21 2006/02/08 04:55:05 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.21  2006/02/08 04:55:05  reinelt
+ * moved widget registration to drv_generic_graphic
+ *
  * Revision 1.20  2006/02/07 05:36:13  reinelt
  * Layers added to Layout
  *
@@ -161,6 +164,20 @@ int layout_init(const char *layout)
 	    l++;
 	if ((p = strchr(l, '|')) != NULL)
 	    *p = '\0';
+
+	/* layer/x/y widgets */
+	i = sscanf(l, "layer:%d.x%d.y%d%n", &lay, &row, &col, &n);
+	if (i == 3 && l[n] == '\0') {
+	    if (lay < 0 || lay >= LAYERS) {
+		error ("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS-1);
+	    } else {
+		widget = cfg_get(section, l, NULL);
+		if (widget != NULL && *widget != '\0') {
+		    widget_add(widget, WIDGET_TYPE_XY, lay, row - 1, col - 1);
+		}
+		free(widget);
+	    }
+	}
 
 	/* layer/row/col widgets */
 	i = sscanf(l, "layer:%d.row%d.col%d%n", &lay, &row, &col, &n);
