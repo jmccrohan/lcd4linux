@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.4 2006/01/30 20:21:51 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.5 2006/02/09 20:32:49 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.5  2006/02/09 20:32:49  harbaum
+ * LCD2USB bus testing, version verification ...
+ *
  * Revision 1.4  2006/01/30 20:21:51  harbaum
  * LCD2USB: Added support for displays with two controllers
  *
@@ -95,13 +98,14 @@
 
 /* target is value to get */
 #define LCD_GET_FWVER      (LCD_GET | (0<<3))
-#define LCD_GET_KEYS       (LCD_GET | (1<<3))
-#define LCD_GET_RESERVED0  (LCD_GET | (2<<3))
+#define LCD_GET_BUTTONS    (LCD_GET | (1<<3))
+#define LCD_GET_CTRL       (LCD_GET | (2<<3))
 #define LCD_GET_RESERVED1  (LCD_GET | (3<<3))
 
 static char Name[] = "LCD2USB";
 
 static usb_dev_handle *lcd;
+static int controllers = 0;
 
 extern int usb_debug;
 extern int got_signal;
@@ -172,6 +176,110 @@ static int drv_L2U_send(int request, int value, int index)
     return 0;
 }
 
+/* send a number of 16 bit words to the lcd2usb interface */
+/* and verify that they are correctly returned by the echo */
+/* command. This may be used to check the reliability of */
+/* the usb interfacing */
+#define ECHO_NUM 100
+
+int drv_L2U_echo(void)
+{
+    int i, nBytes, errors = 0;
+    unsigned short val, ret;
+
+    for (i = 0; i < ECHO_NUM; i++) {
+	val = rand() & 0xffff;
+
+	nBytes = usb_control_msg(lcd,
+				 USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN,
+				 LCD_ECHO, val, 0, (char *) &ret, sizeof(ret), 1000);
+
+	if (nBytes < 0) {
+	    error("%s: USB request failed!", Name);
+	    return -1;
+	}
+
+	if (val != ret)
+	    errors++;
+    }
+
+    if (errors) {
+	error("%s: ERROR, %d out of %d echo transfers failed!", Name, errors, ECHO_NUM);
+	return -1;
+    } else
+	info("%s: echo test successful", Name);
+
+    return 0;
+}
+
+/* get a value from the lcd2usb interface */
+static int drv_L2U_get(unsigned char cmd)
+{
+    unsigned char buffer[2];
+    int nBytes;
+
+    /* send control request and accept return value */
+    nBytes = usb_control_msg(lcd,
+			     USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN,
+			     cmd, 0, 0, (char *) buffer, sizeof(buffer), 1000);
+
+    if (nBytes < 0) {
+	error("%s: USB request failed!", Name);
+	return -1;
+    }
+
+    return buffer[0] + 256 * buffer[1];
+}
+
+/* get lcd2usb interface firmware version */
+static void drv_L2U_get_version(void)
+{
+    int ver = drv_L2U_get(LCD_GET_FWVER);
+
+    if (ver != -1)
+	info("%s: firmware version %d.%d", Name, ver & 0xff, ver >> 8);
+    else
+	error("%s: unable to read firmware version", Name);
+}
+
+/* get the bit mask of installed LCD controllers (0 = no */
+/* lcd found, 1 = single controller display, 3 = dual */
+/* controller display */
+static void drv_L2U_get_controllers(void)
+{
+    controllers = drv_L2U_get(LCD_GET_CTRL);
+
+    if (controllers != -1) {
+	if (controllers)
+	    info("%s: installed controllers: %s%s", Name,
+		 (controllers & 1) ? "CTRL0" : "", (controllers & 2) ? " CTRL1" : "");
+	else
+	    error("%s: no controllers found", Name);
+    } else {
+	error("%s: unable to read installed controllers", Name);
+	controllers = 0;	// don't access any controllers 
+    }
+
+    // convert into controller map matching our protocol
+    controllers = ((controllers & 1) ? LCD_CTRL_0 : 0) | ((controllers & 2) ? LCD_CTRL_1 : 0);
+}
+
+/* get state of the two optional buttons */
+static unsigned long drv_L2U_get_buttons(void)
+{
+    int buttons = drv_L2U_get(LCD_GET_BUTTONS);
+
+    if (buttons != -1)
+	info("%s: button state 0:%s 1:%s", Name, (buttons & 1) ? "on" : "off", (buttons & 2) ? "on" : "off");
+    else {
+	error("%s: unable to read button state", Name);
+	buttons = 0;
+    }
+
+    return buttons;
+}
+
+
 /* to increase performance, a little buffer is being used to */
 /* collect command bytes of the same type before transmitting them */
 #define BUFFER_MAX_CMD 4	/* current protocol supports up to 4 bytes */
@@ -206,8 +314,10 @@ static void drv_L2U_flush(void)
     value = buffer[0] | (buffer[1] << 8);
     index = buffer[2] | (buffer[3] << 8);
 
-    /* send current buffer contents */
-    drv_L2U_send(request, value, index);
+    if (controllers) {
+	/* send current buffer contents */
+	drv_L2U_send(request, value, index);
+    }
 
     /* buffer is now free again */
     buffer_current_type = -1;
@@ -231,7 +341,7 @@ static void drv_L2U_enqueue(int command_type, int value)
 
 static void drv_L2U_command(const unsigned char ctrl, const unsigned char cmd)
 {
-    drv_L2U_enqueue(LCD_CMD | ctrl, cmd);
+    drv_L2U_enqueue(LCD_CMD | (ctrl & controllers), cmd);
 }
 
 
@@ -263,7 +373,7 @@ static void drv_L2U_write(int row, const int col, const char *data, int len)
     drv_L2U_command(ctrl, 0x80 | pos);
 
     while (len--) {
-	drv_L2U_enqueue(LCD_DATA | ctrl, *data++);
+	drv_L2U_enqueue(LCD_DATA | (ctrl & controllers), *data++);
     }
 
     drv_L2U_flush();
@@ -276,7 +386,7 @@ static void drv_L2U_defchar(const int ascii, const unsigned char *matrix)
     drv_L2U_command(LCD_BOTH, 0x40 | 8 * ascii);
 
     for (i = 0; i < 8; i++) {
-	drv_L2U_enqueue(LCD_DATA | LCD_BOTH, *matrix++ & 0x1f);
+	drv_L2U_enqueue(LCD_DATA | (LCD_BOTH & controllers), *matrix++ & 0x1f);
     }
 
     drv_L2U_flush();
@@ -331,13 +441,18 @@ static int drv_L2U_start(const char *section, const int quiet)
 	error("%s: could not find a LCD2USB USB LCD", Name);
 	return -1;
     }
-#if 0				// already done by driver
-    /* initialize display */
-    drv_L2U_command(LCD_BOTH, 0x29);	/* 8 Bit mode, 1/16 duty cycle, 5x8 fnt */
-    drv_L2U_command(LCD_BOTH, 0x08);	/* Display off, cursor off, blink off */
-    drv_L2U_command(LCD_BOTH, 0x0c);	/* Display on, cursor off, blink off */
-    drv_L2U_command(LCD_BOTH, 0x06);	/* curser moves to right, no shift */
-#endif
+
+    /* test interface reliability */
+    drv_L2U_echo();
+
+    /* get some infos from the interface */
+    drv_L2U_get_version();
+    drv_L2U_get_controllers();
+    if (!controllers)
+	return -1;
+
+    /* call get_buttons to make compiler happy ... */
+    drv_L2U_get_buttons();
 
     if (cfg_number(section, "Contrast", 0, 0, 255, &contrast) > 0) {
 	drv_L2U_contrast(contrast);
@@ -414,7 +529,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.4 $");
+    info("%s: %s", Name, "$Revision: 1.5 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
@@ -426,7 +541,6 @@ int drv_L2U_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_L2U_write;
     drv_generic_text_real_defchar = drv_L2U_defchar;
-
 
     /* start display */
     if ((ret = drv_L2U_start(section, quiet)) != 0)
