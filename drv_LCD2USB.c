@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.5 2006/02/09 20:32:49 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.6 2006/02/12 14:32:24 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.6  2006/02/12 14:32:24  harbaum
+ * Configurable bus/device id
+ *
  * Revision 1.5  2006/02/09 20:32:49  harbaum
  * LCD2USB bus testing, version verification ...
  *
@@ -115,14 +118,20 @@ extern int got_signal;
 /***  hardware dependant functions    ***/
 /****************************************/
 
-static int drv_L2U_open(void)
+static int drv_L2U_open(char *bus_id, char *device_id)
 {
     struct usb_bus *busses, *bus;
     struct usb_device *dev;
 
     lcd = NULL;
 
-    info("%s: scanning USB for LCD2USB LCD...", Name);
+    info("%s: scanning USB for LCD2USB interface ...", Name);
+
+    if(bus_id != NULL)
+        info("%s: scanning for bus id: %s", Name, bus_id);
+
+    if(device_id != NULL)
+        info("%s: scanning for device id: %s", Name, device_id);
 
     usb_debug = 0;
 
@@ -132,15 +141,23 @@ static int drv_L2U_open(void)
     busses = usb_get_busses();
 
     for (bus = busses; bus; bus = bus->next) {
-	for (dev = bus->devices; dev; dev = dev->next) {
-	    if ((dev->descriptor.idVendor == LCD_USB_VENDOR) && (dev->descriptor.idProduct == LCD_USB_DEVICE)) {
-		info("%s: found LCD2USB interface on bus %s device %s", Name, bus->dirname, dev->filename);
-		lcd = usb_open(dev);
-		if (usb_claim_interface(lcd, 0) < 0) {
-		    error("%s: usb_claim_interface() failed!", Name);
-		    return -1;
+        /* search this bus if no bus id was given or if this is the given bus id */
+        if(!bus_id || (bus_id && !strcasecmp(bus->dirname, bus_id))) {
+
+	    for (dev = bus->devices; dev; dev = dev->next) {
+	        /* search this device if no device id was given or if this is the given device id */
+	        if(!device_id || (device_id && !strcasecmp(dev->filename, device_id))) {
+
+		    if ((dev->descriptor.idVendor == LCD_USB_VENDOR) && (dev->descriptor.idProduct == LCD_USB_DEVICE)) {
+		        info("%s: found LCD2USB interface on bus %s device %s", Name, bus->dirname, dev->filename);
+			lcd = usb_open(dev);
+			if (usb_claim_interface(lcd, 0) < 0) {
+			    error("%s: usb_claim_interface() failed!", Name);
+			    return -1;
+			}
+			return 0;
+		    }
 		}
-		return 0;
 	    }
 	}
     }
@@ -421,6 +438,7 @@ static int drv_L2U_start(const char *section, const int quiet)
 {
     int contrast, brightness;
     int rows = -1, cols = -1;
+    char *device_id = NULL, *bus_id = NULL;
     char *s;
 
     s = cfg_get(section, "Size", NULL);
@@ -437,7 +455,13 @@ static int drv_L2U_start(const char *section, const int quiet)
     DROWS = rows;
     DCOLS = cols;
 
-    if (drv_L2U_open() < 0) {
+    /* bus id and device id are strings and not just intergers, since */
+    /* the windows port of libusb treats them as strings. And this way */
+    /* we keep windows compatibility ... just in case ... */
+    bus_id = cfg_get(section, "Bus", NULL);
+    device_id = cfg_get(section, "Device", NULL);
+
+    if (drv_L2U_open(bus_id, device_id) < 0) {
 	error("%s: could not find a LCD2USB USB LCD", Name);
 	return -1;
     }
@@ -529,7 +553,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
