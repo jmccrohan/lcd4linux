@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.3 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: widget_image.c,v 1.4 2006/02/19 07:20:54 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.4  2006/02/19 07:20:54  reinelt
+ * image support nearly finished
+ *
  * Revision 1.3  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -47,6 +50,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -55,6 +59,7 @@
 #include "timer.h"
 #include "widget.h"
 #include "widget_image.h"
+#include "rgb.h"
 
 #ifdef HAVE_GD_GD_H
 #include <gd/gd.h>
@@ -70,13 +75,85 @@
 #include <dmalloc.h>
 #endif
 
-static void widget_image_render (WIDGET_IMAGE *Image)
-{
-    /* try to open file */
 
+#ifdef WITH_GD
+static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
+{
+    int x, y;
+    FILE *fd;
+    gdImagePtr gdImage = NULL;
+
+    /* clear bitmap */
+    if (Image->bitmap) {
+	int i;
+	for (i = 0; i < Image->height * Image->width; i++) {
+	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    Image->bitmap[i] = empty;
+	}
+    }
+    
     if (Image->file == NULL || Image->file[0] == '\0') {
+	error("Warning: Image %s has no file", Name);
+	return;
+    }
+    
+    fd = fopen(Image->file, "rb");
+    if (fd == NULL) {
+	error("Warning: Image %s: fopen(%s) failed: %s", Name, Image->file, strerror(errno));
+	return;
+    }
+
+    gdImage = gdImageCreateFromPng(fd);
+    fclose(fd);
+
+    if (fd == NULL) {
+	error("Warning: Image %s: CreateFromPng(%s) failed!", Name, Image->file);
+	return;
+    }
+
+    /* maybe resize bitmap */
+    if (gdImage->sx > Image->width) {
+	Image->width = gdImage->sx;
+	if (Image->bitmap)
+	    free(Image->bitmap);
+	Image->bitmap = NULL;
+    }
+    if (gdImage->sy > Image->height) {
+	Image->height = gdImage->sy;
+	if (Image->bitmap)
+	    free(Image->bitmap);
+	Image->bitmap = NULL;
+    }
+    if (Image->bitmap == NULL && Image->width > 0 && Image->height > 0) {
+	int i = Image->width * Image->height * sizeof(Image->bitmap[0]);
+	Image->bitmap = malloc(i);
+	if (Image->bitmap == NULL) {
+	    error("Warning: Image %s: malloc(%d) failed!", Name, i, strerror(errno));
+	    return;
+	}
+	for (i = 0; i < Image->height * Image->width; i++) {
+	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    Image->bitmap[i] = empty;
+	}
+    }
+
+    /* finally really render it */
+    for (x=0; x < gdImage->sx; x++) {
+	for (y=0; y < gdImage->sy; y++) {
+	    int p = gdImageGetTrueColorPixel (gdImage, x, y);
+	    int a = gdTrueColorGetAlpha(p);
+	    int i = y*Image->width+x;
+	    Image->bitmap[i].R = gdTrueColorGetRed(p); 
+	    Image->bitmap[i].G = gdTrueColorGetGreen (p);
+	    Image->bitmap[i].B = gdTrueColorGetBlue(p);
+	    /* GD's alpha is 0 (opaque) to 127 (tranparanet) */
+	    /* our alpha is 0 (transparent) to 255 (opaque) */
+	    Image->bitmap[i].A = (a == 127) ? 0 : 255-2*a;
+	}
     }
 }
+#endif
+
 
 static void widget_image_update(void *Self)
 {
@@ -89,7 +166,7 @@ static void widget_image_update(void *Self)
 
 	/* evaluate expressions */
 	if (Image->file) {
-	    free (Image->file);
+	    free(Image->file);
 	    Image->file = NULL;
 	}
 	if (Image->file_tree != NULL) {
@@ -115,12 +192,13 @@ static void widget_image_update(void *Self)
 		Image->visible = 0;
 	    DelResult(&result);
 	}
-	
-	/* render image into bitmap */
-	widget_image_render(Image);
-    }
 
-    error ("Fixme: We are at image_update");
+#ifdef WITH_GD
+	/* render image into bitmap */
+	widget_image_render(W->name, Image);
+#endif
+
+    }
 
     /* finally, draw it! */
     if (W->class->draw)

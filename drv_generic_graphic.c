@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.21  2006/02/19 07:20:53  reinelt
+ * image support nearly finished
+ *
  * Revision 1.20  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -536,11 +539,16 @@ int drv_generic_graphic_image_draw(WIDGET * W)
     col = W->col;
     width = Image->width;
     height = Image->height;
-    
+
     /* sanity check */
     if (layer < 0 || layer >= LAYERS) {
 	error("%s: layer %d out of bounds (0..%d)", Driver, layer, LAYERS - 1);
 	return -1;
+    }
+
+    /* if no size or no image at all, do nothing */
+    if (width <= 0 || height <= 0 || Image->bitmap == NULL) {
+	return 0;
     }
 
     /* maybe grow layout framebuffer */
@@ -550,8 +558,8 @@ int drv_generic_graphic_image_draw(WIDGET * W)
     for (y = 0; y < height; y++) {
 	for (x = 0; x < width; x++) {
 	    int i = (row + y) * LCOLS + col + x;
-	    if (Image->visible && Image->bitmap) {
-		drv_generic_graphic_FB[layer][i] = Image->bitmap[y*width+x];
+	    if (Image->visible) {
+		drv_generic_graphic_FB[layer][i] = Image->bitmap[y * width + x];
 	    } else {
 		drv_generic_graphic_FB[layer][i] = BG_COL;
 	    }

@@ -808,6 +808,7 @@ Widget GPO_Test255 {
 
 Widget ImageTest {
     class 'Image'
+    file '/home/michi/lcd4linux.png'
     update 1000
     visible 1
 }
@@ -865,7 +866,7 @@ Layout TestLayer {
 	Col11 'Eth0Bar'
     }
     Layer 2 {
-	X0.Y0 'ImageTest'
+	X1.Y1 'ImageTest'
     }
 }
 
@@ -980,8 +981,8 @@ Layout testMySQL {
 #Display 'SimpleLCD'
 #Display 'BA63'
 #Display 'CT20x4'
-Display 'T6963-240x64'
-#Display 'XWindow'
+#Display 'T6963-240x64'
+Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
