@@ -6793,6 +6793,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
+         PLUGIN_FILE="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_IMON="yes"
          PLUGIN_ISDN="yes"
@@ -6826,6 +6827,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       exec)
          PLUGIN_EXEC=$val
+         ;;
+      file)
+         PLUGIN_FILE=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -7084,6 +7088,14 @@ if test "$PLUGIN_EXEC" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_EXEC 1
+_ACEOF
+
+fi
+if test "$PLUGIN_FILE" = "yes"; then
+   PLUGINS="$PLUGINS plugin_file.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_FILE 1
 _ACEOF
 
 fi

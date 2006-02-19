@@ -93,6 +93,7 @@ plugin_cpuinfo.c              \
 plugin_diskstats.c            \
 plugin_dvb.c                  \
 plugin_exec.c                 \
+plugin_file.c                 \
 plugin_i2c_sensors.c          \
 plugin_imon.c                 \
 plugin_isdn.c                 \

@@ -54,6 +54,7 @@ for plugin in $plugins; do
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
+         PLUGIN_FILE="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_IMON="yes"
          PLUGIN_ISDN="yes"
@@ -87,6 +88,9 @@ for plugin in $plugins; do
          ;;
       exec)
          PLUGIN_EXEC=$val
+         ;;
+      file)
+         PLUGIN_FILE=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -173,6 +177,10 @@ fi
 if test "$PLUGIN_EXEC" = "yes"; then
    PLUGINS="$PLUGINS plugin_exec.o"
    AC_DEFINE(PLUGIN_EXEC,1,[exec plugin])
+fi
+if test "$PLUGIN_FILE" = "yes"; then
+   PLUGINS="$PLUGINS plugin_file.o"
+   AC_DEFINE(PLUGIN_FILE,1,[file plugin])
 fi
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"

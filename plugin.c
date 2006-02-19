@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.39 2005/11/04 04:53:10 reinelt Exp $
+/* $Id: plugin.c,v 1.40 2006/02/19 15:42:19 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.40  2006/02/19 15:42:19  reinelt
+ * file plugin from Chris Maj
+ *
  * Revision 1.39  2005/11/04 04:53:10  reinelt
  * sample plugin activated
  *
@@ -227,6 +230,8 @@ int plugin_init_dvb(void);
 void plugin_exit_dvb(void);
 int plugin_init_exec(void);
 void plugin_exit_exec(void);
+int plugin_init_file(void);
+void plugin_exit_file(void);
 int plugin_init_i2c_sensors(void);
 void plugin_exit_i2c_sensors(void);
 int plugin_init_imon(void);
@@ -287,6 +292,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_init_exec();
+#endif
+#ifdef PLUGIN_FILE
+    plugin_init_file();
 #endif
 #ifdef PLUGIN_I2C_SENSORS
     plugin_init_i2c_sensors();
@@ -363,6 +371,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_exit_exec();
+#endif
+#ifdef PLUGIN_FILE
+    plugin_exit_file();
 #endif
 #ifdef PLUGIN_I2C_SENSORS
     plugin_exit_i2c_sensors();

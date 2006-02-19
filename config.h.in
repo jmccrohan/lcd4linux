@@ -266,6 +266,9 @@
 /* exec plugin */
 #undef PLUGIN_EXEC
 
+/* file plugin */
+#undef PLUGIN_FILE
+
 /* i2c sensors plugin */
 #undef PLUGIN_I2C_SENSORS
 
