@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.38 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.39 2006/02/19 15:37:38 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.39  2006/02/19 15:37:38  reinelt
+ * CF635 GPO patch from cmaj
+ *
  * Revision 1.38  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -252,7 +255,7 @@ static MODEL Models[] = {
     {632, "632", 2, 16, 0, 0, 1, 0},
     {633, "633", 2, 16, 4, 4, 2, 18},
     {634, "634", 4, 20, 0, 0, 1, 0},
-    {635, "635", 4, 20, 0, 0, 3, 22},
+    {635, "635", 4, 20, 4, 12, 3, 22},
     {636, "636", 2, 16, 0, 0, 1, 0},
     {-1, "Unknown", -1, -1, 0, 0, 0, 0}
 };
@@ -674,7 +677,8 @@ static int drv_CF_GPI(const int num)
 
 static int drv_CF_GPO(const int num, const int val)
 {
-    static unsigned char PWM[4] = { 0, };
+    static unsigned char PWM2[4] = { 0, 0, 0, 0};
+    static unsigned char PWM3[2];
 
     int v = val;
 
@@ -683,11 +687,15 @@ static int drv_CF_GPO(const int num, const int val)
     if (v > 100)
 	v = 100;
 
-    PWM[num] = v;
-
     switch (Protocol) {
     case 2:
-	drv_CF_send(17, 4, PWM);
+	PWM2[num] = v;
+	drv_CF_send(17, 4, PWM2);
+	break;
+    case 3:
+	PWM3[0] = num + 1;
+	PWM3[1] = v;
+	drv_CF_send(34, 2, PWM3);
 	break;
     }
 
@@ -1044,7 +1052,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.38 $");
+    info("%s: %s", Name, "$Revision: 1.39 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
