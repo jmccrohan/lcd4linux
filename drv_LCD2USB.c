@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.6 2006/02/12 14:32:24 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.7 2006/02/21 21:43:03 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.7  2006/02/21 21:43:03  harbaum
+ * Keypad support for LCD2USB
+ *
  * Revision 1.6  2006/02/12 14:32:24  harbaum
  * Configurable bus/device id
  *
@@ -69,18 +72,24 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "timer.h"
 #include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_keypad.h"
 
 /* vid/pid donated by FTDI */
 #define LCD_USB_VENDOR 0x0403
 #define LCD_USB_DEVICE 0xC630
+
+/* number of buttons on display */
+#define L2U_BUTTONS        (2)
 
 #define LCD_ECHO           (0<<5)
 #define LCD_CMD            (1<<5)
@@ -127,11 +136,11 @@ static int drv_L2U_open(char *bus_id, char *device_id)
 
     info("%s: scanning USB for LCD2USB interface ...", Name);
 
-    if(bus_id != NULL)
-        info("%s: scanning for bus id: %s", Name, bus_id);
+    if (bus_id != NULL)
+	info("%s: scanning for bus id: %s", Name, bus_id);
 
-    if(device_id != NULL)
-        info("%s: scanning for device id: %s", Name, device_id);
+    if (device_id != NULL)
+	info("%s: scanning for device id: %s", Name, device_id);
 
     usb_debug = 0;
 
@@ -141,15 +150,15 @@ static int drv_L2U_open(char *bus_id, char *device_id)
     busses = usb_get_busses();
 
     for (bus = busses; bus; bus = bus->next) {
-        /* search this bus if no bus id was given or if this is the given bus id */
-        if(!bus_id || (bus_id && !strcasecmp(bus->dirname, bus_id))) {
+	/* search this bus if no bus id was given or if this is the given bus id */
+	if (!bus_id || (bus_id && !strcasecmp(bus->dirname, bus_id))) {
 
 	    for (dev = bus->devices; dev; dev = dev->next) {
-	        /* search this device if no device id was given or if this is the given device id */
-	        if(!device_id || (device_id && !strcasecmp(dev->filename, device_id))) {
+		/* search this device if no device id was given or if this is the given device id */
+		if (!device_id || (device_id && !strcasecmp(dev->filename, device_id))) {
 
 		    if ((dev->descriptor.idVendor == LCD_USB_VENDOR) && (dev->descriptor.idProduct == LCD_USB_DEVICE)) {
-		        info("%s: found LCD2USB interface on bus %s device %s", Name, bus->dirname, dev->filename);
+			info("%s: found LCD2USB interface on bus %s device %s", Name, bus->dirname, dev->filename);
 			lcd = usb_open(dev);
 			if (usb_claim_interface(lcd, 0) < 0) {
 			    error("%s: usb_claim_interface() failed!", Name);
@@ -286,9 +295,7 @@ static unsigned long drv_L2U_get_buttons(void)
 {
     int buttons = drv_L2U_get(LCD_GET_BUTTONS);
 
-    if (buttons != -1)
-	info("%s: button state 0:%s 1:%s", Name, (buttons & 1) ? "on" : "off", (buttons & 2) ? "on" : "off");
-    else {
+    if (buttons == -1) {
 	error("%s: unable to read button state", Name);
 	buttons = 0;
     }
@@ -433,6 +440,42 @@ static int drv_L2U_brightness(int brightness)
     return brightness;
 }
 
+static void drv_L2U_timer(void __attribute__ ((unused)) * notused)
+{
+    static unsigned long last_but = 0;
+    unsigned long new_but = drv_L2U_get_buttons();
+    int i;
+
+    /* check if button state changed */
+    if (new_but ^ last_but) {
+
+	/* send single keypad events for all changed buttons */
+	for (i = 0; i < L2U_BUTTONS; i++)
+	    if ((new_but & (1 << i)) ^ (last_but & (1 << i)))
+		drv_generic_keypad_press(((new_but & (1 << i)) ? 0x80 : 0) | i);
+    }
+
+    last_but = new_but;
+}
+
+static int drv_L2U_keypad(const int num)
+{
+    int val = 0;
+
+    /* check for key press event */
+    if (num & 0x80)
+	val = KEY_PRESSED;
+    else
+	val = KEY_RELEASED;
+
+    if ((num & 0x7f) == 0)
+	val += KEY_UP;
+
+    if ((num & 0x7f) == 1)
+	val += KEY_DOWN;
+
+    return val;
+}
 
 static int drv_L2U_start(const char *section, const int quiet)
 {
@@ -454,6 +497,7 @@ static int drv_L2U_start(const char *section, const int quiet)
 
     DROWS = rows;
     DCOLS = cols;
+    KEYPADSIZE = L2U_BUTTONS;
 
     /* bus id and device id are strings and not just intergers, since */
     /* the windows port of libusb treats them as strings. And this way */
@@ -475,8 +519,9 @@ static int drv_L2U_start(const char *section, const int quiet)
     if (!controllers)
 	return -1;
 
-    /* call get_buttons to make compiler happy ... */
-    drv_L2U_get_buttons();
+    /* regularly request key state */
+    /* Fixme: make 100msec configurable */
+    timer_add(drv_L2U_timer, NULL, 100, 0);
 
     if (cfg_number(section, "Contrast", 0, 0, 255, &contrast) > 0) {
 	drv_L2U_contrast(contrast);
@@ -553,7 +598,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.6 $");
+    info("%s: %s", Name, "$Revision: 1.7 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
@@ -565,6 +610,7 @@ int drv_L2U_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_L2U_write;
     drv_generic_text_real_defchar = drv_L2U_defchar;
+    drv_generic_keypad_real_press = drv_L2U_keypad;
 
     /* start display */
     if ((ret = drv_L2U_start(section, quiet)) != 0)
@@ -590,6 +636,10 @@ int drv_L2U_init(const char *section, const int quiet)
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
     if (!asc255bug)
 	drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
+
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
+	return ret;
 
     /* register text widget */
     wc = Widget_Text;
@@ -621,6 +671,7 @@ int drv_L2U_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_text_quit();
+    drv_generic_keypad_quit();
 
     /* clear display */
     drv_L2U_clear();
