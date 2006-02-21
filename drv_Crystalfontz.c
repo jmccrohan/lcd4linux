@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.39 2006/02/19 15:37:38 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.40 2006/02/21 05:50:34 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.40  2006/02/21 05:50:34  reinelt
+ * keypad support from Cris Maj
+ *
  * Revision 1.39  2006/02/19 15:37:38  reinelt
  * CF635 GPO patch from cmaj
  *
@@ -200,10 +203,12 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_gpio.h"
 #include "drv_generic_serial.h"
+#include "drv_generic_keypad.h"
 
 
 static char Name[] = "Crystalfontz";
@@ -244,20 +249,22 @@ typedef struct {
     int gpos;
     int protocol;
     int payload;
+    int keypadsize;
 } MODEL;
 
 /* Fixme #1: number of GPI's & GPO's should be verified */
 /* Fixme #2: protocol should be verified */
+/* Fixme #3: number of keys on the keypad should be verified */
 
 static MODEL Models[] = {
-    {626, "626", 2, 16, 0, 0, 1, 0},
-    {631, "631", 2, 20, 0, 0, 3, 22},
-    {632, "632", 2, 16, 0, 0, 1, 0},
-    {633, "633", 2, 16, 4, 4, 2, 18},
-    {634, "634", 4, 20, 0, 0, 1, 0},
-    {635, "635", 4, 20, 4, 12, 3, 22},
-    {636, "636", 2, 16, 0, 0, 1, 0},
-    {-1, "Unknown", -1, -1, 0, 0, 0, 0}
+    {626, "626", 2, 16, 0, 0, 1, 0, 0},
+    {631, "631", 2, 20, 0, 0, 3, 22, 4},
+    {632, "632", 2, 16, 0, 0, 1, 0, 0},
+    {633, "633", 2, 16, 4, 4, 2, 18, 6},
+    {634, "634", 4, 20, 0, 0, 1, 0, 0},
+    {635, "635", 4, 20, 0, 0, 3, 22, 6},
+    {636, "636", 2, 16, 0, 0, 1, 0, 0},
+    {-1, "Unknown", -1, -1, 0, 0, 0, 0, 0}
 };
 
 
@@ -312,6 +319,7 @@ static void drv_CF_process_packet(void)
 	case 0x00:
 	    /* Key Activity */
 	    debug("Key Activity: %d", Packet.data[0]);
+	    drv_generic_keypad_press(Packet.data[0]);
 	    break;
 
 	case 0x01:
@@ -666,6 +674,52 @@ static int drv_CF_backlight(int backlight)
 }
 
 
+static int drv_CF_keypad(const int num)
+{
+    int val = 0;
+
+    switch (Protocol) {
+    case 1:
+    case 2:
+	break;
+    case 3:
+	if (num < 8)
+	    val = KEY_PRESSED;
+	else
+	    val = KEY_RELEASED;
+	switch (num) {
+	case 1:
+	case 8:
+	    val += KEY_UP;
+	    break;
+	case 2:
+	case 9:
+	    val += KEY_DOWN;
+	    break;
+	case 3:
+	case 10:
+	    val += KEY_LEFT;
+	    break;
+	case 4:
+	case 11:
+	    val += KEY_RIGHT;
+	    break;
+	case 5:
+	case 12:
+	    val += KEY_CONFIRM;
+	    break;
+	case 7:
+	case 13:
+	    val += KEY_CANCEL;
+	    break;
+	}
+	break;
+    }
+
+    return val;
+}
+
+
 static int drv_CF_GPI(const int num)
 {
     if (num < 0 || num > 3) {
@@ -677,7 +731,7 @@ static int drv_CF_GPI(const int num)
 
 static int drv_CF_GPO(const int num, const int val)
 {
-    static unsigned char PWM2[4] = { 0, 0, 0, 0};
+    static unsigned char PWM2[4] = { 0, 0, 0, 0 };
     static unsigned char PWM3[2];
 
     int v = val;
@@ -931,6 +985,7 @@ static int drv_CF_start(const char *section)
     GPOS = Models[Model].gpos;
     Protocol = Models[Model].protocol;
     Payload = Models[Model].payload;
+    KEYPADSIZE = Models[Model].keypadsize;
 
 
     switch (Protocol) {
@@ -1027,6 +1082,7 @@ static void plugin_backlight(RESULT * result, const int argc, RESULT * argv[])
 /* using drv_generic_text_icon_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
 /* using drv_generic_gpio_draw(W) */
+/* using drv_generic_keypad_draw(W) */
 
 
 /****************************************/
@@ -1052,7 +1108,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.39 $");
+    info("%s: %s", Name, "$Revision: 1.40 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
@@ -1087,6 +1143,7 @@ int drv_CF_init(const char *section, const int quiet)
 	drv_generic_text_real_defchar = drv_CF_defchar23;
 	drv_generic_gpio_real_get = drv_CF_GPI;
 	drv_generic_gpio_real_set = drv_CF_GPO;
+	drv_generic_keypad_real_press = drv_CF_keypad;
 	break;
     }
 
@@ -1120,6 +1177,10 @@ int drv_CF_init(const char *section, const int quiet)
     if ((ret = drv_generic_gpio_init(section, Name)) != 0)
 	return ret;
 
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
+	return ret;
+
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_text_draw;
@@ -1151,6 +1212,7 @@ int drv_CF_quit(const int quiet)
 
     drv_generic_text_quit();
     drv_generic_gpio_quit();
+    drv_generic_keypad_quit();
 
     /* clear display */
     drv_CF_clear();

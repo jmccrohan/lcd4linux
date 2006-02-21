@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.17 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: widget.h,v 1.18 2006/02/21 05:50:34 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.18  2006/02/21 05:50:34  reinelt
+ * keypad support from Cris Maj
+ *
  * Revision 1.17  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -107,6 +110,8 @@ typedef struct WIDGET_CLASS {
     int type;
     int (*init) (struct WIDGET * Self);
     int (*draw) (struct WIDGET * Self);
+    int (*find) (struct WIDGET * Self, void *needle);
+    void (*update) (void *Self);
     int (*quit) (struct WIDGET * Self);
 } WIDGET_CLASS;
 
@@ -130,10 +135,12 @@ typedef struct WIDGET {
 #define WIDGET_TYPE_XY 2
 #define WIDGET_TYPE_GPO 3
 #define WIDGET_TYPE_TIMER 4
+#define WIDGET_TYPE_KEYPAD 5
 
 
 int widget_register(WIDGET_CLASS * widget);
 void widget_unregister(void);
 int widget_add(const char *name, const int type, const int layer, const int row, const int col);
+WIDGET *widget_find(int type, void *needle);
 
 #endif

@@ -33,6 +33,7 @@ widget_text.c widget_text.h   \
 widget_bar.c  widget_bar.h    \
 widget_icon.c widget_icon.h   \
 widget_image.c widget_image.h \
+widget_keypad.c widget_keypad.h    \
 widget_timer.c widget_timer.h \
 widget_gpo.c  widget_gpo.h    \
                               \
@@ -56,6 +57,8 @@ drv_generic_parport.c         \
 drv_generic_parport.h         \
 drv_generic_i2c.c             \
 drv_generic_i2c.h             \
+drv_generic_keypad.c          \
+drv_generic_keypad.h          \
 drv_BeckmannEgle.c            \
 drv_BWCT.c                    \
 drv_Crystalfontz.c            \

@@ -1,4 +1,4 @@
-/* $Id: layout.c,v 1.21 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: layout.c,v 1.22 2006/02/21 05:50:34 reinelt Exp $
  *
  * new layouter framework
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: layout.c,v $
+ * Revision 1.22  2006/02/21 05:50:34  reinelt
+ * keypad support from Cris Maj
+ *
  * Revision 1.21  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -169,7 +172,7 @@ int layout_init(const char *layout)
 	i = sscanf(l, "layer:%d.x%d.y%d%n", &lay, &row, &col, &n);
 	if (i == 3 && l[n] == '\0') {
 	    if (lay < 0 || lay >= LAYERS) {
-		error ("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS-1);
+		error("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS - 1);
 	    } else {
 		widget = cfg_get(section, l, NULL);
 		if (widget != NULL && *widget != '\0') {
@@ -183,7 +186,7 @@ int layout_init(const char *layout)
 	i = sscanf(l, "layer:%d.row%d.col%d%n", &lay, &row, &col, &n);
 	if (i == 3 && l[n] == '\0') {
 	    if (lay < 0 || lay >= LAYERS) {
-		error ("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS-1);
+		error("%s: layer %d out of bounds (0..%d)", section, lay, LAYERS - 1);
 	    } else {
 		widget = cfg_get(section, l, NULL);
 		if (widget != NULL && *widget != '\0') {
@@ -193,7 +196,7 @@ int layout_init(const char *layout)
 	    }
 	}
 
-	/* row/col widgets w/o layer*/
+	/* row/col widgets w/o layer */
 	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
 	if (i == 2 && l[n] == '\0') {
 	    widget = cfg_get(section, l, NULL);
@@ -220,6 +223,16 @@ int layout_init(const char *layout)
 	    widget = cfg_get(section, l, NULL);
 	    if (widget != NULL && *widget != '\0') {
 		widget_add(widget, WIDGET_TYPE_TIMER, 0, num - 1, 0);
+	    }
+	    free(widget);
+	}
+
+	/* keypad widget */
+	i = sscanf(l, "keypad%d%n", &num, &n);
+	if (i == 1 && l[n] == '\0') {
+	    widget = cfg_get(section, l, NULL);
+	    if (widget != NULL && *widget != '\0') {
+		widget_add(widget, WIDGET_TYPE_KEYPAD, 0, num - 1, 0);
 	    }
 	    free(widget);
 	}

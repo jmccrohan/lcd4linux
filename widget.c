@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.22 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: widget.c,v 1.23 2006/02/21 05:50:34 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.23  2006/02/21 05:50:34  reinelt
+ * keypad support from Cris Maj
+ *
  * Revision 1.22  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -317,4 +320,22 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     }
 
     return 0;
+}
+
+/* return the found widget, or else NULL */
+WIDGET *widget_find(int type, void *needle)
+{
+    WIDGET *widget = NULL;
+    int i;
+
+    for (i = 0; i < nWidgets; i++) {
+	widget = &(Widgets[i]);
+	if (widget->class->type == type) {
+	    if (widget->class->find != NULL && widget->class->find(widget, needle) == 0)
+		break;
+	}
+	widget = NULL;
+    }
+
+    return widget;
 }

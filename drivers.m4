@@ -186,6 +186,7 @@ IMAGE="no"
 PARPORT="no"
 SERIAL="no"
 I2C="no"
+KEYPAD="no"
 
 
 if test "$BECKMANNEGLE" = "yes"; then
@@ -211,6 +212,7 @@ if test "$CRYSTALFONTZ" = "yes"; then
    TEXT="yes"
    GPIO="yes"
    SERIAL="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
    AC_DEFINE(WITH_CRYSTALFONTZ,1,[Crystalfontz driver])
 fi
@@ -483,6 +485,10 @@ if test "$I2C" = "yes"; then
    AC_DEFINE(WITH_I2C, 1, [I2C bus driver])
 fi
 
+# generic keypad driver
+if test "$KEYPAD" = "yes"; then
+   DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
 
 AC_SUBST(DRIVERS)
 AC_SUBST(DRVLIBS)

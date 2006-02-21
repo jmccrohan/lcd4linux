@@ -6321,6 +6321,7 @@ IMAGE="no"
 PARPORT="no"
 SERIAL="no"
 I2C="no"
+KEYPAD="no"
 
 
 if test "$BECKMANNEGLE" = "yes"; then
@@ -6355,6 +6356,7 @@ if test "$CRYSTALFONTZ" = "yes"; then
    TEXT="yes"
    GPIO="yes"
    SERIAL="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_Crystalfontz.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -6746,6 +6748,10 @@ _ACEOF
 
 fi
 
+# generic keypad driver
+if test "$KEYPAD" = "yes"; then
+   DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
 
 
 
