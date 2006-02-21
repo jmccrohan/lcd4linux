@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.40 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.41 2006/02/21 15:52:30 cmay Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.41  2006/02/21 15:52:30  cmay
+ * added back CF635 GPO counts in model struct lost after last merge
+ *
  * Revision 1.40  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -262,7 +265,7 @@ static MODEL Models[] = {
     {632, "632", 2, 16, 0, 0, 1, 0, 0},
     {633, "633", 2, 16, 4, 4, 2, 18, 6},
     {634, "634", 4, 20, 0, 0, 1, 0, 0},
-    {635, "635", 4, 20, 0, 0, 3, 22, 6},
+    {635, "635", 4, 20, 4, 12, 3, 22, 6},
     {636, "636", 2, 16, 0, 0, 1, 0, 0},
     {-1, "Unknown", -1, -1, 0, 0, 0, 0, 0}
 };
@@ -1108,7 +1111,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.40 $");
+    info("%s: %s", Name, "$Revision: 1.41 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
