@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.18 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: widget.h,v 1.19 2006/02/21 15:55:59 cmay Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.19  2006/02/21 15:55:59  cmay
+ * removed new update function for keypad, consolidated it with draw
+ *
  * Revision 1.18  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -111,7 +114,6 @@ typedef struct WIDGET_CLASS {
     int (*init) (struct WIDGET * Self);
     int (*draw) (struct WIDGET * Self);
     int (*find) (struct WIDGET * Self, void *needle);
-    void (*update) (void *Self);
     int (*quit) (struct WIDGET * Self);
 } WIDGET_CLASS;
 

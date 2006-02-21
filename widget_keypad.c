@@ -1,4 +1,4 @@
-/* $Id: widget_keypad.c,v 1.1 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: widget_keypad.c,v 1.2 2006/02/21 15:55:59 cmay Exp $
  *
  * keypad widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_keypad.c,v $
+ * Revision 1.2  2006/02/21 15:55:59  cmay
+ * removed new update function for keypad, consolidated it with draw
+ *
  * Revision 1.1  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -55,10 +58,9 @@
 #endif
 
 
-void widget_keypad_update(void *Self)
+int widget_keypad_draw(WIDGET * Self)
 {
-    WIDGET *W = (WIDGET *) Self;
-    WIDGET_KEYPAD *keypad = W->data;
+    WIDGET_KEYPAD *keypad = Self->data;
     RESULT result = { 0, 0, 0, NULL };
 
     int val;
@@ -72,10 +74,7 @@ void widget_keypad_update(void *Self)
     }
     keypad->val = val;
 
-    /* finally, draw it! */
-    if (W->class->draw)
-	W->class->draw(W);
-
+    return val;
 }
 
 
@@ -169,8 +168,7 @@ WIDGET_CLASS Widget_Keypad = {
   name:"keypad",
   type:WIDGET_TYPE_KEYPAD,
   init:widget_keypad_init,
-  draw:NULL,
+  draw:widget_keypad_draw,
   find:widget_keypad_find,
-  update:widget_keypad_update,
   quit:widget_keypad_quit,
 };

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_keypad.c,v 1.1 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: drv_generic_keypad.c,v 1.2 2006/02/21 15:55:59 cmay Exp $
  *
  * generic driver helper for keypads
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_keypad.c,v $
+ * Revision 1.2  2006/02/21 15:55:59  cmay
+ * removed new update function for keypad, consolidated it with draw
+ *
  * Revision 1.1  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -72,8 +75,8 @@ int drv_generic_keypad_press(const int num)
 
     w = widget_find(WIDGET_TYPE_KEYPAD, &val);
 
-    if (w && w->class->update)
-	w->class->update(w);
+    if (w && w->class->draw)
+	w->class->draw(w);
 
     return val;
 }

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_keypad.h,v 1.1 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: drv_generic_keypad.h,v 1.2 2006/02/21 15:55:59 cmay Exp $
  *
  * generic driver helper for keypads
  *
@@ -20,6 +20,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_generic_keypad.h,v $
+ * Revision 1.2  2006/02/21 15:55:59  cmay
+ * removed new update function for keypad, consolidated it with draw
+ *
  * Revision 1.1  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -39,7 +42,6 @@ extern int (*drv_generic_keypad_real_press) (const int num);
 /* generic functions and widget callbacks */
 int drv_generic_keypad_init(const char *section, const char *driver);
 int drv_generic_keypad_press(const int num);
-int drv_generic_keypad_draw(WIDGET * W);
 int drv_generic_keypad_quit(void);
 
 #endif
