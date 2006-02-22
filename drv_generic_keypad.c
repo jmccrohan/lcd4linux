@@ -1,4 +1,4 @@
-/* $Id: drv_generic_keypad.c,v 1.2 2006/02/21 15:55:59 cmay Exp $
+/* $Id: drv_generic_keypad.c,v 1.3 2006/02/22 15:59:39 cmay Exp $
  *
  * generic driver helper for keypads
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_keypad.c,v $
+ * Revision 1.3  2006/02/22 15:59:39  cmay
+ * removed KEYPADSIZE cruft per harbaum's suggestion
+ *
  * Revision 1.2  2006/02/21 15:55:59  cmay
  * removed new update function for keypad, consolidated it with draw
  *
@@ -40,12 +43,8 @@
 
 #include "drv_generic_keypad.h"
 
-#define MAX_KEYPADSIZE 32
-
 static char *Section = NULL;
 static char *Driver = NULL;
-
-int KEYPADSIZE = 0;
 
 int (*drv_generic_keypad_real_press) () = NULL;
 
@@ -55,8 +54,6 @@ int drv_generic_keypad_init(const char *section, const char *driver)
 
     Section = (char *) section;
     Driver = (char *) driver;
-
-    info("%s: using KEYPADSIZE %d", Driver, KEYPADSIZE);
 
     /* register keypad widget */
     wc = Widget_Keypad;

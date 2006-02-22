@@ -1,4 +1,4 @@
-/* $Id: drv_generic_keypad.h,v 1.2 2006/02/21 15:55:59 cmay Exp $
+/* $Id: drv_generic_keypad.h,v 1.3 2006/02/22 15:59:39 cmay Exp $
  *
  * generic driver helper for keypads
  *
@@ -20,6 +20,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_generic_keypad.h,v $
+ * Revision 1.3  2006/02/22 15:59:39  cmay
+ * removed KEYPADSIZE cruft per harbaum's suggestion
+ *
  * Revision 1.2  2006/02/21 15:55:59  cmay
  * removed new update function for keypad, consolidated it with draw
  *
@@ -33,8 +36,6 @@
 #define _DRV_GENERIC_KEYPAD_H_
 
 #include "widget.h"
-
-extern int KEYPADSIZE;		/* number of keys on the pad */
 
 /* these functinos must be implemented by the real driver */
 extern int (*drv_generic_keypad_real_press) (const int num);

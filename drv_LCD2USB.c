@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.7 2006/02/21 21:43:03 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.8 2006/02/22 15:59:39 cmay Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.8  2006/02/22 15:59:39  cmay
+ * removed KEYPADSIZE cruft per harbaum's suggestion
+ *
  * Revision 1.7  2006/02/21 21:43:03  harbaum
  * Keypad support for LCD2USB
  *
@@ -497,7 +500,6 @@ static int drv_L2U_start(const char *section, const int quiet)
 
     DROWS = rows;
     DCOLS = cols;
-    KEYPADSIZE = L2U_BUTTONS;
 
     /* bus id and device id are strings and not just intergers, since */
     /* the windows port of libusb treats them as strings. And this way */
@@ -598,7 +600,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.7 $");
+    info("%s: %s", Name, "$Revision: 1.8 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

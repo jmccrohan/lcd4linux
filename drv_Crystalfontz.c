@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.41 2006/02/21 15:52:30 cmay Exp $
+/* $Id: drv_Crystalfontz.c,v 1.42 2006/02/22 15:59:39 cmay Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.42  2006/02/22 15:59:39  cmay
+ * removed KEYPADSIZE cruft per harbaum's suggestion
+ *
  * Revision 1.41  2006/02/21 15:52:30  cmay
  * added back CF635 GPO counts in model struct lost after last merge
  *
@@ -252,7 +255,6 @@ typedef struct {
     int gpos;
     int protocol;
     int payload;
-    int keypadsize;
 } MODEL;
 
 /* Fixme #1: number of GPI's & GPO's should be verified */
@@ -260,14 +262,14 @@ typedef struct {
 /* Fixme #3: number of keys on the keypad should be verified */
 
 static MODEL Models[] = {
-    {626, "626", 2, 16, 0, 0, 1, 0, 0},
-    {631, "631", 2, 20, 0, 0, 3, 22, 4},
-    {632, "632", 2, 16, 0, 0, 1, 0, 0},
-    {633, "633", 2, 16, 4, 4, 2, 18, 6},
-    {634, "634", 4, 20, 0, 0, 1, 0, 0},
-    {635, "635", 4, 20, 4, 12, 3, 22, 6},
-    {636, "636", 2, 16, 0, 0, 1, 0, 0},
-    {-1, "Unknown", -1, -1, 0, 0, 0, 0, 0}
+    {626, "626", 2, 16, 0, 0, 1, 0},
+    {631, "631", 2, 20, 0, 0, 3, 22},
+    {632, "632", 2, 16, 0, 0, 1, 0},
+    {633, "633", 2, 16, 4, 4, 2, 18},
+    {634, "634", 4, 20, 0, 0, 1, 0},
+    {635, "635", 4, 20, 4, 12, 3, 22},
+    {636, "636", 2, 16, 0, 0, 1, 0},
+    {-1, "Unknown", -1, -1, 0, 0, 0, 0}
 };
 
 
@@ -988,7 +990,6 @@ static int drv_CF_start(const char *section)
     GPOS = Models[Model].gpos;
     Protocol = Models[Model].protocol;
     Payload = Models[Model].payload;
-    KEYPADSIZE = Models[Model].keypadsize;
 
 
     switch (Protocol) {
@@ -1111,7 +1112,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.41 $");
+    info("%s: %s", Name, "$Revision: 1.42 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
