@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.22  2006/02/24 13:07:10  geronet
+ * hollow bars for graphic lcd's
+ *
  * Revision 1.21  2006/02/19 07:20:53  reinelt
  * image support nearly finished
  *
@@ -437,11 +440,13 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
     int layer, row, col, len, res, rev, max, val1, val2;
     int x, y;
     DIRECTION dir;
+    STYLE style;
 
     layer = W->layer;
     row = YRES * W->row;
     col = XRES * W->col;
     dir = Bar->direction;
+    style = Bar->style;
     len = Bar->length;
 
     fg = W->fg_valid ? W->fg_color : FG_COL;
@@ -491,6 +496,15 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
 		else
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
+
+		if (style) {
+		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = fg;
+		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = fg;
+		}
+	    }
+	    if (style) {
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col] = fg;
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + max - 1] = fg;
 	    }
 	}
 	break;
@@ -565,7 +579,7 @@ int drv_generic_graphic_image_draw(WIDGET * W)
 	    }
 	}
     }
-    
+
     /* flush area */
     drv_generic_graphic_blit(row, col, height, width);
 
