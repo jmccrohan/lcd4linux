@@ -1,4 +1,4 @@
-/* $Id: widget_icon.c,v 1.22 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_icon.c,v 1.23 2006/02/25 13:36:33 geronet Exp $
  *
  * icon widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_icon.c,v $
+ * Revision 1.23  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.22  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -208,17 +211,17 @@ void widget_icon_update(void *Self)
 		Icon->visible = 0;
 	    DelResult(&result);
 	}
-	
+
 	/* rotate icon bitmap */
 	Icon->curmap++;
 	if (Icon->curmap >= Icon->maxmap)
 	    Icon->curmap = 0;
     }
-    
+
     /* finally, draw it! */
     if (W->class->draw)
 	W->class->draw(W);
-    
+
     /* add a new one-shot timer */
     if (Icon->speed > 0) {
 	timer_add(widget_icon_update, Self, Icon->speed, 1);

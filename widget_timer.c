@@ -1,4 +1,4 @@
-/* $Id: widget_timer.c,v 1.1 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_timer.c,v 1.2 2006/02/25 13:36:33 geronet Exp $
  *
  * timer widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_timer.c,v $
+ * Revision 1.2  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.1  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -69,7 +72,7 @@ void widget_timer_update(void *Self)
 	    Timer->update = 10;
 	DelResult(&result);
     }
-    
+
     Timer->active = 1;
     if (Timer->active_tree != NULL) {
 	Eval(Timer->active_tree, &result);
@@ -78,13 +81,13 @@ void widget_timer_update(void *Self)
 	    Timer->active = 0;
 	DelResult(&result);
     }
-    
+
     /* finally, fire it! */
     if (Timer->active) {
 	Eval(Timer->expr_tree, &result);
 	DelResult(&result);
     }
-    
+
     /* add a new one-shot timer */
     timer_add(widget_timer_update, Self, Timer->update, 1);
 }
@@ -101,7 +104,7 @@ int widget_timer_init(WIDGET * Self)
     section = malloc(strlen(Self->name) + 8);
     strcpy(section, "Widget:");
     strcat(section, Self->name);
-    
+
     Timer = malloc(sizeof(WIDGET_TIMER));
     memset(Timer, 0, sizeof(WIDGET_TIMER));
 
@@ -109,7 +112,7 @@ int widget_timer_init(WIDGET * Self)
     Timer->expression = cfg_get_raw(section, "axpression", NULL);
     Timer->update_expr = cfg_get_raw(section, "update", "100");
     Timer->active_expr = cfg_get_raw(section, "active", "1");
-    
+
     /* sanity checks */
     if (Timer->expression == NULL || *Timer->expression == '\0') {
 	error("Timer %s has no expression, using '1'", Self->name);
@@ -124,11 +127,11 @@ int widget_timer_init(WIDGET * Self)
     Compile(Timer->expression, &Timer->expr_tree);
     Compile(Timer->update_expr, &Timer->update_tree);
     Compile(Timer->active_expr, &Timer->active_tree);
-    
-    
+
+
     free(section);
     Self->data = Timer;
-    
+
     /* just do it! */
     widget_timer_update(Self);
 

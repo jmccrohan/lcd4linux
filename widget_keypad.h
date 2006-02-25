@@ -1,4 +1,4 @@
-/* $Id: widget_keypad.h,v 1.1 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: widget_keypad.h,v 1.2 2006/02/25 13:36:33 geronet Exp $
  *
  * keypad widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_keypad.h,v $
+ * Revision 1.2  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.1  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -34,7 +37,8 @@
 #define _WIDGET_KEYPAD_H_
 
 typedef enum { KEY_UP = 1, KEY_DOWN = 2, KEY_LEFT = 4, KEY_RIGHT = 8, KEY_CONFIRM = 16, KEY_CANCEL = 32, KEY_PRESSED =
-	64, KEY_RELEASED = 128 } KEYPADKEY;
+	64, KEY_RELEASED = 128
+} KEYPADKEY;
 
 typedef struct WIDGET_KEYPAD {
     char *expression;		/* expression that delivers the value */

@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.4 2006/02/19 07:20:54 reinelt Exp $
+/* $Id: widget_image.c,v 1.5 2006/02/25 13:36:33 geronet Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.5  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.4  2006/02/19 07:20:54  reinelt
  * image support nearly finished
  *
@@ -87,16 +90,16 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
     if (Image->bitmap) {
 	int i;
 	for (i = 0; i < Image->height * Image->width; i++) {
-	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
-    
+
     if (Image->file == NULL || Image->file[0] == '\0') {
 	error("Warning: Image %s has no file", Name);
 	return;
     }
-    
+
     fd = fopen(Image->file, "rb");
     if (fd == NULL) {
 	error("Warning: Image %s: fopen(%s) failed: %s", Name, Image->file, strerror(errno));
@@ -132,23 +135,23 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    return;
 	}
 	for (i = 0; i < Image->height * Image->width; i++) {
-	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
 
     /* finally really render it */
-    for (x=0; x < gdImage->sx; x++) {
-	for (y=0; y < gdImage->sy; y++) {
-	    int p = gdImageGetTrueColorPixel (gdImage, x, y);
+    for (x = 0; x < gdImage->sx; x++) {
+	for (y = 0; y < gdImage->sy; y++) {
+	    int p = gdImageGetTrueColorPixel(gdImage, x, y);
 	    int a = gdTrueColorGetAlpha(p);
-	    int i = y*Image->width+x;
-	    Image->bitmap[i].R = gdTrueColorGetRed(p); 
-	    Image->bitmap[i].G = gdTrueColorGetGreen (p);
+	    int i = y * Image->width + x;
+	    Image->bitmap[i].R = gdTrueColorGetRed(p);
+	    Image->bitmap[i].G = gdTrueColorGetGreen(p);
 	    Image->bitmap[i].B = gdTrueColorGetBlue(p);
 	    /* GD's alpha is 0 (opaque) to 127 (tranparanet) */
 	    /* our alpha is 0 (transparent) to 255 (opaque) */
-	    Image->bitmap[i].A = (a == 127) ? 0 : 255-2*a;
+	    Image->bitmap[i].A = (a == 127) ? 0 : 255 - 2 * a;
 	}
     }
 }
@@ -192,7 +195,6 @@ static void widget_image_update(void *Self)
 		Image->visible = 0;
 	    DelResult(&result);
 	}
-
 #ifdef WITH_GD
 	/* render image into bitmap */
 	widget_image_render(W->name, Image);

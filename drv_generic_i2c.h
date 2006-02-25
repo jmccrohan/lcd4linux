@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.h,v 1.4 2005/05/31 21:32:00 lfcorreia Exp $
+/* $Id: drv_generic_i2c.h,v 1.5 2006/02/25 13:36:33 geronet Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.h,v $
+ * Revision 1.5  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.4  2005/05/31 21:32:00  lfcorreia
  * fix my email address
  *
@@ -41,8 +44,8 @@
  * HD44780/I2C patch from Luis merged (still does not work for me)
  *
  *
- */
-
+ */  
+    
 /* 
  *
  * exported fuctions:
@@ -66,15 +69,14 @@
  * void drv_generic_i2c_command(unsigned char command, unsigned char *data,unsigned char length)
  *   send command and the data to the i2c device
  * 
- */
-
+ */ 
+    
 #ifndef _DRV_GENERIC_I2C_H_
 #define _DRV_GENERIC_I2C_H_
-
-int drv_generic_i2c_open(const char *section, const char *driver);
-int drv_generic_i2c_close(void);
-unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
-void drv_generic_i2c_data(const unsigned char data);
-void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
-
-#endif
+int drv_generic_i2c_open(const char *section, const char *driver);
+int drv_generic_i2c_close(void);
+unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
+void drv_generic_i2c_data(const unsigned char data);
+void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
+
+#endif	/*  */

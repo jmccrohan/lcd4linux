@@ -1,4 +1,4 @@
-/* $Id: plugin_mysql.c,v 1.10 2006/01/20 15:58:05 reinelt Exp $
+/* $Id: plugin_mysql.c,v 1.11 2006/02/25 13:36:33 geronet Exp $
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_mysql.c,v $
+ * Revision 1.11  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.10  2006/01/20 15:58:05  reinelt
  * MySQL::count() added again
  *
@@ -170,7 +173,7 @@ static void my_MySQLcount(RESULT * result, RESULT * query)
     char *q;
     double value;
     MYSQL_RES *res;
-    
+
     if (configure_mysql() < 0) {
 	value = -1;
 	SetResult(&result, R_NUMBER, &value);
@@ -203,7 +206,7 @@ static void my_MySQLquery(RESULT * result, RESULT * query)
     char *q;
     double value;
     MYSQL_RES *res;
-    MYSQL_ROW row=NULL;
+    MYSQL_ROW row = NULL;
 
     if (configure_mysql() < 0) {
 	value = -1;

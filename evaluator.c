@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.30 2006/01/30 12:53:08 reinelt Exp $
+/* $Id: evaluator.c,v 1.31 2006/02/25 13:36:33 geronet Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.31  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.30  2006/01/30 12:53:08  reinelt
  * replaced strncpy with strcpy where possible
  *
@@ -380,7 +383,7 @@ RESULT *SetResult(RESULT ** result, const int type, const void *value)
 	    if ((*result)->string)
 		free((*result)->string);
 	    /* allocate memory in multiples of CHUNK_SIZE */
-	    (*result)->size = CHUNK_SIZE * ((len+1) / CHUNK_SIZE + 1);
+	    (*result)->size = CHUNK_SIZE * ((len + 1) / CHUNK_SIZE + 1);
 	    (*result)->string = malloc((*result)->size);
 	}
 	strcpy((*result)->string, value);

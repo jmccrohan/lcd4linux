@@ -1,4 +1,4 @@
-/* $Id: drv_generic_parport.c,v 1.20 2005/12/12 05:52:03 reinelt Exp $
+/* $Id: drv_generic_parport.c,v 1.21 2006/02/25 13:36:33 geronet Exp $
  *
  * generic driver helper for serial and parport access
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_parport.c,v $
+ * Revision 1.21  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.20  2005/12/12 05:52:03  reinelt
  * type of delays is 'unsigned long'
  *
@@ -450,7 +453,9 @@ void drv_generic_parport_direction(const int direction)
 
 unsigned char drv_generic_parport_status(void)
 {
-    unsigned char mask = PARPORT_STATUS_ERROR | PARPORT_STATUS_SELECT | PARPORT_STATUS_PAPEROUT | PARPORT_STATUS_ACK | PARPORT_STATUS_BUSY;
+    unsigned char mask =
+	PARPORT_STATUS_ERROR | PARPORT_STATUS_SELECT | PARPORT_STATUS_PAPEROUT | PARPORT_STATUS_ACK |
+	PARPORT_STATUS_BUSY;
 
     unsigned char data;
 
@@ -592,6 +597,7 @@ void drv_generic_parport_debug(void)
 
     debug("%cSTROBE %cAUTOFD %cINIT %cSLCTIN",
 	  control & PARPORT_CONTROL_STROBE ? '-' : '+',
-	  control & PARPORT_CONTROL_AUTOFD ? '-' : '+', control & PARPORT_CONTROL_INIT ? '+' : '-', control & PARPORT_CONTROL_SELECT ? '-' : '+');
+	  control & PARPORT_CONTROL_AUTOFD ? '-' : '+', control & PARPORT_CONTROL_INIT ? '+' : '-',
+	  control & PARPORT_CONTROL_SELECT ? '-' : '+');
 
 }

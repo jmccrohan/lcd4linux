@@ -1,4 +1,4 @@
-/* $Id: drv_Cwlinux.c,v 1.25 2006/02/06 06:29:30 reinelt Exp $
+/* $Id: drv_Cwlinux.c,v 1.26 2006/02/25 13:36:33 geronet Exp $
  *
  * new style driver for Cwlinux display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Cwlinux.c,v $
+ * Revision 1.26  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.25  2006/02/06 06:29:30  reinelt
  * Image driver uses RGBA
  *
@@ -247,7 +250,7 @@ static int drv_CW_GPO(const int num, const int val)
     /* Fixme: GPO's not yet implemented! */
     error("%s: GPO's not yet implemented!", Name);
     /* Fixme: num*val to avoid compiler warning */
-    return num*val;
+    return num * val;
 }
 
 
@@ -422,7 +425,7 @@ int drv_CW_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.25 $");
+    info("%s: %s", Name, "$Revision: 1.26 $");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

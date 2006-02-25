@@ -1,4 +1,4 @@
-/* $Id: plugin_pop3.c,v 1.9 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: plugin_pop3.c,v 1.10 2006/02/25 13:36:33 geronet Exp $
  *
  * Plugin to check POP3 mail accounts
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_pop3.c,v $
+ * Revision 1.10  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.9  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -305,12 +308,14 @@ static int getConfig(void)
 		node->username = x;
 		x = cfg_get(Section, password, "");
 		if (*x == '\0') {
-		    info("[POP3] No '%s.%s' entry from %s, disabling POP3 account #%d", Section, password, cfg_source(), i);
+		    info("[POP3] No '%s.%s' entry from %s, disabling POP3 account #%d", Section, password, cfg_source(),
+			 i);
 		    free(x);
 		} else {
 		    node->password = x;
 		    if (cfg_number(Section, port, POP3PORT, 1, 65536, &node->port) < 1) {
-			info("[POP3] No '%s.%s' entry from %s, %d will be used for account #%d", Section, port, cfg_source(), POP3PORT, i);
+			info("[POP3] No '%s.%s' entry from %s, %d will be used for account #%d", Section, port,
+			     cfg_source(), POP3PORT, i);
 		    }
 		    check_node_add(&head, node);
 		    n++;

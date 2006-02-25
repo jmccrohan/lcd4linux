@@ -1,4 +1,4 @@
-/* $Id: widget_timer.h,v 1.1 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_timer.h,v 1.2 2006/02/25 13:36:33 geronet Exp $
  *
  * timer widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_timer.h,v $
+ * Revision 1.2  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.1  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -33,14 +36,14 @@
 #define _WIDGET_TIMER_H_
 
 typedef struct WIDGET_TIMER {
-    char *expression;           /* main timer expression */
-    void *expr_tree;            /* pre-compiled main expression */
+    char *expression;		/* main timer expression */
+    void *expr_tree;		/* pre-compiled main expression */
     char *update_expr;		/* expression for update interval */
     void *update_tree;		/* pre-compiled expression for update interval */
     int update;			/* update interval (msec) */
     char *active_expr;		/* expression for active */
     void *active_tree;		/* pre-compiled expression for active */
-    int active; 		/* timer active? */
+    int active;			/* timer active? */
 } WIDGET_TIMER;
 
 extern WIDGET_CLASS Widget_Timer;

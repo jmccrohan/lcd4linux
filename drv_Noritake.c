@@ -1,4 +1,4 @@
-/* $Id: drv_Noritake.c,v 1.5 2006/01/30 06:25:53 reinelt Exp $
+/* $Id: drv_Noritake.c,v 1.6 2006/02/25 13:36:33 geronet Exp $
  * 
  * Driver for a Noritake GU128x32-311 graphical display.
  * 
@@ -22,6 +22,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * $Log: drv_Noritake.c,v $
+ * Revision 1.6  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.5  2006/01/30 06:25:53  reinelt
  * added CVS Revision
  *
@@ -124,8 +127,8 @@ static unsigned char SIGNAL_CS;	/* Chip select, OUTPUT, negative logic, pport AU
 static unsigned char SIGNAL_WR;	/* Write        OUTPUT, negative logic, pport STOBE */
 static unsigned char SIGNAL_RESET;	/* Reset,       OUTPUT, negative logic, pport INIT */
 static unsigned char SIGNAL_BLANK;	/* Blank,       OUTPUT , negative logic, pport SELECT-IN */
-																																																																																																																																																																																																																																																																																																																																																										 /* static unsigned char SIGNAL_BUSY; *//* Busy,        INPUT , positive logic, pport BUSY, not used */
-																																																																																																																																																																																																																																																																																																																																																	   /* static unsigned char SIGNAL_FRP; *//* Frame Pulse, INPUT , positive logic, pport ACK, not used */
+																																																																																																																																																																																																																																																																																																																																																															/* static unsigned char SIGNAL_BUSY; *//* Busy,        INPUT , positive logic, pport BUSY, not used */
+																																																																																																																																																																																																																																																																																																																																																						 /* static unsigned char SIGNAL_FRP; *//* Frame Pulse, INPUT , positive logic, pport ACK, not used */
 void (*drv_Noritake_clear) (void);
 
 /* Data port is positive logic */
@@ -345,7 +348,7 @@ int drv_Noritake_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* start display */
     if ((ret = drv_Noritake_start(section)) != 0)

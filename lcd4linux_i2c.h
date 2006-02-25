@@ -1,4 +1,4 @@
-/* $Id: lcd4linux_i2c.h,v 1.3 2005/07/06 04:40:18 reinelt Exp $
+/* $Id: lcd4linux_i2c.h,v 1.4 2006/02/25 13:36:33 geronet Exp $
  *
  * user space i2c sturctures and defines, taken from the official kernel i2c 
  * includes to solve the problem when compiling user space application
@@ -32,6 +32,9 @@
  *
  *
  * $Log: lcd4linux_i2c.h,v $
+ * Revision 1.4  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.3  2005/07/06 04:40:18  reinelt
  * GCC-4 fixes
  *
@@ -217,7 +220,8 @@ extern int i2c_check_addr(struct i2c_adapter *adapter, int addr);
  * It will only call found_proc if some client is connected at the
  * specific address (unless a 'force' matched);
  */
-extern int i2c_probe(struct i2c_adapter *adapter, struct i2c_client_address_data *address_data, int (*found_proc) (struct i2c_adapter *, int, int));
+extern int i2c_probe(struct i2c_adapter *adapter, struct i2c_client_address_data *address_data,
+		     int (*found_proc) (struct i2c_adapter *, int, int));
 
 /* An ioctl like call to set div. parameters of the adapter.
  */

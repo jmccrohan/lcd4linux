@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.24 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.25 2006/02/25 13:36:33 geronet Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.25  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.24  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -338,7 +341,8 @@ static void my_i2c_sensors_path(const char *method)
 
     while ((dir = readdir(fd1))) {
 	/* Skip non-directories and '.' and '..' */
-	if ((dir->d_type != DT_DIR && dir->d_type != DT_LNK) || strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) {
+	if ((dir->d_type != DT_DIR && dir->d_type != DT_LNK) || strcmp(dir->d_name, ".") == 0
+	    || strcmp(dir->d_name, "..") == 0) {
 	    continue;
 	}
 
@@ -351,7 +355,8 @@ static void my_i2c_sensors_path(const char *method)
 	done = 0;
 	while ((file = readdir(fd2))) {
 	    /* FIXME : do all sensors have a temp_input1 ? */
-	    if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input") || !strcmp(file->d_name, "temp1")) {
+	    if (!strcmp(file->d_name, "temp_input1") || !strcmp(file->d_name, "temp1_input")
+		|| !strcmp(file->d_name, "temp1")) {
 		path = realloc(path, strlen(dname) + 1);
 		strcpy(path, dname);
 		done = 1;

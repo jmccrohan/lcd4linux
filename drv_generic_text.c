@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.31 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.32 2006/02/25 13:36:33 geronet Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.32  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.31  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -764,7 +767,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																																																																																																																						                								                              break;
+																																																																																																																																								                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;

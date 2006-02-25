@@ -1,4 +1,4 @@
-/* $Id: widget_image.h,v 1.2 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: widget_image.h,v 1.3 2006/02/25 13:36:33 geronet Exp $
  *
  * image widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_image.h,v $
+ * Revision 1.3  2006/02/25 13:36:33  geronet
+ * updated indent.sh, applied coding style
+ *
  * Revision 1.2  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -38,11 +41,11 @@
 #include "rgb.h"
 
 typedef struct WIDGET_IMAGE {
-    RGBA *bitmap;               /* image bitmap */
-    int width, height;          /* size of the image */
+    RGBA *bitmap;		/* image bitmap */
+    int width, height;		/* size of the image */
     char *file_expr;		/* expression for image filename */
     void *file_tree;		/* pre-compiled expression for image filename */
-    char *file;                 /* evaluated filename */
+    char *file;			/* evaluated filename */
     char *update_expr;		/* expression for update interval */
     void *update_tree;		/* pre-compiled expression for update interval */
     int update;			/* update interval (msec) */
