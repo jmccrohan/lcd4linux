@@ -27,6 +27,14 @@ Display LCD-Linux {
     UseBusy 0
 }
 
+Display LCD2USB {
+    Driver 'LCD2USB'
+    Size '20x2'
+    Backlight 1
+    Icons 1
+}
+
+
 Display LCD2041 {
     Driver 'MatrixOrbital'
     Model 'LCD2041'
@@ -409,6 +417,17 @@ Widget CPU {
 }
 
 
+Widget CPUinfo {
+    class  'Text'
+    expression  cpuinfo('model name')
+    prefix ''
+    width  20
+    align  'M'
+    speed 100	
+    update tick
+}
+
+
 Widget RAM {
     class  'Text'
     expression meminfo('MemTotal')/1024
@@ -428,7 +447,6 @@ Widget Busy {
     precision 1
     align 'R'	
     update tick	
-    foreground '0000ffaa'
 }	
 
 Widget BusyBar {
@@ -437,6 +455,7 @@ Widget BusyBar {
     expression2 proc_stat::cpu('system', 500)
     length 10	
     direction 'E'
+    style 'H'
     update tack
 }
 
@@ -870,6 +889,15 @@ Layout TestLayer {
     }
 }
 
+Layout TestImage {
+    Row1 {
+	Col1  'OS'
+    }
+    Layer 2 {
+	X1.Y1 'ImageTest'
+    }
+}
+
 Layout L24x8 {
     Row1 {
 	Col1  'Load'
@@ -888,6 +916,13 @@ Layout L8x2 {
     }
 }
 
+Layout L16x1 {
+    Row1 {
+	Col1  'Busy'
+	Col11 'BusyBar'
+    }
+}
+
 Layout L16x2 {
     Row1 {
 	Col1  'Busy'
@@ -902,12 +937,25 @@ Layout L16x2 {
 
 Layout L20x2 {
     Row1 {
+        Col1  'CPUinfo'
+    }
+    Row2 {
 	Col1  'Busy'
 	Col11 'BusyBar'
     }
+}
+
+Layout L40x2 {
+    Row1 {
+	Col1  'OS'
+	Col21  'Busy'
+	Col31 'BusyBar'
+    }
     Row2 {
-	Col1 'Load'
-	Col11 'LoadBar'
+	Col1  'CPU'
+	Col10 'RAM'
+	Col21 'Load'
+	Col31 'LoadBar'
     }
 }
 
@@ -982,19 +1030,23 @@ Layout testMySQL {
 #Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
-Display 'XWindow'
+#Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
+#Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
-#Display 'LPH7508'
+Display 'LPH7508'
 
 #Layout 'Default'
-Layout 'TestLayer'
+#Layout 'TestLayer'
+Layout 'TestImage'
 #Layout 'L8x2'
+#Layout 'L16x1'
 #Layout 'L16x2'
 #Layout 'L20x2'
+#Layout 'L40x2'
 #Layout 'Test'
 #Layout 'Test2'
 #Layout 'TestGPO'

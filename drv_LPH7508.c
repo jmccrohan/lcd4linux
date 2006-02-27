@@ -1,4 +1,4 @@
-/* $Id: drv_LPH7508.c,v 1.9 2006/02/08 04:55:04 reinelt Exp $
+/* $Id: drv_LPH7508.c,v 1.10 2006/02/27 06:14:46 reinelt Exp $
  *
  * driver for Pollin LPH7508
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LPH7508.c,v $
+ * Revision 1.10  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.9  2006/02/08 04:55:04  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -208,7 +211,7 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 	    int a = p * SCOLS + c;
 	    /* bit mask */
 	    unsigned char m = 1 << (r % 8);
-	    if (drv_generic_graphic_gray(r, c)) {
+	    if (drv_generic_graphic_black(r, c)) {
 		/* set bit */
 		Buffer1[a] |= m;
 	    } else {
@@ -482,7 +485,7 @@ int drv_L7_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.9 $");
+    info("%s: %s", Name, "$Revision: 1.10 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_L7_blit;
@@ -508,6 +511,7 @@ int drv_L7_init(const char *section, const int quiet)
 	    drv_generic_graphic_clear();
 	}
     }
+
 
     /* register plugins */
     AddFunction("LCD::contrast", 1, plugin_contrast);

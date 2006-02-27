@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.6 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.7 2006/02/27 06:14:46 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.7  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.6  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -241,9 +244,10 @@ static void drv_Sample_blit(const int row, const int col, const int height, cons
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
+	    /* drv_generic_graphic_black() returns 1 if pixel is black */
 	    /* drv_generic_graphic_gray() returns a gray value 0..255 */
 	    /* drv_generic_graphic_rgb() returns a RGB color */
-	    if (drv_generic_graphic_gray(r, c)) {
+	    if (drv_generic_graphic_black(r, c)) {
 		/* set bit */
 	    } else {
 		/* clear bit */
@@ -439,7 +443,7 @@ int drv_Sample_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.6 $");
+    info("%s: %s", Name, "$Revision: 1.7 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

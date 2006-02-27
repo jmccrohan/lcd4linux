@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.23  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.22  2006/02/24 13:07:10  geronet
  * hollow bars for graphic lcd's
  *
@@ -167,8 +170,8 @@ int DROWS, DCOLS;		/* display size (pixels!) */
 int XRES, YRES;			/* pixels of one char cell */
 
 /* pixel colors */
-RGBA FG_COL = { R: 0xff, G: 0xff, B: 0xff, A:0xff };
-RGBA BG_COL = { R: 0x00, G: 0x00, B: 0x00, A:0xff };
+RGBA FG_COL = { R: 0x00, G: 0x00, B: 0x00, A:0xff };
+RGBA BG_COL = { R: 0xff, G: 0xff, B: 0xff, A:0xff };
 RGBA BL_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 RGBA NO_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 
@@ -633,7 +636,7 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     if (color)
 	free(color);
 
-    color = cfg_get(Section, "basecolor", "000000ff");
+    color = cfg_get(Section, "basecolor", "00000000");
     if (color2RGBA(color, &BL_COL) < 0) {
 	error("%s: ignoring illegal color '%s'", Driver, color);
     }
@@ -660,6 +663,9 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     wc.draw = drv_generic_graphic_image_draw;
     widget_register(&wc);
 
+    /* clear framebuffer */
+    drv_generic_graphic_clear();
+
     return 0;
 }
 
@@ -669,15 +675,21 @@ int drv_generic_graphic_clear(void)
     int i, l;
 
     for (i = 0; i < LCOLS * LROWS; i++)
-	drv_generic_graphic_FB[0][i] = BG_COL;
+	drv_generic_graphic_FB[LAYERS-1][i] = BG_COL;
 
-    for (l = 1; l < LAYERS; l++)
+    for (l = 0; l < LAYERS-1; l++)
 	for (i = 0; i < LCOLS * LROWS; i++)
 	    drv_generic_graphic_FB[l][i] = NO_COL;
 
     drv_generic_graphic_blit(0, 0, LROWS, LCOLS);
 
     return 0;
+}
+
+
+RGBA drv_generic_graphic_rgb(const int row, const int col)
+{
+    return drv_generic_graphic_blend(row, col);
 }
 
 
@@ -688,9 +700,13 @@ unsigned char drv_generic_graphic_gray(const int row, const int col)
 }
 
 
-RGBA drv_generic_graphic_rgb(const int row, const int col)
+unsigned char drv_generic_graphic_black(const int row, const int col)
 {
-    return drv_generic_graphic_blend(row, col);
+    RGBA p = drv_generic_graphic_blend(row, col);
+    if (p.R > 127 || p.G > 127 || p.B > 127) {
+	return 0;
+    }
+    return 1;
 }
 
 

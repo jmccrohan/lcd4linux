@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.5 2006/02/08 04:55:03 reinelt Exp $
+/* $Id: drv_G15.c,v 1.6 2006/02/27 06:14:46 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.6  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.5  2006/02/08 04:55:03  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -184,7 +187,7 @@ static void drv_G15_blit(const int row, const int col, const int height, const i
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    g15_image[r * 160 + c] = drv_generic_graphic_gray(r, c);
+	    g15_image[r * 160 + c] = drv_generic_graphic_black(r, c);
 	}
     }
 
@@ -289,7 +292,7 @@ int drv_G15_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     DEBUG("entered");
 

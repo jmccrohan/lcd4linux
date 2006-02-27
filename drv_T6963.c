@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.19 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.20 2006/02/27 06:14:46 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.20  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.19  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -374,7 +377,7 @@ static void drv_T6_blit(const int row, const int col, const int height, const in
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
 	    unsigned char mask = 1 << (XRES - 1 - c % XRES);
-	    if (drv_generic_graphic_gray(r, c)) {
+	    if (drv_generic_graphic_black(r, c)) {
 		/* set bit */
 		Buffer1[(r * DCOLS + c) / XRES] |= mask;
 	    } else {
@@ -588,7 +591,7 @@ int drv_T6_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.19 $");
+    info("%s: %s", Name, "$Revision: 1.20 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;

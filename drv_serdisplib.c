@@ -1,4 +1,4 @@
-/* $Id: drv_serdisplib.c,v 1.8 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: drv_serdisplib.c,v 1.9 2006/02/27 06:14:46 reinelt Exp $
  *
  * driver for serdisplib displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_serdisplib.c,v $
+ * Revision 1.9  2006/02/27 06:14:46  reinelt
+ * graphic bug resulting in all black pixels solved
+ *
  * Revision 1.8  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -103,7 +106,7 @@ static void drv_SD_blit(const int row, const int col, const int height, const in
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    color = drv_generic_graphic_gray(r, c) ? SD_COL_BLACK : SD_COL_WHITE;
+	    color = drv_generic_graphic_black(r, c) ? SD_COL_BLACK : SD_COL_WHITE;
 	    serdisp_setcolour(dd, c, r, color);
 	}
     }
@@ -310,7 +313,7 @@ int drv_SD_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.8 $");
+    info("%s: %s", Name, "$Revision: 1.9 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_SD_blit;
