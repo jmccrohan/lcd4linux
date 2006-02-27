@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.33 2006/02/27 06:15:55 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.34 2006/02/27 08:12:34 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.34  2006/02/27 08:12:34  reinelt
+ * use serdisplib's full color support
+ *
  * Revision 1.33  2006/02/27 06:15:55  reinelt
  * indent...
  *
@@ -768,13 +771,15 @@ static void drv_generic_text_bar_create_segments(void)
 		/* same style, same direction */
 		if (Segment[i].style == BarFB[n].style && Segment[i].dir & BarFB[n].dir)
 		    break;
+#if 0
 		/* hollow style, val(1,2) == 1, like '[' */
-/*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																																																																																																																																				                								                              break;
-*//* hollow style, val(1,2) == 1, like ']' */
-/*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
-                              break;
-*/ }
+		if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
+		    break;
+		/* hollow style, val(1,2) == 1, like ']' */
+		if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
+		    break;
+#endif
+	    }
 	}
 	if (i == nSegment) {
 	    nSegment++;
