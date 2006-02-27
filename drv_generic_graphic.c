@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.25  2006/02/27 07:53:52  reinelt
+ * some more graphic issues fixed
+ *
  * Revision 1.24  2006/02/27 06:15:55  reinelt
  * indent...
  *
@@ -175,7 +178,7 @@ int XRES, YRES;			/* pixels of one char cell */
 /* pixel colors */
 RGBA FG_COL = { R: 0x00, G: 0x00, B: 0x00, A:0xff };
 RGBA BG_COL = { R: 0xff, G: 0xff, B: 0xff, A:0xff };
-RGBA BL_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+RGBA BL_COL = { R: 0xff, G: 0xff, B: 0xff, A:0x00 };
 RGBA NO_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 
 static char *Section = NULL;
@@ -632,14 +635,14 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     if (color)
 	free(color);
 
-    color = cfg_get(Section, "background", "ffffffff");
+    color = cfg_get(Section, "background", "ffffff00");
     if (color2RGBA(color, &BG_COL) < 0) {
 	error("%s: ignoring illegal color '%s'", Driver, color);
     }
     if (color)
 	free(color);
 
-    color = cfg_get(Section, "basecolor", "00000000");
+    color = cfg_get(Section, "basecolor", "ffffff");
     if (color2RGBA(color, &BL_COL) < 0) {
 	error("%s: ignoring illegal color '%s'", Driver, color);
     }
@@ -677,10 +680,7 @@ int drv_generic_graphic_clear(void)
 {
     int i, l;
 
-    for (i = 0; i < LCOLS * LROWS; i++)
-	drv_generic_graphic_FB[LAYERS - 1][i] = BG_COL;
-
-    for (l = 0; l < LAYERS - 1; l++)
+    for (l = 0; l < LAYERS; l++)
 	for (i = 0; i < LCOLS * LROWS; i++)
 	    drv_generic_graphic_FB[l][i] = NO_COL;
 

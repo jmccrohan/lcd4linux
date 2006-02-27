@@ -827,7 +827,7 @@ Widget GPO_Test255 {
 
 Widget ImageTest {
     class 'Image'
-    file '/home/michi/lcd4linux.png'
+    file 'Michi.png'
     update 1000
     visible 1
 }
@@ -890,8 +890,12 @@ Layout TestLayer {
 }
 
 Layout TestImage {
-    Row1 {
+    Row4 {
 	Col1  'OS'
+    }
+    Row2 {
+	Col1  'CPU'
+	Col10 'RAM'
     }
     Layer 2 {
 	X1.Y1 'ImageTest'
