@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.24  2006/02/27 06:15:55  reinelt
+ * indent...
+ *
  * Revision 1.23  2006/02/27 06:14:46  reinelt
  * graphic bug resulting in all black pixels solved
  *
@@ -675,9 +678,9 @@ int drv_generic_graphic_clear(void)
     int i, l;
 
     for (i = 0; i < LCOLS * LROWS; i++)
-	drv_generic_graphic_FB[LAYERS-1][i] = BG_COL;
+	drv_generic_graphic_FB[LAYERS - 1][i] = BG_COL;
 
-    for (l = 0; l < LAYERS-1; l++)
+    for (l = 0; l < LAYERS - 1; l++)
 	for (i = 0; i < LCOLS * LROWS; i++)
 	    drv_generic_graphic_FB[l][i] = NO_COL;
 

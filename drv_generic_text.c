@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.32 2006/02/25 13:36:33 geronet Exp $
+/* $Id: drv_generic_text.c,v 1.33 2006/02/27 06:15:55 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.33  2006/02/27 06:15:55  reinelt
+ * indent...
+ *
  * Revision 1.32  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -767,7 +770,7 @@ static void drv_generic_text_bar_create_segments(void)
 		    break;
 		/* hollow style, val(1,2) == 1, like '[' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_FIRST && BarFB[n].style == STYLE_HOLLOW)
-																																																																																																																																								                								                              break;
+																																																																																																																																																				                								                              break;
 *//* hollow style, val(1,2) == 1, like ']' */
 /*                        if (l1 == 1 && l2 == 1 && Segment[i].style == STYLE_LAST && BarFB[n].style == STYLE_HOLLOW)
                               break;
