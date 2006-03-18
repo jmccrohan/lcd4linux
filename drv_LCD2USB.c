@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.8 2006/02/22 15:59:39 cmay Exp $
+/* $Id: drv_LCD2USB.c,v 1.9 2006/03/18 14:54:36 harbaum Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.9  2006/03/18 14:54:36  harbaum
+ * Improved USB error recovery
+ *
  * Revision 1.8  2006/02/22 15:59:39  cmay
  * removed KEYPADSIZE cruft per harbaum's suggestion
  *
@@ -118,13 +121,13 @@
 #define LCD_GET_RESERVED1  (LCD_GET | (3<<3))
 
 static char Name[] = "LCD2USB";
+static char *device_id = NULL, *bus_id = NULL;
 
 static usb_dev_handle *lcd;
 static int controllers = 0;
 
 extern int usb_debug;
 extern int got_signal;
-
 
 /****************************************/
 /***  hardware dependant functions    ***/
@@ -188,20 +191,29 @@ static int drv_L2U_close(void)
 
 static int drv_L2U_send(int request, int value, int index)
 {
-    static int errors = 0;
-
-    if (errors > 20)
-	return -1;
-
     if (usb_control_msg(lcd, USB_TYPE_VENDOR, request, value, index, NULL, 0, 1000) < 0) {
-	error("%s: USB request failed!", Name);
-	if (++errors > 20) {
-	    error("%s: too many USB errors, aborting.", Name);
-	    got_signal = -1;
+	error("%s: USB request failed! Trying to reconnect device.", Name);
+
+	usb_release_interface(lcd, 0);
+	usb_close(lcd);
+
+	// try to close and reopen connection
+	if (drv_L2U_open(bus_id, device_id) < 0) {
+	  error("%s: could not re-detect LCD2USB USB LCD", Name);
+	  got_signal = -1;
+	  return -1;
 	}
-	return -1;
+
+	// and try to re-send command
+	if (usb_control_msg(lcd, USB_TYPE_VENDOR, request, value, index, NULL, 0, 1000) < 0) {
+	  error("%s: retried USB request failed, aborting!", Name);
+	  got_signal = -1;
+	  return -1;
+	}
+
+        info("%s: Device successfully reconnected.", Name);
     }
-    errors = 0;
+
     return 0;
 }
 
@@ -266,7 +278,7 @@ static void drv_L2U_get_version(void)
     int ver = drv_L2U_get(LCD_GET_FWVER);
 
     if (ver != -1)
-	info("%s: firmware version %d.%d", Name, ver & 0xff, ver >> 8);
+	info("%s: firmware version %d.%02d", Name, ver & 0xff, ver >> 8);
     else
 	error("%s: unable to read firmware version", Name);
 }
@@ -484,7 +496,6 @@ static int drv_L2U_start(const char *section, const int quiet)
 {
     int contrast, brightness;
     int rows = -1, cols = -1;
-    char *device_id = NULL, *bus_id = NULL;
     char *s;
 
     s = cfg_get(section, "Size", NULL);
@@ -600,7 +611,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.8 $");
+    info("%s: %s", Name, "$Revision: 1.9 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
