@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.34 2006/02/27 08:12:34 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.35 2006/03/29 08:57:58 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.35  2006/03/29 08:57:58  reinelt
+ * vertical bar patch from Manuel Lausch
+ *
  * Revision 1.34  2006/02/27 08:12:34  reinelt
  * use serdisplib's full color support
  *
@@ -694,13 +697,13 @@ static void drv_generic_text_bar_create_bar(int row, int col, const DIRECTION di
 	    BarFB[row * LCOLS + col - 1].style = STYLE_LAST;
 	break;
 
-    case DIR_SOUTH:
+    case DIR_NORTH:
 	max = len * YRES;
 	val1 = max - val1;
 	val2 = max - val2;
 	rev = 1;
 
-    case DIR_NORTH:
+    case DIR_SOUTH:
 	while (len > 0 && row < LROWS) {
 	    BarFB[row * LCOLS + col].dir = dir;
 	    BarFB[row * LCOLS + col].segment = -1;

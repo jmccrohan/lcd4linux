@@ -345,6 +345,13 @@ Display LPH7508-serdisplib {
     Model 'LPH7508'
 }
 
+Display ctinclud {
+   Driver  'serdisplib'
+   Port    'USB:0x07c0/0x1501'
+   Model   'CTINCLUD'
+   Options ''
+}
+
 Display XWindow {
     Driver 'X11'
     Size   '120x32'
@@ -403,7 +410,7 @@ Widget OS {
     expression '*** '.uname('sysname').' '.uname('release').' ***'
     width 20
     align 'M'
-    speed 100	
+    speed 50	
     update tick
 }
 
@@ -1031,7 +1038,7 @@ Layout testMySQL {
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-#Display 'BA63'
+Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
@@ -1041,11 +1048,12 @@ Layout testMySQL {
 #Display 'Trefon'
 #Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
-Display 'LPH7508'
+#Display 'LPH7508'
+#Display 'ctinclud'
 
-#Layout 'Default'
+Layout 'Default'
 #Layout 'TestLayer'
-Layout 'TestImage'
+#Layout 'TestImage'
 #Layout 'L8x2'
 #Layout 'L16x1'
 #Layout 'L16x2'
