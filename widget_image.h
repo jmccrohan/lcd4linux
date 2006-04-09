@@ -1,4 +1,4 @@
-/* $Id: widget_image.h,v 1.3 2006/02/25 13:36:33 geronet Exp $
+/* $Id: widget_image.h,v 1.4 2006/04/09 14:17:50 reinelt Exp $
  *
  * image widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_image.h,v $
+ * Revision 1.4  2006/04/09 14:17:50  reinelt
+ * autoconf/library fixes, image and graphic display inversion
+ *
  * Revision 1.3  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -51,7 +54,10 @@ typedef struct WIDGET_IMAGE {
     int update;			/* update interval (msec) */
     char *visible_expr;		/* expression for visibility */
     void *visible_tree;		/* pre-compiled expression for visibility */
-    int visible;		/* icon visible? */
+    int visible;		/* image visible? */
+    char *inverted_expr;	/* expression for inversion */
+    void *inverted_tree;	/* pre-compiled expression for inversion */
+    int inverted;		/* image inverted? */
 } WIDGET_IMAGE;
 
 extern WIDGET_CLASS Widget_Image;

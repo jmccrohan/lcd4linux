@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.5 2006/02/25 13:36:33 geronet Exp $
+/* $Id: widget_image.c,v 1.6 2006/04/09 14:17:50 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.6  2006/04/09 14:17:50  reinelt
+ * autoconf/library fixes, image and graphic display inversion
+ *
  * Revision 1.5  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -141,17 +144,24 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
     }
 
     /* finally really render it */
-    for (x = 0; x < gdImage->sx; x++) {
-	for (y = 0; y < gdImage->sy; y++) {
-	    int p = gdImageGetTrueColorPixel(gdImage, x, y);
-	    int a = gdTrueColorGetAlpha(p);
-	    int i = y * Image->width + x;
-	    Image->bitmap[i].R = gdTrueColorGetRed(p);
-	    Image->bitmap[i].G = gdTrueColorGetGreen(p);
-	    Image->bitmap[i].B = gdTrueColorGetBlue(p);
-	    /* GD's alpha is 0 (opaque) to 127 (tranparanet) */
-	    /* our alpha is 0 (transparent) to 255 (opaque) */
-	    Image->bitmap[i].A = (a == 127) ? 0 : 255 - 2 * a;
+    if (Image->visible) {
+	for (x = 0; x < gdImage->sx; x++) {
+	    for (y = 0; y < gdImage->sy; y++) {
+		int p = gdImageGetTrueColorPixel(gdImage, x, y);
+		int a = gdTrueColorGetAlpha(p);
+		int i = y * Image->width + x;
+		Image->bitmap[i].R = gdTrueColorGetRed(p);
+		Image->bitmap[i].G = gdTrueColorGetGreen(p);
+		Image->bitmap[i].B = gdTrueColorGetBlue(p);
+		/* GD's alpha is 0 (opaque) to 127 (tranparanet) */
+		/* our alpha is 0 (transparent) to 255 (opaque) */
+		Image->bitmap[i].A = (a == 127) ? 0 : 255 - 2 * a;
+		if (Image->inverted) {
+		    Image->bitmap[i].R = 255 - Image->bitmap[i].R; 
+		    Image->bitmap[i].G = 255 - Image->bitmap[i].G; 
+		    Image->bitmap[i].B = 255 - Image->bitmap[i].B; 
+		}
+	    }
 	}
     }
 }
@@ -191,10 +201,18 @@ static void widget_image_update(void *Self)
 	if (Image->visible_tree != NULL) {
 	    Eval(Image->visible_tree, &result);
 	    Image->visible = R2N(&result);
-	    if (Image->visible < 0)
-		Image->visible = 0;
+	    Image->visible = Image->visible > 0;
 	    DelResult(&result);
 	}
+
+	Image->inverted = 0;
+	if (Image->inverted_tree != NULL) {
+	    Eval(Image->inverted_tree, &result);
+	    Image->inverted = R2N(&result);
+	    Image->inverted = Image->inverted > 0;
+	    DelResult(&result);
+	}
+
 #ifdef WITH_GD
 	/* render image into bitmap */
 	widget_image_render(W->name, Image);
@@ -240,6 +258,7 @@ int widget_image_init(WIDGET * Self)
 	Image->file_expr = cfg_get_raw(section, "file", NULL);
 	Image->update_expr = cfg_get_raw(section, "update", NULL);
 	Image->visible_expr = cfg_get_raw(section, "visible", NULL);
+	Image->inverted_expr = cfg_get_raw(section, "inverted", NULL);
 
 	/* sanity checks */
 	if (Image->file_expr == NULL || *Image->file_expr == '\0') {
@@ -254,6 +273,7 @@ int widget_image_init(WIDGET * Self)
 	Compile(Image->file_expr, &Image->file_tree);
 	Compile(Image->update_expr, &Image->update_tree);
 	Compile(Image->visible_expr, &Image->visible_tree);
+	Compile(Image->inverted_expr, &Image->inverted_tree);
 
 	free(section);
 	Self->data = Image;
@@ -286,6 +306,7 @@ int widget_image_quit(WIDGET * Self)
 		DelTree(Image->file_tree);
 		DelTree(Image->update_tree);
 		DelTree(Image->visible_tree);
+		DelTree(Image->inverted_tree);
 		free(Self->data);
 		Self->data = NULL;
 	    }

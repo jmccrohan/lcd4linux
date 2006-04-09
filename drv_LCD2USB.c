@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.9 2006/03/18 14:54:36 harbaum Exp $
+/* $Id: drv_LCD2USB.c,v 1.10 2006/04/09 14:17:50 reinelt Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,9 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.10  2006/04/09 14:17:50  reinelt
+ * autoconf/library fixes, image and graphic display inversion
+ *
  * Revision 1.9  2006/03/18 14:54:36  harbaum
  * Improved USB error recovery
  *
@@ -199,19 +202,18 @@ static int drv_L2U_send(int request, int value, int index)
 
 	// try to close and reopen connection
 	if (drv_L2U_open(bus_id, device_id) < 0) {
-	  error("%s: could not re-detect LCD2USB USB LCD", Name);
-	  got_signal = -1;
-	  return -1;
+	    error("%s: could not re-detect LCD2USB USB LCD", Name);
+	    got_signal = -1;
+	    return -1;
 	}
-
 	// and try to re-send command
 	if (usb_control_msg(lcd, USB_TYPE_VENDOR, request, value, index, NULL, 0, 1000) < 0) {
-	  error("%s: retried USB request failed, aborting!", Name);
-	  got_signal = -1;
-	  return -1;
+	    error("%s: retried USB request failed, aborting!", Name);
+	    got_signal = -1;
+	    return -1;
 	}
 
-        info("%s: Device successfully reconnected.", Name);
+	info("%s: Device successfully reconnected.", Name);
     }
 
     return 0;
@@ -611,7 +613,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.9 $");
+    info("%s: %s", Name, "$Revision: 1.10 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

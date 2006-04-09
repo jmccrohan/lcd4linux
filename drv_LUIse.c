@@ -1,4 +1,4 @@
-/* $Id: drv_LUIse.c,v 1.5 2006/03/10 18:06:52 tooly-bln Exp $
+/* $Id: drv_LUIse.c,v 1.6 2006/04/09 14:17:50 reinelt Exp $
  *
  * LUIse lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LUIse.c,v $
+ * Revision 1.6  2006/04/09 14:17:50  reinelt
+ * autoconf/library fixes, image and graphic display inversion
+ *
  * Revision 1.5  2006/03/10 18:06:52  tooly-bln
  * replace drv_generic_graphic_FB with drv_generic_graphic_black
  *
@@ -98,11 +101,11 @@ static void drv_LUIse_blit(const int row, const int col, const int height, const
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	   if (drv_generic_graphic_black(r,c)) {
+	    if (drv_generic_graphic_black(r, c)) {
 		LUI_SetPixel(devNum, 0, c, r, 1);
 	    } else {
 		LUI_SetPixel(devNum, 0, c, r, 0);
-	    } 
+	    }
 	}
     }
 }
@@ -286,7 +289,7 @@ int drv_LUIse_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Revision: 1.6 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_LUIse_blit;

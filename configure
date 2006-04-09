@@ -6315,7 +6315,6 @@ echo "${ECHO_T}done" >&6
 TEXT="no"
 GRAPHIC="no"
 GPIO="no"
-IMAGE="no"
 
 # generiv I/O drivers
 PARPORT="no"
@@ -6323,6 +6322,8 @@ SERIAL="no"
 I2C="no"
 KEYPAD="no"
 
+# generic libraries
+LIBUSB="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
@@ -6340,7 +6341,7 @@ if test "$BWCT" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_BWCT.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_BWCT 1
@@ -6397,8 +6398,8 @@ fi
 if test "$G15" = "yes"; then
    if test "$has_usb" = "true"; then
       GRAPHIC="yes"
+      LIBUSB="yes"
       DRIVERS="$DRIVERS drv_G15.o"
-      DRVLIBS="$DRVLIBS -lusb"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_G15 1
@@ -6428,7 +6429,7 @@ if test "$LCD2USB" = "yes"; then
       TEXT="yes"
       SERIAL="yes"
       DRIVERS="$DRIVERS drv_LCD2USB.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_LCD2USB 1
@@ -6553,8 +6554,6 @@ fi
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
-      IMAGE="yes"
-      DRVLIBS="$DRVLIBS -lgd"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PNG 1
@@ -6568,16 +6567,11 @@ fi
 
 if test "$PPM" = "yes"; then
    GRAPHIC="yes"
-   IMAGE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PPM 1
 _ACEOF
 
-fi
-
-if test "$IMAGE" = "yes"; then
-   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 if test "$ROUTERBOARD" = "yes"; then
@@ -6619,6 +6613,9 @@ cat >>confdefs.h <<\_ACEOF
 #define WITH_SERDISPLIB 1
 _ACEOF
 
+      if test "$has_usb" = "true"; then
+         LIBUSB="yes"
+      fi
    else
       { echo "$as_me:$LINENO: WARNING: serdisp.h not found: serdisplib driver disabled" >&5
 echo "$as_me: WARNING: serdisp.h not found: serdisplib driver disabled" >&2;}
@@ -6651,7 +6648,7 @@ if test "$Trefon" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_Trefon.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_TREFON 1
@@ -6668,7 +6665,7 @@ if test "$USBLCD" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_USBLCD.o"
    if test "$has_usb" = "true"; then
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
    fi
 
 cat >>confdefs.h <<\_ACEOF
@@ -6721,6 +6718,10 @@ fi
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_graphic.o"
+   if test "$has_gd" = "true"; then
+      DRIVERS="$DRIVERS drv_Image.o"
+      DRVLIBS="$DRVLIBS -lgd"
+   fi
 fi
 
 # generic GPIO driver
@@ -6751,6 +6752,11 @@ fi
 # generic keypad driver
 if test "$KEYPAD" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
+
+# libusb
+if test "$LIBUSB" = "yes"; then
+   DRVLIBS="$DRVLIBS -lusb"
 fi
 
 

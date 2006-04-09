@@ -337,6 +337,7 @@ Display LPH7508 {
     Port   '/dev/parports/0'
     Font   '6x8'
     Contrast 15
+    Inverted 0
 }
 
 Display LPH7508-serdisplib {
@@ -347,9 +348,10 @@ Display LPH7508-serdisplib {
 
 Display ctinclud {
    Driver  'serdisplib'
-   Port    'USB:0x07c0/0x1501'
+   Port    'USB:7c0/1501'
    Model   'CTINCLUD'
    Options ''
+   Inverted 0
 }
 
 Display XWindow {
@@ -834,9 +836,10 @@ Widget GPO_Test255 {
 
 Widget ImageTest {
     class 'Image'
-    file 'Michi.png'
+    file 'tux.png'
     update 1000
     visible 1
+    inverted 0
 }
 
 Layout Default {
@@ -897,13 +900,6 @@ Layout TestLayer {
 }
 
 Layout TestImage {
-    Row4 {
-	Col1  'OS'
-    }
-    Row2 {
-	Col1  'CPU'
-	Col10 'RAM'
-    }
     Layer 2 {
 	X1.Y1 'ImageTest'
     }
@@ -1038,7 +1034,7 @@ Layout testMySQL {
 #Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
-Display 'BA63'
+#Display 'BA63'
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'XWindow'
@@ -1048,12 +1044,12 @@ Display 'BA63'
 #Display 'Trefon'
 #Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
-#Display 'LPH7508'
+Display 'LPH7508'
 #Display 'ctinclud'
 
-Layout 'Default'
+#Layout 'Default'
 #Layout 'TestLayer'
-#Layout 'TestImage'
+Layout 'TestImage'
 #Layout 'L8x2'
 #Layout 'L16x1'
 #Layout 'L16x2'

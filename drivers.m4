@@ -180,7 +180,6 @@ AC_MSG_RESULT([done])
 TEXT="no"
 GRAPHIC="no"
 GPIO="no"
-IMAGE="no"
 
 # generiv I/O drivers
 PARPORT="no"
@@ -188,6 +187,8 @@ SERIAL="no"
 I2C="no"
 KEYPAD="no"
 
+# generic libraries
+LIBUSB="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
@@ -201,7 +202,7 @@ if test "$BWCT" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_BWCT.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
       AC_DEFINE(WITH_BWCT,1,[BWCT driver])
    else
       AC_MSG_WARN(usb.h not found: BWCT driver disabled)
@@ -240,8 +241,8 @@ fi
 if test "$G15" = "yes"; then
    if test "$has_usb" = "true"; then
       GRAPHIC="yes"
+      LIBUSB="yes"
       DRIVERS="$DRIVERS drv_G15.o"
-      DRVLIBS="$DRVLIBS -lusb"
       AC_DEFINE(WITH_G15,1,[G-15 driver])
    else
       AC_MSG_WARN(usb.h not found: G15 driver disabled)
@@ -262,7 +263,7 @@ if test "$LCD2USB" = "yes"; then
       TEXT="yes"
       SERIAL="yes"
       DRIVERS="$DRIVERS drv_LCD2USB.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
       AC_DEFINE(WITH_LCD2USB,1,[LCD2USB driver])
    else
       AC_MSG_WARN(usb.h not found: LCD2USB driver disabled)
@@ -344,8 +345,6 @@ fi
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
       GRAPHIC="yes"
-      IMAGE="yes"
-      DRVLIBS="$DRVLIBS -lgd"
       AC_DEFINE(WITH_PNG,1,[ driver])
    else
       AC_MSG_WARN(gd.h not found: PNG driver disabled)
@@ -354,12 +353,7 @@ fi
 
 if test "$PPM" = "yes"; then
    GRAPHIC="yes"
-   IMAGE="yes"
    AC_DEFINE(WITH_PPM,1,[ driver])
-fi
-
-if test "$IMAGE" = "yes"; then
-   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 if test "$ROUTERBOARD" = "yes"; then
@@ -389,6 +383,9 @@ if test "$SERDISPLIB" = "yes"; then
       DRIVERS="$DRIVERS drv_serdisplib.o"
       DRVLIBS="$DRVLIBS -L/usr/local/lib -lserdisp"
       AC_DEFINE(WITH_SERDISPLIB,1,[serdisplib driver])
+      if test "$has_usb" = "true"; then
+         LIBUSB="yes"
+      fi
    else
       AC_MSG_WARN(serdisp.h not found: serdisplib driver disabled)
    fi
@@ -412,7 +409,7 @@ if test "$Trefon" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       DRIVERS="$DRIVERS drv_Trefon.o"
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
       AC_DEFINE(WITH_TREFON,1,[TREFON driver])
    else
       AC_MSG_WARN(usb.h not found: Trefon driver disabled)
@@ -424,7 +421,7 @@ if test "$USBLCD" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_USBLCD.o"
    if test "$has_usb" = "true"; then
-      DRVLIBS="$DRVLIBS -lusb"
+      LIBUSB="yes"
    fi
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
 fi
@@ -462,6 +459,10 @@ fi
 # generic graphic driver
 if test "$GRAPHIC" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_graphic.o"
+   if test "$has_gd" = "true"; then
+      DRIVERS="$DRIVERS drv_Image.o"
+      DRVLIBS="$DRVLIBS -lgd"
+   fi	
 fi
 
 # generic GPIO driver
@@ -488,6 +489,11 @@ fi
 # generic keypad driver
 if test "$KEYPAD" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
+
+# libusb
+if test "$LIBUSB" = "yes"; then
+   DRVLIBS="$DRVLIBS -lusb"
 fi
 
 AC_SUBST(DRIVERS)

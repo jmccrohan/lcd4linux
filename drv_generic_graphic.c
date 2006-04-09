@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.26  2006/04/09 14:17:50  reinelt
+ * autoconf/library fixes, image and graphic display inversion
+ *
  * Revision 1.25  2006/02/27 07:53:52  reinelt
  * some more graphic issues fixed
  *
@@ -184,10 +187,15 @@ RGBA NO_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 static char *Section = NULL;
 static char *Driver = NULL;
 
-static int LROWS = 0;		/* layout size  (pixels!) */
-static int LCOLS = 0;		/* layout size  (pixels!) */
+/* layout size  (pixels!) */
+static int LROWS = 0;
+static int LCOLS = 0;
 
+/* framebuffer */
 static RGBA *drv_generic_graphic_FB[LAYERS] = { NULL, };
+
+/* inverted colors */
+static int INVERTED = 0;
 
 /* must be implemented by the real driver */
 void (*drv_generic_graphic_real_blit) () = NULL;
@@ -261,6 +269,12 @@ static RGBA drv_generic_graphic_blend(const int row, const int col)
 	    ret.B = (p.B * p.A + ret.B * (255 - p.A)) / 255;
 	}
     }
+    if (INVERTED) {
+	ret.R = 255 - ret.R;
+	ret.G = 255 - ret.G;
+	ret.B = 255 - ret.B;
+    }
+
     return ret;
 }
 
@@ -649,6 +663,9 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     if (color)
 	free(color);
 
+    /* inverted display? */
+    cfg_number(section, "inverted", 0, 0, 1, &INVERTED);
+
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_graphic_draw;
@@ -705,11 +722,7 @@ unsigned char drv_generic_graphic_gray(const int row, const int col)
 
 unsigned char drv_generic_graphic_black(const int row, const int col)
 {
-    RGBA p = drv_generic_graphic_blend(row, col);
-    if (p.R > 127 || p.G > 127 || p.B > 127) {
-	return 0;
-    }
-    return 1;
+    return drv_generic_graphic_gray(row, col) < 127;
 }
 
 
