@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.27  2006/04/09 17:46:14  reinelt
+ * vertical bar patch fro graphic displays by Ronald Hopfer
+ *
  * Revision 1.26  2006/04/09 14:17:50  reinelt
  * autoconf/library fixes, image and graphic display inversion
  *
@@ -532,16 +535,16 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 	}
 	break;
 
-    case DIR_SOUTH:
+    case DIR_NORTH:
 	val1 = max - val1;
 	val2 = max - val2;
 	rev = 1;
 
-    case DIR_NORTH:
-	for (y = 0; y < max; y++) {
-	    for (x = 0; x < XRES; x++) {
-		int val = x < XRES / 2 ? val1 : val2;
-		if (x < val)
+    case DIR_SOUTH:
+	for (x = 0; x < XRES; x++) {
+	    int val = x < XRES / 2 ? val1 : val2;
+	    for (y = 0; y < max; y++) {
+		if (y < val)
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
 		else
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
