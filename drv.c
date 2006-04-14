@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.39 2006/01/26 19:26:27 harbaum Exp $
+/* $Id: drv.c,v 1.40 2006/04/14 20:59:38 harbaum Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.40  2006/04/14 20:59:38  harbaum
+ * Disable inclusion of Image driver in drv.c if no gd was found.
+ *
  * Revision 1.39  2006/01/26 19:26:27  harbaum
  * Added LCD2USB support
  *
@@ -275,7 +278,7 @@ DRIVER *Driver[] = {
 #ifdef WITH_HD44780
     &drv_HD44780,
 #endif
-#if defined (WITH_PNG) || defined(WITH_PPM)
+#if (defined (WITH_PNG) || defined(WITH_PPM)) && defined(WITH_GD)
     &drv_Image,
 #endif
 #ifdef WITH_LCD2USB
