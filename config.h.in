@@ -49,6 +49,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the <libmpd/libmpd.h> header file. */
+#undef HAVE_LIBMPD_LIBMPD_H
+
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
 
@@ -283,6 +286,9 @@
 
 /* meminfo plugin */
 #undef PLUGIN_MEMINFO
+
+/* mpd plugin */
+#undef PLUGIN_MPD
 
 /* mysql plugin */
 #undef PLUGIN_MYSQL

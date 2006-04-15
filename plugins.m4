@@ -60,6 +60,7 @@ for plugin in $plugins; do
          PLUGIN_ISDN="yes"
          PLUGIN_LOADAVG="yes"
          PLUGIN_MEMINFO="yes"
+         PLUGIN_MPD="yes"
          PLUGIN_MYSQL="yes"
          PLUGIN_NETDEV="yes"
          PLUGIN_POP3="yes"
@@ -107,6 +108,9 @@ for plugin in $plugins; do
       meminfo)
          PLUGIN_MEMINFO=$val
          ;;
+      mpd)
+         PLUGIN_MPD=$val
+	 ;;
       mysql)
          PLUGIN_MYSQL=$val
          ;;
@@ -205,6 +209,21 @@ fi
 if test "$PLUGIN_MEMINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_meminfo.o"
    AC_DEFINE(PLUGIN_MEMINFO,1,[meminfo plugin])
+fi
+if test "$PLUGIN_MPD" = "yes"; then
+   AC_CHECK_HEADERS(libmpd/libmpd.h, [has_libmpd_header="true"], [has_libmpd_header="false"])
+   if test "$has_libmpd_header" = "true"; then	
+      AC_CHECK_LIB(libmpd, libmpd_init, [has_libmpd_lib="true"], [has_libmpd_lib="false"])
+      if test "$has_libmpd_lib" = "true"; then
+        PLUGINS="$PLUGINS plugin_mpd.o"
+        PLUGINLIBS="$PLUGINLIBS -lmpd"
+        AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])
+      else
+        AC_MSG_WARN(libmpd lib not found: mpd plugin disabled)
+      fi
+   else
+      AC_MSG_WARN(libmpd/libmpd.h header not found: mpd plugin disabled)
+   fi 
 fi
 if test "$PLUGIN_MYSQL" = "yes"; then
    AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header="true"], [has_mysql_header="false"])

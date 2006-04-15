@@ -102,6 +102,7 @@ plugin_imon.c                 \
 plugin_isdn.c                 \
 plugin_loadavg.c              \
 plugin_meminfo.c              \
+plugin_mpd.c		      \
 plugin_mysql.c                \
 plugin_netdev.c               \
 plugin_pop3.c                 \

@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.6 2006/04/09 14:17:50 reinelt Exp $
+/* $Id: widget_image.c,v 1.7 2006/04/15 05:22:52 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.7  2006/04/15 05:22:52  reinelt
+ * mpd plugin from Stefan Kuhne
+ *
  * Revision 1.6  2006/04/09 14:17:50  reinelt
  * autoconf/library fixes, image and graphic display inversion
  *
@@ -157,9 +160,9 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 		/* our alpha is 0 (transparent) to 255 (opaque) */
 		Image->bitmap[i].A = (a == 127) ? 0 : 255 - 2 * a;
 		if (Image->inverted) {
-		    Image->bitmap[i].R = 255 - Image->bitmap[i].R; 
-		    Image->bitmap[i].G = 255 - Image->bitmap[i].G; 
-		    Image->bitmap[i].B = 255 - Image->bitmap[i].B; 
+		    Image->bitmap[i].R = 255 - Image->bitmap[i].R;
+		    Image->bitmap[i].G = 255 - Image->bitmap[i].G;
+		    Image->bitmap[i].B = 255 - Image->bitmap[i].B;
 		}
 	    }
 	}
@@ -212,7 +215,6 @@ static void widget_image_update(void *Self)
 	    Image->inverted = Image->inverted > 0;
 	    DelResult(&result);
 	}
-
 #ifdef WITH_GD
 	/* render image into bitmap */
 	widget_image_render(W->name, Image);

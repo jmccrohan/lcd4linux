@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.40 2006/02/19 15:42:19 reinelt Exp $
+/* $Id: plugin.c,v 1.41 2006/04/15 05:22:52 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.41  2006/04/15 05:22:52  reinelt
+ * mpd plugin from Stefan Kuhne
+ *
  * Revision 1.40  2006/02/19 15:42:19  reinelt
  * file plugin from Chris Maj
  *
@@ -242,6 +245,8 @@ int plugin_init_loadavg(void);
 void plugin_exit_loadavg(void);
 int plugin_init_meminfo(void);
 void plugin_exit_meminfo(void);
+int plugin_init_mpd(void);
+void plugin_exit_mpd(void);
 int plugin_init_mysql(void);
 void plugin_exit_mysql(void);
 int plugin_init_netdev(void);
@@ -311,6 +316,10 @@ int plugin_init(void)
 #ifdef PLUGIN_MEMINFO
     plugin_init_meminfo();
 #endif
+#ifdef PLUGIN_MPD
+    plugin_init_mpd();
+#endif
+
 #ifdef PLUGIN_MYSQL
     plugin_init_mysql();
 #endif
@@ -389,6 +398,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_MEMINFO
     plugin_exit_meminfo();
+#endif
+#ifdef PLUGIN_MPD
+    plugin_exit_mpd();
 #endif
 #ifdef PLUGIN_MYSQL
     plugin_exit_mysql();
