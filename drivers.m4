@@ -107,7 +107,7 @@ for driver in $drivers; do
       LCD2USB)
          LCD2USB=$val
          ;;
-      LCDLINUX)
+      LCDLinux)
          LCDLINUX=$val
 	 ;;
       LCDTerm)

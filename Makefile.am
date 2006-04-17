@@ -32,7 +32,6 @@ widget.c      widget.h        \
 widget_text.c widget_text.h   \
 widget_bar.c  widget_bar.h    \
 widget_icon.c widget_icon.h   \
-widget_image.c widget_image.h \
 widget_keypad.c widget_keypad.h    \
 widget_timer.c widget_timer.h \
 widget_gpo.c  widget_gpo.h    \
@@ -88,6 +87,7 @@ drv_WincorNixdorf.c           \
 drv_X11.c                     \
                               \
 font_6x8.h                    \
+widget_image.c widget_image.h \
                               \
 lcd4linux_i2c.h               \
                               \

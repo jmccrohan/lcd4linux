@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.12 2006/01/30 06:25:52 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.13 2006/04/17 08:10:42 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.13  2006/04/17 08:10:42  reinelt
+ * LCDLinux patch from Mattia; widget_image moved to EXTRA_SOURCE
+ *
  * Revision 1.12  2006/01/30 06:25:52  reinelt
  * added CVS Revision
  *
@@ -171,7 +174,7 @@ static int drv_LL_start(const char *section, const int quiet)
 {
     char *s;
     int rows = -1, cols = -1;
-    int use_busy = 0, commit = 0;
+    int use_busy = 0, bus4bits = 0, commit = 0;
     struct lcd_parameters buf;
 
     /* emit version information */
@@ -202,16 +205,15 @@ static int drv_LL_start(const char *section, const int quiet)
 	error("%s: Could not query display information!", Name);
 	return -1;
     }
-    info("%s: %dx%d display with %d controllers, flags=0x%02x:", Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr,
-	 buf.flags);
-
+    info("%s: %dx%d display with %d controllers, flags=0x%02x:",
+    	Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
     info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
     info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
     info("%s:   font size %s", Name, buf.flags & HD44780_5X10_FONT ? "5x10" : "5x8");
 
 
 
-    /* overwrite with size from lcd4linux.conf */
+    /* overwrite width size from lcd4linux.conf */
     if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.cntr_cols)) {
 	info("%s: changing size to %dx%d", Name, cols, rows);
 	buf.cntr_rows = rows;
@@ -231,6 +233,18 @@ static int drv_LL_start(const char *section, const int quiet)
     } else if (!use_busy && (buf.flags & HD44780_CHECK_BF)) {
 	info("%s: deactivating busy-flag checking", Name);
 	buf.flags &= ~HD44780_CHECK_BF;
+	commit = 1;
+    }
+
+    /* overwrite bus length from lcd4linux.conf */
+    cfg_number(section, "Bus4Bit", 0, 0, 1, &bus4bits);
+    if (bus4bits && !(buf.flags & HD44780_4BITS_BUS)) {
+	info("%s: setting bus length to 4 bits", Name);
+	buf.flags |= HD44780_4BITS_BUS;
+	commit = 1;
+    } else if (!bus4bits && (buf.flags & HD44780_4BITS_BUS)) {
+	info("%s: setting bus length to 8 bits", Name);
+	buf.flags &= ~HD44780_4BITS_BUS;
 	commit = 1;
     }
 
@@ -297,7 +311,7 @@ int drv_LL_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.12 $");
+    info("%s: %s", Name, "$Revision: 1.13 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
