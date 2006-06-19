@@ -1,4 +1,4 @@
-/* $Id: drv_Sample.c,v 1.7 2006/02/27 06:14:46 reinelt Exp $
+/* $Id: drv_Sample.c,v 1.8 2006/06/19 11:54:08 reinelt Exp $
  *
  * sample lcd4linux driver
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Sample.c,v $
+ * Revision 1.8  2006/06/19 11:54:08  reinelt
+ * removed dependency to usb.h from sample driver
+ *
  * Revision 1.7  2006/02/27 06:14:46  reinelt
  * graphic bug resulting in all black pixels solved
  *
@@ -58,10 +61,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
-
-#include <usb.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -443,7 +445,7 @@ int drv_Sample_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.7 $");
+    info("%s: %s", Name, "$Revision: 1.8 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
