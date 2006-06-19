@@ -460,7 +460,7 @@ fi
 if test "$GRAPHIC" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_graphic.o"
    if test "$has_gd" = "true"; then
-      DRIVERS="$DRIVERS drv_Image.o"
+      DRIVERS="$DRIVERS widget_image.o"
       DRVLIBS="$DRVLIBS -lgd"
    fi	
 fi
