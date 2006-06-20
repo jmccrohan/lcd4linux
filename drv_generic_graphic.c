@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.28  2006/06/20 08:50:58  reinelt
+ * widget_image linker error hopefully finally fixed
+ *
  * Revision 1.27  2006/04/09 17:46:14  reinelt
  * vertical bar patch fro graphic displays by Ronald Hopfer
  *
@@ -685,9 +688,11 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     widget_register(&wc);
 
     /* register image widget */
+#ifdef WITH_IMAGE
     wc = Widget_Image;
     wc.draw = drv_generic_graphic_image_draw;
     widget_register(&wc);
+#endif
 
     /* clear framebuffer */
     drv_generic_graphic_clear();

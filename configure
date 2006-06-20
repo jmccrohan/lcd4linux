@@ -7340,6 +7340,7 @@ echo "${ECHO_T}done" >&6; }
 # generic display drivers
 TEXT="no"
 GRAPHIC="no"
+IMAGE="no"
 GPIO="no"
 
 # generiv I/O drivers
@@ -7579,7 +7580,7 @@ fi
 
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
-      GRAPHIC="yes"
+      IMAGE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PNG 1
@@ -7592,7 +7593,7 @@ echo "$as_me: WARNING: gd.h not found: PNG driver disabled" >&2;}
 fi
 
 if test "$PPM" = "yes"; then
-   GRAPHIC="yes"
+   IMAGE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_PPM 1
@@ -7735,10 +7736,15 @@ echo "$as_me: error: You should activate at least one driver..." >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
+fi
+
+# Image driver
+if test "$IMAGE" = "yes"; then
+   GRAPHIC="yes"
+   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 # generic graphic driver
@@ -7747,6 +7753,11 @@ if test "$GRAPHIC" = "yes"; then
    if test "$has_gd" = "true"; then
       DRIVERS="$DRIVERS widget_image.o"
       DRVLIBS="$DRVLIBS -lgd"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_IMAGE 1
+_ACEOF
+
    fi
 fi
 

@@ -380,6 +380,9 @@
 /* I2C bus driver */
 #undef WITH_I2C
 
+/* image widget */
+#undef WITH_IMAGE
+
 /* LCD2USB driver */
 #undef WITH_LCD2USB
 
@@ -410,10 +413,10 @@
 /* NULL driver */
 #undef WITH_NULL
 
-/* driver */
+/* PNG driver */
 #undef WITH_PNG
 
-/* driver */
+/* PPM driver */
 #undef WITH_PPM
 
 /* RouterBoard driver */

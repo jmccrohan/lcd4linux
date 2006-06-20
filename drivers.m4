@@ -179,6 +179,7 @@ AC_MSG_RESULT([done])
 # generic display drivers
 TEXT="no"
 GRAPHIC="no"
+IMAGE="no"
 GPIO="no"
 
 # generiv I/O drivers
@@ -344,16 +345,16 @@ fi
 
 if test "$PNG" = "yes"; then
    if test "$has_gd" = "true"; then
-      GRAPHIC="yes"
-      AC_DEFINE(WITH_PNG,1,[ driver])
+      IMAGE="yes"
+      AC_DEFINE(WITH_PNG,1,[PNG driver])
    else
       AC_MSG_WARN(gd.h not found: PNG driver disabled)
    fi
 fi
 
 if test "$PPM" = "yes"; then
-   GRAPHIC="yes"
-   AC_DEFINE(WITH_PPM,1,[ driver])
+   IMAGE="yes"
+   AC_DEFINE(WITH_PPM,1,[PPM driver])
 fi
 
 if test "$ROUTERBOARD" = "yes"; then
@@ -450,10 +451,15 @@ if test "$DRIVERS" = ""; then
    AC_MSG_ERROR([You should activate at least one driver...])
 fi
    
-
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
+fi
+
+# Image driver
+if test "$IMAGE" = "yes"; then
+   GRAPHIC="yes"
+   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 # generic graphic driver
@@ -462,6 +468,7 @@ if test "$GRAPHIC" = "yes"; then
    if test "$has_gd" = "true"; then
       DRIVERS="$DRIVERS widget_image.o"
       DRVLIBS="$DRVLIBS -lgd"
+      AC_DEFINE(WITH_IMAGE, 1, [image widget])
    fi	
 fi
 

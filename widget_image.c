@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.7 2006/04/15 05:22:52 reinelt Exp $
+/* $Id: widget_image.c,v 1.8 2006/06/20 08:50:59 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.8  2006/06/20 08:50:59  reinelt
+ * widget_image linker error hopefully finally fixed
+ *
  * Revision 1.7  2006/04/15 05:22:52  reinelt
  * mpd plugin from Stefan Kuhne
  *
@@ -72,11 +75,12 @@
 
 #ifdef HAVE_GD_GD_H
 #include <gd/gd.h>
-#define WITH_GD
 #else
 #ifdef HAVE_GD_H
 #include <gd.h>
-#define WITH_GD
+#else
+#error "gd.h not found!"
+#error "cannot compile image widget"
 #endif
 #endif
 
@@ -85,7 +89,6 @@
 #endif
 
 
-#ifdef WITH_GD
 static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 {
     int x, y;
@@ -168,7 +171,6 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	}
     }
 }
-#endif
 
 
 static void widget_image_update(void *Self)
@@ -215,10 +217,9 @@ static void widget_image_update(void *Self)
 	    Image->inverted = Image->inverted > 0;
 	    DelResult(&result);
 	}
-#ifdef WITH_GD
+
 	/* render image into bitmap */
 	widget_image_render(W->name, Image);
-#endif
 
     }
 
