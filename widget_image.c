@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.8 2006/06/20 08:50:59 reinelt Exp $
+/* $Id: widget_image.c,v 1.9 2006/06/21 05:12:43 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.9  2006/06/21 05:12:43  reinelt
+ * added checks for libgd version 2 (thanks to Sam)
+ *
  * Revision 1.8  2006/06/20 08:50:59  reinelt
  * widget_image linker error hopefully finally fixed
  *
@@ -82,6 +85,11 @@
 #error "gd.h not found!"
 #error "cannot compile image widget"
 #endif
+#endif
+
+#if GD2_VERS != 2
+#error "lcd4linux requires libgd version 2"
+#error "cannot compile image widget"
 #endif
 
 #ifdef WITH_DMALLOC

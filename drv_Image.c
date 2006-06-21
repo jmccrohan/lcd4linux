@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.17 2006/02/08 04:55:04 reinelt Exp $
+/* $Id: drv_Image.c,v 1.18 2006/06/21 05:12:43 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.18  2006/06/21 05:12:43  reinelt
+ * added checks for libgd version 2 (thanks to Sam)
+ *
  * Revision 1.17  2006/02/08 04:55:04  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -108,7 +111,9 @@
 #include <fcntl.h>
 #include <sys/time.h>
 
+
 #ifdef WITH_PNG
+
 #ifdef HAVE_GD_GD_H
 #include <gd/gd.h>
 #else
@@ -119,6 +124,12 @@
 #error "cannot compile PNG driver"
 #endif
 #endif
+
+#if GD2_VERS != 2
+#error "lcd4linux requires libgd version 2"
+#error "cannot compile PNG driver"
+#endif
+
 #endif
 
 
@@ -478,7 +489,7 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.17 $");
+    info("%s: %s", Name, "$Revision: 1.18 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;
