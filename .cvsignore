@@ -1,1 +1,9 @@
-*.lo
+Makefile
+.deps
+autom4te.cache
+config.h
+config.log
+config.status
+lcd4linux
+stamp-h1
+
