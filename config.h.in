@@ -128,6 +128,9 @@
 /* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
 
+/* Define to 1 if you have the `strcspn' function. */
+#undef HAVE_STRCSPN
+
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
 
@@ -180,9 +183,6 @@
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
-
-/* Define to 1 if you have the <sys/statfs.h> header file. */
-#undef HAVE_SYS_STATFS_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -469,6 +469,9 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef ssize_t
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
