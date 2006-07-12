@@ -4,6 +4,16 @@ Variables {
    minute 60000
 }
 
+Display G15 {
+    Driver 'G-15'
+    Font   '6x8'
+    Contrast 10
+    Inverted 0
+    UInput '/dev/input/uinput'
+    SingleKeyPress 1
+}
+
+
 Display SerDispLib {
     Driver 'serdisplib'
     Port 'PAR:/dev/parports/0'

@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.9 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.10 2006/07/12 20:45:30 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.10  2006/07/12 20:45:30  reinelt
+ * G15 and thread patch by Anton
+ *
  * Revision 1.9  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -80,6 +83,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -182,7 +186,7 @@ static void destroy_exec_thread(const int n)
 	free(Thread[n].key);
     if (Thread[n].ret)
 	shm_destroy(Thread[n].shmid, Thread[n].ret);
-
+    kill(Thread[n].pid,SIGKILL);
     Thread[n].delay = 0;
     Thread[n].mutex = 0;
     Thread[n].pid = 0;
