@@ -1,4 +1,4 @@
-/* $Id: drv_LCDLinux.c,v 1.13 2006/04/17 08:10:42 reinelt Exp $
+/* $Id: drv_LCDLinux.c,v 1.14 2006/07/12 20:47:51 reinelt Exp $
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_LCDLinux.c,v $
+ * Revision 1.14  2006/07/12 20:47:51  reinelt
+ * indent
+ *
  * Revision 1.13  2006/04/17 08:10:42  reinelt
  * LCDLinux patch from Mattia; widget_image moved to EXTRA_SOURCE
  *
@@ -206,7 +209,7 @@ static int drv_LL_start(const char *section, const int quiet)
 	return -1;
     }
     info("%s: %dx%d display with %d controllers, flags=0x%02x:",
-    	Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
+	 Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
     info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
     info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
     info("%s:   font size %s", Name, buf.flags & HD44780_5X10_FONT ? "5x10" : "5x8");
@@ -311,7 +314,7 @@ int drv_LL_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.13 $");
+    info("%s: %s", Name, "$Revision: 1.14 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
