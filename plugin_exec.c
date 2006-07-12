@@ -1,4 +1,4 @@
-/* $Id: plugin_exec.c,v 1.11 2006/07/12 20:47:51 reinelt Exp $
+/* $Id: plugin_exec.c,v 1.12 2006/07/12 21:01:41 reinelt Exp $
  *
  * plugin for external processes
  *
@@ -27,6 +27,9 @@
  *
  *
  * $Log: plugin_exec.c,v $
+ * Revision 1.12  2006/07/12 21:01:41  reinelt
+ * thread_destroy, minor cleanups
+ *
  * Revision 1.11  2006/07/12 20:47:51  reinelt
  * indent
  *
@@ -86,7 +89,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <signal.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -181,7 +183,7 @@ static void exec_thread(void *data)
 
 static void destroy_exec_thread(const int n)
 {
-    kill(Thread[n].pid, SIGKILL);
+    thread_destroy(Thread[n].pid);
 
     if (Thread[n].mutex != 0)
 	mutex_destroy(Thread[n].mutex);

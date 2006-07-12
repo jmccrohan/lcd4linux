@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.8 2006/07/12 20:47:51 reinelt Exp $
+/* $Id: drv_G15.c,v 1.9 2006/07/12 21:01:41 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.9  2006/07/12 21:01:41  reinelt
+ * thread_destroy, minor cleanups
+ *
  * Revision 1.8  2006/07/12 20:47:51  reinelt
  * indent
  *
@@ -69,7 +72,6 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
-#include <signal.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -122,6 +124,7 @@ void drv_G15_keyDown(unsigned char scancode)
     event.value = 1;
     write(uinput_fd, &event, sizeof(event));
 }
+
 void drv_G15_keyUp(unsigned char scancode)
 {
     struct input_event event;
@@ -132,21 +135,24 @@ void drv_G15_keyUp(unsigned char scancode)
     event.value = 0;
     write(uinput_fd, &event, sizeof(event));
 }
+
 void drv_G15_keyDownUp(unsigned char scancode)
 {
     drv_G15_keyDown(scancode);
     drv_G15_keyUp(scancode);
 
 }
+
 inline unsigned char drv_G15_evalScanCode(int key)
 {
-    // first 12 G keys produce F1 - F12, thats 0x3a + key
+    /* first 12 G keys produce F1 - F12, thats 0x3a + key */
     if (key < 12) {
 	return 0x3a + key;
     }
-    // the other keys produce Key '1' (above letters) + key, thats 0x1e + key
+
+    /* the other keys produce Key '1' (above letters) + key, thats 0x1e + key */
     else {
-	return 0x1e + key - 12;	// sigh, half an hour to find  -12 ....
+	return 0x1e + key - 12;	/* sigh, half an hour to find  -12 .... */
     }
 }
 
@@ -160,11 +166,15 @@ void drv_G15_processKeyEvent(unsigned char *buffer)
     unsigned char m_key_new_states[4];
     unsigned char l_key_new_states[5];
     unsigned char orig_scancode;
-//   printf("%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx \n\n",buffer[0],buffer[1],buffer[2],buffer[3],buffer[4],buffer[5],buffer[6],buffer[7],buffer[8]);
-//   usleep(100);
+
+#if 0
+    printf("%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx \n\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4],
+	   buffer[5], buffer[6], buffer[7], buffer[8]);
+    usleep(100);
+#endif
+
     if (buffer[0] == 0x01) {
 	DEBUG("Checking keys: ");
-
 
 	for (i = 0; i < 18; ++i) {
 	    orig_scancode = drv_G15_evalScanCode(i);
@@ -175,7 +185,7 @@ void drv_G15_processKeyEvent(unsigned char *buffer)
 		is_set = 1;
 
 	    if (!is_set && g_key_states[i] != 0) {
-		// key was pressed but is no more
+		/* key was pressed but is no more */
 		if (!kb_single_keypress)
 		    drv_G15_keyUp(g_scancode_offset + i);
 		g_key_states[i] = 0;
@@ -205,7 +215,7 @@ void drv_G15_processKeyEvent(unsigned char *buffer)
 
 	    for (i = 0; i < 4; ++i) {
 		if (!m_key_new_states[i] && m_key_states[i] != 0) {
-		    // key was pressed but is no more
+		    /* key was pressed but is no more */
 		    if (!kb_single_keypress)
 			drv_G15_keyUp(m_scancode_offset + i);
 		    m_key_states[i] = 0;
@@ -234,7 +244,7 @@ void drv_G15_processKeyEvent(unsigned char *buffer)
 
 	    for (i = 0; i < 5; ++i) {
 		if (!l_key_new_states[i] && l_key_states[i] != 0) {
-		    // key was pressed but is no more
+		    /* key was pressed but is no more */
 		    if (!kb_single_keypress)
 			drv_G15_keyUp(l_scancode_offset + i);
 		    l_key_states[i] = 0;
@@ -290,7 +300,8 @@ void drv_G15_initKeyHandling(char *device_filename)
 	info("Failed to create input device");
 	abort();
     }
-//   atexit(&closeDevice);
+
+/*  atexit(&closeDevice); */
 
     memset(g_key_states, 0, sizeof(g_key_states));
     memset(m_key_states, 0, sizeof(m_key_states));
@@ -305,7 +316,7 @@ static void drv_G15_KBThread(void __attribute__ ((unused)) * notused)
     while (1) {
 	mutex_lock(kb_mutex);
 	ret = usb_bulk_read(g15_lcd, 0x81, (char *) buffer, 9, 10);
-//      ret = usb_interrupt_read(g15_lcd, 0x81, (char*)buffer, 9, 10);
+/*      ret = usb_interrupt_read(g15_lcd, 0x81, (char*)buffer, 9, 10); */
 	mutex_unlock(kb_mutex);
 	if (ret == 9) {
 	    drv_G15_processKeyEvent(buffer);
@@ -528,7 +539,7 @@ int drv_G15_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.8 $");
+    info("%s: %s", Name, "$Revision: 1.9 $");
 
     DEBUG("entered");
 
@@ -584,7 +595,7 @@ int drv_G15_quit(const int quiet)
 
     mutex_destroy(kb_mutex);
     usleep(10 * 1000);
-    kill(kb_thread_pid, SIGKILL);
+    thread_destroy(kb_thread_pid);
 
     drv_G15_closeUIDevice();
     DEBUG("closing UInputDev");

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.7 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: thread.c,v 1.8 2006/07/12 21:01:41 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.8  2006/07/12 21:01:41  reinelt
+ * thread_destroy, minor cleanups
+ *
  * Revision 1.7  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -207,4 +210,10 @@ int thread_create(const char *name, void (*thread) (void *data), void *data)
     }
 
     return pid;
+}
+
+
+int thread_destroy(const int pid)
+{
+    return kill(pid, SIGKILL);
 }

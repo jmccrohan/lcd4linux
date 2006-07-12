@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.6 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: thread.h,v 1.7 2006/07/12 21:01:41 reinelt Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.7  2006/07/12 21:01:41  reinelt
+ * thread_destroy, minor cleanups
+ *
  * Revision 1.6  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -62,5 +65,6 @@ int shm_create(void **buffer, const int size);
 void shm_destroy(const int shmid, const void *buffer);
 
 int thread_create(const char *name, void (*thread) (void *data), void *data);
+int thread_destroy(const int pid);
 
 #endif
