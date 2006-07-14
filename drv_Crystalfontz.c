@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.42 2006/02/22 15:59:39 cmay Exp $
+/* $Id: drv_Crystalfontz.c,v 1.43 2006/07/14 20:15:11 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.43  2006/07/14 20:15:11  reinelt
+ * buffer too small (thanks to anonymous)
+ *
  * Revision 1.42  2006/02/22 15:59:39  cmay
  * removed KEYPADSIZE cruft per harbaum's suggestion
  *
@@ -463,7 +466,8 @@ static void drv_CF_timer(void __attribute__ ((unused)) * notused)
 
 static void drv_CF_send(const unsigned char cmd, const unsigned char len, const unsigned char *data)
 {
-    unsigned char buffer[22];
+    /* 1 cmd + 1 len + 22 payload + 2 crc = 26 */   
+    unsigned char buffer[26];
     unsigned short crc;
     struct timeval now, end;
 
@@ -1112,7 +1116,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.42 $");
+    info("%s: %s", Name, "$Revision: 1.43 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
