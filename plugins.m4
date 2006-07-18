@@ -175,7 +175,8 @@ if test "$PLUGIN_DVB" = "yes"; then
       PLUGINS="$PLUGINS plugin_dvb.o"
       AC_DEFINE(PLUGIN_DVB,1,[dvb plugin])
    else
-      AC_MSG_WARN(linux/dvb/frontend.h header not found: dvb plugin disabled)
+      PLUGINS="$PLUGINS plugin_dvb.o"
+      AC_MSG_WARN(linux/dvb/frontend.h header not found: using ioctl)
    fi   
 fi
 if test "$PLUGIN_EXEC" = "yes"; then
@@ -213,7 +214,7 @@ fi
 if test "$PLUGIN_MPD" = "yes"; then
    AC_CHECK_HEADERS(libmpd/libmpd.h, [has_libmpd_header="true"], [has_libmpd_header="false"])
    if test "$has_libmpd_header" = "true"; then	
-      AC_CHECK_LIB(libmpd, libmpd_init, [has_libmpd_lib="true"], [has_libmpd_lib="false"])
+      AC_CHECK_LIB(mpd, mpd_connect, [has_libmpd_lib="true"], [has_libmpd_lib="false"])
       if test "$has_libmpd_lib" = "true"; then
         PLUGINS="$PLUGINS plugin_mpd.o"
         PLUGINLIBS="$PLUGINLIBS -lmpd"
