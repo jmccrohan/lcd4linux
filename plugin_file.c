@@ -1,4 +1,4 @@
-/* $Id: plugin_file.c,v 1.1 2006/02/19 15:42:19 reinelt Exp $
+/* $Id: plugin_file.c,v 1.2 2006/07/19 01:57:01 cmay Exp $
  *
  * plugin to perform simple file operations
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_file.c,v $
+ * Revision 1.2  2006/07/19 01:57:01  cmay
+ * fixed double read of last line in file
+ *
  * Revision 1.1  2006/02/19 15:42:19  reinelt
  * file plugin from Chris Maj
  *
@@ -69,7 +72,7 @@ static void my_readline(RESULT * result, RESULT * arg1, RESULT * arg2)
 	error("readline couldn't open file '%s'", R2S(arg1));
     } else {
 	i = 0;
-	while (!feof(fp) && i < reqline) {
+	while (!feof(fp) && i++ < reqline) {
 	    fgets(val2, sizeof(val2), fp);
 	    size = strcspn(val2, "\n");
 	    strncpy(value, val2, size);
@@ -80,11 +83,10 @@ static void my_readline(RESULT * result, RESULT * arg1, RESULT * arg2)
 		fgets(val2, sizeof(val2), fp);
 		pos = strchr(val2, '\n');
 	    }
-	    i++;
 	}
 	fclose(fp);
-	if (i < reqline) {
-	    error("readline requested line %d but file only had %d lines", reqline, i);
+	if (i <= reqline) {
+	    error("readline requested line %d but file only had %d lines", reqline, i - 1);
 	    value[0] = '\0';
 	}
     }
