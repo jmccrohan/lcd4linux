@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.43 2006/07/14 20:15:11 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.44 2006/07/19 01:35:31 cmay Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,10 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.44  2006/07/19 01:35:31  cmay
+ * Renamed keypad direction names to avoid conflict with Curses library defs.
+ * Added keypad support to Curses display driver.
+ *
  * Revision 1.43  2006/07/14 20:15:11  reinelt
  * buffer too small (thanks to anonymous)
  *
@@ -693,33 +697,33 @@ static int drv_CF_keypad(const int num)
 	break;
     case 3:
 	if (num < 8)
-	    val = KEY_PRESSED;
+	    val = WIDGET_KEY_PRESSED;
 	else
-	    val = KEY_RELEASED;
+	    val = WIDGET_KEY_RELEASED;
 	switch (num) {
 	case 1:
 	case 8:
-	    val += KEY_UP;
+	    val += WIDGET_KEY_UP;
 	    break;
 	case 2:
 	case 9:
-	    val += KEY_DOWN;
+	    val += WIDGET_KEY_DOWN;
 	    break;
 	case 3:
 	case 10:
-	    val += KEY_LEFT;
+	    val += WIDGET_KEY_LEFT;
 	    break;
 	case 4:
 	case 11:
-	    val += KEY_RIGHT;
+	    val += WIDGET_KEY_RIGHT;
 	    break;
 	case 5:
 	case 12:
-	    val += KEY_CONFIRM;
+	    val += WIDGET_KEY_CONFIRM;
 	    break;
 	case 7:
 	case 13:
-	    val += KEY_CANCEL;
+	    val += WIDGET_KEY_CANCEL;
 	    break;
 	}
 	break;
@@ -1116,7 +1120,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.43 $");
+    info("%s: %s", Name, "$Revision: 1.44 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {

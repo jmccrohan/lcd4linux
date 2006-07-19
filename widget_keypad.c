@@ -1,4 +1,4 @@
-/* $Id: widget_keypad.c,v 1.2 2006/02/21 15:55:59 cmay Exp $
+/* $Id: widget_keypad.c,v 1.3 2006/07/19 01:35:31 cmay Exp $
  *
  * keypad widget handling
  *
@@ -21,6 +21,10 @@
  *
  *
  * $Log: widget_keypad.c,v $
+ * Revision 1.3  2006/07/19 01:35:31  cmay
+ * Renamed keypad direction names to avoid conflict with Curses library defs.
+ * Added keypad support to Curses display driver.
+ *
  * Revision 1.2  2006/02/21 15:55:59  cmay
  * removed new update function for keypad, consolidated it with draw
  *
@@ -108,24 +112,24 @@ int widget_keypad_init(WIDGET * Self)
     /* state: pressed (default), released */
     c = cfg_get(section, "state", "pressed");
     if (!strcasecmp(c, "released"))
-	keypad->key = KEY_RELEASED;
+	keypad->key = WIDGET_KEY_RELEASED;
     else
-	keypad->key = KEY_PRESSED;
+	keypad->key = WIDGET_KEY_PRESSED;
 
     /* position: confirm (default), up, down, left, right, cancel */
     c = cfg_get(section, "position", "confirm");
     if (!strcasecmp(c, "up"))
-	keypad->key += KEY_UP;
+	keypad->key += WIDGET_KEY_UP;
     else if (!strcasecmp(c, "down"))
-	keypad->key += KEY_DOWN;
+	keypad->key += WIDGET_KEY_DOWN;
     else if (!strcasecmp(c, "left"))
-	keypad->key += KEY_LEFT;
+	keypad->key += WIDGET_KEY_LEFT;
     else if (!strcasecmp(c, "right"))
-	keypad->key += KEY_RIGHT;
+	keypad->key += WIDGET_KEY_RIGHT;
     else if (!strcasecmp(c, "cancel"))
-	keypad->key += KEY_CANCEL;
+	keypad->key += WIDGET_KEY_CANCEL;
     else
-	keypad->key += KEY_CONFIRM;
+	keypad->key += WIDGET_KEY_CONFIRM;
 
     free(section);
     Self->data = keypad;

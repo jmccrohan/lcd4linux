@@ -1,4 +1,4 @@
-/* $Id: drv_LCD2USB.c,v 1.10 2006/04/09 14:17:50 reinelt Exp $
+/* $Id: drv_LCD2USB.c,v 1.11 2006/07/19 01:35:31 cmay Exp $
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
@@ -24,6 +24,10 @@
  *
  * 
  * $Log: drv_LCD2USB.c,v $
+ * Revision 1.11  2006/07/19 01:35:31  cmay
+ * Renamed keypad direction names to avoid conflict with Curses library defs.
+ * Added keypad support to Curses display driver.
+ *
  * Revision 1.10  2006/04/09 14:17:50  reinelt
  * autoconf/library fixes, image and graphic display inversion
  *
@@ -481,15 +485,15 @@ static int drv_L2U_keypad(const int num)
 
     /* check for key press event */
     if (num & 0x80)
-	val = KEY_PRESSED;
+	val = WIDGET_KEY_PRESSED;
     else
-	val = KEY_RELEASED;
+	val = WIDGET_KEY_RELEASED;
 
     if ((num & 0x7f) == 0)
-	val += KEY_UP;
+	val += WIDGET_KEY_UP;
 
     if ((num & 0x7f) == 1)
-	val += KEY_DOWN;
+	val += WIDGET_KEY_DOWN;
 
     return val;
 }
@@ -613,7 +617,7 @@ int drv_L2U_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.10 $");
+    info("%s: %s", Name, "$Revision: 1.11 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

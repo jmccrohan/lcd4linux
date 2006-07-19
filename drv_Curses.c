@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.11 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_Curses.c,v 1.12 2006/07/19 01:35:31 cmay Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,10 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.12  2006/07/19 01:35:31  cmay
+ * Renamed keypad direction names to avoid conflict with Curses library defs.
+ * Added keypad support to Curses display driver.
+ *
  * Revision 1.11  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -91,12 +95,15 @@
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
+#include "timer.h"
 #include "plugin.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
 #include "drv_generic_text.h"
+#include "drv_generic_keypad.h"
 
 
 static char Name[] = "Curses";
@@ -214,8 +221,11 @@ static int drv_Curs_start(const char *section, const int quiet)
     free(s);
 
     initscr();
+    noecho();
     debug("%s: curses thinks that COLS=%d LINES=%d", Name, COLS, LINES);
     w = newwin(DROWS + 2, DCOLS + 2, 0, 0);
+    keypad(w, TRUE);
+    nodelay(w, TRUE);
 
     EROWS = LINES - DROWS - 3;
     if (EROWS > 99)
@@ -245,6 +255,51 @@ static int drv_Curs_start(const char *section, const int quiet)
     return 0;
 }
 
+static void drv_Curs_timer(void __attribute__ ((unused)) * notused)
+{
+    int c;
+    while(1) {
+        c = wgetch(w);
+        if(c <= 0 )
+            break;
+        drv_generic_keypad_press(c);
+    }
+}
+
+static int drv_Curs_keypad(const int num)
+{
+    int val = 0;
+
+    switch(num)
+    {
+        case KEY_UP:
+            debug("Key Up");
+            val += WIDGET_KEY_PRESSED;
+            val += WIDGET_KEY_UP;
+            break;
+        case KEY_DOWN:
+            debug("Key Down");
+            val += WIDGET_KEY_PRESSED;
+            val += WIDGET_KEY_DOWN;
+            break;
+        case KEY_LEFT:
+            debug("Key Left");
+            val += WIDGET_KEY_PRESSED;
+            val += WIDGET_KEY_LEFT;
+            break;
+        case KEY_RIGHT:
+            debug("Key Right");
+            val += WIDGET_KEY_PRESSED;
+            val += WIDGET_KEY_RIGHT;
+            break;
+        default:
+            debug("Unbound Key '%d'", num);
+            break;
+    }
+
+    return val;
+}
+
 
 /****************************************/
 /***            plugins               ***/
@@ -259,6 +314,7 @@ static int drv_Curs_start(const char *section, const int quiet)
 
 /* using drv_generic_text_draw(W) */
 /* using drv_generic_text_bar_draw(W) */
+/* using drv_generic_keypad_draw(W) */
 
 
 /****************************************/
@@ -280,7 +336,7 @@ int drv_Curs_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.11 $");
+    info("%s: %s", Name, "$Revision: 1.12 $");
 
     /* display preferences */
     XRES = 1;			/* pixel width of one char  */
@@ -292,6 +348,10 @@ int drv_Curs_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_Curs_write;
     drv_generic_text_real_defchar = drv_Curs_defchar;
+    drv_generic_keypad_real_press = drv_Curs_keypad;
+
+    /* regularly process display answers */
+    timer_add(drv_Curs_timer, NULL, 100, 0);
 
     /* start display */
     if ((ret = drv_Curs_start(section, quiet)) != 0) {
@@ -304,6 +364,10 @@ int drv_Curs_init(const char *section, const int quiet)
 
     /* initialize generic bar driver */
     if ((ret = drv_generic_text_bar_init(1)) != 0)
+	return ret;
+
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
 
     /* add fixed chars to the bar driver */
@@ -334,6 +398,7 @@ int drv_Curs_quit(const int quiet)
     info("%s: shutting down.", Name);
 
     drv_generic_text_quit();
+    drv_generic_keypad_quit();
 
     /* clear display */
     drv_Curs_clear();
