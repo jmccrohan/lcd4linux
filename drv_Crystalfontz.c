@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.44 2006/07/19 01:35:31 cmay Exp $
+/* $Id: drv_Crystalfontz.c,v 1.45 2006/07/19 01:48:11 cmay Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.45  2006/07/19 01:48:11  cmay
+ * Ran indent.sh to make pretty code.
+ *
  * Revision 1.44  2006/07/19 01:35:31  cmay
  * Renamed keypad direction names to avoid conflict with Curses library defs.
  * Added keypad support to Curses display driver.
@@ -470,7 +473,7 @@ static void drv_CF_timer(void __attribute__ ((unused)) * notused)
 
 static void drv_CF_send(const unsigned char cmd, const unsigned char len, const unsigned char *data)
 {
-    /* 1 cmd + 1 len + 22 payload + 2 crc = 26 */   
+    /* 1 cmd + 1 len + 22 payload + 2 crc = 26 */
     unsigned char buffer[26];
     unsigned short crc;
     struct timeval now, end;
@@ -1120,7 +1123,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.44 $");
+    info("%s: %s", Name, "$Revision: 1.45 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {

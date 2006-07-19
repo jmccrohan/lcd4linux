@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.12 2006/07/19 01:35:31 cmay Exp $
+/* $Id: drv_Curses.c,v 1.13 2006/07/19 01:48:11 cmay Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.13  2006/07/19 01:48:11  cmay
+ * Ran indent.sh to make pretty code.
+ *
  * Revision 1.12  2006/07/19 01:35:31  cmay
  * Renamed keypad direction names to avoid conflict with Curses library defs.
  * Added keypad support to Curses display driver.
@@ -258,11 +261,11 @@ static int drv_Curs_start(const char *section, const int quiet)
 static void drv_Curs_timer(void __attribute__ ((unused)) * notused)
 {
     int c;
-    while(1) {
-        c = wgetch(w);
-        if(c <= 0 )
-            break;
-        drv_generic_keypad_press(c);
+    while (1) {
+	c = wgetch(w);
+	if (c <= 0)
+	    break;
+	drv_generic_keypad_press(c);
     }
 }
 
@@ -270,31 +273,30 @@ static int drv_Curs_keypad(const int num)
 {
     int val = 0;
 
-    switch(num)
-    {
-        case KEY_UP:
-            debug("Key Up");
-            val += WIDGET_KEY_PRESSED;
-            val += WIDGET_KEY_UP;
-            break;
-        case KEY_DOWN:
-            debug("Key Down");
-            val += WIDGET_KEY_PRESSED;
-            val += WIDGET_KEY_DOWN;
-            break;
-        case KEY_LEFT:
-            debug("Key Left");
-            val += WIDGET_KEY_PRESSED;
-            val += WIDGET_KEY_LEFT;
-            break;
-        case KEY_RIGHT:
-            debug("Key Right");
-            val += WIDGET_KEY_PRESSED;
-            val += WIDGET_KEY_RIGHT;
-            break;
-        default:
-            debug("Unbound Key '%d'", num);
-            break;
+    switch (num) {
+    case KEY_UP:
+	debug("Key Up");
+	val += WIDGET_KEY_PRESSED;
+	val += WIDGET_KEY_UP;
+	break;
+    case KEY_DOWN:
+	debug("Key Down");
+	val += WIDGET_KEY_PRESSED;
+	val += WIDGET_KEY_DOWN;
+	break;
+    case KEY_LEFT:
+	debug("Key Left");
+	val += WIDGET_KEY_PRESSED;
+	val += WIDGET_KEY_LEFT;
+	break;
+    case KEY_RIGHT:
+	debug("Key Right");
+	val += WIDGET_KEY_PRESSED;
+	val += WIDGET_KEY_RIGHT;
+	break;
+    default:
+	debug("Unbound Key '%d'", num);
+	break;
     }
 
     return val;
@@ -336,7 +338,7 @@ int drv_Curs_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.12 $");
+    info("%s: %s", Name, "$Revision: 1.13 $");
 
     /* display preferences */
     XRES = 1;			/* pixel width of one char  */
