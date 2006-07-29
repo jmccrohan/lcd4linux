@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.8 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: plugin_string.c,v 1.9 2006/07/29 21:12:31 lfcorreia Exp $
  *
  * string plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.9  2006/07/29 21:12:31  lfcorreia
+ * Add UPPERCASE string plugin function
+ *
  * Revision 1.8  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -93,6 +96,47 @@ int plugin_init_string(void)
 }
 
 void plugin_exit_string(void)
+{
+    /* empty */
+}
+
+/* 'upcase' function (shamelessly stolen from plugin_sample.c)*/
+/* takes one argument, a string */
+/* returns the string in upper case letters */
+
+static void my_upcase(RESULT * result, RESULT * arg1)
+{
+    char *value, *p;
+
+    /* create a local copy of the argument */
+    /* Do *NOT* try to modify the original string! */
+    value = strdup(R2S(arg1));
+
+    /* process the string */
+    for (p = value; *p != '\0'; p++)
+	*p = toupper(*p);
+
+    /* store result */
+    /* when called with R_STRING, it assumes the */
+    /* next parameter to be a pointer to a string */
+    /* 'value' is already a char*, so use 'value', not '&value' */
+    SetResult(&result, R_STRING, value);
+
+    /* free local copy again */
+    /* Note that SetResult() makes its own string copy  */
+    free(value);
+}
+
+int plugin_init_strupper(void)
+{
+
+    /* register my UPPERCASE transforming function */
+    AddFunction("strupper", 1, my_upcase);
+
+    return 0;
+}
+
+void plugin_exit_strupper(void)
 {
     /* empty */
 }
