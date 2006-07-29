@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.62 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_HD44780.c,v 1.63 2006/07/29 20:59:12 lfcorreia Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.63  2006/07/29 20:59:12  lfcorreia
+ * Fix wrong timing at I2C initialization
+ *
  * Revision 1.62  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -1019,7 +1022,7 @@ static int drv_HD_I2C_load(const char *section)
     drv_HD_I2C_nibble(allControllers, 0x03);
     udelay(T_INIT2);		/* 4 Bit mode, wait 100 us */
     drv_HD_I2C_nibble(allControllers, 0x03);
-    udelay(T_INIT2);		/* 4 Bit mode, wait 4.1 ms */
+    udelay(T_INIT1);		/* 4 Bit mode, wait 4.1 ms */
     drv_HD_I2C_nibble(allControllers, 0x02);
     udelay(T_INIT2);		/* 4 Bit mode, wait 100 us */
     drv_HD_I2C_command(allControllers, 0x28, T_EXEC);	/* 4 Bit mode, 1/16 duty cycle, 5x8 font */
@@ -1483,7 +1486,7 @@ int drv_HD_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.62 $");
+    info("%s: %s", Name, "$Revision: 1.63 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
