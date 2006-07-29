@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.5 2005/06/01 12:50:25 reinelt Exp $
+/* $Id: drv_generic_i2c.c,v 1.6 2006/07/29 21:04:43 lfcorreia Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.6  2006/07/29 21:04:43  lfcorreia
+ * Better error handling, add proper I2C SLAVE device detection (not 100% finished)
+ *
  * Revision 1.5  2005/06/01 12:50:25  reinelt
  * ifdef'ed unused function to avoid compiler warning
  *
@@ -125,25 +128,29 @@ int drv_generic_i2c_open(const char *section, const char *driver)
     device = cfg_get(Section, "Device", NULL);
     dev = atoi(device);
     info("%s: initializing I2C bus %s", Driver, bus);
-    info("device %d", dev);
     if ((i2c_device = open(bus, O_WRONLY)) < 0) {
 	error("%s: I2C bus %s open failed !\n", Driver, bus);
-	return -1;
+	goto exit_error;
     }
-    info("%s: initializing I2C slave device 0x%x", Driver, dev);
+    info("%s: selecting slave device 0x%x", Driver, dev);
     if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
+	error("%s: error selecting slave device 0x%x\n", Driver, dev);
+	goto exit_error;
+    }
+
+    info("%s: initializing I2C slave device 0x%x", Driver, dev);
+    if (i2c_smbus_write_quick(i2c_device, I2C_SMBUS_WRITE) < 0 ){
 	error("%s: error initializing device 0x%x\n", Driver, dev);
 	close(i2c_device);
-	return -1;
-    }
-    return 0;
-}
+		}
 
-
-int drv_generic_i2c_close(void)
-{
-    close(i2c_device);
     return 0;
+
+  exit_error:
+    free(bus);
+    free(device);
+		close(i2c_device);
+		return -1;
 }
 
 
