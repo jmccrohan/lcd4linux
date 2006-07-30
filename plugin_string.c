@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.9 2006/07/29 21:12:31 lfcorreia Exp $
+/* $Id: plugin_string.c,v 1.10 2006/07/30 11:29:02 lfcorreia Exp $
  *
  * string plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.10  2006/07/30 11:29:02  lfcorreia
+ * Make changes suggested by Michael, only one init function is needed
+ *
  * Revision 1.9  2006/07/29 21:12:31  lfcorreia
  * Add UPPERCASE string plugin function
  *
@@ -85,21 +88,6 @@ static void my_strlen(RESULT * result, RESULT * arg1)
     SetResult(&result, R_NUMBER, &value);
 }
 
-
-int plugin_init_string(void)
-{
-
-    /* register some basic string functions */
-    AddFunction("strlen", 1, my_strlen);
-
-    return 0;
-}
-
-void plugin_exit_string(void)
-{
-    /* empty */
-}
-
 /* 'upcase' function (shamelessly stolen from plugin_sample.c)*/
 /* takes one argument, a string */
 /* returns the string in upper case letters */
@@ -127,8 +115,11 @@ static void my_upcase(RESULT * result, RESULT * arg1)
     free(value);
 }
 
-int plugin_init_strupper(void)
+int plugin_init_string(void)
 {
+
+    /* register some basic string functions */
+    AddFunction("strlen", 1, my_strlen);
 
     /* register my UPPERCASE transforming function */
     AddFunction("strupper", 1, my_upcase);
@@ -136,7 +127,7 @@ int plugin_init_strupper(void)
     return 0;
 }
 
-void plugin_exit_strupper(void)
+void plugin_exit_string(void)
 {
     /* empty */
 }

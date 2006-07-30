@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.42 2006/07/29 21:12:31 lfcorreia Exp $
+/* $Id: plugin.c,v 1.43 2006/07/30 11:29:02 lfcorreia Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.43  2006/07/30 11:29:02  lfcorreia
+ * Make changes suggested by Michael, only one init function is needed
+ *
  * Revision 1.42  2006/07/29 21:12:31  lfcorreia
  * Add UPPERCASE string plugin function
  *
@@ -221,8 +224,6 @@ int plugin_init_math(void);
 void plugin_exit_math(void);
 int plugin_init_string(void);
 void plugin_exit_string(void);
-int plugin_init_strupper(void);
-void plugin_exit_strupper(void);
 int plugin_init_test(void);
 void plugin_exit_test(void);
 int plugin_init_time(void);
