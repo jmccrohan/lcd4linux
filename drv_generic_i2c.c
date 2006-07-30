@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.6 2006/07/29 21:04:43 lfcorreia Exp $
+/* $Id: drv_generic_i2c.c,v 1.7 2006/07/30 11:16:27 lfcorreia Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.7  2006/07/30 11:16:27  lfcorreia
+ * Add back drv_generic_i2c_close function
+ *
  * Revision 1.6  2006/07/29 21:04:43  lfcorreia
  * Better error handling, add proper I2C SLAVE device detection (not 100% finished)
  *
@@ -153,6 +156,11 @@ int drv_generic_i2c_open(const char *section, const char *driver)
 		return -1;
 }
 
+int drv_generic_i2c_close(void)
+{
+    close(i2c_device);
+    return 0;
+}
 
 unsigned char drv_generic_i2c_wire(const char *name, const char *deflt)
 {
