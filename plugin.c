@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.43 2006/07/30 11:29:02 lfcorreia Exp $
+/* $Id: plugin.c,v 1.44 2006/07/31 03:48:09 reinelt Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.44  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.43  2006/07/30 11:29:02  lfcorreia
  * Make changes suggested by Michael, only one init function is needed
  *
@@ -286,7 +289,6 @@ int plugin_init(void)
     plugin_init_cfg();
     plugin_init_math();
     plugin_init_string();
-    plugin_init_strupper();
     plugin_init_test();
     plugin_init_time();
 

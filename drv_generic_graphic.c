@@ -1,4 +1,4 @@
-/* $Id
+/* $Id: drv_generic_graphic.c,v 1.29 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.29  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.28  2006/06/20 08:50:58  reinelt
  * widget_image linker error hopefully finally fixed
  *
@@ -174,15 +177,13 @@
 #include "widget_image.h"
 #include "rgb.h"
 #include "drv.h"
+#include "drv_generic.h"
 #include "drv_generic_graphic.h"
 #include "font_6x8.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
-
-int DROWS, DCOLS;		/* display size (pixels!) */
-int XRES, YRES;			/* pixels of one char cell */
 
 /* pixel colors */
 RGBA FG_COL = { R: 0x00, G: 0x00, B: 0x00, A:0xff };
@@ -192,10 +193,6 @@ RGBA NO_COL = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 
 static char *Section = NULL;
 static char *Driver = NULL;
-
-/* layout size  (pixels!) */
-static int LROWS = 0;
-static int LCOLS = 0;
 
 /* framebuffer */
 static RGBA *drv_generic_graphic_FB[LAYERS] = { NULL, };
@@ -646,6 +643,9 @@ int drv_generic_graphic_init(const char *section, const char *driver)
 	    return -1;
 	}
     }
+
+    /* init generic driver & register plugins */
+    drv_generic_init();
 
     /* set default colors */
     color = cfg_get(Section, "foreground", "000000ff");

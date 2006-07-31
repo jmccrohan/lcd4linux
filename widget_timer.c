@@ -1,4 +1,4 @@
-/* $Id: widget_timer.c,v 1.2 2006/02/25 13:36:33 geronet Exp $
+/* $Id: widget_timer.c,v 1.3 2006/07/31 03:48:09 reinelt Exp $
  *
  * timer widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_timer.c,v $
+ * Revision 1.3  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.2  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -109,17 +112,17 @@ int widget_timer_init(WIDGET * Self)
     memset(Timer, 0, sizeof(WIDGET_TIMER));
 
     /* get raw expressions (we evaluate them ourselves) */
-    Timer->expression = cfg_get_raw(section, "axpression", NULL);
+    Timer->expression = cfg_get_raw(section, "expression", NULL);
     Timer->update_expr = cfg_get_raw(section, "update", "100");
     Timer->active_expr = cfg_get_raw(section, "active", "1");
 
     /* sanity checks */
     if (Timer->expression == NULL || *Timer->expression == '\0') {
-	error("Timer %s has no expression, using '1'", Self->name);
+	error("Timer '%s' has no expression, using '1'", Self->name);
 	Timer->expression = "1";
     }
     if (Timer->update_expr == NULL || *Timer->update_expr == '\0') {
-	error("Timer %s has no update, using '100'", Self->name);
+	error("Timer '%s' has no update, using '100'", Self->name);
 	Timer->update_expr = "100";
     }
 

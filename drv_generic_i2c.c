@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.7 2006/07/30 11:16:27 lfcorreia Exp $
+/* $Id: drv_generic_i2c.c,v 1.8 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.8  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.7  2006/07/30 11:16:27  lfcorreia
  * Add back drv_generic_i2c_close function
  *
@@ -142,18 +145,18 @@ int drv_generic_i2c_open(const char *section, const char *driver)
     }
 
     info("%s: initializing I2C slave device 0x%x", Driver, dev);
-    if (i2c_smbus_write_quick(i2c_device, I2C_SMBUS_WRITE) < 0 ){
+    if (i2c_smbus_write_quick(i2c_device, I2C_SMBUS_WRITE) < 0) {
 	error("%s: error initializing device 0x%x\n", Driver, dev);
 	close(i2c_device);
-		}
+    }
 
     return 0;
 
   exit_error:
     free(bus);
     free(device);
-		close(i2c_device);
-		return -1;
+    close(i2c_device);
+    return -1;
 }
 
 int drv_generic_i2c_close(void)

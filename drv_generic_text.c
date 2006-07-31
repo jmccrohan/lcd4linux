@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.c,v 1.35 2006/03/29 08:57:58 reinelt Exp $
+/* $Id: drv_generic_text.c,v 1.36 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.c,v $
+ * Revision 1.36  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.35  2006/03/29 08:57:58  reinelt
  * vertical bar patch from Manuel Lausch
  *
@@ -166,8 +169,6 @@
  *
  * exported variables:
  *
- * extern int DROWS, DCOLS;    display size
- * extern int XRES,  YRES;     pixel width/height of one char
  * extern int CHARS, CHAR0;    number of user-defineable characters, ASCII of first char
  * extern int ICONS;           number of user-defineable characters reserved for icons
  * extern int GOTO_COST;       number of bytes a goto command requires
@@ -232,6 +233,7 @@
 #include "widget_icon.h"
 #include "widget_bar.h"
 #include "drv.h"
+#include "drv_generic.h"
 #include "drv_generic_text.h"
 
 #ifdef WITH_DMALLOC
@@ -260,11 +262,6 @@ typedef struct {
 static char *Section = NULL;
 static char *Driver = NULL;
 
-
-int DROWS = 20;			/* display size: rows */
-int DCOLS = 4;			/* display size: columns */
-int XRES = 6;			/* pixels of one char cell */
-int YRES = 8;			/* pixels of one char cell */
 int CHARS = 0;			/* number of user-defineable characters */
 int CHAR0 = 0;			/* ASCII of first user-defineable char */
 int ICONS = 0;			/* number of user-defineable characters reserved for icons */
@@ -277,11 +274,9 @@ void (*drv_generic_text_real_write) () = NULL;
 void (*drv_generic_text_real_defchar) () = NULL;
 
 
-static int LROWS = 20;		/* layout size: rows */
-static int LCOLS = 4;		/* layout size: columns */
-
 static char *LayoutFB = NULL;
 static char *DisplayFB = NULL;
+static int *L2D = NULL;
 
 static int Single_Segments = 0;
 
@@ -291,7 +286,6 @@ static SEGMENT Segment[128];
 static BAR *BarFB = NULL;
 
 
-
 /****************************************/
 /*** generic Framebuffer stuff        ***/
 /****************************************/
@@ -299,6 +293,7 @@ static BAR *BarFB = NULL;
 static void drv_generic_text_resizeFB(int rows, int cols)
 {
     char *newFB;
+    int *newL2D;
     BAR *newBar;
     int i, row, col;
 
@@ -313,8 +308,8 @@ static void drv_generic_text_resizeFB(int rows, int cols)
 	cols = LCOLS;
 
     /* allocate new Layout FB */
-    newFB = malloc(cols * rows * sizeof(char));
-    memset(newFB, ' ', rows * cols * sizeof(char));
+    newFB = malloc(cols * rows * sizeof(*newFB));
+    memset(newFB, ' ', rows * cols * sizeof(*newFB));
 
     /* transfer contents */
     if (LayoutFB != NULL) {
@@ -327,6 +322,26 @@ static void drv_generic_text_resizeFB(int rows, int cols)
     }
     LayoutFB = newFB;
 
+    /* allocate new transformer */
+    newL2D = malloc(cols * rows * sizeof(*newL2D));
+
+    /* intitialize translator */
+    for (row = 0; row < rows; row++) {
+	for (col = 0; col < cols; col++) {
+	    newL2D[row * cols + col] = row * DCOLS + col;
+	}
+    }
+
+    /* transfer transformer */
+    if (L2D != NULL) {
+	for (row = 0; row < LROWS; row++) {
+	    for (col = 0; col < LCOLS; col++) {
+		newL2D[row * cols + col] = L2D[row * LCOLS + col];
+	    }
+	}
+	free(L2D);
+    }
+    L2D = newL2D;
 
     /* resize Bar buffer */
     if (BarFB) {
@@ -357,6 +372,54 @@ static void drv_generic_text_resizeFB(int rows, int cols)
 }
 
 
+static void drv_generic_text_blit(const int row, const int col, const int height, const int width)
+{
+    int lr, lc;			/* layout  row/col */
+    int dr, dc;			/* display row/col */
+    int p1, p2;			/* start/end positon of changed area */
+    int eq;			/* counter for equal contents */
+
+    /* loop over layout rows */
+    for (lr = row; lr < LROWS && lr < row + height; lr++) {
+	/* transform layout to display row */
+	dr = lr;
+	/* sanity check */
+	if (dr < 0 || dr >= DROWS)
+	    continue;
+	/* loop over layout cols */
+	for (lc = col; lc < LCOLS && lc < col + width; lc++) {
+	    /* transform layout to display column */
+	    dc = lc;
+	    /* sanity check */
+	    if (dc < 0 || dc >= DCOLS)
+		continue;
+	    /* find start of difference */
+	    if (DisplayFB[dr * DCOLS + dc] == LayoutFB[lr * LCOLS + lc])
+		continue;
+	    /* find end of difference */
+	    for (p1 = dc, p2 = p1, eq = 0, lc++; lc < LCOLS && lc < col + width; lc++) {
+		/* transform layout to display column */
+		dc = lc;
+		/* sanity check */
+		if (dc < 0 || dc >= DCOLS)
+		    continue;
+		if (DisplayFB[dr * DCOLS + dc] == LayoutFB[lr * LCOLS + lc]) {
+		    if (++eq > GOTO_COST)
+			break;
+		} else {
+		    p2 = dc;
+		    eq = 0;
+		}
+	    }
+	    /* send to display */
+	    memcpy(DisplayFB + dr * DCOLS + p1, LayoutFB + lr * LCOLS + p1, p2 - p1 + 1);
+	    if (drv_generic_text_real_write)
+		drv_generic_text_real_write(dr, p1, DisplayFB + dr * DCOLS + p1, p2 - p1 + 1);
+	}
+    }
+}
+
+
 /****************************************/
 /*** generic text handling            ***/
 /****************************************/
@@ -368,20 +431,25 @@ int drv_generic_text_init(const char *section, const char *driver)
     Driver = (char *) driver;
 
     /* init display framebuffer */
-    DisplayFB = (char *) malloc(DCOLS * DROWS * sizeof(char));
-    memset(DisplayFB, ' ', DROWS * DCOLS * sizeof(char));
+    DisplayFB = (char *) malloc(DCOLS * DROWS * sizeof(*DisplayFB));
+    memset(DisplayFB, ' ', DROWS * DCOLS * sizeof(*DisplayFB));
 
     /* init layout framebuffer */
     LROWS = 0;
     LCOLS = 0;
     LayoutFB = NULL;
+    L2D = NULL;
     drv_generic_text_resizeFB(DROWS, DCOLS);
 
     /* sanity check */
-    if (LayoutFB == NULL || DisplayFB == NULL) {
+    if (DisplayFB == NULL || LayoutFB == NULL || L2D == NULL) {
 	error("%s: framebuffer could not be allocated: malloc() failed", Driver);
 	return -1;
     }
+
+    /* init generic driver & register plugins */
+    drv_generic_blit = drv_generic_text_blit;
+    drv_generic_init();
 
     return 0;
 }
@@ -452,46 +520,22 @@ int drv_generic_text_greet(const char *msg1, const char *msg2)
 int drv_generic_text_draw(WIDGET * W)
 {
     WIDGET_TEXT *Text = W->data;
-    char *txt, *fb1, *fb2;
-    int row, col, col0, len, end;
+    char *txt;
+    int row, col, len;
 
     row = W->row;
     col = W->col;
     txt = Text->buffer;
     len = strlen(txt);
-    end = col + len;
 
     /* maybe grow layout framebuffer */
     drv_generic_text_resizeFB(row + 1, col + len);
 
-    fb1 = LayoutFB + row * LCOLS;
-    fb2 = DisplayFB + row * DCOLS;
-
     /* transfer new text into layout buffer */
-    memcpy(fb1 + col, txt, len);
+    memcpy(LayoutFB + row * LCOLS + col, txt, len);
 
-    if (row < DROWS) {
-	for (; col <= end && col < DCOLS; col++) {
-	    int pos1, pos2, equal;
-	    if (fb1[col] == fb2[col])
-		continue;
-	    col0 = col;
-	    for (pos1 = col, pos2 = pos1, col++, equal = 0; col <= end && col < DCOLS; col++) {
-		if (fb1[col] == fb2[col]) {
-		    /* If we find just one equal byte, we don't break, because this  */
-		    /* would require a goto, which takes several bytes, too. */
-		    if (GOTO_COST >= 0 && ++equal > GOTO_COST)
-			break;
-		} else {
-		    pos2 = col;
-		    equal = 0;
-		}
-	    }
-	    memcpy(fb2 + pos1, fb1 + pos1, pos2 - pos1 + 1);
-	    if (drv_generic_text_real_write)
-		drv_generic_text_real_write(row, col0, fb2 + pos1, pos2 - pos1 + 1);
-	}
-    }
+    /* blit it */
+    drv_generic_text_blit(row, col, 1, len);
 
     return 0;
 }
@@ -500,20 +544,26 @@ int drv_generic_text_draw(WIDGET * W)
 int drv_generic_text_quit(void)
 {
 
+    if (DisplayFB) {
+	free(DisplayFB);
+	DisplayFB = NULL;
+    }
+
     if (LayoutFB) {
 	free(LayoutFB);
 	LayoutFB = NULL;
     }
 
-    if (DisplayFB) {
-	free(DisplayFB);
-	DisplayFB = NULL;
+    if (L2D) {
+	free(L2D);
+	L2D = NULL;
     }
 
     if (BarFB) {
 	free(BarFB);
 	BarFB = NULL;
     }
+
     widget_unregister();
 
     return (0);
@@ -540,7 +590,6 @@ int drv_generic_text_icon_draw(WIDGET * W)
     static int icon_counter = 0;
     WIDGET_ICON *Icon = W->data;
     int row, col;
-    int l_idx, d_idx;
     int invalidate = 0;
     unsigned char ascii;
 
@@ -576,19 +625,16 @@ int drv_generic_text_icon_draw(WIDGET * W)
     /* use blank if invisible */
     ascii = Icon->visible ? Icon->ascii : ' ';
 
-    /* index into the two framebuffers */
-    l_idx = row * LCOLS + col;
-    d_idx = row * DCOLS + col;
-
     /* transfer icon into layout buffer */
-    LayoutFB[l_idx] = ascii;
+    LayoutFB[row * LCOLS + col] = ascii;
 
-    /* maybe send icon to the display */
-    if (row < DROWS && col < DCOLS && (DisplayFB[d_idx] != ascii || invalidate)) {
-	DisplayFB[d_idx] = ascii;
-	if (drv_generic_text_real_write)
-	    drv_generic_text_real_write(row, col, DisplayFB + d_idx, 1);
+    /* ugly invalidation: change display FB to a wrong value so blit() will really send it */
+    if (invalidate) {
+	DisplayFB[row * DCOLS + col] = ~ascii;
     }
+
+    /* blit it */
+    drv_generic_text_blit(row, col, 1, 1);
 
     return 0;
 
@@ -1005,7 +1051,7 @@ static void drv_generic_text_bar_define_chars(void)
 int drv_generic_text_bar_draw(WIDGET * W)
 {
     WIDGET_BAR *Bar = W->data;
-    int row, col, col0, len, res, max, val1, val2;
+    int row, col, len, res, max, val1, val2;
     int c, n, s;
     DIRECTION dir;
     STYLE style;
@@ -1077,34 +1123,15 @@ int drv_generic_text_bar_draw(WIDGET * W)
 	    /* maybe invalidate display framebuffer */
 	    if (BarFB[n].invalid) {
 		BarFB[n].invalid = 0;
+		/* ugly invalidation: change display FB to a wrong value so blit() will really send it */
 		DisplayFB[row * DCOLS + col] = ~LayoutFB[n];
 	    }
 	}
     }
 
-    /* transfer differences to the display */
-    for (row = 0; row < DROWS; row++) {
-	for (col = 0; col < DCOLS; col++) {
-	    int pos1, pos2, equal;
-	    if (LayoutFB[row * LCOLS + col] == DisplayFB[row * DCOLS + col])
-		continue;
-	    col0 = col;
-	    for (pos1 = col, pos2 = pos1, col++, equal = 0; col < DCOLS; col++) {
-		if (LayoutFB[row * LCOLS + col] == DisplayFB[row * DCOLS + col]) {
-		    /* If we find just one equal byte, we don't break, because this  */
-		    /* would require a goto, which takes several bytes, too. */
-		    if (++equal > GOTO_COST)
-			break;
-		} else {
-		    pos2 = col;
-		    equal = 0;
-		}
-	    }
-	    memcpy(DisplayFB + row * DCOLS + pos1, LayoutFB + row * LCOLS + pos1, pos2 - pos1 + 1);
-	    if (drv_generic_text_real_write)
-		drv_generic_text_real_write(row, col0, DisplayFB + row * DCOLS + pos1, pos2 - pos1 + 1);
-	}
-    }
+    /* blit whole layout FB */
+    drv_generic_text_blit(0, 0, LROWS, LCOLS);
+
 
     return 0;
 

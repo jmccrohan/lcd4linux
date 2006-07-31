@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.40 2006/04/14 20:59:38 harbaum Exp $
+/* $Id: drv.c,v 1.41 2006/07/31 03:48:09 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.41  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.40  2006/04/14 20:59:38  harbaum
  * Disable inclusion of Image driver in drv.c if no gd was found.
  *
@@ -186,27 +189,6 @@
  *
  * drv_init (char *driver)
  *    initializes the named driver
- *
- * drv_query (int *rows, int *cols, int *xres, int *yres, int *bars, int *gpos)
- *    queries the attributes of the selected driver
- *
- * drv_clear ()
- *    clears the display
- *
- * int drv_put (int row, int col, char *text)
- *    writes text at row, col
- *
- * int drv_bar (int type, int row, int col, int max, int len1, int len2)
- *    draws a specified bar at row, col with len
- *
- * int drv_icon (int num, int seq, int row, int col)
- *    draws icon #num sequence #seq at row, col
- *
- * int drv_gpo (int num, int val)
- *    sets GPO #num to val
- *
- * int drv_flush (void)
- *    flushes the framebuffer to the display
  *
  * int drv_quit (void)
  *    de-initializes the driver

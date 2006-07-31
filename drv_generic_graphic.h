@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.h,v 1.12 2006/02/27 06:14:46 reinelt Exp $
+/* $Id: drv_generic_graphic.h,v 1.13 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.h,v $
+ * Revision 1.13  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.12  2006/02/27 06:14:46  reinelt
  * graphic bug resulting in all black pixels solved
  *
@@ -76,11 +79,9 @@
 #ifndef _DRV_GENERIC_GRAPHIC_H_
 #define _DRV_GENERIC_GRAPHIC_H_
 
+#include "drv_generic.h"
 #include "widget.h"
 #include "rgb.h"
-
-extern int DROWS, DCOLS;	/* display size */
-extern int XRES, YRES;		/* pixel width/height of one char  */
 
 extern RGBA FG_COL;		/* foreground color */
 extern RGBA HG_COL;		/* halfground color */

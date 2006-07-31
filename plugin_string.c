@@ -1,4 +1,4 @@
-/* $Id: plugin_string.c,v 1.10 2006/07/30 11:29:02 lfcorreia Exp $
+/* $Id: plugin_string.c,v 1.11 2006/07/31 03:48:09 reinelt Exp $
  *
  * string plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_string.c,v $
+ * Revision 1.11  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.10  2006/07/30 11:29:02  lfcorreia
  * Make changes suggested by Michael, only one init function is needed
  *
@@ -77,6 +80,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -89,29 +93,17 @@ static void my_strlen(RESULT * result, RESULT * arg1)
 }
 
 /* 'upcase' function (shamelessly stolen from plugin_sample.c)*/
-/* takes one argument, a string */
 /* returns the string in upper case letters */
-
-static void my_upcase(RESULT * result, RESULT * arg1)
+static void my_strupper(RESULT * result, RESULT * arg1)
 {
     char *value, *p;
 
-    /* create a local copy of the argument */
-    /* Do *NOT* try to modify the original string! */
     value = strdup(R2S(arg1));
 
-    /* process the string */
     for (p = value; *p != '\0'; p++)
 	*p = toupper(*p);
 
-    /* store result */
-    /* when called with R_STRING, it assumes the */
-    /* next parameter to be a pointer to a string */
-    /* 'value' is already a char*, so use 'value', not '&value' */
     SetResult(&result, R_STRING, value);
-
-    /* free local copy again */
-    /* Note that SetResult() makes its own string copy  */
     free(value);
 }
 
@@ -120,10 +112,7 @@ int plugin_init_string(void)
 
     /* register some basic string functions */
     AddFunction("strlen", 1, my_strlen);
-
-    /* register my UPPERCASE transforming function */
-    AddFunction("strupper", 1, my_upcase);
-
+    AddFunction("strupper", 1, my_strupper);
     return 0;
 }
 

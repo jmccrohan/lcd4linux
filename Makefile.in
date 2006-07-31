@@ -58,15 +58,16 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_lcd4linux_OBJECTS = lcd4linux.$(OBJEXT) cfg.$(OBJEXT) \
-	debug.$(OBJEXT) drv.$(OBJEXT) evaluator.$(OBJEXT) \
-	hash.$(OBJEXT) layout.$(OBJEXT) pid.$(OBJEXT) timer.$(OBJEXT) \
-	thread.$(OBJEXT) udelay.$(OBJEXT) qprintf.$(OBJEXT) \
-	rgb.$(OBJEXT) widget.$(OBJEXT) widget_text.$(OBJEXT) \
-	widget_bar.$(OBJEXT) widget_icon.$(OBJEXT) \
-	widget_keypad.$(OBJEXT) widget_timer.$(OBJEXT) \
-	widget_gpo.$(OBJEXT) plugin.$(OBJEXT) plugin_cfg.$(OBJEXT) \
-	plugin_math.$(OBJEXT) plugin_string.$(OBJEXT) \
-	plugin_test.$(OBJEXT) plugin_time.$(OBJEXT)
+	debug.$(OBJEXT) drv.$(OBJEXT) drv_generic.$(OBJEXT) \
+	evaluator.$(OBJEXT) hash.$(OBJEXT) layout.$(OBJEXT) \
+	pid.$(OBJEXT) timer.$(OBJEXT) thread.$(OBJEXT) \
+	udelay.$(OBJEXT) qprintf.$(OBJEXT) rgb.$(OBJEXT) \
+	widget.$(OBJEXT) widget_text.$(OBJEXT) widget_bar.$(OBJEXT) \
+	widget_icon.$(OBJEXT) widget_keypad.$(OBJEXT) \
+	widget_timer.$(OBJEXT) widget_gpo.$(OBJEXT) plugin.$(OBJEXT) \
+	plugin_cfg.$(OBJEXT) plugin_math.$(OBJEXT) \
+	plugin_string.$(OBJEXT) plugin_test.$(OBJEXT) \
+	plugin_time.$(OBJEXT)
 lcd4linux_OBJECTS = $(am_lcd4linux_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -192,6 +193,7 @@ lcd4linux.c                   \
 cfg.c         cfg.h           \
 debug.c       debug.h         \
 drv.c         drv.h           \
+drv_generic.c drv_generic.h   \
 evaluator.c   evaluator.h     \
 hash.c        hash.h          \
 layout.c      layout.h        \
@@ -206,7 +208,7 @@ widget.c      widget.h        \
 widget_text.c widget_text.h   \
 widget_bar.c  widget_bar.h    \
 widget_icon.c widget_icon.h   \
-widget_keypad.c widget_keypad.h    \
+widget_keypad.c widget_keypad.h \
 widget_timer.c widget_timer.h \
 widget_gpo.c  widget_gpo.h    \
                               \
@@ -426,6 +428,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_USBLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_WincorNixdorf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_X11.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_gpio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_graphic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_i2c.Po@am__quote@

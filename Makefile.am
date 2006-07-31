@@ -18,6 +18,7 @@ lcd4linux.c                   \
 cfg.c         cfg.h           \
 debug.c       debug.h         \
 drv.c         drv.h           \
+drv_generic.c drv_generic.h   \
 evaluator.c   evaluator.h     \
 hash.c        hash.h          \
 layout.c      layout.h        \
@@ -32,7 +33,7 @@ widget.c      widget.h        \
 widget_text.c widget_text.h   \
 widget_bar.c  widget_bar.h    \
 widget_icon.c widget_icon.h   \
-widget_keypad.c widget_keypad.h    \
+widget_keypad.c widget_keypad.h \
 widget_timer.c widget_timer.h \
 widget_gpo.c  widget_gpo.h    \
                               \

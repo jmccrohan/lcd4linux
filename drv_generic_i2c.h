@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.h,v 1.6 2006/02/27 06:15:55 reinelt Exp $
+/* $Id: drv_generic_i2c.h,v 1.7 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.h,v $
+ * Revision 1.7  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.6  2006/02/27 06:15:55  reinelt
  * indent...
  *
@@ -82,4 +85,4 @@
 void drv_generic_i2c_data(const unsigned char data);
 void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
 
-#endif				/*  */
+#endif	/*  */

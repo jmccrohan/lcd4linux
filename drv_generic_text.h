@@ -1,4 +1,4 @@
-/* $Id: drv_generic_text.h,v 1.20 2006/01/30 05:47:38 reinelt Exp $
+/* $Id: drv_generic_text.h,v 1.21 2006/07/31 03:48:09 reinelt Exp $
  *
  * generic driver helper for text-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_text.h,v $
+ * Revision 1.21  2006/07/31 03:48:09  reinelt
+ * preparations for scrolling
+ *
  * Revision 1.20  2006/01/30 05:47:38  reinelt
  * graphic subsystem changed to full-color RGBA
  *
@@ -108,12 +111,9 @@
 #define _DRV_GENERIC_TEXT_H_
 
 
-#include <termios.h>
+#include "drv_generic.h"
 #include "widget.h"
 
-
-extern int DROWS, DCOLS;	/* display size */
-extern int XRES, YRES;		/* pixel width/height of one char  */
 extern int CHARS, CHAR0;	/* number of user-defineable characters, ASCII of first char */
 extern int ICONS;		/* number of user-defineable characters reserved for icons */
 extern int GOTO_COST;		/* number of bytes a goto command requires */

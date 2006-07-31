@@ -474,7 +474,6 @@ Widget BusyBar {
     expression2 proc_stat::cpu('system', 500)
     length 10	
     direction 'E'
-    style 'H'
     update tack
 }
 
@@ -1052,14 +1051,14 @@ Layout testMySQL {
 #Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
-#Display 'LCD2USB'
+Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
-Display 'LPH7508'
+#Display 'LPH7508'
 #Display 'ctinclud'
 
-#Layout 'Default'
+Layout 'Default'
 #Layout 'TestLayer'
-Layout 'TestImage'
+#Layout 'TestImage'
 #Layout 'L8x2'
 #Layout 'L16x1'
 #Layout 'L16x2'
