@@ -64,6 +64,7 @@ for driver in $drivers; do
          LCD2USB="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
+         LEDMATRIX="yes"
 	 LPH7508="yes"
          LUISE="yes"
          M50530="yes"
@@ -112,6 +113,9 @@ for driver in $drivers; do
 	 ;;
       LCDTerm)
          LCDTERM=$val
+	 ;;
+      LEDMatrix)
+         LEDMATRIX=$val
 	 ;;
       LPH7508)
          LPH7508=$val
@@ -286,6 +290,12 @@ if test "$LCDTERM" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_LCDTerm.o"
    AC_DEFINE(WITH_LCDTERM,1,[LCDTerm driver])
+fi
+
+if test "$LEDMATRIX" = "yes"; then
+   GRAPHICS="yes"
+   DRIVERS="$DRIVERS drv_LEDMatrix.o"
+   AC_DEFINE(WITH_LEDMATRIX,1,[LEDMatrix driver])
 fi
 
 if test "$LPH7508" = "yes"; then

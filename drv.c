@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.41 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: drv.c,v 1.42 2006/08/05 21:08:01 harbaum Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.42  2006/08/05 21:08:01  harbaum
+ * New LEDMATRIX driver (see http://www.harbaum.org/till/ledmatrix)
+ *
  * Revision 1.41  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -215,6 +218,7 @@ extern DRIVER drv_Image;
 extern DRIVER drv_LCD2USB;
 extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
+extern DRIVER drv_LEDMatrix;
 extern DRIVER drv_LPH7508;
 extern DRIVER drv_LUIse;
 extern DRIVER drv_M50530;
@@ -271,6 +275,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_LCDTERM
     &drv_LCDTerm,
+#endif
+#ifdef WITH_LEDMATRIX
+    &drv_LEDMatrix,
 #endif
 #ifdef WITH_LPH7508
     &drv_LPH7508,

@@ -70,6 +70,7 @@ drv_Image.c                   \
 drv_LCD2USB.c                 \
 drv_LCDLinux.c                \
 drv_LCDTerm.c                 \
+drv_LEDMatrix.c               \
 drv_LPH7508.c                 \
 drv_LUIse.c                   \
 drv_M50530.c                  \
