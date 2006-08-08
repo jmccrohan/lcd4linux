@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.23 2006/02/21 05:50:34 reinelt Exp $
+/* $Id: widget.c,v 1.24 2006/08/08 19:28:18 reinelt Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.24  2006/08/08 19:28:18  reinelt
+ * widget type checking corrected
+ *
  * Revision 1.23  2006/02/21 05:50:34  reinelt
  * keypad support from Cris Maj
  *
@@ -266,7 +269,7 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     }
 
     /* check if widget type matches */
-    if ((Class->type & type) == 0) {
+    if (Class->type != type) {
 	error("widget '%s': class '%s' not applicable", name, class);
 	free(class);
 	return -1;
