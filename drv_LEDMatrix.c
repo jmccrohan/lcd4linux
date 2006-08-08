@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.1 2006/08/05 21:08:01 harbaum Exp $
+/* $Id: drv_LEDMatrix.c,v 1.2 2006/08/08 20:16:28 harbaum Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.2  2006/08/08 20:16:28  harbaum
+ * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
+ *
  * Revision 1.1  2006/08/05 21:08:01  harbaum
  * New LEDMATRIX driver (see http://www.harbaum.org/till/ledmatrix)
  *
@@ -79,22 +82,18 @@
 #define DSP_CMD_IR    4
 #define DSP_CMD_BEEP  5
 
-#define DSP_PORT 4711
+#define DSP_DEFAULT_PORT 4711
 
 #define DSP_MEM (80 * 32 * 2 / 8)
+
+#define DEFAULT_X_OFFSET   1  // with a font width of 6
 
 static char Name[] = "LEDMatrix";
 static char *IPAddress = NULL;
 static int sock = -1;
 static struct sockaddr_in dsp_addr;
 static unsigned char tx_buffer[DSP_MEM+1];
-
-#if 0
-typedef enum { RED, GREEN, AMBER } col_t;
-
-static col_t fg_col, bg_col, hg_col;
-#endif
-
+static int port = DSP_DEFAULT_PORT;
 
 static void drv_LEDMatrix_blit(const int row, const int col, const int height, const int width)
 {
@@ -102,14 +101,16 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    /* drv_generic_graphic_black() returns 1 if pixel is black */
-	    /* drv_generic_graphic_gray() returns a gray value 0..255 */
-	    /* drv_generic_graphic_rgb() returns a RGB color */
-	    if (drv_generic_graphic_black(r, c)) {
-	        tx_buffer[1 + 20*r + c/4] |=    0xc0>>(2*(c&3));
-	    } else {
-	        tx_buffer[1 + 20*r + c/4] &=  ~(0xc0>>(2*(c&3)));
-	    }
+	    /* LEDMATRIX supports three colors: 10b == green, 01b == red, 11b == amber */
+
+	    unsigned char color = 0;
+	    RGBA p = drv_generic_graphic_rgb(r, c);
+	    if( p.G >= 128 ) color |= 0x80;
+	    if( p.R >= 128 ) color |= 0x40;
+	    /* ignore blue ... */
+
+	    tx_buffer[1 + 20*r + c/4] &=  ~(0xc0>>(2*(c&3)));
+	    tx_buffer[1 + 20*r + c/4] |=   color>>(2*(c&3));
 	}
     }
 
@@ -126,11 +127,19 @@ static int drv_LEDMatrix_start(const char *section)
     char *s;
     struct sockaddr_in cli_addr;
     struct hostent *hp;
+    int val;
 
     IPAddress = cfg_get(section, "IPAddress", NULL);
     if (IPAddress == NULL || *IPAddress == '\0') {
 	error("%s: no '%s.IPAddress' entry from %s", Name, section, cfg_source());
 	return -1;
+    }
+
+    if (cfg_number(section, "Port", 0, 0, 65535, &val) > 0) {
+        info("%s: port set to %d", Name, val);
+        port = val;
+    } else {
+        info("%s: using default port", Name, port);
     }
 
     /* display size is hard coded */
@@ -145,7 +154,7 @@ static int drv_LEDMatrix_start(const char *section)
     free(s);
 
     /* contact display */
-    info("%s: contacting %s\n", Name, IPAddress);
+    info("%s: contacting %s", Name, IPAddress);
 
     /* try to resolve as a hostname */
     if((hp = gethostbyname(IPAddress)) == NULL) {
@@ -162,11 +171,11 @@ static int drv_LEDMatrix_start(const char *section)
     memset((char *) &dsp_addr, 0, sizeof(dsp_addr));
     dsp_addr.sin_family = AF_INET;
     dsp_addr.sin_addr.s_addr = *(int*)hp->h_addr;
-    dsp_addr.sin_port = htons(DSP_PORT);
+    dsp_addr.sin_port = htons(port);
     
     cli_addr.sin_family = AF_INET;
     cli_addr.sin_addr.s_addr = htons(INADDR_ANY);
-    cli_addr.sin_port = htons(DSP_PORT);
+    cli_addr.sin_port = htons(port);
     
     if (bind(sock, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
         error("%s: can't bind local address: %s", Name, strerror(errno));

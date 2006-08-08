@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.29 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: drv_generic_graphic.c,v 1.30 2006/08/08 20:16:29 harbaum Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.30  2006/08/08 20:16:29  harbaum
+ * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
+ *
  * Revision 1.29  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -462,7 +465,7 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 int drv_generic_graphic_bar_draw(WIDGET * W)
 {
     WIDGET_BAR *Bar = W->data;
-    RGBA fg, bg;
+    RGBA fg, bg, border;
     int layer, row, col, len, res, rev, max, val1, val2;
     int x, y;
     DIRECTION dir;
@@ -477,6 +480,7 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
     fg = W->fg_valid ? W->fg_color : FG_COL;
     bg = W->bg_valid ? W->bg_color : BG_COL;
+    border = W->extra_valid ? W->extra_color : fg;
 
     /* sanity check */
     if (layer < 0 || layer >= LAYERS) {
@@ -524,13 +528,13 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
 
 		if (style) {
-		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = fg;
-		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = fg;
+		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = border;
+		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = border;
 		}
 	    }
 	    if (style) {
-		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col] = fg;
-		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + max - 1] = fg;
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col] = border;
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + max - 1] = border;
 	    }
 	}
 	break;

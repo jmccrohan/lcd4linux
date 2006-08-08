@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.24 2006/08/08 19:28:18 reinelt Exp $
+/* $Id: widget.c,v 1.25 2006/08/08 20:16:29 harbaum Exp $
  *
  * generic widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget.c,v $
+ * Revision 1.25  2006/08/08 20:16:29  harbaum
+ * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
+ *
  * Revision 1.24  2006/08/08 19:28:18  reinelt
  * widget type checking corrected
  *
@@ -224,8 +227,8 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     int i;
     char *section;
     char *class;
-    int fg_valid, bg_valid;
-    RGBA FG, BG;
+    int fg_valid, bg_valid, extra_valid;
+    RGBA FG, BG, EXTRACOL;
 
     WIDGET_CLASS *Class;
     WIDGET *Widget;
@@ -250,6 +253,7 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     /* get widget foreground color */
     fg_valid = widget_color(section, name, "foreground", &FG);
     bg_valid = widget_color(section, name, "background", &BG);
+    extra_valid = widget_color(section, name, "extracolor", &EXTRACOL);
 
     free(section);
 
@@ -312,8 +316,10 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     Widget->parent = Parent;
     Widget->fg_color = FG;
     Widget->bg_color = BG;
+    Widget->extra_color = EXTRACOL;
     Widget->fg_valid = fg_valid;
     Widget->bg_valid = bg_valid;
+    Widget->extra_valid = extra_valid;
     Widget->layer = layer;
     Widget->row = row;
     Widget->col = col;
