@@ -1,4 +1,4 @@
-/* $Id: drv.c,v 1.42 2006/08/05 21:08:01 harbaum Exp $
+/* $Id: drv.c,v 1.43 2006/08/08 19:35:21 reinelt Exp $
  *
  * new framework for display drivers
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv.c,v $
+ * Revision 1.43  2006/08/08 19:35:21  reinelt
+ * USBHUB driver from Ernst Bachmann
+ *
  * Revision 1.42  2006/08/05 21:08:01  harbaum
  * New LEDMATRIX driver (see http://www.harbaum.org/till/ledmatrix)
  *
@@ -232,6 +235,7 @@ extern DRIVER drv_serdisplib;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
 extern DRIVER drv_Trefon;
+extern DRIVER drv_USBHUB;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_WincorNixdorf;
 extern DRIVER drv_X11;
@@ -317,6 +321,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_TREFON
     &drv_Trefon,
+#endif
+#ifdef WITH_USBHUB
+    &drv_USBHUB,
 #endif
 #ifdef WITH_USBLCD
     &drv_USBLCD,

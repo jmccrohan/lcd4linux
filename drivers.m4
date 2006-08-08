@@ -33,7 +33,7 @@ AC_ARG_WITH(
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, RouterBoard, Sample,]
   [                        serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
-  [                        WincorNixdorf, X11],
+  [                        USBHUB, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -80,6 +80,7 @@ for driver in $drivers; do
          SIMPLELCD="yes"
          T6963="yes"
          Trefon="yes"
+	 USBHUB="yes"
          USBLCD="yes"
 	 WINCORNIXDORF="yes"
          X11="yes"
@@ -161,6 +162,9 @@ for driver in $drivers; do
          ;;
       Trefon)
          Trefon=$val
+         ;;
+      USBHUB)
+         USBHUB=$val
          ;;
       USBLCD)
          USBLCD=$val
@@ -424,6 +428,17 @@ if test "$Trefon" = "yes"; then
       AC_DEFINE(WITH_TREFON,1,[TREFON driver])
    else
       AC_MSG_WARN(usb.h not found: Trefon driver disabled)
+   fi
+fi
+
+if test "$USBHUB" = "yes"; then
+   if test "$has_usb" = "true"; then
+      GPIO="yes"
+      DRIVERS="$DRIVERS drv_USBHUB.o"
+      LIBUSB="yes"
+      AC_DEFINE(WITH_USBHUB,1,[USBHUB driver])
+   else
+      AC_MSG_WARN(usb.h not found: USB-Hub driver disabled)
    fi
 fi
 

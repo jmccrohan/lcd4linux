@@ -259,6 +259,7 @@ drv_serdisplib.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
 drv_Trefon.c                  \
+drv_USBHUB.c                  \
 drv_USBLCD.c                  \
 drv_WincorNixdorf.c           \
 drv_X11.c                     \
@@ -427,6 +428,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_SimpleLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_T6963.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Trefon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_USBHUB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_USBLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_WincorNixdorf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_X11.Po@am__quote@

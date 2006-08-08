@@ -440,6 +440,9 @@
 /* TREFON driver */
 #undef WITH_TREFON
 
+/* USBHUB driver */
+#undef WITH_USBHUB
+
 /* USBLCD driver */
 #undef WITH_USBLCD
 
