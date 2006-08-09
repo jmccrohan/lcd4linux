@@ -1,4 +1,4 @@
-/* $Id: drv_generic.h,v 1.4 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: drv_generic.h,v 1.5 2006/08/09 17:25:34 harbaum Exp $
  *
  * generic driver helper
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic.h,v $
+ * Revision 1.5  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.4  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -32,12 +35,16 @@
 #ifndef _DRV_GENERIC_H_
 #define _DRV_GENERIC_H_
 
+#define FONT_STYLE_BOLD  0x01
+#define FONT_STYLE_SLANT 0x02
+
 /* these values are chars (text displays) or pixels (graphic displays) */
 
 extern int LROWS, LCOLS;	/* layout size */
 extern int DROWS, DCOLS;	/* display size */
 
 extern int XRES, YRES;		/* pixel width/height of one char */
+extern int FONT_STYLE;          /* font style */
 
 /* these function must be implemented by the generic driver */
 extern void (*drv_generic_blit) (const int row, const int col, const int height, const int width);

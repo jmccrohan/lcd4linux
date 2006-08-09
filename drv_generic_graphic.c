@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.30 2006/08/08 20:16:29 harbaum Exp $
+/* $Id: drv_generic_graphic.c,v 1.31 2006/08/09 17:25:34 harbaum Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.31  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.30  2006/08/08 20:16:29  harbaum
  * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
  *
@@ -183,6 +186,7 @@
 #include "drv_generic.h"
 #include "drv_generic_graphic.h"
 #include "font_6x8.h"
+#include "font_6x8_bold.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -310,11 +314,18 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 
     /* render text into layout FB */
     while (*txt != '\0') {
+        unsigned char *chr;
+
+        if( FONT_STYLE & FONT_STYLE_BOLD )
+	    chr = Font_6x8_bold[(int) *txt];
+	else
+	    chr = Font_6x8[(int) *txt];
+
 	for (y = 0; y < YRES; y++) {
 	    int mask = 1 << XRES;
 	    for (x = 0; x < XRES; x++) {
 		mask >>= 1;
-		if (Font_6x8[(int) *txt][y] & mask)
+		if (chr[y] & mask)
 		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = fg;
 		else
 		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = bg;
@@ -465,7 +476,7 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 int drv_generic_graphic_bar_draw(WIDGET * W)
 {
     WIDGET_BAR *Bar = W->data;
-    RGBA fg, bg, border;
+    RGBA fg, bg, bar[2];
     int layer, row, col, len, res, rev, max, val1, val2;
     int x, y;
     DIRECTION dir;
@@ -480,7 +491,9 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 
     fg = W->fg_valid ? W->fg_color : FG_COL;
     bg = W->bg_valid ? W->bg_color : BG_COL;
-    border = W->extra_valid ? W->extra_color : fg;
+
+    bar[0] = Bar->color_valid[0] ? Bar->color[0] : fg;
+    bar[1] = Bar->color_valid[1] ? Bar->color[1] : fg;
 
     /* sanity check */
     if (layer < 0 || layer >= LAYERS) {
@@ -521,20 +534,22 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
     case DIR_EAST:
 	for (y = 0; y < YRES; y++) {
 	    int val = y < YRES / 2 ? val1 : val2;
+	    RGBA bcol = y < YRES / 2 ? bar[0] : bar[1];
+	    
 	    for (x = 0; x < max; x++) {
 		if (x < val)
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : bcol;
 		else
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bcol : bg;
 
 		if (style) {
-		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = border;
-		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = border;
+		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = fg;
+		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = fg;
 		}
 	    }
 	    if (style) {
-		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col] = border;
-		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + max - 1] = border;
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col] = fg;
+		drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + max - 1] = fg;
 	    }
 	}
 	break;

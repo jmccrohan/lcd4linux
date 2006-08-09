@@ -1,4 +1,4 @@
-/* $Id: widget_bar.h,v 1.8 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: widget_bar.h,v 1.9 2006/08/09 17:25:34 harbaum Exp $
  *
  * bar widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_bar.h,v $
+ * Revision 1.9  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.8  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -81,6 +84,8 @@ typedef struct WIDGET_BAR {
     double val2;		/* bar value, 0.0 ... 1.0 */
     double min;			/* minimum value */
     double max;			/* maximum value */
+    RGBA color[2];              /* bar colors */
+    int color_valid[2];         /* bar color is valid */
 } WIDGET_BAR;
 
 

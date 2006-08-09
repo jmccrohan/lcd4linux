@@ -1,4 +1,4 @@
-/* $Id: widget_bar.c,v 1.18 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_bar.c,v 1.19 2006/08/09 17:25:34 harbaum Exp $
  *
  * bar widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_bar.c,v $
+ * Revision 1.19  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.18  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -269,6 +272,10 @@ int widget_bar_init(WIDGET * Self)
 
     /* update interval (msec), default 1 sec */
     cfg_number(section, "update", 1000, 10, -1, &(Bar->update));
+
+    /* get widget special colors */
+    Bar->color_valid[0] = widget_color(section, Self->name, "barcolor0", &Bar->color[0]);
+    Bar->color_valid[1] = widget_color(section, Self->name, "barcolor1", &Bar->color[1]);
 
     free(section);
     Self->data = Bar;

@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.2 2006/08/08 20:16:28 harbaum Exp $
+/* $Id: drv_LEDMatrix.c,v 1.3 2006/08/09 17:25:34 harbaum Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.3  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.2  2006/08/08 20:16:28  harbaum
  * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
  *
@@ -128,6 +131,7 @@ static int drv_LEDMatrix_start(const char *section)
     struct sockaddr_in cli_addr;
     struct hostent *hp;
     int val;
+    char *attr;
 
     IPAddress = cfg_get(section, "IPAddress", NULL);
     if (IPAddress == NULL || *IPAddress == '\0') {
@@ -152,6 +156,11 @@ static int drv_LEDMatrix_start(const char *section)
 	return -1;
     }
     free(s);
+
+    s = cfg_get(section, "fontstyle", NULL);
+    if (s != NULL) {
+        if(strstr(s, "bold") != NULL) FONT_STYLE |= FONT_STYLE_BOLD;
+    }
 
     /* contact display */
     info("%s: contacting %s", Name, IPAddress);

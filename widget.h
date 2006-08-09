@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.20 2006/08/08 20:16:29 harbaum Exp $
+/* $Id: widget.h,v 1.21 2006/08/09 17:25:34 harbaum Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.21  2006/08/09 17:25:34  harbaum
+ * Better bar color support and new bold font
+ *
  * Revision 1.20  2006/08/08 20:16:29  harbaum
  * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
  *
@@ -127,10 +130,8 @@ typedef struct WIDGET {
     struct WIDGET *parent;
     RGBA fg_color;
     RGBA bg_color;
-    RGBA extra_color;
     int fg_valid;
     int bg_valid;
-    int extra_valid;
     int layer;
     int row;
     int col;
