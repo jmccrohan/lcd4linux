@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.21 2005/12/12 09:08:08 reinelt Exp $
+/* $Id: udelay.c,v 1.22 2006/08/10 19:06:52 reinelt Exp $
  *
  * short delays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.22  2006/08/10 19:06:52  reinelt
+ * new 'fuzz' parameter for timings
+ *
  * Revision 1.21  2005/12/12 09:08:08  reinelt
  * finally removed old udelay code path; read timing values from config
  *
@@ -232,13 +235,22 @@ void udelay_init(void)
 unsigned long timing(const char *driver, const char *section, const char *name, const int defval, const char *unit)
 {
     char sec[256];
-    int ret, val;
+    int fuzz, val;
 
     qprintf(sec, sizeof(sec), "%s.Timing", section);
 
-    ret = cfg_number(sec, name, defval, 0, -1, &val);
+    /* fuzz all timings by given factor */
+    cfg_number(sec, "fuzz", 100, 1, -1, &fuzz);
+
+    cfg_number(sec, name, defval, 0, -1, &val);
+    val = val * fuzz / 100;
+    
     if (val != defval) {
-	info("%s: timing: %6s = %5d %s (default %d %s)", driver, name, val, unit, defval, unit);
+	if (fuzz != 100) {
+	    info("%s: timing: %6s = %5d %s (default %d %s, fuzz %d)", driver, name, val, unit, defval, unit, fuzz);
+	} else {
+	    info("%s: timing: %6s = %5d %s (default %d %s)", driver, name, val, unit, defval, unit);
+	}
     } else {
 	info("%s: timing: %6s = %5d %s (default)", driver, name, defval, unit);
     }

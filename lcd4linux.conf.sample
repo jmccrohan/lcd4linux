@@ -157,6 +157,8 @@ Display HD44780-winamp {
 	POWER   'GND'
     }
     Timing {
+	# fuzz timings by value (100 = no change)
+	fuzz 100
 	# low-level communication [ns]
 	CY 1000  # Enable cycle time
 	PW  450  # Enable pulse width
@@ -175,6 +177,23 @@ Display HD44780-winamp {
 	GPO_PW 230  # 74HCT573 enable pulse width
 	# Power supply timing [ms]
 	POWER  500  # power-on delay
+    }
+}
+
+# HD44780 display 4-Bit mode
+Display HD44780-4bit {
+    Driver 'HD44780'
+    Model 'generic'
+    Port '/dev/parports/0'	
+    Size '16x1'
+    Bits 4
+    UseBusy 0
+    asc255bug 0
+    Wire {
+        RW     'GND'
+        RS     'DB4'
+        ENABLE 'DB6'
+        GPO    'GND'
     }
 }
 
@@ -1033,6 +1052,7 @@ Layout testMySQL {
 #Display 'CW12232'
 #Display 'HD44780-generic'
 #Display 'HD44780-WinAmp'
+#Display 'HD44780-4bit'
 #Display 'WDC2704M'
 #Display 'SC1602D'
 #Display 'LCM-162'
@@ -1040,7 +1060,7 @@ Layout testMySQL {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-#Display 'M50530-24x8'
+Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
 #Display 'BA63'
@@ -1051,7 +1071,7 @@ Layout testMySQL {
 #Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
-Display 'LCD2USB'
+#Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
 #Display 'LPH7508'
 #Display 'ctinclud'
