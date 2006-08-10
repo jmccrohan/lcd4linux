@@ -313,10 +313,12 @@ Display M50530-24x8 {
     Size '24x8'
     Font '5x7'
     Duty 2
+    Wire.RW   'INIT'
     Wire.EX   'STROBE'
     Wire.IOC1 'SLCTIN'
     Wire.IOC2 'AUTOFD'
-    Wire.GPO  'INIT'
+    Wire.GPO  'GND'
+    UseBusy    1
 }
 
 

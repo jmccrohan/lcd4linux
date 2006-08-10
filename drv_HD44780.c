@@ -1,4 +1,4 @@
-/* $Id: drv_HD44780.c,v 1.63 2006/07/29 20:59:12 lfcorreia Exp $
+/* $Id: drv_HD44780.c,v 1.64 2006/08/10 20:40:46 reinelt Exp $
  *
  * new style driver for HD44780-based displays
  *
@@ -32,6 +32,9 @@
  *
  *
  * $Log: drv_HD44780.c,v $
+ * Revision 1.64  2006/08/10 20:40:46  reinelt
+ * M50530 enhancements: Timings, busy-flag checking
+ *
  * Revision 1.63  2006/07/29 20:59:12  lfcorreia
  * Fix wrong timing at I2C initialization
  *
@@ -490,7 +493,7 @@ static void drv_HD_PP_busy(const int controller)
 		    /* get the current time */
 		    gettimeofday(&now, NULL);
 		    if (now.tv_sec == end.tv_sec ? now.tv_usec >= end.tv_usec : now.tv_sec >= end.tv_sec) {
-			error("%s: timeout waiting for busy flag on controller %x (%x)", Name, ctrlmask, data);
+			error("%s: timeout waiting for busy flag on controller %x (0x%02x)", Name, ctrlmask, data);
 			if (++errors >= MAX_BUSYFLAG_ERRORS) {
 			    error("%s: too many busy flag failures, turning off busy flag checking.", Name);
 			    UseBusy = 0;
@@ -1486,7 +1489,7 @@ int drv_HD_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.63 $");
+    info("%s: %s", Name, "$Revision: 1.64 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

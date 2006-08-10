@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.21 2006/01/30 06:25:53 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.22 2006/08/10 20:40:46 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.22  2006/08/10 20:40:46  reinelt
+ * M50530 enhancements: Timings, busy-flag checking
+ *
  * Revision 1.21  2006/01/30 06:25:53  reinelt
  * added CVS Revision
  *
@@ -149,6 +152,12 @@ static char Name[] = "M50530";
 
 static int Model;
 
+/* Timings */
+static int T_SU, T_W, T_D, T_H;
+static int T_INIT, T_EXEC, T_CLEAR;
+static int T_GPO_ST, T_GPO_PW;
+
+static unsigned char SIGNAL_RW;
 static unsigned char SIGNAL_EX;
 static unsigned char SIGNAL_IOC1;
 static unsigned char SIGNAL_IOC2;
@@ -157,6 +166,15 @@ static unsigned char SIGNAL_GPO;
 static int FONT5X11;
 static int DDRAM;
 static int DUTY;
+
+/* maximum time to wait for the busy-flag (in usec) */
+#define MAX_BUSYFLAG_WAIT 10000
+
+/* maximum busy flag errors before falling back to busy-waiting */
+#define MAX_BUSYFLAG_ERRORS 20
+
+/* flag for busy-waiting vs. busy flag checking */
+static int UseBusy = 0;
 
 /* buffer holding the GPO state */
 static unsigned char GPO = 0;
@@ -177,34 +195,120 @@ static MODEL Models[] = {
 /***  hardware dependant functions    ***/
 /****************************************/
 
+static void drv_M5_busy(void)
+{
+    static unsigned int errors = 0;
+
+    unsigned char data = 0xFF;
+    unsigned char busymask = 0x88;
+    unsigned int counter;
+
+    /* set data-lines to input */
+    drv_generic_parport_direction(1);
+    
+    /* clear I/OC1 and I/OC2, set R/W */
+    drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_RW, SIGNAL_RW);
+    
+    /* Control data setup time */
+    ndelay(T_SU);
+
+    counter = 0;
+    while (1) {
+
+	/* rise enable */
+	drv_generic_parport_control(SIGNAL_EX, SIGNAL_EX);
+
+	/* data output delay time */
+	ndelay(T_D);
+	
+	/* read the busy flag */
+	data = drv_generic_parport_read();
+
+	/* lower enable */
+	/* as T_D is larger than T_W, we don't need to delay again */
+	drv_generic_parport_control(SIGNAL_EX, 0);
+	
+	if ((data & busymask) == 0) {
+	    errors = 0;
+	    break;
+	}
+	
+	/* make sure we don't wait forever
+	 * - but only check after 5 iterations
+	 * that way, we won't slow down normal mode
+	 * (where we don't need the timeout anyway) 
+	 */
+	counter++;
+
+	if (counter >= 5) {
+	    struct timeval now, end;
+
+	    if (counter == 5) {
+		/* determine the time when the timeout has expired */
+		gettimeofday(&end, NULL);
+		end.tv_usec += MAX_BUSYFLAG_WAIT;
+		while (end.tv_usec > 1000000) {
+		    end.tv_usec -= 1000000;
+		    end.tv_sec++;
+		}
+	    }
+
+	    /* get the current time */
+	    gettimeofday(&now, NULL);
+	    if (now.tv_sec == end.tv_sec ? now.tv_usec >= end.tv_usec : now.tv_sec >= end.tv_sec) {
+		error("%s: timeout waiting for busy flag (0x%02x)", Name, data);
+		if (++errors >= MAX_BUSYFLAG_ERRORS) {
+		    error("%s: too many busy flag failures, turning off busy flag checking.", Name);
+		    UseBusy = 0;
+		}
+		break;
+	    }
+	}
+    }
+
+    /* clear R/W */
+    drv_generic_parport_control(SIGNAL_RW, 0);
+
+    /* set data-lines to output */
+    drv_generic_parport_direction(0);
+
+}
+
+
 static void drv_M5_command(const unsigned int cmd, const int delay)
 {
+
+    if (UseBusy)
+	drv_M5_busy();
 
     /* put data on DB1..DB8 */
     drv_generic_parport_data(cmd & 0xff);
 
     /* set I/OC1 */
     /* set I/OC2 */
-    drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2,
+    /* clear RW */
+    drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_RW,
 				(cmd & 0x100 ? SIGNAL_IOC1 : 0) | (cmd & 0x200 ? SIGNAL_IOC2 : 0));
 
     /* Control data setup time */
-    ndelay(200);
+    ndelay(T_SU);
 
     /* send command */
-    /* EX signal pulse width = 500ns */
-    /* Fixme: why 500 ns? Datasheet says 200ns */
-    drv_generic_parport_toggle(SIGNAL_EX, 1, 500);
+    drv_generic_parport_toggle(SIGNAL_EX, 1, T_W);
 
-    /* wait */
-    udelay(delay);
-
+    if (UseBusy) {
+	/* honour data hold time */
+	ndelay (T_H);
+    } else {
+	/* wait for command completion */
+	udelay(delay);
+    }
 }
 
 
 static void drv_M5_clear(void)
 {
-    drv_M5_command(0x0001, 1250);	/* clear display */
+    drv_M5_command(0x0001, T_CLEAR);	/* clear display */
 }
 
 
@@ -220,11 +324,11 @@ static void drv_M5_write(const int row, const int col, const char *data, const i
 	pos = (row - 4) * (DDRAM >> DUTY) + (DDRAM >> DUTY) / 2 + col;
     }
 
-    drv_M5_command(0x300 | pos, 20);
+    drv_M5_command(0x300 | pos, T_EXEC);
 
     while (l--) {
 	cmd = *(unsigned char *) data++;
-	drv_M5_command(0x200 | cmd, 20);
+	drv_M5_command(0x200 | cmd, T_EXEC);
     }
 }
 
@@ -233,10 +337,10 @@ static void drv_M5_defchar(const int ascii, const unsigned char *matrix)
 {
     int i;
 
-    drv_M5_command(0x300 + DDRAM + 8 * (ascii - CHAR0), 20);
+    drv_M5_command(0x300 + DDRAM + 8 * (ascii - CHAR0), T_EXEC);
 
     for (i = 0; i < YRES; i++) {
-	drv_M5_command(0x200 | (matrix[i] & 0x3f), 20);
+	drv_M5_command(0x200 | (matrix[i] & 0x3f), T_EXEC);
     }
 }
 
@@ -259,11 +363,11 @@ static int drv_M5_GPO(const int num, const int val)
     drv_generic_parport_data(GPO);
 
     /* 74HCT573 set-up time */
-    ndelay(20);
+    ndelay(T_GPO_ST);
 
     /* send data */
-    /* 74HCT573 enable pulse width = 24ns */
-    drv_generic_parport_toggle(SIGNAL_GPO, 1, 24);
+    /* 74HCT573 enable pulse width */
+    drv_generic_parport_toggle(SIGNAL_GPO, 1, T_GPO_PW);
 
     return v;
 }
@@ -370,6 +474,8 @@ static int drv_M5_start(const char *section, const int quiet)
 	return -1;
     }
 
+    if ((SIGNAL_RW = drv_generic_parport_wire_ctrl("RW", "GND")) == 0xff)
+	return -1;
     if ((SIGNAL_EX = drv_generic_parport_wire_ctrl("EX", "STROBE")) == 0xff)
 	return -1;
     if ((SIGNAL_IOC1 = drv_generic_parport_wire_ctrl("IOC1", "SLCTIN")) == 0xff)
@@ -379,11 +485,52 @@ static int drv_M5_start(const char *section, const int quiet)
     if ((SIGNAL_GPO = drv_generic_parport_wire_ctrl("GPO", "GND")) == 0xff)
 	return -1;
 
+    /* Timings */
+
+    /* low level communication timings [nanoseconds]
+     * we use the worst-case default values, but allow
+     * modification from the config file.
+     */
+
+    T_SU = timing(Name, section, "SU", 200, "ns"); /* control data setup time */
+    T_W = timing(Name, section, "W", 500, "ns"); /* EX signal pulse width */
+    T_D = timing(Name, section, "D", 300, "ns"); /* Data output delay time */
+    T_H = timing(Name, section, "H", 100, "ns"); /* Data hold time */
+
+    /* GPO timing */
+    if (SIGNAL_GPO != 0) {
+	T_GPO_ST = timing(Name, section, "GPO_ST", 20, "ns");	/* 74HCT573 set-up time */
+	T_GPO_PW = timing(Name, section, "GPO_PW", 230, "ns");	/* 74HCT573 enable pulse width */
+    } else {
+	T_GPO_ST = 0;
+	T_GPO_PW = 0;
+    }
+
+    /* M50530 execution timings [microseconds]
+     * we use the worst-case default values, but allow
+     * modification from the config file.
+     */
+
+    T_EXEC = timing(Name, section, "EXEC", 20, "us"); /* normal execution time */
+    T_CLEAR = timing(Name, section, "CLEAR", 1250, "us"); /* 'clear display' execution time */
+    T_INIT = timing(Name, section, "INIT", 2000, "us"); /* mysterious initialization time */
+
+
+    /* maybe use busy-flag from now on  */
+    cfg_number(section, "UseBusy", 0, 0, 1, &UseBusy);
+
+    /* make sure we don't use the busy flag with RW wired to GND */
+    if (UseBusy && !SIGNAL_RW) {
+	error("%s: busy-flag checking is impossible with RW wired to GND!", Name);
+	UseBusy = 0;
+    }
+    info("%s: %susing busy-flag checking", Name, UseBusy ? "" : "not ");
+
     /* clear all signals */
-    drv_generic_parport_control(SIGNAL_EX | SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_GPO, 0);
+    drv_generic_parport_control(SIGNAL_RW | SIGNAL_EX | SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_GPO, 0);
 
     /* for some mysterious reason, this delay is necessary... */
-    udelay(2000);
+    udelay(T_INIT);
 
     /* set direction: write */
     drv_generic_parport_direction(0);
@@ -439,7 +586,7 @@ static int drv_M5_start(const char *section, const int quiet)
 
 
     debug("SET FUNCTION MODE 0x%02x", SF);
-    drv_M5_command(SF, 20);
+    drv_M5_command(SF, T_EXEC);
 
 
     /* set display (SD) mode:
@@ -455,7 +602,7 @@ static int drv_M5_start(const char *section, const int quiet)
 
     /* SD: 0x20 = 00100000 */
     /* SD: turn off display */
-    drv_M5_command(0x0020, 20);
+    drv_M5_command(0x0020, T_EXEC);
 
 
     /* set entry (SE) mode:
@@ -472,12 +619,12 @@ static int drv_M5_start(const char *section, const int quiet)
 
     /* SE: 0x50 = 01010000 */
     /* SE: increment display start after Write */
-    drv_M5_command(0x0050, 20);
+    drv_M5_command(0x0050, T_EXEC);
 
 
     /* SD: 0x30 = 00110000 */
     /* SD: turn on display */
-    drv_M5_command(0x0030, 20);
+    drv_M5_command(0x0030, T_EXEC);
 
 
     drv_M5_clear();
@@ -535,7 +682,7 @@ int drv_M5_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.21 $");
+    info("%s: %s", Name, "$Revision: 1.22 $");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */
@@ -613,7 +760,7 @@ int drv_M5_quit(const int quiet)
     }
 
     /* clear all signals */
-    drv_generic_parport_control(SIGNAL_EX | SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_GPO, 0);
+    drv_generic_parport_control(SIGNAL_RW | SIGNAL_EX | SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_GPO, 0);
 
     /* close port */
     drv_generic_parport_close();
