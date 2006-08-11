@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.22 2006/08/10 20:40:46 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.23 2006/08/11 11:59:29 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.23  2006/08/11 11:59:29  reinelt
+ * M50530 minor fixes
+ *
  * Revision 1.22  2006/08/10 20:40:46  reinelt
  * M50530 enhancements: Timings, busy-flag checking
  *
@@ -268,6 +271,9 @@ static void drv_M5_busy(void)
 
     /* clear R/W */
     drv_generic_parport_control(SIGNAL_RW, 0);
+
+    /* honour data hold time */
+    ndelay (T_H);
 
     /* set data-lines to output */
     drv_generic_parport_direction(0);
@@ -682,7 +688,7 @@ int drv_M5_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.22 $");
+    info("%s: %s", Name, "$Revision: 1.23 $");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */

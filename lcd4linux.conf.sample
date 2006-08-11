@@ -319,6 +319,7 @@ Display M50530-24x8 {
     Wire.IOC2 'AUTOFD'
     Wire.GPO  'GND'
     UseBusy    1
+    Timing.fuzz 100
 }
 
 
