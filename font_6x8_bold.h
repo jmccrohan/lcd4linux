@@ -1,4 +1,4 @@
-/* $Id: font_6x8_bold.h,v 1.1 2006/08/09 17:25:34 harbaum Exp $
+/* $Id: font_6x8_bold.h,v 1.2 2006/08/13 18:14:03 harbaum Exp $
  *
  * 6x8 bold font
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: font_6x8_bold.h,v $
+ * Revision 1.2  2006/08/13 18:14:03  harbaum
+ * Added KVV plugin
+ *
  * Revision 1.1  2006/08/09 17:25:34  harbaum
  * Better bar color support and new bold font
  *
@@ -175,11 +178,11 @@ unsigned char Font_6x8_bold[256][8] = {
 	    _OO___,
 	    ______},
     [0x2a] {______,
-	    __OO__,
-	    O_OO_O,
-	    _OOOO_,
-	    O_OO_O,
-	    __OO__,
+	    ___O__,
+	    _O_O_O,
+	    __OOO_,
+	    _O_O_O,
+	    ___O__,
 	    ______,
 	    ______},
     [0x2b] {______,
@@ -230,9 +233,9 @@ unsigned char Font_6x8_bold[256][8] = {
 	    _OO_OO,
 	    __OOO_,
 	    ______},
-    [0x31] {____O_,
-	    ___OO_,
+    [0x31] {___OO_,
 	    __OOO_,
+	    ___OO_,
 	    ___OO_,
 	    ___OO_,
 	    ___OO_,
@@ -767,8 +770,8 @@ unsigned char Font_6x8_bold[256][8] = {
 	    _OOOO_,
 	    ______},
     [0x74] {__OO__,
-	    _OOOO_,
 	    __OO__,
+	    _OOOO_,
 	    __OO__,
 	    __OO__,
 	    __OO__,

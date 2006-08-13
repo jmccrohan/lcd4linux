@@ -8245,6 +8245,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_IMON="yes"
          PLUGIN_ISDN="yes"
+         PLUGIN_KVV="yes"
          PLUGIN_LOADAVG="yes"
          PLUGIN_MEMINFO="yes"
          PLUGIN_MPD="yes"
@@ -8288,6 +8289,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       isdn)
          PLUGIN_ISDN=$val
+         ;;
+      kvv)
+         PLUGIN_KVV=$val
          ;;
       loadavg)
          PLUGIN_LOADAVG=$val
@@ -8768,6 +8772,14 @@ echo "$as_me: WARNING: linux/isdn.h header not found: isdn plugin CPS disabled" 
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_ISDN 1
+_ACEOF
+
+fi
+if test "$PLUGIN_KVV" = "yes"; then
+   PLUGINS="$PLUGINS plugin_kvv.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_KVV 1
 _ACEOF
 
 fi

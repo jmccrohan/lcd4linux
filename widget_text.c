@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.26 2006/08/13 11:38:20 reinelt Exp $
+/* $Id: widget_text.c,v 1.27 2006/08/13 18:14:03 harbaum Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.27  2006/08/13 18:14:03  harbaum
+ * Added KVV plugin
+ *
  * Revision 1.26  2006/08/13 11:38:20  reinelt
  * text widget uses dynamic properties
  *
@@ -172,7 +175,7 @@ void widget_text_scroll(void *Self)
     char *postfix = P2S(&T->postfix);
 
     char *string = T->string;
-    
+
     int num, len, width, pad;
     char *src, *dst;
 
@@ -325,7 +328,7 @@ void widget_text_update(void *Self)
 
     /* text style */
     update += property_eval(&T->style);
-    
+
     /* something has changed and should be updated */
     if (update) {
 	/* reset marquee counter if content has changed */

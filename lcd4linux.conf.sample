@@ -420,6 +420,14 @@ Display Image {
     Basecolor  '80d000'
 }
 
+Plugin KVV {
+    StationID '12_701'
+    Refresh 30
+
+    Proxy 'igate'
+    Port 8080;
+}
+
 Plugin Seti {
     Directory '/root/setiathome-3.08.i686-pc-linux-gnu'
 }
@@ -875,6 +883,28 @@ Widget ImageTest {
     update 1000
     visible 1
     inverted 0
+}
+
+Widget KVV {
+    class 'Text'
+    expression kvv::line(0).' '.kvv::station(0)
+    width 11
+
+    align 'L'
+    update tick
+    Foreground 'ffff00'
+    style 'bold'
+}
+
+Widget KVV_TIME {
+    class 'Text'
+    expression kvv::time_str(0)
+    width 2
+
+    align 'R'
+    update tick
+    foreground kvv::time(0) < 2 ? 'FF0000' : ( kvv::time(0) < 5 ? 'FFFF00' : '00FF00' )
+    style 'bold'
 }
 
 Layout Default {

@@ -281,6 +281,9 @@
 /* ISDN plugin */
 #undef PLUGIN_ISDN
 
+/* kvv plugin */
+#undef PLUGIN_KVV
+
 /* loadavg plugin */
 #undef PLUGIN_LOADAVG
 

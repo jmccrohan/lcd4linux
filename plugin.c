@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.44 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: plugin.c,v 1.45 2006/08/13 18:14:03 harbaum Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.45  2006/08/13 18:14:03  harbaum
+ * Added KVV plugin
+ *
  * Revision 1.44  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -250,6 +253,8 @@ int plugin_init_imon(void);
 void plugin_exit_imon(void);
 int plugin_init_isdn(void);
 void plugin_exit_isdn(void);
+int plugin_init_kvv(void);
+void plugin_exit_kvv(void);
 int plugin_init_loadavg(void);
 void plugin_exit_loadavg(void);
 int plugin_init_meminfo(void);
@@ -318,6 +323,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_ISDN
     plugin_init_isdn();
+#endif
+#ifdef PLUGIN_KVV
+    plugin_init_kvv();
 #endif
 #ifdef PLUGIN_LOADAVG
     plugin_init_loadavg();
@@ -401,6 +409,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_ISDN
     plugin_exit_isdn();
+#endif
+#ifdef PLUGIN_KVV
+    plugin_exit_kvv();
 #endif
 #ifdef PLUGIN_LOADAVG
     plugin_exit_loadavg();

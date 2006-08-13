@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.5 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: drv_LEDMatrix.c,v 1.6 2006/08/13 18:14:03 harbaum Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.6  2006/08/13 18:14:03  harbaum
+ * Added KVV plugin
+ *
  * Revision 1.5  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -106,7 +109,13 @@ static int port = DSP_DEFAULT_PORT;
 
 static void drv_LEDMatrix_blit(const int row, const int col, const int height, const int width)
 {
-    int r, c;
+    int r, c, i;
+    fd_set rfds;
+    struct timeval tv;
+    unsigned char reply[256];
+    struct sockaddr_in cli_addr;
+    int fromlen, ack = 0;
+    int timeout = 10;
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
@@ -127,8 +136,42 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 
     // scan entire display
     tx_buffer[0] = DSP_CMD_IMAGE;
-    if ((sendto(sock, tx_buffer, DSP_MEM + 1, 0, (struct sockaddr *) &dsp_addr, sizeof(dsp_addr))) != DSP_MEM + 1)
-	error("%s: sendto error on socket", Name);
+
+    do {
+
+	if ((sendto(sock, tx_buffer, DSP_MEM + 1, 0, (struct sockaddr *) &dsp_addr, sizeof(dsp_addr))) != DSP_MEM + 1)
+	    error("%s: sendto error on socket", Name);
+
+	/* now wait for reply */
+
+	FD_ZERO(&rfds);
+	FD_SET(sock, &rfds);
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000;
+
+	// wait 1 sec for ack
+	if ((i = select(FD_SETSIZE, &rfds, NULL, NULL, &tv)) < 0) {
+	    perror("select");
+	}
+
+	if (FD_ISSET(sock, &rfds)) {
+	    // wait for ack
+	    fromlen = sizeof(dsp_addr);
+	    i = recvfrom(sock, reply, sizeof(reply), 0, (struct sockaddr *) &cli_addr, &fromlen);
+	    if (i < 0) {
+		perror("recvfrom");
+	    } else {
+		if ((i == 2) && (reply[0] == DSP_CMD_ACK) && (reply[1] == DSP_CMD_IMAGE)) {
+		    ack = 1;
+//      } else if((i > 1) && (reply[0] == DSP_CMD_IR)) {
+//        ir_receive(reply+1, i-1);
+		} else {
+		    fprintf(stderr, "Unexpected reply message\n");
+		}
+	    }
+	}
+	timeout--;
+    } while ((!ack) && (timeout > 0));
 }
 
 static int drv_LEDMatrix_start(const char *section)
@@ -137,7 +180,6 @@ static int drv_LEDMatrix_start(const char *section)
     struct sockaddr_in cli_addr;
     struct hostent *hp;
     int val;
-    char *attr;
 
     IPAddress = cfg_get(section, "IPAddress", NULL);
     if (IPAddress == NULL || *IPAddress == '\0') {

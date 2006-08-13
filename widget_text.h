@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.9 2006/08/13 11:38:20 reinelt Exp $
+/* $Id: widget_text.h,v 1.10 2006/08/13 18:14:03 harbaum Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.10  2006/08/13 18:14:03  harbaum
+ * Added KVV plugin
+ *
  * Revision 1.9  2006/08/13 11:38:20  reinelt
  * text widget uses dynamic properties
  *
@@ -77,9 +80,9 @@ typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } TEXT_ALIGN
 typedef struct WIDGET_TEXT {
     PROPERTY prefix;		/* label on the left side */
     PROPERTY postfix;		/* label on the right side */
-    PROPERTY value;             /* value of text widget */
+    PROPERTY value;		/* value of text widget */
     PROPERTY style;		/* text style (plain/bold/slant) */
-    char *string;               /* formatted value */
+    char *string;		/* formatted value */
     char *buffer;		/* string with 'width+1' bytes allocated  */
     int width;			/* field width */
     int precision;		/* number of digits after the decimal point */

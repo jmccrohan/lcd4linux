@@ -279,6 +279,7 @@ plugin_file.c                 \
 plugin_i2c_sensors.c          \
 plugin_imon.c                 \
 plugin_isdn.c                 \
+plugin_kvv.c                  \
 plugin_loadavg.c              \
 plugin_meminfo.c              \
 plugin_mpd.c		      \
@@ -458,6 +459,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_i2c_sensors.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_imon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_isdn.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_kvv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_loadavg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_math.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_meminfo.Po@am__quote@

@@ -58,6 +58,7 @@ for plugin in $plugins; do
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_IMON="yes"
          PLUGIN_ISDN="yes"
+         PLUGIN_KVV="yes"
          PLUGIN_LOADAVG="yes"
          PLUGIN_MEMINFO="yes"
          PLUGIN_MPD="yes"
@@ -101,6 +102,9 @@ for plugin in $plugins; do
          ;;
       isdn)
          PLUGIN_ISDN=$val
+         ;;
+      kvv)
+         PLUGIN_KVV=$val
          ;;
       loadavg)
          PLUGIN_LOADAVG=$val
@@ -202,6 +206,10 @@ if test "$PLUGIN_ISDN" = "yes"; then
    fi   
    PLUGINS="$PLUGINS plugin_isdn.o"
    AC_DEFINE(PLUGIN_ISDN,1,[ISDN plugin])
+fi
+if test "$PLUGIN_KVV" = "yes"; then
+   PLUGINS="$PLUGINS plugin_kvv.o"
+   AC_DEFINE(PLUGIN_KVV,1,[kvv plugin])
 fi
 if test "$PLUGIN_LOADAVG" = "yes"; then
    PLUGINS="$PLUGINS plugin_loadavg.o"
