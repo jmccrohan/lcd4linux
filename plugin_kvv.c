@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.1 2006/08/13 18:14:03 harbaum Exp $
+/* $Id: plugin_kvv.c,v 1.2 2006/08/13 18:45:25 harbaum Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.2  2006/08/13 18:45:25  harbaum
+ * Little cleanup ...
+ *
  * Revision 1.1  2006/08/13 18:14:03  harbaum
  * Added KVV plugin
  *
@@ -576,7 +579,7 @@ static void kvv_line(RESULT * result, RESULT * arg1)
     if (index < shm->entries) {
 	SetResult(&result, R_STRING, shm->entry[index].line);
     } else
-	SetResult(&result, R_STRING, "---");
+	SetResult(&result, R_STRING, "");
 
     mutex_unlock(mutex);
 }
@@ -590,7 +593,7 @@ static void kvv_station(RESULT * result, RESULT * arg1)
     if (index < shm->entries)
 	SetResult(&result, R_STRING, shm->entry[index].station);
     else
-	SetResult(&result, R_STRING, "---");
+	SetResult(&result, R_STRING, "");
 
     mutex_unlock(mutex);
 }
@@ -621,7 +624,7 @@ static void kvv_time_str(RESULT * result, RESULT * arg1)
 	sprintf(str, "%d", shm->entry[index].time);
 	SetResult(&result, R_STRING, str);
     } else
-	SetResult(&result, R_STRING, "---");
+	SetResult(&result, R_STRING, "");
 
     mutex_unlock(mutex);
 }

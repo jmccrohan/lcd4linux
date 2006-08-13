@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.6 2006/08/13 18:14:03 harbaum Exp $
+/* $Id: drv_LEDMatrix.c,v 1.7 2006/08/13 18:45:25 harbaum Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.7  2006/08/13 18:45:25  harbaum
+ * Little cleanup ...
+ *
  * Revision 1.6  2006/08/13 18:14:03  harbaum
  * Added KVV plugin
  *
@@ -151,7 +154,7 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 
 	// wait 1 sec for ack
 	if ((i = select(FD_SETSIZE, &rfds, NULL, NULL, &tv)) < 0) {
-	    perror("select");
+	    info("%s: Select error: %s", Name, strerror(errno));
 	}
 
 	if (FD_ISSET(sock, &rfds)) {
@@ -159,14 +162,14 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 	    fromlen = sizeof(dsp_addr);
 	    i = recvfrom(sock, reply, sizeof(reply), 0, (struct sockaddr *) &cli_addr, &fromlen);
 	    if (i < 0) {
-		perror("recvfrom");
+		info("%s: Receive error: %s", Name, strerror(errno));
 	    } else {
 		if ((i == 2) && (reply[0] == DSP_CMD_ACK) && (reply[1] == DSP_CMD_IMAGE)) {
 		    ack = 1;
 //      } else if((i > 1) && (reply[0] == DSP_CMD_IR)) {
 //        ir_receive(reply+1, i-1);
 		} else {
-		    fprintf(stderr, "Unexpected reply message\n");
+		    info("%s: Unexpected reply message", Name);
 		}
 	    }
 	}
