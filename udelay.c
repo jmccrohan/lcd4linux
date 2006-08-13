@@ -1,4 +1,4 @@
-/* $Id: udelay.c,v 1.22 2006/08/10 19:06:52 reinelt Exp $
+/* $Id: udelay.c,v 1.23 2006/08/13 06:46:51 reinelt Exp $
  *
  * short delays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: udelay.c,v $
+ * Revision 1.23  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.22  2006/08/10 19:06:52  reinelt
  * new 'fuzz' parameter for timings
  *
@@ -244,7 +247,7 @@ unsigned long timing(const char *driver, const char *section, const char *name, 
 
     cfg_number(sec, name, defval, 0, -1, &val);
     val = val * fuzz / 100;
-    
+
     if (val != defval) {
 	if (fuzz != 100) {
 	    info("%s: timing: %6s = %5d %s (default %d %s, fuzz %d)", driver, name, val, unit, defval, unit, fuzz);

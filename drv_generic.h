@@ -1,4 +1,4 @@
-/* $Id: drv_generic.h,v 1.5 2006/08/09 17:25:34 harbaum Exp $
+/* $Id: drv_generic.h,v 1.6 2006/08/13 06:46:51 reinelt Exp $
  *
  * generic driver helper
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic.h,v $
+ * Revision 1.6  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.5  2006/08/09 17:25:34  harbaum
  * Better bar color support and new bold font
  *
@@ -44,7 +47,7 @@ extern int LROWS, LCOLS;	/* layout size */
 extern int DROWS, DCOLS;	/* display size */
 
 extern int XRES, YRES;		/* pixel width/height of one char */
-extern int FONT_STYLE;          /* font style */
+extern int FONT_STYLE;		/* font style */
 
 /* these function must be implemented by the generic driver */
 extern void (*drv_generic_blit) (const int row, const int col, const int height, const int width);

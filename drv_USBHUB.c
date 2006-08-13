@@ -1,4 +1,4 @@
-/* $Id: drv_USBHUB.c,v 1.1 2006/08/08 19:35:22 reinelt Exp $
+/* $Id: drv_USBHUB.c,v 1.2 2006/08/13 06:46:51 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: drv_USBHUB.c,v $
+ * Revision 1.2  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.1  2006/08/08 19:35:22  reinelt
  * USBHUB driver from Ernst Bachmann
  *
@@ -67,15 +70,15 @@ static char Name[] = "USBHUB";
  * no Vendor/Product specified in config.
  */
 
-static int hubVendor=0x0409;
-static int hubProduct=0x0058;
+static int hubVendor = 0x0409;
+static int hubProduct = 0x0058;
 
-static usb_dev_handle *hub=NULL;
+static usb_dev_handle *hub = NULL;
 
 typedef struct _usb_hub_descriptor {
-    u_int8_t  bLength;
-    u_int8_t  bDescriptorType;
-    u_int8_t  nNbrPorts;
+    u_int8_t bLength;
+    u_int8_t bDescriptorType;
+    u_int8_t nNbrPorts;
     u_int8_t wHubCharacteristicLow;
     u_int8_t wHubCharacteristicHigh;
     u_int8_t bPwrOn2PwrGood;
@@ -96,7 +99,7 @@ static int drv_UH_open(void)
 
     hub = NULL;
 
-    info("%s: scanning for an USB HUB (0x%04x:0x%04x)...", Name,hubVendor,hubProduct);
+    info("%s: scanning for an USB HUB (0x%04x:0x%04x)...", Name, hubVendor, hubProduct);
 
     usb_init();
     usb_find_busses();
@@ -105,18 +108,17 @@ static int drv_UH_open(void)
 
     for (bus = busses; bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
-	    if ((dev->descriptor.idVendor == hubVendor) &&
-		(dev->descriptor.idProduct == hubProduct)) {
+	    if ((dev->descriptor.idVendor == hubVendor) && (dev->descriptor.idProduct == hubProduct)) {
 
 		unsigned int v = dev->descriptor.bcdDevice;
 
 		info("%s: found USBHUB V%1d%1d.%1d%1d on bus %s device %s", Name,
 		     (v & 0xF000) >> 12, (v & 0xF00) >> 8, (v & 0xF0) >> 4, (v & 0xF), bus->dirname, dev->filename);
 
-	        if (dev->descriptor.bDeviceClass != USB_CLASS_HUB) {
-                   error("%s: the specified device claims to be no HUB");
-		   return -1;
-               }
+		if (dev->descriptor.bDeviceClass != USB_CLASS_HUB) {
+		    error("%s: the specified device claims to be no HUB");
+		    return -1;
+		}
 
 		hub = usb_open(dev);
 		if (!hub) {
@@ -154,82 +156,83 @@ static int drv_UH_close(void)
  *
  */
 
-static int drv_UH_set(const int num, const int val) {
-  int ret;
+static int drv_UH_set(const int num, const int val)
+{
+    int ret;
 
-  if (!hub)
-    return -1;
+    if (!hub)
+	return -1;
 
-  if (val <0 || val > 3) {
-    info("%s: value %d out of range (0..3)",Name,val);
-    return -1;
-  }
+    if (val < 0 || val > 3) {
+	info("%s: value %d out of range (0..3)", Name, val);
+	return -1;
+    }
 
-  if((ret=usb_control_msg(hub,
-			  HUB_CONTROL_PORT,
-                          HUB_SET_FEATURE,
-			  HUB_SET_INDICATOR, (val << 8) | (num+1), NULL, 0, 1000)) != 0) {
-    info("%s: usb_control_msg failed with %d",Name,ret);
-    return -1;
-  }
+    if ((ret = usb_control_msg(hub,
+			       HUB_CONTROL_PORT,
+			       HUB_SET_FEATURE, HUB_SET_INDICATOR, (val << 8) | (num + 1), NULL, 0, 1000)) != 0) {
+	info("%s: usb_control_msg failed with %d", Name, ret);
+	return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 
 static int drv_UH_start(const char *section, const int quiet)
-{ 
-    char * buf;
+{
+    char *buf;
 
     usb_hub_descriptor hub_desc;
     int ret;
 
 
-    buf=cfg_get(section,"Vendor",NULL);
+    buf = cfg_get(section, "Vendor", NULL);
     if (buf) {
-      if (!*buf) {
-         error("%s: Strange Vendor Specification");
-         return -1;
-      }
-      if (sscanf(buf,"0x%x",&hubVendor) != 1) {
-         error("%s: Strange Vendor Specification: [%s]",buf);
-         return -1;
-      }
+	if (!*buf) {
+	    error("%s: Strange Vendor Specification");
+	    return -1;
+	}
+	if (sscanf(buf, "0x%x", &hubVendor) != 1) {
+	    error("%s: Strange Vendor Specification: [%s]", buf);
+	    return -1;
+	}
     }
 
-    buf=cfg_get(section,"Product",NULL);
+    buf = cfg_get(section, "Product", NULL);
     if (buf) {
-      if (!*buf) {
-         error("%s: Strange Product Specification");
-         return -1;
-      }
-      if (sscanf(buf,"0x%x",&hubProduct) != 1) {
-         error("%s: Strange Product Specification: [%s]",buf);
-         return -1;
-      }
+	if (!*buf) {
+	    error("%s: Strange Product Specification");
+	    return -1;
+	}
+	if (sscanf(buf, "0x%x", &hubProduct) != 1) {
+	    error("%s: Strange Product Specification: [%s]", buf);
+	    return -1;
+	}
     }
 
     if (drv_UH_open() < 0) {
-        return -1;
+	return -1;
     }
 
 
-    if ((ret=usb_control_msg(hub, 
-			USB_ENDPOINT_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-			USB_REQ_GET_DESCRIPTOR,USB_DT_HUB << 8,0,(char *)&hub_desc,sizeof(hub_desc),1000)) <= 8) {
-      error("%s: hub_get_descriptor failed with %d",Name,ret);
-      drv_UH_close();
-      return -1;
+    if ((ret = usb_control_msg(hub,
+			       USB_ENDPOINT_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+			       USB_REQ_GET_DESCRIPTOR, USB_DT_HUB << 8, 0, (char *) &hub_desc, sizeof(hub_desc),
+			       1000)) <= 8) {
+	error("%s: hub_get_descriptor failed with %d", Name, ret);
+	drv_UH_close();
+	return -1;
     }
-    GPOS=hub_desc.nNbrPorts;
-    debug("%s: HUB claims to have %d ports. Configuring them as GPOs",Name,GPOS);
+    GPOS = hub_desc.nNbrPorts;
+    debug("%s: HUB claims to have %d ports. Configuring them as GPOs", Name, GPOS);
     if (!(hub_desc.wHubCharacteristicLow & 0x80)) {
-      error("%s: HUB claims to have no Indicator LEDs (Characteristics 0x%04x). Bailing out.",Name,
-	   (hub_desc.wHubCharacteristicHigh << 8) | hub_desc.wHubCharacteristicLow); 
-     /* The HUB Tells us that there are no LEDs to control. Breaking? Maybe don't trust it and continue anyways? */
-     drv_UH_close();
-     return -1;
-     
+	error("%s: HUB claims to have no Indicator LEDs (Characteristics 0x%04x). Bailing out.", Name,
+	      (hub_desc.wHubCharacteristicHigh << 8) | hub_desc.wHubCharacteristicLow);
+	/* The HUB Tells us that there are no LEDs to control. Breaking? Maybe don't trust it and continue anyways? */
+	drv_UH_close();
+	return -1;
+
     }
 
     return 0;
@@ -272,7 +275,7 @@ int drv_UH_init(const char *section, const int quiet)
     int ret;
     int i;
 
-    info("%s: %s", Name, "$Revision: 1.1 $");
+    info("%s: %s", Name, "$Revision: 1.2 $");
 
 
 
@@ -282,7 +285,7 @@ int drv_UH_init(const char *section, const int quiet)
 
 
     /* real worker functions */
-    drv_generic_gpio_real_set=drv_UH_set;
+    drv_generic_gpio_real_set = drv_UH_set;
 
 
     /* initialize generic GPIO driver */
@@ -296,14 +299,14 @@ int drv_UH_init(const char *section, const int quiet)
 
     /* greeting */
     if (!quiet) {
-      /* Light all LEDS green for a greeting */
-      for (i=0; i < GPOS; ++i) {
-         drv_UH_set(i,2);
-      }
-      sleep(1);
-      for (i=0; i < GPOS; ++i) {
-         drv_UH_set(i,3); // OFF
-      }
+	/* Light all LEDS green for a greeting */
+	for (i = 0; i < GPOS; ++i) {
+	    drv_UH_set(i, 2);
+	}
+	sleep(1);
+	for (i = 0; i < GPOS; ++i) {
+	    drv_UH_set(i, 3);	// OFF
+	}
     }
 
 
@@ -319,11 +322,11 @@ int drv_UH_quit(const int quiet)
 
     /* say goodbye... */
     if (!quiet) {
-      /* Light all LEDS amber for a goodbye */
-      for (i=0; i < GPOS; ++i) {
-         drv_UH_set(i,1);
-      }
-      sleep(1);
+	/* Light all LEDS amber for a goodbye */
+	for (i = 0; i < GPOS; ++i) {
+	    drv_UH_set(i, 1);
+	}
+	sleep(1);
 
     }
 

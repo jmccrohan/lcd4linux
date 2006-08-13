@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.20 2006/02/27 06:14:46 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.21 2006/08/13 06:46:51 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.21  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.20  2006/02/27 06:14:46  reinelt
  * graphic bug resulting in all black pixels solved
  *
@@ -147,6 +150,10 @@ static MODEL Models[] = {
 };
 
 
+/* Timings */
+static int T_ACC, T_OH, T_PW, T_DH, T_CDS;
+
+/* soft-wiring */
 static unsigned char SIGNAL_CE;
 static unsigned char SIGNAL_CD;
 static unsigned char SIGNAL_RD;
@@ -172,8 +179,8 @@ static void drv_T6_status1(void)
     /* lower CE and RD */
     drv_generic_parport_control(SIGNAL_CE | SIGNAL_RD, 0);
 
-    /* Access Time: 150 ns  */
-    ndelay(150);
+    /* Access Time */
+    ndelay(T_ACC);
 
     /* wait for STA0=1 and STA1=1 */
     n = 0;
@@ -189,8 +196,8 @@ static void drv_T6_status1(void)
     /* rise RD and CE */
     drv_generic_parport_control(SIGNAL_RD | SIGNAL_CE, SIGNAL_RD | SIGNAL_CE);
 
-    /* Output Hold Time: 50 ns  */
-    ndelay(50);
+    /* Output Hold Time */
+    ndelay(T_OH);
 
     /* turn on data line drivers */
     drv_generic_parport_direction(0);
@@ -208,8 +215,8 @@ static void drv_T6_status2(void)
     /* lower RD and CE */
     drv_generic_parport_control(SIGNAL_RD | SIGNAL_CE, 0);
 
-    /* Access Time: 150 ns  */
-    ndelay(150);
+    /* Access Time */
+    ndelay(T_ACC);
 
     /* wait for STA3=1 */
     n = 0;
@@ -225,8 +232,8 @@ static void drv_T6_status2(void)
     /* rise RD and CE */
     drv_generic_parport_control(SIGNAL_RD | SIGNAL_CE, SIGNAL_RD | SIGNAL_CE);
 
-    /* Output Hold Time: 50 ns  */
-    ndelay(50);
+    /* Output Hold Time */
+    ndelay(T_OH);
 
     /* turn on data line drivers */
     drv_generic_parport_direction(0);
@@ -245,13 +252,13 @@ static void drv_T6_write_cmd(const unsigned char cmd)
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, 0);
 
     /* Pulse width */
-    ndelay(80);
+    ndelay(T_PW);
 
     /* rise WR and CE */
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
 
     /* Data Hold Time */
-    ndelay(40);
+    ndelay(T_DH);
 }
 
 
@@ -267,19 +274,19 @@ static void drv_T6_write_data(const unsigned char data)
     drv_generic_parport_control(SIGNAL_CD, 0);
 
     /* C/D Setup Time */
-    ndelay(20);
+    ndelay(T_CDS);
 
     /* lower WR and CE */
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, 0);
 
     /* Pulse Width */
-    ndelay(80);
+    ndelay(T_PW);
 
     /* rise WR and CE */
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
 
     /* Data Hold Time */
-    ndelay(40);
+    ndelay(T_DH);
 
     /* rise CD */
     drv_generic_parport_control(SIGNAL_CD, SIGNAL_CD);
@@ -298,19 +305,19 @@ static void drv_T6_write_auto(const unsigned char data)
     drv_generic_parport_control(SIGNAL_CD, 0);
 
     /* C/D Setup Time */
-    ndelay(20);
+    ndelay(T_CDS);
 
     /* lower WR and CE */
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, 0);
 
     /* Pulse Width */
-    ndelay(80);
+    ndelay(T_PW);
 
     /* rise WR and CE */
     drv_generic_parport_control(SIGNAL_WR | SIGNAL_CE, SIGNAL_WR | SIGNAL_CE);
 
     /* Data Hold Time */
-    ndelay(40);
+    ndelay(T_DH);
 
     /* rise CD */
     drv_generic_parport_control(SIGNAL_CD, SIGNAL_CD);
@@ -470,23 +477,17 @@ static int drv_T6_start(const char *section)
 	return -1;
     }
 
-    s = cfg_get(section, "Font", "6x8");
-    if (s == NULL || *s == '\0') {
-	error("%s: no '%s.Font' entry from %s", Name, section, cfg_source());
+    if (sscanf(s = cfg_get(section, "font", "6x8"), "%dx%d", &XRES, &YRES) != 2 || XRES < 1 || YRES < 1) {
+	error("%s: bad %s.Font '%s' from %s", Name, section, s, cfg_source());
+	free(s);
 	return -1;
     }
+    free(s);
 
-    XRES = -1;
-    YRES = -1;
-    if (sscanf(s, "%dx%d", &XRES, &YRES) != 2 || XRES < 1 || YRES < 1) {
-	error("%s: bad Font '%s' from %s", Name, s, cfg_source());
-	return -1;
-    }
-
-    /* Fixme: provider other fonts someday... */
-    if (XRES != 6 && YRES != 8) {
-	error("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
-	return -1;
+    s = cfg_get(section, "fontstyle", NULL);
+    if (s != NULL) {
+	if (strstr(s, "bold") != NULL)
+	    FONT_STYLE |= FONT_STYLE_BOLD;
     }
 
     TROWS = DROWS / YRES;	/* text rows */
@@ -498,7 +499,6 @@ static int drv_T6_start(const char *section)
 	return -1;
     }
 
-    debug("malloc buffer 2 (%d*%d)=%d", TCOLS, DROWS, TCOLS * DROWS);
     Buffer2 = malloc(TCOLS * DROWS);
     if (Buffer2 == NULL) {
 	error("%s: framebuffer #2 could not be allocated: malloc() failed", Name);
@@ -513,6 +513,7 @@ static int drv_T6_start(const char *section)
 	return -1;
     }
 
+    /* soft-wiring */
     if ((SIGNAL_CE = drv_generic_parport_wire_ctrl("CE", "STROBE")) == 0xff)
 	return -1;
     if ((SIGNAL_CD = drv_generic_parport_wire_ctrl("CD", "SLCTIN")) == 0xff)
@@ -521,6 +522,14 @@ static int drv_T6_start(const char *section)
 	return -1;
     if ((SIGNAL_WR = drv_generic_parport_wire_ctrl("WR", "INIT")) == 0xff)
 	return -1;
+
+    /* timings */
+    T_ACC = timing(Name, section, "ACC", 150, "ns");	/* Access Time */
+    T_OH = timing(Name, section, "OH", 50, "ns");	/* Output Hold Time */
+    T_PW = timing(Name, section, "PW", 80, "ns");	/* CE, RD, WR Pulse Width */
+    T_DH = timing(Name, section, "DH", 40, "ns");	/* Data Hold Time */
+    T_CDS = timing(Name, section, "CDS", 100, "ns");	/* C/D Setup Time */
+
 
     /* rise CE, CD, RD and WR */
     drv_generic_parport_control(SIGNAL_CE | SIGNAL_CD | SIGNAL_RD | SIGNAL_WR,
@@ -591,7 +600,7 @@ int drv_T6_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.20 $");
+    info("%s: %s", Name, "$Revision: 1.21 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;

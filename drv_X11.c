@@ -1,4 +1,4 @@
-/* $Id: drv_X11.c,v 1.16 2006/02/08 04:55:05 reinelt Exp $
+/* $Id: drv_X11.c,v 1.17 2006/08/13 06:46:51 reinelt Exp $
  *
  * new style X11 Driver for LCD4Linux 
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_X11.c,v $
+ * Revision 1.17  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.16  2006/02/08 04:55:05  reinelt
  * moved widget registration to drv_generic_graphic
  *
@@ -167,9 +170,9 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
     int r, c;
     int dirty = 0;
 
-    for (r = row; r < row + height && r < DROWS; r++) {
+    for (r = row; r < row + height; r++) {
 	int y = border + (r / YRES) * rgap + r * (pixel + pgap);
-	for (c = col; c < col + width && c < DCOLS; c++) {
+	for (c = col; c < col + width; c++) {
 	    int x = border + (c / XRES) * cgap + c * (pixel + pgap);
 	    RGBA p1 = drv_X11_FB[r * DCOLS + c];
 	    RGBA p2 = drv_generic_graphic_rgb(r, c);
@@ -375,7 +378,7 @@ int drv_X11_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.16 $");
+    info("%s: %s", Name, "$Revision: 1.17 $");
 
     /* start display */
     if ((ret = drv_X11_start(section)) != 0)

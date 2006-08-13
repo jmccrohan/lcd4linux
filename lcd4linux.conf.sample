@@ -357,6 +357,8 @@ Display T6963-240x64 {
     Driver 'T6963'
     Port '/dev/parports/0'
     Size '240x64'
+    Font '6x8'
+    FontStyle 'bold'
     Wire.CE 'STROBE'
     Wire.CD 'SLCTIN'
     Wire.RD 'AUTOFD'
@@ -810,7 +812,7 @@ Widget Test {
 Widget Test1 {
     class 'Text'
     expression 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-    width 20
+    width 80
     align 'M'
     speed 100
 }
@@ -818,7 +820,7 @@ Widget Test1 {
 Widget Test2 {
     class 'Text'
     expression '1234567890abcdefghijklmnopqrstuvwxyz'
-    width 20
+    width 80
     align 'M'
     speed 150
 }
@@ -1045,6 +1047,12 @@ Layout testMySQL {
 	}
 }
 
+Layout Debug {
+    #Row09.Col1 'Test'
+    Row09.Col1 'Heartbeat'
+}
+
+
 
 #Display 'SerDispLib'
 #Display 'LCD-Linux'
@@ -1063,12 +1071,12 @@ Layout testMySQL {
 #Display 'CF632'
 #Display 'CF633'
 #Display 'Curses'
-Display 'M50530-24x8'
+#Display 'M50530-24x8'
 #Display 'LCDTerm'
 #Display 'SimpleLCD'
 #Display 'BA63'
 #Display 'CT20x4'
-#Display 'T6963-240x64'
+Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
@@ -1090,5 +1098,5 @@ Layout 'Default'
 #Layout 'Test'
 #Layout 'Test2'
 #Layout 'TestGPO'
-
+#Layout 'Debug'
 

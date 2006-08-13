@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.23 2006/08/11 11:59:29 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.24 2006/08/13 06:46:51 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.24  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.23  2006/08/11 11:59:29  reinelt
  * M50530 minor fixes
  *
@@ -208,10 +211,10 @@ static void drv_M5_busy(void)
 
     /* set data-lines to input */
     drv_generic_parport_direction(1);
-    
+
     /* clear I/OC1 and I/OC2, set R/W */
     drv_generic_parport_control(SIGNAL_IOC1 | SIGNAL_IOC2 | SIGNAL_RW, SIGNAL_RW);
-    
+
     /* Control data setup time */
     ndelay(T_SU);
 
@@ -223,19 +226,19 @@ static void drv_M5_busy(void)
 
 	/* data output delay time */
 	ndelay(T_D);
-	
+
 	/* read the busy flag */
 	data = drv_generic_parport_read();
 
 	/* lower enable */
 	/* as T_D is larger than T_W, we don't need to delay again */
 	drv_generic_parport_control(SIGNAL_EX, 0);
-	
+
 	if ((data & busymask) == 0) {
 	    errors = 0;
 	    break;
 	}
-	
+
 	/* make sure we don't wait forever
 	 * - but only check after 5 iterations
 	 * that way, we won't slow down normal mode
@@ -273,7 +276,7 @@ static void drv_M5_busy(void)
     drv_generic_parport_control(SIGNAL_RW, 0);
 
     /* honour data hold time */
-    ndelay (T_H);
+    ndelay(T_H);
 
     /* set data-lines to output */
     drv_generic_parport_direction(0);
@@ -304,7 +307,7 @@ static void drv_M5_command(const unsigned int cmd, const int delay)
 
     if (UseBusy) {
 	/* honour data hold time */
-	ndelay (T_H);
+	ndelay(T_H);
     } else {
 	/* wait for command completion */
 	udelay(delay);
@@ -498,10 +501,10 @@ static int drv_M5_start(const char *section, const int quiet)
      * modification from the config file.
      */
 
-    T_SU = timing(Name, section, "SU", 200, "ns"); /* control data setup time */
-    T_W = timing(Name, section, "W", 500, "ns"); /* EX signal pulse width */
-    T_D = timing(Name, section, "D", 300, "ns"); /* Data output delay time */
-    T_H = timing(Name, section, "H", 100, "ns"); /* Data hold time */
+    T_SU = timing(Name, section, "SU", 200, "ns");	/* control data setup time */
+    T_W = timing(Name, section, "W", 500, "ns");	/* EX signal pulse width */
+    T_D = timing(Name, section, "D", 300, "ns");	/* Data output delay time */
+    T_H = timing(Name, section, "H", 100, "ns");	/* Data hold time */
 
     /* GPO timing */
     if (SIGNAL_GPO != 0) {
@@ -517,9 +520,9 @@ static int drv_M5_start(const char *section, const int quiet)
      * modification from the config file.
      */
 
-    T_EXEC = timing(Name, section, "EXEC", 20, "us"); /* normal execution time */
-    T_CLEAR = timing(Name, section, "CLEAR", 1250, "us"); /* 'clear display' execution time */
-    T_INIT = timing(Name, section, "INIT", 2000, "us"); /* mysterious initialization time */
+    T_EXEC = timing(Name, section, "EXEC", 20, "us");	/* normal execution time */
+    T_CLEAR = timing(Name, section, "CLEAR", 1250, "us");	/* 'clear display' execution time */
+    T_INIT = timing(Name, section, "INIT", 2000, "us");	/* mysterious initialization time */
 
 
     /* maybe use busy-flag from now on  */
@@ -688,7 +691,7 @@ int drv_M5_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.23 $");
+    info("%s: %s", Name, "$Revision: 1.24 $");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */

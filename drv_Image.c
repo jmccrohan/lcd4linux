@@ -1,4 +1,4 @@
-/* $Id: drv_Image.c,v 1.18 2006/06/21 05:12:43 reinelt Exp $
+/* $Id: drv_Image.c,v 1.19 2006/08/13 06:46:51 reinelt Exp $
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Image.c,v $
+ * Revision 1.19  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.18  2006/06/21 05:12:43  reinelt
  * added checks for libgd version 2 (thanks to Sam)
  *
@@ -351,8 +354,8 @@ static void drv_IMG_blit(const int row, const int col, const int height, const i
 {
     int r, c;
 
-    for (r = row; r < row + height && r < DROWS; r++) {
-	for (c = col; c < col + width && c < DCOLS; c++) {
+    for (r = row; r < row + height; r++) {
+	for (c = col; c < col + width; c++) {
 	    RGBA p1 = drv_IMG_FB[r * DCOLS + c];
 	    RGBA p2 = drv_generic_graphic_rgb(r, c);
 	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
@@ -489,7 +492,7 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.18 $");
+    info("%s: %s", Name, "$Revision: 1.19 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;

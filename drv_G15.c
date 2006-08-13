@@ -1,4 +1,4 @@
-/* $Id: drv_G15.c,v 1.9 2006/07/12 21:01:41 reinelt Exp $
+/* $Id: drv_G15.c,v 1.10 2006/08/13 06:46:51 reinelt Exp $
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *
@@ -24,6 +24,9 @@
  *
  *
  * $Log: drv_G15.c,v $
+ * Revision 1.10  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.9  2006/07/12 21:01:41  reinelt
  * thread_destroy, minor cleanups
  *
@@ -422,8 +425,8 @@ static void drv_G15_blit(const int row, const int col, const int height, const i
 
     DEBUG("entered");
 
-    for (r = row; r < row + height && r < DROWS; r++) {
-	for (c = col; c < col + width && c < DCOLS; c++) {
+    for (r = row; r < row + height; r++) {
+	for (c = col; c < col + width; c++) {
 	    g15_image[r * 160 + c] = drv_generic_graphic_black(r, c);
 	}
     }
@@ -539,7 +542,7 @@ int drv_G15_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.9 $");
+    info("%s: %s", Name, "$Revision: 1.10 $");
 
     DEBUG("entered");
 

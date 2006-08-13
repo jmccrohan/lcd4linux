@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.80 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.81 2006/08/13 06:46:51 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.81  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.80  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -680,6 +683,7 @@ int main(int argc, char *argv[])
     free(layout);
 
     debug("starting main loop");
+
 
     /* now install our own signal handler */
     signal(SIGHUP, handler);

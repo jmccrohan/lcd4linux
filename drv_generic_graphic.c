@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.31 2006/08/09 17:25:34 harbaum Exp $
+/* $Id: drv_generic_graphic.c,v 1.32 2006/08/13 06:46:51 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.32  2006/08/13 06:46:51  reinelt
+ * T6963 soft-timing & enhancements; indent
+ *
  * Revision 1.31  2006/08/09 17:25:34  harbaum
  * Better bar color support and new bold font
  *
@@ -251,15 +254,41 @@ static void drv_generic_graphic_resizeFB(int rows, int cols)
 
     LCOLS = cols;
     LROWS = rows;
+
 }
 
+static void drv_generic_graphic_window(int pos, int size, int max, int *wpos, int *wsize)
+{
+    int p1 = pos;
+    int p2 = pos + size;
+
+    *wpos = 0;
+    *wsize = 0;
+
+    if (p1 > max || p2 < 0 || size < 1)
+	return;
+
+    if (p1 < 0)
+	p1 = 0;
+
+    if (p2 > max)
+	p2 = max;
+
+    *wpos = p1;
+    *wsize = p2 - p1;
+}
 
 static void drv_generic_graphic_blit(const int row, const int col, const int height, const int width)
 {
-    if (drv_generic_graphic_real_blit)
-	drv_generic_graphic_real_blit(row, col, height, width);
+    if (drv_generic_graphic_real_blit) {
+	int r, c, h, w;
+	drv_generic_graphic_window(row, height, DROWS, &r, &h);
+	drv_generic_graphic_window(col, width, DCOLS, &c, &w);
+	if (h > 0 && w > 0) {
+	    drv_generic_graphic_real_blit(r, c, h, w);
+	}
+    }
 }
-
 
 static RGBA drv_generic_graphic_blend(const int row, const int col)
 {
@@ -314,9 +343,9 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 
     /* render text into layout FB */
     while (*txt != '\0') {
-        unsigned char *chr;
+	unsigned char *chr;
 
-        if( FONT_STYLE & FONT_STYLE_BOLD )
+	if (FONT_STYLE & FONT_STYLE_BOLD)
 	    chr = Font_6x8_bold[(int) *txt];
 	else
 	    chr = Font_6x8[(int) *txt];
@@ -535,7 +564,7 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
 	for (y = 0; y < YRES; y++) {
 	    int val = y < YRES / 2 ? val1 : val2;
 	    RGBA bcol = y < YRES / 2 ? bar[0] : bar[1];
-	    
+
 	    for (x = 0; x < max; x++) {
 		if (x < val)
 		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : bcol;
