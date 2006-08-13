@@ -1,4 +1,4 @@
-/* $Id: property.h,v 1.1 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: property.h,v 1.2 2006/08/13 11:38:20 reinelt Exp $
  *
  * dynamic properties
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: property.h,v $
+ * Revision 1.2  2006/08/13 11:38:20  reinelt
+ * text widget uses dynamic properties
+ *
  * Revision 1.1  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -42,7 +45,7 @@ typedef struct {
 
 
 void property_load(const char *section, const char *name, const char *defval, PROPERTY * prop);
-void property_eval(PROPERTY * prop);
+int property_eval(PROPERTY * prop);
 double P2N(PROPERTY * prop);
 char *P2S(PROPERTY * prop);
 void property_free(PROPERTY * prop);

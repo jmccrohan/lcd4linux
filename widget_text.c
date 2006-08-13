@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.25 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: widget_text.c,v 1.26 2006/08/13 11:38:20 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.26  2006/08/13 11:38:20  reinelt
+ * text widget uses dynamic properties
+ *
  * Revision 1.25  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -165,12 +168,17 @@ void widget_text_scroll(void *Self)
     WIDGET *W = (WIDGET *) Self;
     WIDGET_TEXT *T = W->data;
 
+    char *prefix = P2S(&T->prefix);
+    char *postfix = P2S(&T->postfix);
+
+    char *string = T->string;
+    
     int num, len, width, pad;
     char *src, *dst;
 
     num = 0;
-    len = strlen(T->value);
-    width = T->width - strlen(T->preval) - strlen(T->postval);
+    len = strlen(string);
+    width = T->width - strlen(prefix) - strlen(postfix);
     if (width < 0)
 	width = 0;
 
@@ -201,7 +209,7 @@ void widget_text_scroll(void *Self)
     dst = T->buffer;
 
     /* process prefix */
-    src = T->preval;
+    src = prefix;
     while (num < T->width) {
 	if (*src == '\0')
 	    break;
@@ -209,7 +217,7 @@ void widget_text_scroll(void *Self)
 	num++;
     }
 
-    src = T->value;
+    src = string;
 
     /* pad blanks on the beginning */
     while (pad > 0 && num < T->width) {
@@ -233,7 +241,7 @@ void widget_text_scroll(void *Self)
     }
 
     /* pad blanks on the end */
-    src = T->postval;
+    src = postfix;
     len = strlen(src);
     while (num < T->width - len) {
 	*(dst++) = ' ';
@@ -261,37 +269,22 @@ void widget_text_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_TEXT *T = W->data;
-    RESULT result = { 0, 0, 0, NULL };
-    char *preval, *postval, *value;
-    int update;
+    char *string;
+    int update = 0;
 
-    /* evaluate prefix */
-    if (T->pretree != NULL) {
-	Eval(T->pretree, &result);
-	preval = strdup(R2S(&result));
-	DelResult(&result);
-    } else {
-	preval = strdup("");
-    }
+    /* evaluate prefix and postfix */
+    update += property_eval(&T->prefix);
+    update += property_eval(&T->postfix);
 
-    /* evaluate postfix */
-    if (T->posttree != NULL) {
-	Eval(T->posttree, &result);
-	postval = strdup(R2S(&result));
-	DelResult(&result);
-    } else {
-	postval = strdup("");
-    }
-
-    /* evaluate expression */
-    Eval(T->tree, &result);
+    /* evaluate value */
+    property_eval(&T->value);
 
     /* string or number? */
-    if (T->precision == 0xC0DE) {
-	value = strdup(R2S(&result));
+    if (T->precision == 0xDEAD) {
+	string = strdup(P2S(&T->value));
     } else {
-	double number = R2N(&result);
-	int width = T->width - strlen(preval) - strlen(postval);
+	double number = P2N(&T->value);
+	int width = T->width - strlen(P2S(&T->prefix)) - strlen(P2S(&T->postfix));
 	int precision = T->precision;
 	/* print zero bytes so we can specify NULL as target  */
 	/* and get the length of the resulting string */
@@ -311,57 +304,32 @@ void widget_text_update(void *Self)
 	}
 	/* number still doesn't fit: display '*****'  */
 	if (size > width) {
-	    value = malloc(width + 1);
-	    memset(value, '*', width);
-	    *(value + width) = '\0';
+	    string = malloc(width + 1);
+	    memset(string, '*', width);
+	    *(string + width) = '\0';
 	} else {
-	    value = malloc(size + 1);
-	    snprintf(value, size + 1, "%.*f", precision, number);
+	    string = malloc(size + 1);
+	    snprintf(string, size + 1, "%.*f", precision, number);
 	}
     }
 
-    DelResult(&result);
-
-    update = 0;
-
-    /* prefix changed? */
-    if (T->preval == NULL || strcmp(T->preval, preval) != 0) {
-	update = 1;
-	if (T->preval)
-	    free(T->preval);
-	T->preval = preval;
-	T->scroll = 0;		/* reset marquee counter */
+    /* did the formatted string change? */
+    if (T->string == NULL || strcmp(T->string, string) != 0) {
+	update++;
+	if (T->string)
+	    free(T->string);
+	T->string = string;
     } else {
-	free(preval);
-    }
-
-    /* postfix changed? */
-    if (T->postval == NULL || strcmp(T->postval, postval) != 0) {
-	update = 1;
-	if (T->postval)
-	    free(T->postval);
-	T->postval = postval;
-	T->scroll = 0;		/* reset marquee counter */
-    } else {
-	free(postval);
-    }
-
-    /* value changed? */
-    if (T->value == NULL || strcmp(T->value, value) != 0) {
-	update = 1;
-	if (T->value)
-	    free(T->value);
-	T->value = value;
-	T->scroll = 0;		/* reset marquee counter */
-    } else {
-	free(value);
+	free(string);
     }
 
     /* text style */
-    property_eval(&T->style);
-
+    update += property_eval(&T->style);
+    
     /* something has changed and should be updated */
     if (update) {
+	/* reset marquee counter if content has changed */
+	T->scroll = 0;
 	/* if there's a marquee scroller active, it has its own */
 	/* update callback timer, so we do nothing here; otherwise */
 	/* we simply call this scroll callback directly */
@@ -388,17 +356,11 @@ int widget_text_init(WIDGET * Self)
     Text = malloc(sizeof(WIDGET_TEXT));
     memset(Text, 0, sizeof(WIDGET_TEXT));
 
-    /* get raw pre- and postfix (we evaluate it ourselves) */
-    Text->prefix = cfg_get_raw(section, "prefix", NULL);
-    Text->postfix = cfg_get_raw(section, "postfix", NULL);
-
-    /* compile pre- and postfix */
-    Compile(Text->prefix, &Text->pretree);
-    Compile(Text->postfix, &Text->posttree);
-
-    /* get raw expression (we evaluate it ourselves) */
-    Text->expression = cfg_get_raw(section, "expression", "''");
-    Compile(Text->expression, &Text->tree);
+    /* load properties */
+    property_load(section, "prefix", NULL, &Text->prefix);
+    property_load(section, "expression", NULL, &Text->value);
+    property_load(section, "postfix", NULL, &Text->postfix);
+    property_load(section, "style", "norm", &Text->style);
 
     /* field width, default 10 */
     cfg_number(section, "width", 10, 0, -1, &(Text->width));
@@ -406,10 +368,10 @@ int widget_text_init(WIDGET * Self)
     /* precision: number of digits after the decimal point (default: none) */
     /* Note: this is the *maximum* precision on small values, */
     /* for larger values the precision may be reduced to fit into the field width. */
-    /* The default value 0xC0DE is used to distinguish between numbers and strings: */
+    /* The default value 0xDEAD is used to distinguish between numbers and strings: */
     /* if no precision is given, the result is always treated as a string. If a */
     /* precision is specified, the result is treated as a number. */
-    cfg_number(section, "precision", 0xC0DE, 0, 80, &(Text->precision));
+    cfg_number(section, "precision", 0xDEAD, 0, 80, &(Text->precision));
 
     /* field alignment: Left (default), Center, Right or Marquee */
     c = cfg_get(section, "align", "L");
@@ -431,8 +393,6 @@ int widget_text_init(WIDGET * Self)
 	Text->align = ALIGN_LEFT;
     }
     free(c);
-
-    property_load(section, "style", "norm", &Text->style);
 
     /* update interval (msec), default 1 sec, 0 stands for never */
     cfg_number(section, "update", 1000, 0, -1, &(Text->update));
@@ -469,18 +429,14 @@ int widget_text_quit(WIDGET * Self)
     if (Self) {
 	Text = Self->data;
 	if (Self->data) {
-	    DelTree(Text->pretree);
-	    if (Text->preval)
-		free(Text->preval);
-	    DelTree(Text->posttree);
-	    if (Text->postval)
-		free(Text->postval);
-	    DelTree(Text->tree);
-	    if (Text->value)
-		free(Text->value);
+	    property_free(&Text->prefix);
+	    property_free(&Text->value);
+	    property_free(&Text->postfix);
+	    property_free(&Text->style);
+	    if (Text->string)
+		free(Text->string);
 	    if (Text->buffer)
 		free(Text->buffer);
-	    property_free(&Text->style);
 	    free(Self->data);
 	    Self->data = NULL;
 	}

@@ -457,6 +457,7 @@ Widget CPU {
     prefix 'CPU '
     width  9
     align  'L'
+    style test::onoff(7)>0?'bold':'norm'
     update tick
 }
 

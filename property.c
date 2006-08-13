@@ -1,4 +1,4 @@
-/* $Id: property.c,v 1.1 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: property.c,v 1.2 2006/08/13 11:38:20 reinelt Exp $
  *
  * dynamic properties
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: property.c,v $
+ * Revision 1.2  2006/08/13 11:38:20  reinelt
+ * text widget uses dynamic properties
+ *
  * Revision 1.1  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -38,6 +41,8 @@
  * void property_free (PROPERTY *prop)
  *   frees all property allocations
  *
+ * int property_eval(PROPERTY * prop)
+ *   evaluates a property; returns 1 if value has changed
  *
  * double P2N(PROPERTY * prop)
  *   returns a (already evaluated) property as number
@@ -84,12 +89,38 @@ void property_load(const char *section, const char *name, const char *defval, PR
 }
 
 
-void property_eval(PROPERTY * prop)
+int property_eval(PROPERTY * prop)
 {
-    if (prop->compiled != NULL) {
-	DelResult(&prop->result);
-	Eval(prop->compiled, &prop->result);
+    RESULT old;
+    int update = 1;
+    
+    /* this is a bit ugly: we need to remember the old value */
+    
+    old.type = prop->result.type;
+    old.size = prop->result.size;
+    old.number = prop->result.number;
+    old.string = prop->result.string != NULL ? strdup(prop->result.string) : NULL; 
+    
+    DelResult(&prop->result);
+    Eval(prop->compiled, &prop->result);
+    
+    if (prop->result.type & R_NUMBER && old.type & R_NUMBER && prop->result.number == old.number) {
+	update = 0;
     }
+    
+    if (prop->result.type & R_STRING && old.type & R_STRING && prop->result.size == old.size) {
+	if (prop->result.string == NULL && old.string == NULL) {
+	    update = 0;
+	}
+	else if (prop->result.string != NULL && old.string != NULL && strcmp(prop->result.string, old.string) == 0) {
+	    update = 0;
+	}
+    }
+    
+    if (old.string)
+	free (old.string);
+
+    return update;
 }
 
 
