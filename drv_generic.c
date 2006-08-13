@@ -1,4 +1,4 @@
-/* $Id: drv_generic.c,v 1.6 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: drv_generic.c,v 1.7 2006/08/13 09:53:10 reinelt Exp $
  *
  * generic driver helper
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic.c,v $
+ * Revision 1.7  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.6  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -69,7 +72,6 @@ int DCOLS = 20;			/* display size: columns */
 int XRES = 6;			/* pixel widtht of one char */
 int YRES = 8;			/* pixel height of one char */
 
-int FONT_STYLE = 0;		/* font style (default = plain) */
 
 void (*drv_generic_blit) () = NULL;
 

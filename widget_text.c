@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.24 2006/01/23 06:17:18 reinelt Exp $
+/* $Id: widget_text.c,v 1.25 2006/08/13 09:53:10 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.25  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.24  2006/01/23 06:17:18  reinelt
  * timer widget added
  *
@@ -147,10 +150,11 @@
 #include "debug.h"
 #include "cfg.h"
 #include "evaluator.h"
+#include "property.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_text.h"
-
+#
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -353,6 +357,9 @@ void widget_text_update(void *Self)
 	free(value);
     }
 
+    /* text style */
+    property_eval(&T->style);
+
     /* something has changed and should be updated */
     if (update) {
 	/* if there's a marquee scroller active, it has its own */
@@ -425,6 +432,8 @@ int widget_text_init(WIDGET * Self)
     }
     free(c);
 
+    property_load(section, "style", "norm", &Text->style);
+
     /* update interval (msec), default 1 sec, 0 stands for never */
     cfg_number(section, "update", 1000, 0, -1, &(Text->update));
     /* limit update interval to min 10 msec */
@@ -461,16 +470,17 @@ int widget_text_quit(WIDGET * Self)
 	Text = Self->data;
 	if (Self->data) {
 	    DelTree(Text->pretree);
-	    DelTree(Text->posttree);
-	    DelTree(Text->tree);
 	    if (Text->preval)
 		free(Text->preval);
+	    DelTree(Text->posttree);
 	    if (Text->postval)
 		free(Text->postval);
+	    DelTree(Text->tree);
 	    if (Text->value)
 		free(Text->value);
 	    if (Text->buffer)
 		free(Text->buffer);
+	    property_free(&Text->style);
 	    free(Self->data);
 	    Self->data = NULL;
 	}

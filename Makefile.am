@@ -20,6 +20,7 @@ debug.c       debug.h         \
 drv.c         drv.h           \
 drv_generic.c drv_generic.h   \
 evaluator.c   evaluator.h     \
+property.c    property.h      \
 hash.c        hash.h          \
 layout.c      layout.h        \
 pid.c         pid.h           \

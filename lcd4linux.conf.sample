@@ -446,6 +446,7 @@ Widget OS {
     expression '*** '.uname('sysname').' '.uname('release').' ***'
     width 20
     align 'M'
+    style 'bold'
     speed 50	
     update tick
 }

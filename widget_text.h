@@ -1,4 +1,4 @@
-/* $Id: widget_text.h,v 1.7 2005/05/08 04:32:45 reinelt Exp $
+/* $Id: widget_text.h,v 1.8 2006/08/13 09:53:10 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_text.h,v $
+ * Revision 1.8  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.7  2005/05/08 04:32:45  reinelt
  * CodingStyle added and applied
  *
@@ -62,7 +65,11 @@
 #ifndef _WIDGET_TEXT_H_
 #define _WIDGET_TEXT_H_
 
-typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } ALIGN;
+
+#include "property.h"
+
+
+typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } TEXT_ALIGN;
 
 typedef struct WIDGET_TEXT {
     char *prefix;		/* expression for label on the left side */
@@ -77,7 +84,8 @@ typedef struct WIDGET_TEXT {
     char *buffer;		/* string with 'width+1' bytes allocated  */
     int width;			/* field width */
     int precision;		/* number of digits after the decimal point */
-    ALIGN align;		/* alignment: L, C, R, M(arquee) */
+    TEXT_ALIGN align;		/* alignment: L(eft), C(enter), R(ight), M(arquee) */
+    PROPERTY style;		/* text style (plain/bold/slant) */
     int update;			/* update interval */
     int scroll;			/* marquee starting point */
     int speed;			/* marquee scrolling speed */

@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.32 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: drv_generic_graphic.c,v 1.33 2006/08/13 09:53:10 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.33  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.32  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -188,6 +191,7 @@
 #include "drv.h"
 #include "drv_generic.h"
 #include "drv_generic_graphic.h"
+#include "property.h"
 #include "font_6x8.h"
 #include "font_6x8_bold.h"
 
@@ -323,7 +327,7 @@ static RGBA drv_generic_graphic_blend(const int row, const int col)
 /****************************************/
 
 static void drv_generic_graphic_render(const int layer, const int row, const int col, const RGBA fg, const RGBA bg,
-				       const char *txt)
+				       const char *style, const char *txt)
 {
     int c, r, x, y, len;
 
@@ -345,10 +349,11 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
     while (*txt != '\0') {
 	unsigned char *chr;
 
-	if (FONT_STYLE & FONT_STYLE_BOLD)
+	if (strcasestr(style, "bold") != NULL) {
 	    chr = Font_6x8_bold[(int) *txt];
-	else
+	} else {
 	    chr = Font_6x8[(int) *txt];
+	}
 
 	for (y = 0; y < YRES; y++) {
 	    int mask = 1 << XRES;
@@ -394,7 +399,8 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
 
     for (i = 0; line1[i]; i++) {
 	if (strlen(line1[i]) <= cols) {
-	    drv_generic_graphic_render(0, YRES * 0, XRES * ((cols - strlen(line1[i])) / 2), FG_COL, BG_COL, line1[i]);
+	    drv_generic_graphic_render(0, YRES * 0, XRES * ((cols - strlen(line1[i])) / 2), FG_COL, BG_COL, "norm",
+				       line1[i]);
 	    flag = 1;
 	    break;
 	}
@@ -403,7 +409,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (rows >= 2) {
 	for (i = 0; line2[i]; i++) {
 	    if (strlen(line2[i]) <= cols) {
-		drv_generic_graphic_render(0, YRES * 1, XRES * ((cols - strlen(line2[i])) / 2), FG_COL, BG_COL,
+		drv_generic_graphic_render(0, YRES * 1, XRES * ((cols - strlen(line2[i])) / 2), FG_COL, BG_COL, "norm",
 					   line2[i]);
 		flag = 1;
 		break;
@@ -414,7 +420,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (msg1 && rows >= 3) {
 	unsigned int len = strlen(msg1);
 	if (len <= cols) {
-	    drv_generic_graphic_render(0, YRES * 2, XRES * ((cols - len) / 2), FG_COL, BG_COL, msg1);
+	    drv_generic_graphic_render(0, YRES * 2, XRES * ((cols - len) / 2), FG_COL, BG_COL, "norm", msg1);
 	    flag = 1;
 	}
     }
@@ -422,7 +428,7 @@ int drv_generic_graphic_greet(const char *msg1, const char *msg2)
     if (msg2 && rows >= 4) {
 	unsigned int len = strlen(msg2);
 	if (len <= cols) {
-	    drv_generic_graphic_render(0, YRES * 3, XRES * ((cols - len) / 2), FG_COL, BG_COL, msg2);
+	    drv_generic_graphic_render(0, YRES * 3, XRES * ((cols - len) / 2), FG_COL, BG_COL, "norm", msg2);
 	    flag = 1;
 	}
     }
@@ -439,7 +445,7 @@ int drv_generic_graphic_draw(WIDGET * W)
     fg = W->fg_valid ? W->fg_color : FG_COL;
     bg = W->bg_valid ? W->bg_color : BG_COL;
 
-    drv_generic_graphic_render(W->layer, YRES * W->row, XRES * W->col, fg, bg, Text->buffer);
+    drv_generic_graphic_render(W->layer, YRES * W->row, XRES * W->col, fg, bg, P2S(&Text->style), Text->buffer);
 
     return 0;
 }

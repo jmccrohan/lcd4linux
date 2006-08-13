@@ -1,4 +1,4 @@
-/* $Id: evaluator.h,v 1.12 2006/01/30 06:11:36 reinelt Exp $
+/* $Id: evaluator.h,v 1.13 2006/08/13 09:53:10 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.h,v $
+ * Revision 1.13  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.12  2006/01/30 06:11:36  reinelt
  * changed Result->length to Result->size
  *
@@ -97,7 +100,6 @@ typedef struct {
     double number;
     char *string;
 } RESULT;
-
 
 int SetVariable(const char *name, RESULT * value);
 int SetVariableNumeric(const char *name, const double value);

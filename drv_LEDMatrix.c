@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.4 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: drv_LEDMatrix.c,v 1.5 2006/08/13 09:53:10 reinelt Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.5  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.4  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -159,12 +162,6 @@ static int drv_LEDMatrix_start(const char *section)
 	return -1;
     }
     free(s);
-
-    s = cfg_get(section, "fontstyle", NULL);
-    if (s != NULL) {
-	if (strstr(s, "bold") != NULL)
-	    FONT_STYLE |= FONT_STYLE_BOLD;
-    }
 
     /* contact display */
     info("%s: contacting %s", Name, IPAddress);

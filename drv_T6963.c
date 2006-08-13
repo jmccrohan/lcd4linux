@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.21 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.22 2006/08/13 09:53:10 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.22  2006/08/13 09:53:10  reinelt
+ * dynamic properties added (used by 'style' of text widget)
+ *
  * Revision 1.21  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -484,12 +487,6 @@ static int drv_T6_start(const char *section)
     }
     free(s);
 
-    s = cfg_get(section, "fontstyle", NULL);
-    if (s != NULL) {
-	if (strstr(s, "bold") != NULL)
-	    FONT_STYLE |= FONT_STYLE_BOLD;
-    }
-
     TROWS = DROWS / YRES;	/* text rows */
     TCOLS = DCOLS / XRES;	/* text cols */
 
@@ -600,7 +597,7 @@ int drv_T6_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.21 $");
+    info("%s: %s", Name, "$Revision: 1.22 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;
