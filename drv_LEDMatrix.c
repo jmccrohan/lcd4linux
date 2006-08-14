@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.8 2006/08/14 05:54:04 reinelt Exp $
+/* $Id: drv_LEDMatrix.c,v 1.9 2006/08/14 19:24:22 harbaum Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.9  2006/08/14 19:24:22  harbaum
+ * Umlaut support, added KVV HTTP-User-Agent
+ *
  * Revision 1.8  2006/08/14 05:54:04  reinelt
  * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
  *
@@ -170,7 +173,8 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 	    } else {
 		if ((i == 2) && (reply[0] == DSP_CMD_ACK) && (reply[1] == DSP_CMD_IMAGE)) {
 		    ack = 1;
-//      } else if((i > 1) && (reply[0] == DSP_CMD_IR)) {
+		} else if ((i > 1) && (reply[0] == DSP_CMD_IR)) {
+// maybe used later:
 //        ir_receive(reply+1, i-1);
 		} else {
 		    info("%s: Unexpected reply message", Name);
@@ -179,6 +183,10 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 	}
 	timeout--;
     } while ((!ack) && (timeout > 0));
+
+    if (timeout == 0) {
+	error("%s: display reply timeout", Name);
+    }
 }
 
 static int drv_LEDMatrix_start(const char *section)

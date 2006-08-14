@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.33 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: drv_generic_graphic.c,v 1.34 2006/08/14 19:24:22 harbaum Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.34  2006/08/14 19:24:22  harbaum
+ * Umlaut support, added KVV HTTP-User-Agent
+ *
  * Revision 1.33  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -350,9 +353,9 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 	unsigned char *chr;
 
 	if (strcasestr(style, "bold") != NULL) {
-	    chr = Font_6x8_bold[(int) *txt];
+	    chr = Font_6x8_bold[(int) *(unsigned char *) txt];
 	} else {
-	    chr = Font_6x8[(int) *txt];
+	    chr = Font_6x8[(int) *(unsigned char *) txt];
 	}
 
 	for (y = 0; y < YRES; y++) {

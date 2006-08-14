@@ -1,4 +1,4 @@
-/* $Id: font_6x8_bold.h,v 1.2 2006/08/13 18:14:03 harbaum Exp $
+/* $Id: font_6x8_bold.h,v 1.3 2006/08/14 19:24:22 harbaum Exp $
  *
  * 6x8 bold font
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: font_6x8_bold.h,v $
+ * Revision 1.3  2006/08/14 19:24:22  harbaum
+ * Umlaut support, added KVV HTTP-User-Agent
+ *
  * Revision 1.2  2006/08/13 18:14:03  harbaum
  * Added KVV plugin
  *
@@ -627,8 +630,8 @@ unsigned char Font_6x8_bold[256][8] = {
 	    ______},
     [0x62] {_OO___,
 	    _OO___,
-	    _OO___,
 	    _OOOO_,
+	    _OO_OO,
 	    _OO_OO,
 	    _OO_OO,
 	    _OOOO_,
@@ -643,8 +646,8 @@ unsigned char Font_6x8_bold[256][8] = {
 	    ______},
     [0x64] {____OO,
 	    ____OO,
-	    ____OO,
 	    __OOOO,
+	    _OO_OO,
 	    _OO_OO,
 	    _OO_OO,
 	    __OOOO,
@@ -666,13 +669,13 @@ unsigned char Font_6x8_bold[256][8] = {
 	    __OO__,
 	    ______},
     [0x67] {______,
+	    ______,
 	    __OOOO,
 	    _OO_OO,
 	    _OO_OO,
 	    __OOOO,
 	    ____OO,
-	    __OOO_,
-	    ______},
+	    __OOO_},
     [0x68] {_OO___,
 	    _OO___,
 	    _OOOO_,
@@ -741,18 +744,18 @@ unsigned char Font_6x8_bold[256][8] = {
 	    ______,
 	    _OOOO_,
 	    _OO_OO,
+	    _OO_OO,
 	    _OOOO_,
 	    _OO___,
-	    _OO___,
-	    ______},
+	    _OO___},
     [0x71] {______,
 	    ______,
 	    __OOOO,
 	    _OO_OO,
+	    _OO_OO,
 	    __OOOO,
 	    ____OO,
-	    ____OO,
-	    ______},
+	    ____OO},
     [0x72] {______,
 	    ______,
 	    _OO_OO,
@@ -873,5 +876,37 @@ unsigned char Font_6x8_bold[256][8] = {
 	    ______,
 	    ______,
 	    ______,
+	    ______},
+    [0xe1] {_OO_OO,
+	    ______,
+	    __OOO_,
+	    ____OO,
+	    __OOOO,
+	    _OO_OO,
+	    __OOOO,
+	    ______},
+    [0xe2] {__OOO_,
+	    _OO_OO,
+	    _OOOO_,
+	    _OO_OO,
+	    _OO_OO,
+	    _OOOO_,
+	    _OO___,
+	    ______},
+    [0xef] {_OO_OO,
+	    ______,
+	    __OOO_,
+	    _OO_OO,
+	    _OO_OO,
+	    _OO_OO,
+	    __OOO_,
+	    ______},
+    [0xf5] {_OO_OO,
+	    ______,
+	    _OO_OO,
+	    _OO_OO,
+	    _OO_OO,
+	    _OO_OO,
+	    __OOOO,
 	    ______},
 };

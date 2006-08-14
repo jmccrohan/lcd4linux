@@ -1,4 +1,4 @@
-/* $Id: drv_USBHUB.c,v 1.3 2006/08/14 05:54:04 reinelt Exp $
+/* $Id: drv_USBHUB.c,v 1.4 2006/08/14 19:24:22 harbaum Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: drv_USBHUB.c,v $
+ * Revision 1.4  2006/08/14 19:24:22  harbaum
+ * Umlaut support, added KVV HTTP-User-Agent
+ *
  * Revision 1.3  2006/08/14 05:54:04  reinelt
  * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
  *
@@ -182,7 +185,8 @@ static int drv_UH_set(const int num, const int val)
 }
 
 
-static int drv_UH_start(const char *section, const __attribute__ ((unused)) int quiet)
+static int drv_UH_start(const char *section, const __attribute__ ((unused))
+			int quiet)
 {
     char *buf;
 
@@ -278,7 +282,7 @@ int drv_UH_init(const char *section, const int quiet)
     int ret;
     int i;
 
-    info("%s: %s", Name, "$Revision: 1.3 $");
+    info("%s: %s", Name, "$Revision: 1.4 $");
 
 
 

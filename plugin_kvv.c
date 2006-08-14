@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.2 2006/08/13 18:45:25 harbaum Exp $
+/* $Id: plugin_kvv.c,v 1.3 2006/08/14 19:24:22 harbaum Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.3  2006/08/14 19:24:22  harbaum
+ * Umlaut support, added KVV HTTP-User-Agent
+ *
  * Revision 1.2  2006/08/13 18:45:25  harbaum
  * Little cleanup ...
  *
@@ -68,6 +71,7 @@
 /* these can't be configured as it doesn't make sense to change them */
 #define HTTP_SERVER "www.init-ka.de"
 #define HTTP_REQUEST "/webfgi/StopInfoInplace.aspx?ID=%s"
+#define USER_AGENT   "lcd4linux - KVV plugin (http://ssl.bulix.org/projects/lcd4linux/wiki/plugin_kvv)"
 
 #define DEFAULT_STATION_ID    "89"	// Hauptbahnhof
 
@@ -283,6 +287,8 @@ static void process_station_string(char *str)
 {
     char *p, *q;
     int last, i;
+
+    /* some strings to replace */
     char *repl[] = {
 	"Hauptbahnhof", "Hbf.",
 	"Bahnhof", "Bhf.",
@@ -291,12 +297,22 @@ static void process_station_string(char *str)
 	"Marktplatz", "Marktpl.",
     };
 
-    /* erase multiple spaces */
+    /* erase multiple spaces and replace umlauts */
     p = q = str;
     last = 1;			// no leading spaces
     while (*p) {
-	if ((!last) || (*p != ' '))
-	    *q++ = *p;
+	if ((!last) || (*p != ' ')) {
+	    if (*p == (char) 228)	// lower a umlaut
+		*q++ = 0xe1;
+	    else if (*p == (char) 223)	// sz ligature
+		*q++ = 0xe2;
+	    else if (*p == (char) 246)	// lower o umlaut
+		*q++ = 0xef;
+	    else if (*p == (char) 252)	// lower u umlaut
+		*q++ = 0xf5;
+	    else
+		*q++ = *p;
+	}
 
 	last = (*p == ' ');
 	p++;
@@ -357,8 +373,9 @@ static void kvv_client(void)
 	    return;
 	}
 	// create and set get request
-	sprintf(obuffer, "GET http://%s" HTTP_REQUEST " HTTP/1.1\n" "Host: %s\n\n", server_name, station_id,
-		server_name);
+	sprintf(obuffer,
+		"GET http://%s" HTTP_REQUEST " HTTP/1.1\n"
+		"Host: %s\n" "User-Agent: " USER_AGENT "\n\n", server_name, station_id, server_name);
 
 	info("[KVV] Sending first (GET) request ...");
 	send(sock, obuffer, strlen(obuffer), 0);
@@ -449,6 +466,7 @@ static void kvv_client(void)
 		sprintf(obuffer,
 			"POST http://%s" HTTP_REQUEST " HTTP/1.1\n"
 			"Host: %s\n"
+			"User-Agent: " USER_AGENT "\n"
 			"Cookie: %s\n"
 			"Content-Type: application/x-www-form-urlencoded\n"
 			"Content-Length: %d\n"
@@ -548,6 +566,7 @@ static void kvv_client(void)
 				if (strncasecmp(attr, "stopname", strlen("stopname")) == 0) {
 				    td += td_len + 1;
 				    get_text(td, "td", str, sizeof(str));
+
 
 				    /* stopname may need further tuning */
 				    process_station_string(str);
