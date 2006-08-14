@@ -358,11 +358,22 @@ Display T6963-240x64 {
     Port '/dev/parports/0'
     Size '240x64'
     Font '6x8'
-    FontStyle 'bold'
     Wire.CE 'STROBE'
     Wire.CD 'SLCTIN'
     Wire.RD 'AUTOFD'
     Wire.WR 'INIT'
+}
+
+Display T6963-240x128 {
+    Driver 'T6963'
+    Port '/dev/parports/0'
+    Size '240x128'
+    Font '6x8'
+    Wire.CE 'STROBE'
+    Wire.CD 'SLCTIN'
+    Wire.RD 'AUTOFD'
+    Wire.WR 'INIT'
+    Timing.fuzz 120
 }
 
 
@@ -822,7 +833,7 @@ Widget Test {
 Widget Test1 {
     class 'Text'
     expression 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-    width 80
+    width 40
     align 'M'
     speed 100
 }
@@ -830,7 +841,7 @@ Widget Test1 {
 Widget Test2 {
     class 'Text'
     expression '1234567890abcdefghijklmnopqrstuvwxyz'
-    width 80
+    width 40
     align 'M'
     speed 150
 }
@@ -1048,6 +1059,14 @@ Layout Test {
     Row14.Col1 'Test1'
     Row15.Col1 'Test1'
     Row16.Col1 'Test1'
+    Row17.Col1 'Test1'
+    Row18.Col1 'Test1'
+    Row19.Col1 'Test1'
+    Row20.Col1 'Test1'
+    Row21.Col1 'Test1'
+    Row22.Col1 'Test1'
+    Row23.Col1 'Test1'
+    Row24.Col1 'Test1'
 }
 
 Layout Test2 {
@@ -1108,7 +1127,8 @@ Layout Debug {
 #Display 'SimpleLCD'
 #Display 'BA63'
 #Display 'CT20x4'
-Display 'T6963-240x64'
+Display 'T6963-240x128'
+#Display 'T6963-240x64'
 #Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
@@ -1119,7 +1139,7 @@ Display 'T6963-240x64'
 #Display 'LPH7508'
 #Display 'ctinclud'
 
-Layout 'Default'
+#Layout 'Default'
 #Layout 'TestLayer'
 #Layout 'TestImage'
 #Layout 'L8x2'
@@ -1127,7 +1147,7 @@ Layout 'Default'
 #Layout 'L16x2'
 #Layout 'L20x2'
 #Layout 'L40x2'
-#Layout 'Test'
+Layout 'Test'
 #Layout 'Test2'
 #Layout 'TestGPO'
 #Layout 'Debug'

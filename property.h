@@ -1,4 +1,4 @@
-/* $Id: property.h,v 1.2 2006/08/13 11:38:20 reinelt Exp $
+/* $Id: property.h,v 1.3 2006/08/14 05:54:04 reinelt Exp $
  *
  * dynamic properties
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: property.h,v $
+ * Revision 1.3  2006/08/14 05:54:04  reinelt
+ * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
+ *
  * Revision 1.2  2006/08/13 11:38:20  reinelt
  * text widget uses dynamic properties
  *
@@ -34,6 +37,8 @@
 
 #ifndef _PROPERTY_H_
 #define _PROPERTY_H_
+
+#include "evaluator.h"
 
 
 typedef struct {

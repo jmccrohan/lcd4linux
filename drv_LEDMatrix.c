@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.7 2006/08/13 18:45:25 harbaum Exp $
+/* $Id: drv_LEDMatrix.c,v 1.8 2006/08/14 05:54:04 reinelt Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.8  2006/08/14 05:54:04  reinelt
+ * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
+ *
  * Revision 1.7  2006/08/13 18:45:25  harbaum
  * Little cleanup ...
  *
@@ -117,7 +120,8 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
     struct timeval tv;
     unsigned char reply[256];
     struct sockaddr_in cli_addr;
-    int fromlen, ack = 0;
+    socklen_t fromlen;
+    int ack = 0;
     int timeout = 10;
 
     for (r = row; r < row + height; r++) {

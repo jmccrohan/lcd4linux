@@ -7,7 +7,7 @@ PLUGINS=@PLUGINS@
 
 bin_PROGRAMS = lcd4linux
 
-AM_CFLAGS = -D_GNU_SOURCE -Wall -W
+AM_CFLAGS = -D_GNU_SOURCE -Wall -Wextra -fno-strict-aliasing
 
 lcd4linux_LDFLAGS = 
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@

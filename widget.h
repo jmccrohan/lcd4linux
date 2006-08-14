@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.21 2006/08/09 17:25:34 harbaum Exp $
+/* $Id: widget.h,v 1.22 2006/08/14 05:54:04 reinelt Exp $
  *
  * generic widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget.h,v $
+ * Revision 1.22  2006/08/14 05:54:04  reinelt
+ * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
+ *
  * Revision 1.21  2006/08/09 17:25:34  harbaum
  * Better bar color support and new bold font
  *
@@ -150,5 +153,6 @@ int widget_register(WIDGET_CLASS * widget);
 void widget_unregister(void);
 int widget_add(const char *name, const int type, const int layer, const int row, const int col);
 WIDGET *widget_find(int type, void *needle);
+int widget_color(const char *section, const char *name, const char *key, RGBA * C);
 
 #endif
