@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.3 2006/08/14 19:24:22 harbaum Exp $
+/* $Id: plugin_kvv.c,v 1.4 2006/08/15 17:28:27 harbaum Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.4  2006/08/15 17:28:27  harbaum
+ * Cleaned up thread and error handling
+ *
  * Revision 1.3  2006/08/14 19:24:22  harbaum
  * Umlaut support, added KVV HTTP-User-Agent
  *
@@ -92,7 +95,7 @@ typedef struct {
 } kvv_entry_t;
 
 typedef struct {
-    int entries;
+    int entries, error;
     kvv_entry_t entry[MAX_LINES];
 } kvv_shm_t;
 
@@ -101,11 +104,11 @@ static char *proxy_name = NULL;
 static int port = 80;
 static pid_t pid = -1;
 static int refresh = 60;
-static int stringlen = 16;
 
+static int initialized = 0;
 static int mutex = 0;
-static int shmid;
-static kvv_shm_t *shm;
+static int shmid = -1;
+static kvv_shm_t *shm = NULL;
 
 #define SECTION   "Plugin:KVV"
 
@@ -302,6 +305,8 @@ static void process_station_string(char *str)
     last = 1;			// no leading spaces
     while (*p) {
 	if ((!last) || (*p != ' ')) {
+
+	    /* translate from latin1 to hd44780 */
 	    if (*p == (char) 228)	// lower a umlaut
 		*q++ = 0xe1;
 	    else if (*p == (char) 223)	// sz ligature
@@ -348,10 +353,10 @@ static void process_station_string(char *str)
     }
 }
 
-static void kvv_client(void)
+static void kvv_client(void *dummy)
 {
-    char ibuffer[8192];
-    char obuffer[8192];
+    char ibuffer[4096];
+    char obuffer[1024];
     int count, i, sock;
 
     char server_name[] = HTTP_SERVER;
@@ -373,9 +378,13 @@ static void kvv_client(void)
 	    return;
 	}
 	// create and set get request
-	sprintf(obuffer,
-		"GET http://%s" HTTP_REQUEST " HTTP/1.1\n"
-		"Host: %s\n" "User-Agent: " USER_AGENT "\n\n", server_name, station_id, server_name);
+	if (snprintf(obuffer, sizeof(obuffer),
+		     "GET http://%s" HTTP_REQUEST " HTTP/1.1\n"
+		     "Host: %s\n" "User-Agent: " USER_AGENT "\n\n", server_name, station_id,
+		     server_name) >= sizeof(obuffer)) {
+
+	    info("[KVV] Warning, request has been truncated!");
+	}
 
 	info("[KVV] Sending first (GET) request ...");
 	send(sock, obuffer, strlen(obuffer), 0);
@@ -398,7 +407,7 @@ static void kvv_client(void)
 	    }
 
 	    if (i != 0) {
-		i = recv(sock, ibuffer + count, sizeof(ibuffer) - count, 0);
+		i = recv(sock, ibuffer + count, sizeof(ibuffer) - count - 1, 0);
 		count += i;
 	    }
 	}
@@ -463,15 +472,19 @@ static void kvv_client(void)
 		sock = http_open(connect_to);
 
 		// send POST
-		sprintf(obuffer,
-			"POST http://%s" HTTP_REQUEST " HTTP/1.1\n"
-			"Host: %s\n"
-			"User-Agent: " USER_AGENT "\n"
-			"Cookie: %s\n"
-			"Content-Type: application/x-www-form-urlencoded\n"
-			"Content-Length: %d\n"
-			"\n%s=%s",
-			server_name, station_id, server_name, cookie, name_len + value_enc_len + 1, name, value_enc);
+		if (snprintf(obuffer, sizeof(obuffer),
+			     "POST http://%s" HTTP_REQUEST " HTTP/1.1\n"
+			     "Host: %s\n"
+			     "User-Agent: " USER_AGENT "\n"
+			     "Cookie: %s\n"
+			     "Content-Type: application/x-www-form-urlencoded\n"
+			     "Content-Length: %d\n"
+			     "\n%s=%s",
+			     server_name, station_id, server_name, cookie, name_len + value_enc_len + 1, name,
+			     value_enc) >= sizeof(obuffer)) {
+
+		    info("[KVV] Warning, request has been truncated!");
+		}
 
 		info("[KVV] Sending second (POST) request ...");
 		send(sock, obuffer, strlen(obuffer), 0);
@@ -489,13 +502,15 @@ static void kvv_client(void)
 
 		    i = select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
 		    if (i > 0) {
-			i = recv(sock, ibuffer + count, sizeof(ibuffer) - count, 0);
+			i = recv(sock, ibuffer + count, sizeof(ibuffer) - count - 1, 0);
 			count += i;
 		    }
 		}
 		while (i > 0);	/* leave on select or read error */
 
 		ibuffer[count] = 0;
+
+//      printf("Result (%d):\n%s\n", count, ibuffer);
 
 		/* close connection */
 		close(sock);
@@ -511,6 +526,12 @@ static void kvv_client(void)
 
 		    /* free allocated memory */
 		    shm->entries = 0;
+
+		    if (strstr(ibuffer, "Die Daten konnten nicht abgefragt werden.") != NULL) {
+			info("[KVV] Server returned error!");
+			shm->error = 1;
+		    } else
+			shm->error = 0;
 
 		    /* scan through all <td> entries and search the line nums */
 		    do {
@@ -589,9 +610,46 @@ static void kvv_client(void)
     }
 }
 
+static int kvv_fork(void)
+{
+    if (initialized)
+	return 0;
+
+    info("[KVV] creating client thread");
+
+    /* set this here to prevent continous retries if init fails */
+    initialized = 1;
+
+    /* create communication buffer */
+    shmid = shm_create((void **) &shm, sizeof(kvv_shm_t));
+
+    /* catch error */
+    if (shmid < 0) {
+	error("[KVV] Shared memory allocation failed!");
+	return -1;
+    }
+
+    /* attach client thread */
+    mutex = mutex_create();
+    pid = thread_create("plugin_kvv", kvv_client, NULL);
+
+    if (pid < 0) {
+	error("[KVV] Unable to fork client: %s", strerror(errno));
+	return -1;
+    }
+
+    info("[KVV] forked client with pid %d", pid);
+    return 0;
+}
+
 static void kvv_line(RESULT * result, RESULT * arg1)
 {
     int index = (int) R2N(arg1);
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
 
     mutex_lock(mutex);
 
@@ -607,12 +665,21 @@ static void kvv_station(RESULT * result, RESULT * arg1)
 {
     int index = (int) R2N(arg1);
 
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
     mutex_lock(mutex);
 
-    if (index < shm->entries)
-	SetResult(&result, R_STRING, shm->entry[index].station);
-    else
-	SetResult(&result, R_STRING, "");
+    if (shm->error && index == 0)
+	SetResult(&result, R_STRING, "Server Err");
+    else {
+	if (index < shm->entries)
+	    SetResult(&result, R_STRING, shm->entry[index].station);
+	else
+	    SetResult(&result, R_STRING, "");
+    }
 
     mutex_unlock(mutex);
 }
@@ -621,6 +688,11 @@ static void kvv_time(RESULT * result, RESULT * arg1)
 {
     int index = (int) R2N(arg1);
     double value = -1.0;
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
 
     mutex_lock(mutex);
 
@@ -635,6 +707,11 @@ static void kvv_time(RESULT * result, RESULT * arg1)
 static void kvv_time_str(RESULT * result, RESULT * arg1)
 {
     int index = (int) R2N(arg1);
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
 
     mutex_lock(mutex);
 
@@ -687,50 +764,26 @@ int plugin_init_kvv(void)
 	info("[KVV] Using default refresh interval of %d seconds", refresh);
     }
 
-    if (cfg_number(SECTION, "Stringlen", 0, 0, 65535, &val) > 0) {
-	stringlen = val;
-	info("[KVV] Using %d character string length", stringlen);
-    } else {
-	info("[KVV] Using %d characters default string length", stringlen);
-    }
-
-    /* create communication buffer */
-    shmid = shm_create((void **) &shm, sizeof(kvv_shm_t));
-
-    /* catch error */
-    if (shmid < 0) {
-	error("[KVV] Shared memory allocation failed!");
-	return -1;
-    }
-
-    /* attach client thread */
-    mutex = mutex_create();
-    pid = fork();
-    if (pid < 0) {
-	error("[KVV] Unable to fork client: %s", strerror(errno));
-	return -1;
-    }
-
-    if (pid == 0)
-	kvv_client();
-    else
-	info("[KVV] forked client with pid %d", pid);
-
     return 0;
 }
 
 void plugin_exit_kvv(void)
 {
-    if (pid != -1)
-	kill(pid, SIGTERM);
+    /* kill client thread if it's running */
+    if (initialized) {
+	/* kill client */
+	if (pid != -1)
+	    thread_destroy(pid);
+
+	/* free shared mem and its mutex */
+	if (shm) {
+	    shm_destroy(shmid, shm);
+	    mutex_destroy(mutex);
+	}
+    }
 
     if (station_id)
 	free(station_id);
     if (proxy_name)
 	free(proxy_name);
-
-    mutex_destroy(mutex);
-
-    if (shm)
-	shm_destroy(shmid, shm);
 }
