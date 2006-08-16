@@ -1,4 +1,4 @@
-/* $Id: drv_T6963.c,v 1.22 2006/08/13 09:53:10 reinelt Exp $
+/* $Id: drv_T6963.c,v 1.23 2006/08/16 14:18:14 reinelt Exp $
  *
  * new style driver for T6963-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_T6963.c,v $
+ * Revision 1.23  2006/08/16 14:18:14  reinelt
+ * T6963 enhancements: soft timing, DualScan, Cell size
+ *
  * Revision 1.22  2006/08/13 09:53:10  reinelt
  * dynamic properties added (used by 'style' of text widget)
  *
@@ -152,6 +155,15 @@ static MODEL Models[] = {
     {0xff, "Unknown"}
 };
 
+
+/* font width of display */
+static int CELL;
+
+/* text rows/columns */
+static int TROWS, TCOLS;
+
+/* SingleScan or DualScan */
+static int DualScan = 0;
 
 /* Timings */
 static int T_ACC, T_OH, T_PW, T_DH, T_CDS;
@@ -350,7 +362,7 @@ static void drv_T6_clear(const unsigned short addr, const int len)
     drv_T6_send_word(0x24, addr);	/* Set Adress Pointer */
     drv_T6_write_cmd(0xb0);	/* Set Data Auto Write */
     for (i = 0; i < len; i++) {
-	drv_T6_write_auto(0);
+	drv_T6_write_auto(0x0);
 	if (bug) {
 	    bug = 0;
 	    debug("bug occured at byte %d of %d", i, len);
@@ -365,7 +377,7 @@ static void drv_T6_copy(const unsigned short addr, const unsigned char *data, co
 {
     int i;
 
-    drv_T6_send_word(0x24, 0x0200 + addr);	/* Set Adress Pointer */
+    drv_T6_send_word(0x24, addr);	/* Set Adress Pointer */
     drv_T6_write_cmd(0xb0);	/* Set Data Auto Write */
     for (i = 0; i < len; i++) {
 	drv_T6_write_auto(*(data++));
@@ -381,64 +393,43 @@ static void drv_T6_copy(const unsigned short addr, const unsigned char *data, co
 
 static void drv_T6_blit(const int row, const int col, const int height, const int width)
 {
-    int i, j, e, m;
-    int r, c;
+    int r, c, a, b;
+    int i, j, e, n;
+    int base;
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    unsigned char mask = 1 << (XRES - 1 - c % XRES);
+	    unsigned char mask = 1 << (CELL - 1 - c % CELL);
 	    if (drv_generic_graphic_black(r, c)) {
 		/* set bit */
-		Buffer1[(r * DCOLS + c) / XRES] |= mask;
+		Buffer1[(r * DCOLS + c) / CELL] |= mask;
 	    } else {
 		/* clear bit */
-		Buffer1[(r * DCOLS + c) / XRES] &= ~mask;
+		Buffer1[(r * DCOLS + c) / CELL] &= ~mask;
 	    }
 	}
-    }
-
-    /* upper half */
-
-    /* max address */
-    if (row + height - 1 < 64) {
-	m = ((row + height - 1) * DCOLS + col + width) / XRES;
-    } else {
-	m = (64 * DCOLS + col + width) / XRES;
-    }
-
-    for (i = (row * DCOLS + col) / XRES; i <= m; i++) {
-	if (Buffer1[i] == Buffer2[i])
-	    continue;
-	for (j = i, e = 0; i <= m; i++) {
-	    if (Buffer1[i] == Buffer2[i]) {
-		if (++e > 4)
-		    break;
+	a = (r * DCOLS + col) / CELL;
+	b = (r * DCOLS + col + width + CELL - 1) / CELL;
+	for (i = a; i <= b; i++) {
+	    if (Buffer1[i] == Buffer2[i])
+		continue;
+	    for (j = i, e = 0; i <= b; i++) {
+		if (Buffer1[i] == Buffer2[i]) {
+		    if (++e > 4)
+			break;
+		} else {
+		    e = 0;
+		}
+	    }
+	    if (DualScan && r >= DROWS / 2) {
+		base = 0x8200 - DCOLS * DROWS / 2 / CELL;
 	    } else {
-		e = 0;
+		base = 0x0200;
 	    }
+	    n = i - j - e + 1;
+	    memcpy(Buffer2 + j, Buffer1 + j, n);
+	    drv_T6_copy(base + j, Buffer1 + j, n);
 	}
-	memcpy(Buffer2 + j, Buffer1 + j, i - j - e + 1);
-	drv_T6_copy(j, Buffer1 + j, i - j - e + 1);
-    }
-
-    /* lower half */
-
-    /* max address */
-    m = ((row + height - 1) * DCOLS + col + width) / XRES;
-
-    for (i = (64 * DCOLS + col) / XRES; i <= m; i++) {
-	if (Buffer1[i] == Buffer2[i])
-	    continue;
-	for (j = i, e = 0; i <= m; i++) {
-	    if (Buffer1[i] == Buffer2[i]) {
-		if (++e > 4)
-		    break;
-	    } else {
-		e = 0;
-	    }
-	}
-	memcpy(Buffer2 + j, Buffer1 + j, i - j - e + 1);
-	drv_T6_copy(j, Buffer1 + j, i - j - e + 1);
     }
 }
 
@@ -446,7 +437,6 @@ static void drv_T6_blit(const int row, const int col, const int height, const in
 static int drv_T6_start(const char *section)
 {
     char *model, *s;
-    int rows, TROWS, TCOLS;
 
     model = cfg_get(section, "Model", "generic");
     if (model != NULL && *model != '\0') {
@@ -460,7 +450,6 @@ static int drv_T6_start(const char *section)
 	    return -1;
 	}
 	Model = i;
-	info("%s: using model '%s'", Name, Models[Model].name);
     } else {
 	error("%s: empty '%s.Model' entry from %s", Name, section, cfg_source());
 	return -1;
@@ -487,8 +476,17 @@ static int drv_T6_start(const char *section)
     }
     free(s);
 
-    TROWS = DROWS / YRES;	/* text rows */
-    TCOLS = DCOLS / XRES;	/* text cols */
+
+    /* get font width of display */
+    cfg_number(section, "Cell", 6, 5, 8, &CELL);
+
+    TROWS = DROWS / 8;		/* text rows */
+    TCOLS = DCOLS / CELL;	/* text columns */
+
+    /* get DualScan mode */
+    cfg_number(section, "DualScan", 0, 0, 1, &DualScan);
+
+    info("%s: %dx%d %sScan %d bits/cell", Name, DCOLS, DROWS, DualScan ? "Dual" : "Single", CELL);
 
     Buffer1 = malloc(TCOLS * DROWS);
     if (Buffer1 == NULL) {
@@ -552,16 +550,16 @@ static int drv_T6_start(const char *section)
 
     /* clear display */
 
-    /* upper half */
-    rows = TROWS > 8 ? 8 : TROWS;
-    drv_T6_clear(0x0000, TCOLS * rows);	/* clear text area  */
-    drv_T6_clear(0x0200, TCOLS * rows * 8);	/* clear graphic area */
-
-    /* lower half */
-    if (TROWS > 8) {
-	rows = TROWS - 8;
-	drv_T6_clear(0x8000, TCOLS * rows);	/* clear text area #2 */
-	drv_T6_clear(0x8200, TCOLS * rows * 8);	/* clear graphic area #2 */
+    if (DualScan) {
+	/* upper half */
+	drv_T6_clear(0x0000, TCOLS * TROWS / 2);	/* clear text area  */
+	drv_T6_clear(0x0200, TCOLS * TROWS * 8 / 2);	/* clear graphic area */
+	/* lower half */
+	drv_T6_clear(0x8000, TCOLS * TROWS / 2);	/* clear text area  */
+	drv_T6_clear(0x8200, TCOLS * TROWS * 8 / 2);	/* clear graphic area */
+    } else {
+	drv_T6_clear(0x0000, TCOLS * TROWS);	/* clear text area  */
+	drv_T6_clear(0x0200, TCOLS * TROWS * 8);	/* clear graphic area */
     }
 
     return 0;
@@ -597,7 +595,7 @@ int drv_T6_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.22 $");
+    info("%s: %s", Name, "$Revision: 1.23 $");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_T6_blit;

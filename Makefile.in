@@ -184,7 +184,9 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = gnu
 CLEANFILES = *~
-AM_CFLAGS = -D_GNU_SOURCE -Wall -Wextra -fno-strict-aliasing
+
+# Fixme: -W should be renamed to -Wextra someday...
+AM_CFLAGS = -D_GNU_SOURCE -Wall -W -fno-strict-aliasing
 lcd4linux_LDFLAGS = 
 lcd4linux_LDADD = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@

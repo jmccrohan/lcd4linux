@@ -357,23 +357,42 @@ Display T6963-240x64 {
     Driver 'T6963'
     Port '/dev/parports/0'
     Size '240x64'
-    Font '6x8'
+    DualScan 0
+    Cell 6
     Wire.CE 'STROBE'
     Wire.CD 'SLCTIN'
     Wire.RD 'AUTOFD'
     Wire.WR 'INIT'
+    Timing.fuzz 120
+    Font '6x8'
 }
 
 Display T6963-240x128 {
     Driver 'T6963'
     Port '/dev/parports/0'
     Size '240x128'
-    Font '6x8'
+    DualScan 0
+    Cell 6
     Wire.CE 'STROBE'
     Wire.CD 'SLCTIN'
     Wire.RD 'AUTOFD'
     Wire.WR 'INIT'
     Timing.fuzz 120
+    Font '6x8'
+}
+
+Display T6963-240x128D {
+    Driver 'T6963'
+    Port '/dev/parports/0'
+    Size '240x128'
+    DualScan 1
+    Cell 6
+    Wire.CE 'STROBE'
+    Wire.CD 'SLCTIN'
+    Wire.RD 'AUTOFD'
+    Wire.WR 'INIT'
+    Timing.fuzz 120
+    Font '6x8'
 }
 
 
@@ -431,13 +450,12 @@ Display Image {
     Basecolor  '80d000'
 }
 
-Plugin KVV {
-    StationID '12_701'
-    Refresh 30
-
-    Proxy 'igate'
-    Port 8080;
-}
+#Plugin KVV {
+#    StationID '12_701'
+#    Refresh 30
+#    Proxy 'igate'
+#    Port 8080;
+#}
 
 Plugin Seti {
     Directory '/root/setiathome-3.08.i686-pc-linux-gnu'
@@ -1127,8 +1145,9 @@ Layout Debug {
 #Display 'SimpleLCD'
 #Display 'BA63'
 #Display 'CT20x4'
-Display 'T6963-240x128'
 #Display 'T6963-240x64'
+#Display 'T6963-240x128'
+Display 'T6963-240x128D'
 #Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'

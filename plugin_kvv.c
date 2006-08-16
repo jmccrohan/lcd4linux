@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.4 2006/08/15 17:28:27 harbaum Exp $
+/* $Id: plugin_kvv.c,v 1.5 2006/08/16 14:18:14 reinelt Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.5  2006/08/16 14:18:14  reinelt
+ * T6963 enhancements: soft timing, DualScan, Cell size
+ *
  * Revision 1.4  2006/08/15 17:28:27  harbaum
  * Cleaned up thread and error handling
  *
@@ -353,7 +356,8 @@ static void process_station_string(char *str)
     }
 }
 
-static void kvv_client(void *dummy)
+static void kvv_client( __attribute__ ((unused))
+		       void *dummy)
 {
     char ibuffer[4096];
     char obuffer[1024];
