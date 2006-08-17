@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.5 2006/08/16 14:18:14 reinelt Exp $
+/* $Id: plugin_kvv.c,v 1.6 2006/08/17 19:11:41 harbaum Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.6  2006/08/17 19:11:41  harbaum
+ * Small plugin_kvv bugfixes and new abbreviate option
+ *
  * Revision 1.5  2006/08/16 14:18:14  reinelt
  * T6963 enhancements: soft timing, DualScan, Cell size
  *
@@ -89,7 +92,7 @@
 /* total max values to calculate shm size */
 #define MAX_LINES           4
 #define MAX_LINE_LENGTH     8
-#define MAX_STATION_LENGTH 32
+#define MAX_STATION_LENGTH 40
 
 typedef struct {
     char line[MAX_LINE_LENGTH + 1];
@@ -107,6 +110,7 @@ static char *proxy_name = NULL;
 static int port = 80;
 static pid_t pid = -1;
 static int refresh = 60;
+static int abbreviate = 0;
 
 static int initialized = 0;
 static int mutex = 0;
@@ -127,6 +131,7 @@ static int get_element(char *input, char *name, char **data)
 
     // search entire string
     while (*input) {
+
 	if (skip == 0) {
 	    switch (state) {
 	    case 0:
@@ -150,7 +155,7 @@ static int get_element(char *input, char *name, char **data)
 	    case 2:
 		if (*input == ' ') {
 		    *data = ++input;
-		    while (*input++ != '>')
+		    while (*input && (*input++ != '>'))
 			len++;
 
 		    return len;
@@ -163,6 +168,7 @@ static int get_element(char *input, char *name, char **data)
 
 	input++;
     }
+
     return -1;
 }
 
@@ -343,15 +349,18 @@ static void process_station_string(char *str)
     }
     *q++ = 0;
 
-    /* replace certain (long) words with e.g. abbreviations */
-    for (i = 0; i < (int) (sizeof(repl) / (2 * sizeof(char *))); i++) {
-	if ((p = strstr(str, repl[2 * i])) != NULL) {
+    /* replace certain (long) words with e.g. abbreviations if enabled */
+    if (abbreviate) {
 
-	    /* move new string */
-	    memcpy(p, repl[2 * i + 1], strlen(repl[2 * i + 1]));
-	    /* move rest of string down */
-	    memmove(p + strlen(repl[2 * i + 1]),
-		    p + strlen(repl[2 * i]), strlen(str) - (p - str) - strlen(repl[2 * i]) + 1);
+	for (i = 0; i < (int) (sizeof(repl) / (2 * sizeof(char *))); i++) {
+	    if ((p = strstr(str, repl[2 * i])) != NULL) {
+
+		/* move new string */
+		memcpy(p, repl[2 * i + 1], strlen(repl[2 * i + 1]));
+		/* move rest of string down */
+		memmove(p + strlen(repl[2 * i + 1]),
+			p + strlen(repl[2 * i]), strlen(str) - (p - str) - strlen(repl[2 * i]) + 1);
+	    }
 	}
     }
 }
@@ -359,7 +368,7 @@ static void process_station_string(char *str)
 static void kvv_client( __attribute__ ((unused))
 		       void *dummy)
 {
-    char ibuffer[4096];
+    char ibuffer[8192];
     char obuffer[1024];
     int count, i, sock;
 
@@ -385,7 +394,7 @@ static void kvv_client( __attribute__ ((unused))
 	if (snprintf(obuffer, sizeof(obuffer),
 		     "GET http://%s" HTTP_REQUEST " HTTP/1.1\n"
 		     "Host: %s\n" "User-Agent: " USER_AGENT "\n\n", server_name, station_id,
-		     server_name) >= sizeof(obuffer)) {
+		     server_name) >= (int) sizeof(obuffer)) {
 
 	    info("[KVV] Warning, request has been truncated!");
 	}
@@ -419,6 +428,9 @@ static void kvv_client( __attribute__ ((unused))
 
 	ibuffer[count] = 0;	// terminate string
 	close(sock);
+
+	if (!count)
+	    info("[KVV] empty/no reply");
 
 	if (count > 0) {
 	    char *input, *cookie, *name, *value;
@@ -485,7 +497,7 @@ static void kvv_client( __attribute__ ((unused))
 			     "Content-Length: %d\n"
 			     "\n%s=%s",
 			     server_name, station_id, server_name, cookie, name_len + value_enc_len + 1, name,
-			     value_enc) >= sizeof(obuffer)) {
+			     value_enc) >= (int) sizeof(obuffer)) {
 
 		    info("[KVV] Warning, request has been truncated!");
 		}
@@ -514,10 +526,13 @@ static void kvv_client( __attribute__ ((unused))
 
 		ibuffer[count] = 0;
 
-//      printf("Result (%d):\n%s\n", count, ibuffer);
+//              printf("Result (%d):\n%s\n", count, ibuffer);
 
 		/* close connection */
 		close(sock);
+
+		if (!count)
+		    info("[KVV] empty/no reply");
 
 		if (count > 0) {
 		    int last_was_stop = 0;
@@ -533,6 +548,7 @@ static void kvv_client( __attribute__ ((unused))
 
 		    if (strstr(ibuffer, "Die Daten konnten nicht abgefragt werden.") != NULL) {
 			info("[KVV] Server returned error!");
+//                      printf("%s\n", ibuffer);
 			shm->error = 1;
 		    } else
 			shm->error = 0;
@@ -766,6 +782,13 @@ int plugin_init_kvv(void)
 	info("[KVV] Using %d seconds refresh interval", refresh);
     } else {
 	info("[KVV] Using default refresh interval of %d seconds", refresh);
+    }
+
+    if (cfg_number(SECTION, "Abbreviate", 0, 0, 65535, &val) > 0) {
+	abbreviate = val;
+	info("[KVV] Abbreviation enabled: %s", abbreviate ? "on" : "off");
+    } else {
+	info("[KVV] Default abbreviation setting: %s", abbreviate ? "on" : "off");
     }
 
     return 0;
