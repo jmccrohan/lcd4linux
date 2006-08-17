@@ -230,6 +230,7 @@ fi
 if test "$CURSES" = "yes"; then
    if test "$has_curses" = true; then
       TEXT="yes"
+      KEYPAD="yes"
       DRIVERS="$DRIVERS drv_Curses.o"
       DRVLIBS="$DRVLIBS $CURSES_LIBS"
       CPPFLAGS="$CPPFLAGS $CURSES_INCLUDES"
@@ -271,6 +272,7 @@ if test "$LCD2USB" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       SERIAL="yes"
+      KEYPAD="yes"
       DRIVERS="$DRIVERS drv_LCD2USB.o"
       LIBUSB="yes"
       AC_DEFINE(WITH_LCD2USB,1,[LCD2USB driver])
