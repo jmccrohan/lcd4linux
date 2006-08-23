@@ -1,4 +1,4 @@
-/* $Id: plugin_kvv.c,v 1.6 2006/08/17 19:11:41 harbaum Exp $
+/* $Id: plugin_kvv.c,v 1.7 2006/08/23 17:45:37 harbaum Exp $
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_kvv.c,v $
+ * Revision 1.7  2006/08/23 17:45:37  harbaum
+ * Umlaut translation bugfix
+ *
  * Revision 1.6  2006/08/17 19:11:41  harbaum
  * Small plugin_kvv bugfixes and new abbreviate option
  *
@@ -309,6 +312,22 @@ static void process_station_string(char *str)
 	"Marktplatz", "Marktpl.",
     };
 
+    /* decode utf8 */
+    p = q = str;
+    last = 0;
+    while (*p) {
+	if (last) {
+	    *q++ = (last << 6) | (*p & 0x3f);
+	    last = 0;
+	} else if ((*p & 0xe0) == 0xc0) {
+	    last = *p & 3;
+	} else
+	    *q++ = *p;
+
+	p++;
+    }
+    *q++ = 0;
+
     /* erase multiple spaces and replace umlauts */
     p = q = str;
     last = 1;			// no leading spaces
@@ -329,22 +348,6 @@ static void process_station_string(char *str)
 	}
 
 	last = (*p == ' ');
-	p++;
-    }
-    *q++ = 0;
-
-    /* decode utf8 */
-    p = q = str;
-    last = 0;
-    while (*p) {
-	if (last) {
-	    *q++ = (last << 6) | (*p & 0x3f);
-	    last = 0;
-	} else if ((*p & 0xe0) == 0xc0) {
-	    last = *p & 3;
-	} else
-	    *q++ = *p;
-
 	p++;
     }
     *q++ = 0;
