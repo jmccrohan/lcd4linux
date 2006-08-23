@@ -117,6 +117,16 @@ Display CF633 {
     Backlight 50
 }
 
+Display CF635 {
+    Icons 1
+    Driver 'Crystalfontz'
+    Model '635'
+    Port '/dev/ttyUSB0'
+    Speed 115200
+    Contrast 100
+    Backlight 128
+}
+
 Display Curses {
     Driver 'Curses'
     Size '20x6'
@@ -1147,13 +1157,13 @@ Layout Debug {
 #Display 'CT20x4'
 #Display 'T6963-240x64'
 #Display 'T6963-240x128'
-Display 'T6963-240x128D'
+#Display 'T6963-240x128D'
 #Display 'XWindow'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
 #Display 'Trefon'
-#Display 'LCD2USB'
+Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'
 #Display 'LPH7508'
 #Display 'ctinclud'
