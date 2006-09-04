@@ -1,7 +1,0 @@
-Template: lcd4linux/conf
-Type: note
-Description: You must configure lcd4linux
- By default, lcd4linux is not configured. You MUST configure it by editing
- the /etc/lcd4linux.conf file, which holds all configuration.
- .
- Then, restart lcd4linux with /etc/init.d/lcd4linux restart
