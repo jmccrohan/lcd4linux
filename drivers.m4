@@ -467,7 +467,11 @@ if test "$X11" = "yes"; then
    else
       GRAPHIC="yes"
       DRIVERS="$DRIVERS drv_X11.o"
-      DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
+      if test "x$ac_x_libraries" = "x"; then
+	DRVLIBS="$DRVLIBS -lX11"
+      else
+        DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
+      fi
       CPP_FLAGS="$CPPFLAGS $X_CFLAGS" 
       AC_DEFINE(WITH_X11, 1, [X11 driver])
    fi
