@@ -1,6 +1,15 @@
-aclocal && \
-# libtoolize --copy --force && \
-autoheader && \
-automake --add-missing --copy --foreign && \
+#!/bin/sh
+
+# exit on errors
+set -e
+
+# set nicer prompt for tracing
+PS4="$0:\$LINENO> "
+set -x
+
+aclocal
+# libtoolize --copy --force 
+autoheader
+automake --add-missing --copy --foreign 
 autoconf
 
