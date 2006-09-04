@@ -46,6 +46,7 @@ sinclude(curses.m4)
 AC_CHECK_CURSES
 
 # Checks for X11
+AC_PATH_X
 AC_PATH_XTRA
 # double-check for X11
 if test "$no_x" != "yes"; then
@@ -77,8 +78,8 @@ AC_ARG_WITH(python,
 [  --with-python           enable python support [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_python" = "yes"; then
-  sinclude(python.m4)
-  PYTHON__DEVEL
+  sinclude(ac_python_devel.m4)
+  AC_PYTHON_DEVEL
 fi
 
 # drivers
