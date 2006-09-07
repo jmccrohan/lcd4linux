@@ -1,4 +1,4 @@
-/* $Id: drv_Curses.c,v 1.13 2006/07/19 01:48:11 cmay Exp $
+/* $Id: drv_Curses.c,v 1.14 2006/09/07 09:06:25 reinelt Exp $
  *
  * pure ncurses based text driver
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_Curses.c,v $
+ * Revision 1.14  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.13  2006/07/19 01:48:11  cmay
  * Ran indent.sh to make pretty code.
  *
@@ -217,7 +220,7 @@ static int drv_Curs_start(const char *section, const int quiet)
 	return -1;
     }
     if (sscanf(s, "%dx%d", &DCOLS, &DROWS) != 2 || DROWS < 1 || DCOLS < 1) {
-	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source);
+	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
     }
@@ -338,7 +341,7 @@ int drv_Curs_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.13 $");
+    info("%s: %s", Name, "$Revision: 1.14 $");
 
     /* display preferences */
     XRES = 1;			/* pixel width of one char  */

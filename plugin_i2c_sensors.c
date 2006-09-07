@@ -1,4 +1,4 @@
-/* $Id: plugin_i2c_sensors.c,v 1.25 2006/02/25 13:36:33 geronet Exp $
+/* $Id: plugin_i2c_sensors.c,v 1.26 2006/09/07 09:06:25 reinelt Exp $
  *
  * I2C sensors plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_i2c_sensors.c,v $
+ * Revision 1.26  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.25  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -414,7 +417,7 @@ static int configure_i2c_sensors(void)
     } else if (strncmp(path, "/proc", 5) == 0) {
 	parse_i2c_sensors = parse_i2c_sensors_procfs;
     } else {
-	error("i2c_sensors: unknown path %s, should start with /sys or /proc");
+	error("i2c_sensors: unknown path %s, should start with /sys or /proc", path);
 	configured = -1;
 	return configured;
     }

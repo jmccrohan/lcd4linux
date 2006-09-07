@@ -1,4 +1,4 @@
-/* $Id: drv_LEDMatrix.c,v 1.9 2006/08/14 19:24:22 harbaum Exp $
+/* $Id: drv_LEDMatrix.c,v 1.10 2006/09/07 09:06:25 reinelt Exp $
  *
  * LED matrix driver for LCD4Linux 
  * (see http://www.harbaum.org/till/ledmatrix for hardware)
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_LEDMatrix.c,v $
+ * Revision 1.10  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.9  2006/08/14 19:24:22  harbaum
  * Umlaut support, added KVV HTTP-User-Agent
  *
@@ -206,7 +209,7 @@ static int drv_LEDMatrix_start(const char *section)
 	info("%s: port set to %d", Name, val);
 	port = val;
     } else {
-	info("%s: using default port", Name, port);
+	info("%s: using default port %d", Name, port);
     }
 
     /* display size is hard coded */

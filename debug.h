@@ -1,4 +1,4 @@
-/* $Id: debug.h,v 1.10 2005/05/08 04:32:43 reinelt Exp $
+/* $Id: debug.h,v 1.11 2006/09/07 09:06:25 reinelt Exp $
  *
  * debug messages
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: debug.h,v $
+ * Revision 1.11  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.10  2005/05/08 04:32:43  reinelt
  * CodingStyle added and applied
  *
@@ -73,7 +76,7 @@ extern int running_foreground;
 extern int running_background;
 extern int verbose_level;
 
-void message(const int level, const char *format, ...);
+void message(const int level, const char *format, ...) __attribute__ ((format(__printf__, 2, 3)));;
 
 #define debug(args...) message (2, __FILE__ ": " args)
 #define info(args...)  message (1, args)

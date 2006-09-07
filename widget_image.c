@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.9 2006/06/21 05:12:43 reinelt Exp $
+/* $Id: widget_image.c,v 1.10 2006/09/07 09:06:25 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.10  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.9  2006/06/21 05:12:43  reinelt
  * added checks for libgd version 2 (thanks to Sam)
  *
@@ -148,7 +151,7 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	int i = Image->width * Image->height * sizeof(Image->bitmap[0]);
 	Image->bitmap = malloc(i);
 	if (Image->bitmap == NULL) {
-	    error("Warning: Image %s: malloc(%d) failed!", Name, i, strerror(errno));
+	    error("Warning: Image %s: malloc(%d) failed: %s", Name, i, strerror(errno));
 	    return;
 	}
 	for (i = 0; i < Image->height * Image->width; i++) {

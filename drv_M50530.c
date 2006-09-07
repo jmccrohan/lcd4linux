@@ -1,4 +1,4 @@
-/* $Id: drv_M50530.c,v 1.24 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: drv_M50530.c,v 1.25 2006/09/07 09:06:25 reinelt Exp $
  *
  * new style driver for M50530-based displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_M50530.c,v $
+ * Revision 1.25  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.24  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -448,8 +451,7 @@ static int drv_M5_start(const char *section, const int quiet)
 
 
     if (DCOLS * DROWS > 256) {
-	error("%s: %s.Size '%dx%d' is too big, would require %d bytes", Name, section, DCOLS, DROWS, DCOLS * DROWS,
-	      cfg_source());
+	error("%s: %s.Size '%dx%d' is too big, would require %d bytes", Name, section, DCOLS, DROWS, DCOLS * DROWS);
 	return -1;
     } else if (DCOLS * DROWS > 224) {
 	DDRAM = 256;
@@ -691,7 +693,7 @@ int drv_M5_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.24 $");
+    info("%s: %s", Name, "$Revision: 1.25 $");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */

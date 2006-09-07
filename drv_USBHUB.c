@@ -1,4 +1,4 @@
-/* $Id: drv_USBHUB.c,v 1.4 2006/08/14 19:24:22 harbaum Exp $
+/* $Id: drv_USBHUB.c,v 1.5 2006/09/07 09:06:25 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -25,6 +25,9 @@
  *
  *
  * $Log: drv_USBHUB.c,v $
+ * Revision 1.5  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.4  2006/08/14 19:24:22  harbaum
  * Umlaut support, added KVV HTTP-User-Agent
  *
@@ -122,7 +125,7 @@ static int drv_UH_open(void)
 		     (v & 0xF000) >> 12, (v & 0xF00) >> 8, (v & 0xF0) >> 4, (v & 0xF), bus->dirname, dev->filename);
 
 		if (dev->descriptor.bDeviceClass != USB_CLASS_HUB) {
-		    error("%s: the specified device claims to be no HUB");
+		    error("%s: the specified device claims to be no HUB", Name);
 		    return -1;
 		}
 
@@ -197,11 +200,11 @@ static int drv_UH_start(const char *section, const __attribute__ ((unused))
     buf = cfg_get(section, "Vendor", NULL);
     if (buf) {
 	if (!*buf) {
-	    error("%s: Strange Vendor Specification");
+	    error("%s: Strange Vendor Specification", Name);
 	    return -1;
 	}
 	if (sscanf(buf, "0x%x", &hubVendor) != 1) {
-	    error("%s: Strange Vendor Specification: [%s]", buf);
+	    error("%s: Strange Vendor Specification: [%s]", Name, buf);
 	    return -1;
 	}
     }
@@ -209,11 +212,11 @@ static int drv_UH_start(const char *section, const __attribute__ ((unused))
     buf = cfg_get(section, "Product", NULL);
     if (buf) {
 	if (!*buf) {
-	    error("%s: Strange Product Specification");
+	    error("%s: Strange Product Specification", Name);
 	    return -1;
 	}
 	if (sscanf(buf, "0x%x", &hubProduct) != 1) {
-	    error("%s: Strange Product Specification: [%s]", buf);
+	    error("%s: Strange Product Specification: [%s]", Name, buf);
 	    return -1;
 	}
     }
@@ -282,7 +285,7 @@ int drv_UH_init(const char *section, const int quiet)
     int ret;
     int i;
 
-    info("%s: %s", Name, "$Revision: 1.4 $");
+    info("%s: %s", Name, "$Revision: 1.5 $");
 
 
 

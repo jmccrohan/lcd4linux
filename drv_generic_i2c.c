@@ -1,4 +1,4 @@
-/* $Id: drv_generic_i2c.c,v 1.8 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: drv_generic_i2c.c,v 1.9 2006/09/07 09:06:25 reinelt Exp $
  *
  * generic driver helper for i2c displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_i2c.c,v $
+ * Revision 1.9  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.8  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -105,7 +108,7 @@ static void my_i2c_smbus_write_byte_data(const int device, const unsigned char v
     data.byte = val;
     args.data = &data;
     if (ioctl(device, I2C_SMBUS, &args) < 0) {
-	info("I2C: device %s IOCTL failed !\n", device);
+	info("I2C: device %d IOCTL failed !\n", device);
     }
 }
 

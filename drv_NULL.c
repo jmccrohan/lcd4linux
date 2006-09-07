@@ -1,4 +1,4 @@
-/* $Id: drv_NULL.c,v 1.9 2006/01/30 06:25:53 reinelt Exp $
+/* $Id: drv_NULL.c,v 1.10 2006/09/07 09:06:25 reinelt Exp $
  *
  * NULL driver (for testing)
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_NULL.c,v $
+ * Revision 1.10  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.9  2006/01/30 06:25:53  reinelt
  * added CVS Revision
  *
@@ -122,7 +125,7 @@ static int drv_NULL_start(const char *section)
 	return -1;
     }
     if (sscanf(s, "%dx%d", &DCOLS, &DROWS) != 2 || DROWS < 1 || DCOLS < 1) {
-	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source);
+	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
     }
@@ -167,7 +170,7 @@ int drv_NULL_init(const char *section, const __attribute__ ((unused))
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.9 $");
+    info("%s: %s", Name, "$Revision: 1.10 $");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

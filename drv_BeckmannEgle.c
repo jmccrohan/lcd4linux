@@ -1,4 +1,4 @@
-/* $Id: drv_BeckmannEgle.c,v 1.16 2006/01/30 06:25:49 reinelt Exp $
+/* $Id: drv_BeckmannEgle.c,v 1.17 2006/09/07 09:06:25 reinelt Exp $
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright (C) 2000 Michael Reinelt <reinelt@eunet.at>
@@ -22,6 +22,9 @@
  *
  *
  * $Log: drv_BeckmannEgle.c,v $
+ * Revision 1.17  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.16  2006/01/30 06:25:49  reinelt
  * added CVS Revision
  *
@@ -502,7 +505,7 @@ static int drv_BuE_CT_start(const char *section)
 	    if (type != NULL) {
 		info("%s: Port %d: %s", Name, i, type);
 	    } else {
-		error("%s: internal error: port % unknown type %d", Name, i, cmd[3]);
+		error("%s: internal error: port %d unknown type %d", Name, i, cmd[3]);
 	    }
 	} else {
 	    error("%s: error fetching type of port %d", Name, i);
@@ -696,7 +699,7 @@ int drv_BuE_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.16 $");
+    info("%s: %s", Name, "$Revision: 1.17 $");
 
     /* start display */
     if ((ret = drv_BuE_start(section)) != 0) {

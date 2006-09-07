@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.45 2006/07/19 01:48:11 cmay Exp $
+/* $Id: drv_Crystalfontz.c,v 1.46 2006/09/07 09:06:25 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.46  2006/09/07 09:06:25  reinelt
+ * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
+ *
  * Revision 1.45  2006/07/19 01:48:11  cmay
  * Ran indent.sh to make pretty code.
  *
@@ -367,7 +370,7 @@ static void drv_CF_process_packet(void)
 
 	default:
 	    /* this should not happen */
-	    error("%s: unexpected response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	    error("%s: unexpected response type=0x%02x code=0x%02x size=%d", Name, Packet.type, Packet.code, Packet.size);
 	    break;
 	}
 
@@ -375,14 +378,14 @@ static void drv_CF_process_packet(void)
 
     case 0x03:
 	/* error response from display to host */
-	error("%s: error response type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	error("%s: error response type=0x%02x code=0x%02x size=%d", Name, Packet.type, Packet.code, Packet.size);
 	break;
 
     default:
 	/* these should not happen: */
 	/* type 0x00: command from host to display: should never come back */
 	/* type 0x01: command response from display to host: are processed within send() */
-	error("%s: unexpected packet type=0x%02x code=0x%02x size=%d", Packet.type, Packet.code, Packet.size);
+	error("%s: unexpected packet type=0x%02x code=0x%02x size=%d", Name, Packet.type, Packet.code, Packet.size);
 	break;
     }
 
@@ -502,7 +505,7 @@ static void drv_CF_send(const unsigned char cmd, const unsigned char len, const 
 		/* this is the ack we're waiting for */
 		if (0) {
 		    gettimeofday(&end, NULL);
-		    debug("%s: ACK after %d usec", Name,
+		    debug("%s: ACK after %ld usec", Name,
 			  1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec);
 		}
 		break;
@@ -1079,7 +1082,7 @@ static void plugin_backlight(RESULT * result, const int argc, RESULT * argv[])
 	SetResult(&result, R_NUMBER, &backlight);
 	break;
     default:
-	error("%s.backlight(): wrong number of parameters");
+	error("%s.backlight(): wrong number of parameters", Name);
 	SetResult(&result, R_STRING, "");
     }
 }
@@ -1123,7 +1126,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.45 $");
+    info("%s: %s", Name, "$Revision: 1.46 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {
