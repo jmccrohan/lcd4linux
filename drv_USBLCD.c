@@ -1,4 +1,4 @@
-/* $Id: drv_USBLCD.c,v 1.24 2006/01/30 06:25:54 reinelt Exp $
+/* $Id: drv_USBLCD.c,v 1.25 2006/09/08 19:00:46 reinelt Exp $
  *
  * new style driver for USBLCD displays
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: drv_USBLCD.c,v $
+ * Revision 1.25  2006/09/08 19:00:46  reinelt
+ * give up after 10 write errors to serial device
+ *
  * Revision 1.24  2006/01/30 06:25:54  reinelt
  * added CVS Revision
  *
@@ -189,8 +192,6 @@ static int interface;
 extern int usb_debug;
 
 #endif
-
-extern int got_signal;
 
 
 
@@ -504,7 +505,7 @@ int drv_UL_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.24 $");
+    info("%s: %s", Name, "$Revision: 1.25 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

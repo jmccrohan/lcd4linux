@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.17 2005/05/08 04:32:44 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.18 2006/09/08 19:00:46 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.18  2006/09/08 19:00:46  reinelt
+ * give up after 10 write errors to serial device
+ *
  * Revision 1.17  2005/05/08 04:32:44  reinelt
  * CodingStyle added and applied
  *
@@ -152,6 +155,8 @@
 #include "cfg.h"
 #include "drv_generic_serial.h"
 
+
+extern int got_signal;
 
 static char *Section;
 static char *Driver;
@@ -412,33 +417,37 @@ int drv_generic_serial_read(char *string, const int len)
 
 void drv_generic_serial_write(const char *string, const int len)
 {
+    static int error = 0;
     int run, ret;
 
-#if 0
-    int i;
-    for (i = 0; i < len; i++) {
-	int c = string[i];
-	debug("serial_write: %03d %03o 0x%02x %c", c, c, c, iscntrl(c) ? '*' : c);
-    }
-#endif
-
-    if (Device == -1)
+    if (Device == -1) {
+	error("%s: write to closed port %s failed!", Driver, Port);
 	return;
+    }
+    
     for (run = 0; run < 10; run++) {
 	ret = write(Device, string, len);
-	if (ret >= 0 || errno != EAGAIN)
+	if (ret >= 0 || errno != EAGAIN) {
 	    break;
-	if (run > 0)
+	}
+	/* EAGAIN: retry 10 times, emit message after 2nd retry */
+	if (run > 0) {
 	    info("%s: write(%s): EAGAIN #%d", Driver, Port, run);
+	}
 	usleep(1000);
     }
 
     if (ret < 0) {
 	error("%s: write(%s) failed: %s", Driver, Port, strerror(errno));
+	if (++error > 10) {
+	    error("%s: too much errors, giving up", Driver);
+	    got_signal = -1;
+	}
     } else if (ret != len) {
 	error("%s: partial write(%s): len=%d ret=%d", Driver, Port, len, ret);
+    } else {
+	error = 0;
     }
-
     return;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: drv_Trefon.c,v 1.6 2006/01/30 06:25:54 reinelt Exp $
+/* $Id: drv_Trefon.c,v 1.7 2006/09/08 19:00:46 reinelt Exp $
  *
  * driver for TREFON USB LCD displays - http://www.trefon.de
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Trefon.c,v $
+ * Revision 1.7  2006/09/08 19:00:46  reinelt
+ * give up after 10 write errors to serial device
+ *
  * Revision 1.6  2006/01/30 06:25:54  reinelt
  * added CVS Revision
  *
@@ -97,7 +100,6 @@ static usb_dev_handle *lcd;
 static int interface;
 
 extern int usb_debug;
-extern int got_signal;
 
 
 /****************************************/
@@ -351,7 +353,7 @@ int drv_TF_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.6 $");
+    info("%s: %s", Name, "$Revision: 1.7 $");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
