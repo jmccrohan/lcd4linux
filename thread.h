@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.7 2006/07/12 21:01:41 reinelt Exp $
+/* $Id: thread.h,v 1.8 2006/09/13 20:04:57 entropy Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.h,v $
+ * Revision 1.8  2006/09/13 20:04:57  entropy
+ * threads change argv[0] to their thread name, for a neat 'ps' output
+ *
  * Revision 1.7  2006/07/12 21:01:41  reinelt
  * thread_destroy, minor cleanups
  *
@@ -55,6 +58,10 @@
 
 #ifndef _THREAD_H_
 #define _THREAD_H_
+
+
+extern int   thread_argc;
+extern char **thread_argv;
 
 int mutex_create(void);
 void mutex_lock(const int semid);

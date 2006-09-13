@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.81 2006/08/13 06:46:51 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.82 2006/09/13 20:04:57 entropy Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.82  2006/09/13 20:04:57  entropy
+ * threads change argv[0] to their thread name, for a neat 'ps' output
+ *
  * Revision 1.81  2006/08/13 06:46:51  reinelt
  * T6963 soft-timing & enhancements; indent
  *
@@ -394,6 +397,7 @@
 #include "timer.h"
 #include "layout.h"
 #include "plugin.h"
+#include "thread.h"
 
 #include "widget.h"
 #include "widget_timer.h"
@@ -541,6 +545,10 @@ int main(int argc, char *argv[])
 	my_argv[c] = strdup(argv[c]);
     }
     my_argv[c] = NULL;
+   
+    /* save original arguments pointer for threads */
+    thread_argv=argv;
+    thread_argc=argc;
 
     running_foreground = 0;
     running_background = 0;

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.8 2006/07/12 21:01:41 reinelt Exp $
+/* $Id: thread.c,v 1.9 2006/09/13 20:04:57 entropy Exp $
  *
  * thread handling (mutex, shmem, ...)
  *
@@ -26,6 +26,9 @@
  *
  *
  * $Log: thread.c,v $
+ * Revision 1.9  2006/09/13 20:04:57  entropy
+ * threads change argv[0] to their thread name, for a neat 'ps' output
+ *
  * Revision 1.8  2006/07/12 21:01:41  reinelt
  * thread_destroy, minor cleanups
  *
@@ -106,6 +109,10 @@
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
+
+
+int   thread_argc;
+char **thread_argv;
 
 
 /* glibc 2.1 requires defining semun ourselves */
@@ -195,13 +202,16 @@ int thread_create(const char *name, void (*thread) (void *data), void *data)
     pid_t pid, ppid;
 
     ppid = getpid();
-
+    
     switch (pid = fork()) {
     case -1:
 	error("fatal error: fork(%s) failed: %s", name, strerror(errno));
 	return -1;
     case 0:
 	info("thread %s starting...", name);
+	if (thread_argc > 0) {
+  	    strncpy(thread_argv[0],name,strlen(thread_argv[0]));
+        }
 	thread(data);
 	info("thread %s ended.", name);
 	exit(0);
