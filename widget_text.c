@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.27 2006/08/13 18:14:03 harbaum Exp $
+/* $Id: widget_text.c,v 1.28 2006/09/13 05:33:39 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.28  2006/09/13 05:33:39  reinelt
+ * plugin_file: return empty string if file cannot be read; widget_text: load property as 'string', not as variable (triggered an ugly bug with variable list reallocated)
+ *
  * Revision 1.27  2006/08/13 18:14:03  harbaum
  * Added KVV plugin
  *
@@ -363,7 +366,7 @@ int widget_text_init(WIDGET * Self)
     property_load(section, "prefix", NULL, &Text->prefix);
     property_load(section, "expression", NULL, &Text->value);
     property_load(section, "postfix", NULL, &Text->postfix);
-    property_load(section, "style", "norm", &Text->style);
+    property_load(section, "style", "'norm'", &Text->style);
 
     /* field width, default 10 */
     cfg_number(section, "width", 10, 0, -1, &(Text->width));
