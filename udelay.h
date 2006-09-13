@@ -1,4 +1,4 @@
-/* $Id: udelay.h,v 1.11 2005/12/12 09:08:08 reinelt Exp $
+/* $Id: udelay.h,v 1.12 2006/09/13 20:07:59 entropy Exp $
  *
  * short delays 
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: udelay.h,v $
+ * Revision 1.12  2006/09/13 20:07:59  entropy
+ * Fixing bug #1494773 (compiles only on i368/amd64 machines) by providing a dummy implementation for other archs
+ *
  * Revision 1.11  2005/12/12 09:08:08  reinelt
  * finally removed old udelay code path; read timing values from config
  *
@@ -79,7 +82,14 @@
 /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
 static inline void rep_nop(void)
 {
+# if defined(__i386) || defined(__i386__) || defined(__AMD64__) || defined(__x86_64__) || defined(__amd64__)
+    /* intel or amd64 arch, the "rep" and "nop" opcodes are available */
     __asm__ __volatile__("rep; nop");
+# else
+    /* other Arch, maybe add core cooldown code here, too. */
+    do {
+    } while (0);
+# endif
 }
 
 void udelay_init(void);
