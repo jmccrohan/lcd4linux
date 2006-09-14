@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.31 2006/02/25 13:36:33 geronet Exp $
+/* $Id: evaluator.c,v 1.32 2006/09/14 04:08:54 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.32  2006/09/14 04:08:54  reinelt
+ * variables use a static list, no realloc, linear search
+ *
  * Revision 1.31  2006/02/25 13:36:33  geronet
  * updated indent.sh, applied coding style
  *
@@ -314,11 +317,11 @@ static char *Word = NULL;
 static TOKEN Token = T_UNDEF;
 static OPERATOR Operator = O_UNDEF;
 
-static VARIABLE *Variable = NULL;
-static int nVariable = 0;
+static VARIABLE Variable[255];
+static unsigned int nVariable = 0;
 
 static FUNCTION *Function = NULL;
-static int nFunction = 0;
+static unsigned int nFunction = 0;
 
 
 void DelResult(RESULT * result)
@@ -474,29 +477,16 @@ char *R2S(RESULT * result)
 }
 
 
-/* bsearch compare function for variables */
-static int LookupVariable(const void *a, const void *b)
-{
-    char *key = (char *) a;
-    VARIABLE *var = (VARIABLE *) b;
-
-    return strcmp(key, var->name);
-}
-
-
-/* qsort compare function for variables */
-static int SortVariable(const void *a, const void *b)
-{
-    VARIABLE *va = (VARIABLE *) a;
-    VARIABLE *vb = (VARIABLE *) b;
-
-    return strcmp(va->name, vb->name);
-}
-
-
 static VARIABLE *FindVariable(const char *name)
 {
-    return bsearch(name, Variable, nVariable, sizeof(VARIABLE), LookupVariable);
+    unsigned int i;
+
+    for (i = 0; i < nVariable; i++) {
+	if (strcmp (name, Variable[i].name) == 0) {
+	    return &Variable[i];
+	}
+    }
+    return NULL;
 }
 
 
@@ -510,13 +500,15 @@ int SetVariable(const char *name, RESULT * value)
 	return 1;
     }
 
+    if (nVariable >= sizeof(Variable)/sizeof(Variable[0])) {
+	error("Evaluator: cannot set variable <%s>: out of slots", name);
+	return -1;
+    }
+    
     nVariable++;
-    Variable = realloc(Variable, nVariable * sizeof(VARIABLE));
     Variable[nVariable - 1].name = strdup(name);
     Variable[nVariable - 1].value = NULL;
     CopyResult(&Variable[nVariable - 1].value, value);
-
-    qsort(Variable, nVariable, sizeof(VARIABLE), SortVariable);
 
     return 0;
 }
@@ -546,14 +538,12 @@ int SetVariableString(const char *name, const char *value)
 
 void DeleteVariables(void)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < nVariable; i++) {
 	free(Variable[i].name);
 	FreeResult(Variable[i].value);
     }
-    free(Variable);
-    Variable = NULL;
     nVariable = 0;
 }
 
@@ -600,7 +590,7 @@ int AddFunction(const char *name, const int argc, void (*func) ())
 
 void DeleteFunctions(void)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < nFunction; i++) {
 	free(Function[i].name);
