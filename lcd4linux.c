@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.83 2006/09/14 03:49:14 reinelt Exp $
+/* $Id: lcd4linux.c,v 1.84 2006/09/14 11:19:29 entropy Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.84  2006/09/14 11:19:29  entropy
+ * New cmdline option -p to specify the pidfile location
+ *
  * Revision 1.83  2006/09/14 03:49:14  reinelt
  * indent run
  *
@@ -425,7 +428,7 @@ static void usage(void)
     printf("%s\n", copyright);
     printf("usage: lcd4linux [-h]\n");
     printf("       lcd4linux [-l]\n");
-    printf("       lcd4linux [-c key=value] [-i] [-f config-file] [-v]\n");
+    printf("       lcd4linux [-c key=value] [-i] [-f config-file] [-v] [-p pid-file]\n");
     printf("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
 }
 
@@ -535,6 +538,7 @@ static void daemonize(void)
 int main(int argc, char *argv[])
 {
     char *cfg = "/etc/lcd4linux.conf";
+    char *pidfile = PIDFILE;
     char *display, *driver, *layout;
     char section[32];
     int c;
@@ -556,7 +560,7 @@ int main(int argc, char *argv[])
     running_foreground = 0;
     running_background = 0;
 
-    while ((c = getopt(argc, argv, "c:Ff:hilo:qv")) != EOF) {
+    while ((c = getopt(argc, argv, "c:Ff:hilo:qvp:")) != EOF) {
 
 	switch (c) {
 	case 'c':
@@ -590,6 +594,9 @@ int main(int argc, char *argv[])
 	    break;
 	case 'v':
 	    verbose_level++;
+	    break;
+	case 'p':
+	    pidfile = optarg;
 	    break;
 	default:
 	    exit(2);
@@ -642,7 +649,7 @@ int main(int argc, char *argv[])
 	signal(SIGQUIT, SIG_IGN);
 
 	/* create PID file */
-	if ((pid = pid_init(PIDFILE)) != 0) {
+	if ((pid = pid_init(pidfile)) != 0) {
 	    error("lcd4linux already running as process %d", pid);
 	    exit(1);
 	}
@@ -654,7 +661,7 @@ int main(int argc, char *argv[])
     /* go into interactive mode before display initialization */
     if (interactive >= 2) {
 	interactive_mode();
-	pid_exit(PIDFILE);
+	pid_exit(pidfile);
 	cfg_exit();
 	exit(0);
     }
@@ -666,7 +673,7 @@ int main(int argc, char *argv[])
 
     debug("initializing driver %s", driver);
     if (drv_init(section, driver, quiet) == -1) {
-	pid_exit(PIDFILE);
+	pid_exit(pidfile);
 	exit(1);
     }
     free(driver);
@@ -678,7 +685,7 @@ int main(int argc, char *argv[])
     if (interactive >= 1) {
 	interactive_mode();
 	drv_quit(quiet);
-	pid_exit(PIDFILE);
+	pid_exit(pidfile);
 	cfg_exit();
 	exit(0);
     }
@@ -712,7 +719,7 @@ int main(int argc, char *argv[])
     debug("leaving main loop");
 
     drv_quit(quiet);
-    pid_exit(PIDFILE);
+    pid_exit(pidfile);
     cfg_exit();
     plugin_exit();
     timer_exit();
