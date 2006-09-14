@@ -1,4 +1,4 @@
-/* $Id: drv_generic_serial.c,v 1.18 2006/09/08 19:00:46 reinelt Exp $
+/* $Id: drv_generic_serial.c,v 1.19 2006/09/14 03:49:14 reinelt Exp $
  *
  * generic driver helper for serial and usbserial displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_serial.c,v $
+ * Revision 1.19  2006/09/14 03:49:14  reinelt
+ * indent run
+ *
  * Revision 1.18  2006/09/08 19:00:46  reinelt
  * give up after 10 write errors to serial device
  *
@@ -424,7 +427,7 @@ void drv_generic_serial_write(const char *string, const int len)
 	error("%s: write to closed port %s failed!", Driver, Port);
 	return;
     }
-    
+
     for (run = 0; run < 10; run++) {
 	ret = write(Device, string, len);
 	if (ret >= 0 || errno != EAGAIN) {

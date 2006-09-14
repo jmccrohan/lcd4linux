@@ -1,4 +1,4 @@
-/* $Id: drv_Crystalfontz.c,v 1.46 2006/09/07 09:06:25 reinelt Exp $
+/* $Id: drv_Crystalfontz.c,v 1.47 2006/09/14 03:49:14 reinelt Exp $
  *
  * new style driver for Crystalfontz display modules
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_Crystalfontz.c,v $
+ * Revision 1.47  2006/09/14 03:49:14  reinelt
+ * indent run
+ *
  * Revision 1.46  2006/09/07 09:06:25  reinelt
  * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
  *
@@ -370,7 +373,8 @@ static void drv_CF_process_packet(void)
 
 	default:
 	    /* this should not happen */
-	    error("%s: unexpected response type=0x%02x code=0x%02x size=%d", Name, Packet.type, Packet.code, Packet.size);
+	    error("%s: unexpected response type=0x%02x code=0x%02x size=%d", Name, Packet.type, Packet.code,
+		  Packet.size);
 	    break;
 	}
 
@@ -1126,7 +1130,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.46 $");
+    info("%s: %s", Name, "$Revision: 1.47 $");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {

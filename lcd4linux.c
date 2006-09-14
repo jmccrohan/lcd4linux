@@ -1,4 +1,4 @@
-/* $Id: lcd4linux.c,v 1.82 2006/09/13 20:04:57 entropy Exp $
+/* $Id: lcd4linux.c,v 1.83 2006/09/14 03:49:14 reinelt Exp $
  *
  * LCD4Linux
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: lcd4linux.c,v $
+ * Revision 1.83  2006/09/14 03:49:14  reinelt
+ * indent run
+ *
  * Revision 1.82  2006/09/13 20:04:57  entropy
  * threads change argv[0] to their thread name, for a neat 'ps' output
  *
@@ -545,10 +548,10 @@ int main(int argc, char *argv[])
 	my_argv[c] = strdup(argv[c]);
     }
     my_argv[c] = NULL;
-   
+
     /* save original arguments pointer for threads */
-    thread_argv=argv;
-    thread_argc=argc;
+    thread_argv = argv;
+    thread_argc = argc;
 
     running_foreground = 0;
     running_background = 0;
