@@ -36,13 +36,15 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
 bin_PROGRAMS = lcd4linux$(EXEEXT)
-subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO config.guess config.sub depcomp install-sh missing \
 	mkinstalldirs
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/curses.m4 \
 	$(top_srcdir)/ac_python_devel.m4 $(top_srcdir)/drivers.m4 \
@@ -122,9 +124,11 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBICONV = @LIBICONV@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 OBJEXT = @OBJEXT@
@@ -163,13 +167,21 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -286,6 +298,7 @@ plugin_dvb.c                  \
 plugin_exec.c                 \
 plugin_file.c                 \
 plugin_i2c_sensors.c          \
+plugin_iconv.c                \
 plugin_imon.c                 \
 plugin_isdn.c                 \
 plugin_kvv.c                  \
@@ -466,6 +479,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_exec.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_i2c_sensors.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_iconv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_imon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_isdn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_kvv.Po@am__quote@
