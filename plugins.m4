@@ -56,6 +56,7 @@ for plugin in $plugins; do
          PLUGIN_EXEC="yes"
          PLUGIN_FILE="yes"
          PLUGIN_I2C_SENSORS="yes"
+         PLUGIN_ICONV="yes"
          PLUGIN_IMON="yes"
          PLUGIN_ISDN="yes"
          PLUGIN_KVV="yes"
@@ -97,6 +98,9 @@ for plugin in $plugins; do
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
 	 ;;
+      iconv)
+      	PLUGIN_ICONV=$val
+      	;;
       imon)
          PLUGIN_IMON=$val
          ;;
@@ -194,6 +198,16 @@ fi
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"
    AC_DEFINE(PLUGIN_I2C_SENSORS,1,[i2c sensors plugin])
+fi
+if test "$PLUGIN_ICONV" = "yes"; then
+   AM_ICONV
+   if test "$am_cv_func_iconv" = "yes"; then 
+      PLUGINS="$PLUGINS plugin_iconv.o"
+      PLUGINLIBS="$PLUGINLIBS $LIBICONV"
+      AC_DEFINE(PLUGIN_ICONV,1,[iconv charset converter plugin])
+   else
+      AC_MSG_WARN(iconv not found: iconv plugin disabled)
+   fi
 fi
 if test "$PLUGIN_IMON" = "yes"; then
    PLUGINS="$PLUGINS plugin_imon.o"

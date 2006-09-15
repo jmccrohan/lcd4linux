@@ -103,6 +103,7 @@ plugin_dvb.c                  \
 plugin_exec.c                 \
 plugin_file.c                 \
 plugin_i2c_sensors.c          \
+plugin_iconv.c                \
 plugin_imon.c                 \
 plugin_isdn.c                 \
 plugin_kvv.c                  \

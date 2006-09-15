@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.45 2006/08/13 18:14:03 harbaum Exp $
+/* $Id: plugin.c,v 1.46 2006/09/15 19:00:50 entropy Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.46  2006/09/15 19:00:50  entropy
+ * iconv charset converter plugin
+ *
  * Revision 1.45  2006/08/13 18:14:03  harbaum
  * Added KVV plugin
  *
@@ -318,6 +321,9 @@ int plugin_init(void)
 #ifdef PLUGIN_I2C_SENSORS
     plugin_init_i2c_sensors();
 #endif
+#ifdef PLUGIN_ICONV
+    plugin_init_iconv();
+#endif
 #ifdef PLUGIN_IMON
     plugin_init_imon();
 #endif
@@ -403,6 +409,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_I2C_SENSORS
     plugin_exit_i2c_sensors();
+#endif
+#ifdef PLUGIN_ICONV
+    plugin_exit_iconv();
 #endif
 #ifdef PLUGIN_IMON
     plugin_exit_imon();
