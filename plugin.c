@@ -1,4 +1,4 @@
-/* $Id: plugin.c,v 1.46 2006/09/15 19:00:50 entropy Exp $
+/* $Id: plugin.c,v 1.47 2006/09/19 11:20:52 entropy Exp $
  *
  * plugin handler for the Evaluator
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin.c,v $
+ * Revision 1.47  2006/09/19 11:20:52  entropy
+ * Added missing prototypes
+ *
  * Revision 1.46  2006/09/15 19:00:50  entropy
  * iconv charset converter plugin
  *
@@ -254,6 +257,8 @@ int plugin_init_i2c_sensors(void);
 void plugin_exit_i2c_sensors(void);
 int plugin_init_imon(void);
 void plugin_exit_imon(void);
+int plugin_init_iconv(void);
+void plugin_exit_iconv(void);
 int plugin_init_isdn(void);
 void plugin_exit_isdn(void);
 int plugin_init_kvv(void);
