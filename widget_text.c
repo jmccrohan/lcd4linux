@@ -1,4 +1,4 @@
-/* $Id: widget_text.c,v 1.28 2006/09/13 05:33:39 reinelt Exp $
+/* $Id: widget_text.c,v 1.29 2006/09/29 04:48:22 reinelt Exp $
  *
  * simple text widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_text.c,v $
+ * Revision 1.29  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.28  2006/09/13 05:33:39  reinelt
  * plugin_file: return empty string if file cannot be read; widget_text: load property as 'string', not as variable (triggered an ugly bug with variable list reallocated)
  *
@@ -322,8 +325,7 @@ void widget_text_update(void *Self)
     /* did the formatted string change? */
     if (T->string == NULL || strcmp(T->string, string) != 0) {
 	update++;
-	if (T->string)
-	    free(T->string);
+	free(T->string);
 	T->string = string;
     } else {
 	free(string);
@@ -439,10 +441,8 @@ int widget_text_quit(WIDGET * Self)
 	    property_free(&Text->value);
 	    property_free(&Text->postfix);
 	    property_free(&Text->style);
-	    if (Text->string)
-		free(Text->string);
-	    if (Text->buffer)
-		free(Text->buffer);
+	    free(Text->string);
+	    free(Text->buffer);
 	    free(Self->data);
 	    Self->data = NULL;
 	}

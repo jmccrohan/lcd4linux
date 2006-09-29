@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.11 2006/09/28 04:08:33 reinelt Exp $
+/* $Id: widget_image.c,v 1.12 2006/09/29 04:48:22 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.12  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.11  2006/09/28 04:08:33  reinelt
  * image widget memory leaks fixed (thanks to Magne Tørresen)
  *
@@ -73,15 +76,6 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "debug.h"
-#include "cfg.h"
-#include "qprintf.h"
-#include "evaluator.h"
-#include "timer.h"
-#include "widget.h"
-#include "widget_image.h"
-#include "rgb.h"
-
 #ifdef HAVE_GD_GD_H
 #include <gd/gd.h>
 #else
@@ -98,6 +92,16 @@
 #error "cannot compile image widget"
 #endif
 
+#include "debug.h"
+#include "cfg.h"
+#include "qprintf.h"
+#include "evaluator.h"
+#include "property.h"
+#include "timer.h"
+#include "widget.h"
+#include "widget_image.h"
+#include "rgb.h"
+
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -106,38 +110,54 @@
 static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 {
     int x, y;
-    FILE *fd;
-    gdImagePtr gdImage = NULL;
+    int inverted;
+    gdImagePtr gdImage;
 
     /* clear bitmap */
     if (Image->bitmap) {
 	int i;
 	for (i = 0; i < Image->height * Image->width; i++) {
-	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
-    
-    if (Image->file == NULL || Image->file[0] == '\0') {
-	error("Warning: Image %s has no file", Name);
-	return;
-    }
-    
-    fd = fopen(Image->file, "rb");
-    if (fd == NULL) {
-	error("Warning: Image %s: fopen(%s) failed: %s", Name, Image->file, strerror(errno));
-	return;
-    }
-    
-    gdImage = gdImageCreateFromPng(fd);
-    fclose(fd);
-    
-    if (fd == NULL) {
-	error("Warning: Image %s: CreateFromPng(%s) failed!", Name, Image->file);
-	return;
+
+    /* reload image only on first call or on explicit reload request */
+    if (Image->gdImage == NULL || P2N(&Image->reload)) {
+
+	char *file;
+	FILE *fd;
+
+	/* free previous image */
+	if (Image->gdImage) {
+	    gdImageDestroy(Image->gdImage);
+	    Image->gdImage = NULL;
+	}
+
+	file = P2S(&Image->file);
+	if (file == NULL || file[0] == '\0') {
+	    error("Warning: Image %s has no file", Name);
+	    return;
+	}
+
+	fd = fopen(file, "rb");
+	if (fd == NULL) {
+	    error("Warning: Image %s: fopen(%s) failed: %s", Name, file, strerror(errno));
+	    return;
+	}
+
+	Image->gdImage = gdImageCreateFromPng(fd);
+	fclose(fd);
+
+	if (Image->gdImage == NULL) {
+	    error("Warning: Image %s: CreateFromPng(%s) failed!", Name, file);
+	    return;
+	}
+
     }
 
     /* maybe resize bitmap */
+    gdImage = Image->gdImage;
     if (gdImage->sx > Image->width) {
 	Image->width = gdImage->sx;
 	free(Image->bitmap);
@@ -156,13 +176,15 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    return;
 	}
 	for (i = 0; i < Image->height * Image->width; i++) {
-	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
-    
+
+
     /* finally really render it */
-    if (Image->visible) {
+    inverted = P2N(&Image->inverted);
+    if (P2N(&Image->visible)) {
 	for (x = 0; x < gdImage->sx; x++) {
 	    for (y = 0; y < gdImage->sy; y++) {
 		int p = gdImageGetTrueColorPixel(gdImage, x, y);
@@ -174,7 +196,7 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 		/* GD's alpha is 0 (opaque) to 127 (tranparanet) */
 		/* our alpha is 0 (transparent) to 255 (opaque) */
 		Image->bitmap[i].A = (a == 127) ? 0 : 255 - 2 * a;
-		if (Image->inverted) {
+		if (inverted) {
 		    Image->bitmap[i].R = 255 - Image->bitmap[i].R;
 		    Image->bitmap[i].G = 255 - Image->bitmap[i].G;
 		    Image->bitmap[i].B = 255 - Image->bitmap[i].B;
@@ -182,10 +204,6 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    }
 	}
     }
-    
-    /* free image */
-    gdImageDestroy(gdImage);
-
 }
 
 
@@ -193,45 +211,16 @@ static void widget_image_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_IMAGE *Image = W->data;
-    RESULT result = { 0, 0, 0, NULL };
 
     /* process the parent only */
     if (W->parent == NULL) {
 
-	/* evaluate expressions */
-	free(Image->file);
-	Image->file = NULL;
-
-	if (Image->file_tree != NULL) {
-	    Eval(Image->file_tree, &result);
-	    Image->file = strdup(R2S(&result));
-	    DelResult(&result);
-	}
-
-	Image->update = 0;
-	if (Image->update_tree != NULL) {
-	    Eval(Image->update_tree, &result);
-	    Image->update = R2N(&result);
-	    if (Image->update < 0)
-		Image->update = 0;
-	    DelResult(&result);
-	}
-
-	Image->visible = 1;
-	if (Image->visible_tree != NULL) {
-	    Eval(Image->visible_tree, &result);
-	    Image->visible = R2N(&result);
-	    Image->visible = Image->visible > 0;
-	    DelResult(&result);
-	}
-
-	Image->inverted = 0;
-	if (Image->inverted_tree != NULL) {
-	    Eval(Image->inverted_tree, &result);
-	    Image->inverted = R2N(&result);
-	    Image->inverted = Image->inverted > 0;
-	    DelResult(&result);
-	}
+	/* evaluate properties */
+	property_eval(&Image->file);
+	property_eval(&Image->update);
+	property_eval(&Image->reload);
+	property_eval(&Image->visible);
+	property_eval(&Image->inverted);
 
 	/* render image into bitmap */
 	widget_image_render(W->name, Image);
@@ -243,8 +232,8 @@ static void widget_image_update(void *Self)
 	W->class->draw(W);
 
     /* add a new one-shot timer */
-    if (Image->update > 0) {
-	timer_add(widget_image_update, Self, Image->update, 1);
+    if (P2N(&Image->update) > 0) {
+	timer_add(widget_image_update, Self, P2N(&Image->update), 1);
     }
 }
 
@@ -271,28 +260,13 @@ int widget_image_init(WIDGET * Self)
 	Image->width = 0;
 	Image->height = 0;
 	Image->bitmap = NULL;
-	Image->file = NULL;
 
-	/* get raw expressions (we evaluate them ourselves) */
-	Image->file_expr = cfg_get_raw(section, "file", NULL);
-	Image->update_expr = cfg_get_raw(section, "update", NULL);
-	Image->visible_expr = cfg_get_raw(section, "visible", NULL);
-	Image->inverted_expr = cfg_get_raw(section, "inverted", NULL);
-
-	/* sanity checks */
-	if (Image->file_expr == NULL || *Image->file_expr == '\0') {
-	    error("Warning: Image %s has no file", Self->name);
-	}
-	if (Image->update_expr == NULL || *Image->update_expr == '\0') {
-	    error("Image %s has no update, using '100'", Self->name);
-	    Image->update_expr = "100";
-	}
-
-	/* compile'em */
-	Compile(Image->file_expr, &Image->file_tree);
-	Compile(Image->update_expr, &Image->update_tree);
-	Compile(Image->visible_expr, &Image->visible_tree);
-	Compile(Image->inverted_expr, &Image->inverted_tree);
+	/* load properties */
+	property_load(section, "file", NULL, &Image->file);
+	property_load(section, "update", "100", &Image->update);
+	property_load(section, "reload", "0", &Image->reload);
+	property_load(section, "visible", "1", &Image->visible);
+	property_load(section, "inverted", "0", &Image->inverted);
 
 	free(section);
 	Self->data = Image;
@@ -318,12 +292,16 @@ int widget_image_quit(WIDGET * Self)
 	if (Self->parent == NULL) {
 	    if (Self->data) {
 		WIDGET_IMAGE *Image = Self->data;
+		if (Image->gdImage) {
+		    gdImageDestroy(Image->gdImage);
+		    Image->gdImage = NULL;
+		}
 		free(Image->bitmap);
-		free(Image->file);
-		DelTree(Image->file_tree);
-		DelTree(Image->update_tree);
-		DelTree(Image->visible_tree);
-		DelTree(Image->inverted_tree);
+		property_free(&Image->file);
+		property_free(&Image->update);
+		property_free(&Image->reload);
+		property_free(&Image->visible);
+		property_free(&Image->inverted);
 		free(Self->data);
 		Self->data = NULL;
 	    }

@@ -1,4 +1,4 @@
-/* $Id: plugin_iconv.c,v 1.2 2006/09/15 19:06:47 entropy Exp $
+/* $Id: plugin_iconv.c,v 1.3 2006/09/29 04:48:22 reinelt Exp $
  *
  * iconv charset conversion plugin
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: plugin_iconv.c,v $
+ * Revision 1.3  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.2  2006/09/15 19:06:47  entropy
  * debug spam reduced, comment typo fixed
  *
@@ -61,7 +64,7 @@
 
 /* iconv function, convert charsets */
 /* valid "to" and "from" charsets can be listed by running "iconv --list" from a shell */
-/* utf16 & utf32 encodings won't work, as they contain null bytes, confusing strlen */ 
+/* utf16 & utf32 encodings won't work, as they contain null bytes, confusing strlen */
 static void my_iconv(RESULT * result, RESULT * charset_from, RESULT * charset_to, RESULT * arg)
 {
     char *source;
@@ -86,7 +89,7 @@ static void my_iconv(RESULT * result, RESULT * charset_from, RESULT * charset_to
     if (cd != (iconv_t) (-1)) {
 
 	do {
-	
+
 	    /* quite spammy: debug("plugin_iconv: calling iconv with %ld,[%s]/%ld,%ld", cd, source, source_left, dest_left); */
 	    if (iconv(cd, &source, &source_left, &dest_pos, &dest_left) == (size_t) (-1)) {
 		switch (errno) {

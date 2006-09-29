@@ -1,4 +1,4 @@
-/* $Id: widget_image.h,v 1.4 2006/04/09 14:17:50 reinelt Exp $
+/* $Id: widget_image.h,v 1.5 2006/09/29 04:48:22 reinelt Exp $
  *
  * image widget handling
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: widget_image.h,v $
+ * Revision 1.5  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.4  2006/04/09 14:17:50  reinelt
  * autoconf/library fixes, image and graphic display inversion
  *
@@ -41,23 +44,18 @@
 #ifndef _WIDGET_IMAGE_H_
 #define _WIDGET_IMAGE_H_
 
+#include "property.h"
 #include "rgb.h"
 
 typedef struct WIDGET_IMAGE {
+    void *gdImage;		/* raw gd image */
     RGBA *bitmap;		/* image bitmap */
     int width, height;		/* size of the image */
-    char *file_expr;		/* expression for image filename */
-    void *file_tree;		/* pre-compiled expression for image filename */
-    char *file;			/* evaluated filename */
-    char *update_expr;		/* expression for update interval */
-    void *update_tree;		/* pre-compiled expression for update interval */
-    int update;			/* update interval (msec) */
-    char *visible_expr;		/* expression for visibility */
-    void *visible_tree;		/* pre-compiled expression for visibility */
-    int visible;		/* image visible? */
-    char *inverted_expr;	/* expression for inversion */
-    void *inverted_tree;	/* pre-compiled expression for inversion */
-    int inverted;		/* image inverted? */
+    PROPERTY file;		/* image filename */
+    PROPERTY update;		/* update interval */
+    PROPERTY reload;		/* reload image on update? */
+    PROPERTY visible;		/* image visible? */
+    PROPERTY inverted;		/* image inverted? */
 } WIDGET_IMAGE;
 
 extern WIDGET_CLASS Widget_Image;

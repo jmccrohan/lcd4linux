@@ -1,4 +1,4 @@
-/* $Id: evaluator.c,v 1.32 2006/09/14 04:08:54 reinelt Exp $
+/* $Id: evaluator.c,v 1.33 2006/09/29 04:48:22 reinelt Exp $
  *
  * expression evaluation
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: evaluator.c,v $
+ * Revision 1.33  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.32  2006/09/14 04:08:54  reinelt
  * variables use a static list, no realloc, linear search
  *
@@ -482,7 +485,7 @@ static VARIABLE *FindVariable(const char *name)
     unsigned int i;
 
     for (i = 0; i < nVariable; i++) {
-	if (strcmp (name, Variable[i].name) == 0) {
+	if (strcmp(name, Variable[i].name) == 0) {
 	    return &Variable[i];
 	}
     }
@@ -500,11 +503,11 @@ int SetVariable(const char *name, RESULT * value)
 	return 1;
     }
 
-    if (nVariable >= sizeof(Variable)/sizeof(Variable[0])) {
+    if (nVariable >= sizeof(Variable) / sizeof(Variable[0])) {
 	error("Evaluator: cannot set variable <%s>: out of slots", name);
 	return -1;
     }
-    
+
     nVariable++;
     Variable[nVariable - 1].name = strdup(name);
     Variable[nVariable - 1].value = NULL;

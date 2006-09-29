@@ -1,4 +1,4 @@
-/* $Id: drv_generic_graphic.c,v 1.34 2006/08/14 19:24:22 harbaum Exp $
+/* $Id: drv_generic_graphic.c,v 1.35 2006/09/29 04:48:22 reinelt Exp $
  *
  * generic driver helper for graphic displays
  *
@@ -23,6 +23,9 @@
  *
  *
  * $Log: drv_generic_graphic.c,v $
+ * Revision 1.35  2006/09/29 04:48:22  reinelt
+ * image widget uses properties now; new property 'reload'
+ *
  * Revision 1.34  2006/08/14 19:24:22  harbaum
  * Umlaut support, added KVV HTTP-User-Agent
  *
@@ -186,6 +189,7 @@
 #include "plugin.h"
 #include "layout.h"
 #include "widget.h"
+#include "property.h"
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
@@ -194,7 +198,6 @@
 #include "drv.h"
 #include "drv_generic.h"
 #include "drv_generic_graphic.h"
-#include "property.h"
 #include "font_6x8.h"
 #include "font_6x8_bold.h"
 
@@ -630,6 +633,7 @@ int drv_generic_graphic_image_draw(WIDGET * W)
     WIDGET_IMAGE *Image = W->data;
     int layer, row, col, width, height;
     int x, y;
+    int visible;
 
     layer = W->layer;
     row = W->row;
@@ -652,10 +656,11 @@ int drv_generic_graphic_image_draw(WIDGET * W)
     drv_generic_graphic_resizeFB(row + height, col + width);
 
     /* render image */
+    visible = P2N(&Image->visible);
     for (y = 0; y < height; y++) {
 	for (x = 0; x < width; x++) {
 	    int i = (row + y) * LCOLS + col + x;
-	    if (Image->visible) {
+	    if (visible) {
 		drv_generic_graphic_FB[layer][i] = Image->bitmap[y * width + x];
 	    } else {
 		drv_generic_graphic_FB[layer][i] = BG_COL;
