@@ -1,4 +1,4 @@
-/* $Id: widget_timer.c,v 1.3 2006/07/31 03:48:09 reinelt Exp $
+/* $Id: widget_timer.c,v 1.4 2006/10/01 11:54:38 reinelt Exp $
  *
  * timer widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_timer.c,v $
+ * Revision 1.4  2006/10/01 11:54:38  reinelt
+ * timer widget uses properties
+ *
  * Revision 1.3  2006/07/31 03:48:09  reinelt
  * preparations for scrolling
  *
@@ -51,7 +54,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
-#include "evaluator.h"
+#include "property.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_timer.h"
@@ -64,35 +67,25 @@ void widget_timer_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_TIMER *Timer = W->data;
-    RESULT result = { 0, 0, 0, NULL };
-
+    int update, active;
+    
     /* evaluate expressions */
-    Timer->update = 10;
-    if (Timer->update_tree != NULL) {
-	Eval(Timer->update_tree, &result);
-	Timer->update = R2N(&result);
-	if (Timer->update < 10)
-	    Timer->update = 10;
-	DelResult(&result);
-    }
+    property_eval(&Timer->update);
+    property_eval(&Timer->active);
 
-    Timer->active = 1;
-    if (Timer->active_tree != NULL) {
-	Eval(Timer->active_tree, &result);
-	Timer->active = R2N(&result);
-	if (Timer->active < 0)
-	    Timer->active = 0;
-	DelResult(&result);
-    }
-
+    /* get new update interval */
+    update = P2N(&Timer->update);
+    if (update < 10)
+	update = 10;
+    
     /* finally, fire it! */
-    if (Timer->active) {
-	Eval(Timer->expr_tree, &result);
-	DelResult(&result);
+    active = P2N(&Timer->active);
+    if (active > 0) {
+	property_eval(&Timer->expression);
     }
 
     /* add a new one-shot timer */
-    timer_add(widget_timer_update, Self, Timer->update, 1);
+    timer_add(widget_timer_update, Self, update, 1);
 }
 
 
@@ -111,26 +104,10 @@ int widget_timer_init(WIDGET * Self)
     Timer = malloc(sizeof(WIDGET_TIMER));
     memset(Timer, 0, sizeof(WIDGET_TIMER));
 
-    /* get raw expressions (we evaluate them ourselves) */
-    Timer->expression = cfg_get_raw(section, "expression", NULL);
-    Timer->update_expr = cfg_get_raw(section, "update", "100");
-    Timer->active_expr = cfg_get_raw(section, "active", "1");
-
-    /* sanity checks */
-    if (Timer->expression == NULL || *Timer->expression == '\0') {
-	error("Timer '%s' has no expression, using '1'", Self->name);
-	Timer->expression = "1";
-    }
-    if (Timer->update_expr == NULL || *Timer->update_expr == '\0') {
-	error("Timer '%s' has no update, using '100'", Self->name);
-	Timer->update_expr = "100";
-    }
-
-    /* compile'em */
-    Compile(Timer->expression, &Timer->expr_tree);
-    Compile(Timer->update_expr, &Timer->update_tree);
-    Compile(Timer->active_expr, &Timer->active_tree);
-
+    /* load properties */
+    property_load(section, "expression", "1", &Timer->expression);
+    property_load(section, "update", "100", &Timer->update);
+    property_load(section, "active", "1", &Timer->active);
 
     free(section);
     Self->data = Timer;
@@ -149,9 +126,9 @@ int widget_timer_quit(WIDGET * Self)
 	if (Self->parent == NULL) {
 	    if (Self->data) {
 		WIDGET_TIMER *Timer = Self->data;
-		DelTree(Timer->expr_tree);
-		DelTree(Timer->update_tree);
-		DelTree(Timer->active_tree);
+		property_free(&Timer->expression);
+		property_free(&Timer->update);
+		property_free(&Timer->active);
 		free(Self->data);
 		Self->data = NULL;
 	    }

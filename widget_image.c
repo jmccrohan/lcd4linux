@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.12 2006/09/29 04:48:22 reinelt Exp $
+/* $Id: widget_image.c,v 1.13 2006/10/01 11:54:38 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.13  2006/10/01 11:54:38  reinelt
+ * timer widget uses properties
+ *
  * Revision 1.12  2006/09/29 04:48:22  reinelt
  * image widget uses properties now; new property 'reload'
  *
@@ -95,7 +98,6 @@
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
-#include "evaluator.h"
 #include "property.h"
 #include "timer.h"
 #include "widget.h"
