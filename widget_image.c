@@ -1,4 +1,4 @@
-/* $Id: widget_image.c,v 1.10 2006/09/07 09:06:25 reinelt Exp $
+/* $Id: widget_image.c,v 1.11 2006/09/28 04:08:33 reinelt Exp $
  *
  * image widget handling
  *
@@ -21,6 +21,9 @@
  *
  *
  * $Log: widget_image.c,v $
+ * Revision 1.11  2006/09/28 04:08:33  reinelt
+ * image widget memory leaks fixed (thanks to Magne Tørresen)
+ *
  * Revision 1.10  2006/09/07 09:06:25  reinelt
  * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
  *
@@ -110,25 +113,25 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
     if (Image->bitmap) {
 	int i;
 	for (i = 0; i < Image->height * Image->width; i++) {
-	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
-
+    
     if (Image->file == NULL || Image->file[0] == '\0') {
 	error("Warning: Image %s has no file", Name);
 	return;
     }
-
+    
     fd = fopen(Image->file, "rb");
     if (fd == NULL) {
 	error("Warning: Image %s: fopen(%s) failed: %s", Name, Image->file, strerror(errno));
 	return;
     }
-
+    
     gdImage = gdImageCreateFromPng(fd);
     fclose(fd);
-
+    
     if (fd == NULL) {
 	error("Warning: Image %s: CreateFromPng(%s) failed!", Name, Image->file);
 	return;
@@ -137,14 +140,12 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
     /* maybe resize bitmap */
     if (gdImage->sx > Image->width) {
 	Image->width = gdImage->sx;
-	if (Image->bitmap)
-	    free(Image->bitmap);
+	free(Image->bitmap);
 	Image->bitmap = NULL;
     }
     if (gdImage->sy > Image->height) {
 	Image->height = gdImage->sy;
-	if (Image->bitmap)
-	    free(Image->bitmap);
+	free(Image->bitmap);
 	Image->bitmap = NULL;
     }
     if (Image->bitmap == NULL && Image->width > 0 && Image->height > 0) {
@@ -155,11 +156,11 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    return;
 	}
 	for (i = 0; i < Image->height * Image->width; i++) {
-	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
-
+    
     /* finally really render it */
     if (Image->visible) {
 	for (x = 0; x < gdImage->sx; x++) {
@@ -181,6 +182,10 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    }
 	}
     }
+    
+    /* free image */
+    gdImageDestroy(gdImage);
+
 }
 
 
@@ -194,10 +199,9 @@ static void widget_image_update(void *Self)
     if (W->parent == NULL) {
 
 	/* evaluate expressions */
-	if (Image->file) {
-	    free(Image->file);
-	    Image->file = NULL;
-	}
+	free(Image->file);
+	Image->file = NULL;
+
 	if (Image->file_tree != NULL) {
 	    Eval(Image->file_tree, &result);
 	    Image->file = strdup(R2S(&result));
@@ -239,8 +243,9 @@ static void widget_image_update(void *Self)
 	W->class->draw(W);
 
     /* add a new one-shot timer */
-    timer_add(widget_image_update, Self, Image->update, 1);
-
+    if (Image->update > 0) {
+	timer_add(widget_image_update, Self, Image->update, 1);
+    }
 }
 
 
@@ -313,10 +318,8 @@ int widget_image_quit(WIDGET * Self)
 	if (Self->parent == NULL) {
 	    if (Self->data) {
 		WIDGET_IMAGE *Image = Self->data;
-		if (Image->bitmap)
-		    free(Image->bitmap);
-		if (Image->file)
-		    free(Image->file);
+		free(Image->bitmap);
+		free(Image->file);
 		DelTree(Image->file_tree);
 		DelTree(Image->update_tree);
 		DelTree(Image->visible_tree);
