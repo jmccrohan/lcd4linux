@@ -4,7 +4,8 @@
 # Created: 1993-05-16
 # Public domain
 
-# $Id: mkinstalldirs,v 1.2 2003/02/27 07:43:11 reinelt Exp $
+# $Id$
+# $URL$
 
 errstatus=0
 
