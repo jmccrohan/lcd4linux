@@ -224,7 +224,7 @@ test -z "$LD" && AC_MSG_ERROR([no acceptable ld found in \$PATH])
 AC_LIB_PROG_LD_GNU
 ])
 
-# lib-link.m4 serial 8 (gettext-0.15)
+# lib-link.m4 serial 9 (gettext-0.16)
 dnl Copyright (C) 2001-2006 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -424,9 +424,16 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" \
+               && { test -f "$additional_libdir/lib$name.$shlibext" \
+                    || { test "$shlibext" = dll \
+                         && test -f "$additional_libdir/lib$name.dll.a"; }; }; then
               found_dir="$additional_libdir"
-              found_so="$additional_libdir/lib$name.$shlibext"
+              if test -f "$additional_libdir/lib$name.$shlibext"; then
+                found_so="$additional_libdir/lib$name.$shlibext"
+              else
+                found_so="$additional_libdir/lib$name.dll.a"
+              fi
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
@@ -446,9 +453,16 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" \
+                     && { test -f "$dir/lib$name.$shlibext" \
+                          || { test "$shlibext" = dll \
+                               && test -f "$dir/lib$name.dll.a"; }; }; then
                     found_dir="$dir"
-                    found_so="$dir/lib$name.$shlibext"
+                    if test -f "$dir/lib$name.$shlibext"; then
+                      found_so="$dir/lib$name.$shlibext"
+                    else
+                      found_so="$dir/lib$name.dll.a"
+                    fi
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi

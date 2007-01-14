@@ -68,7 +68,7 @@ void widget_timer_update(void *Self)
     WIDGET *W = (WIDGET *) Self;
     WIDGET_TIMER *Timer = W->data;
     int update, active;
-    
+
     /* evaluate expressions */
     property_eval(&Timer->update);
     property_eval(&Timer->active);
@@ -77,7 +77,7 @@ void widget_timer_update(void *Self)
     update = P2N(&Timer->update);
     if (update < 10)
 	update = 10;
-    
+
     /* finally, fire it! */
     active = P2N(&Timer->active);
     if (active > 0) {

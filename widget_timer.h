@@ -43,9 +43,9 @@
 
 
 typedef struct WIDGET_TIMER {
-    PROPERTY expression; /* main timer expression */
-    PROPERTY update; /* update interval (msec) */
-    PROPERTY active; /* timer active? */
+    PROPERTY expression;	/* main timer expression */
+    PROPERTY update;		/* update interval (msec) */
+    PROPERTY active;		/* timer active? */
 } WIDGET_TIMER;
 
 extern WIDGET_CLASS Widget_Timer;
