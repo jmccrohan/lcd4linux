@@ -422,7 +422,7 @@ int drv_IMG_init(const char *section, const __attribute__ ((unused))
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.19 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_IMG_blit;

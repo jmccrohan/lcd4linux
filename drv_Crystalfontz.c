@@ -955,7 +955,7 @@ int drv_CF_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.47 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* start display */
     if ((ret = drv_CF_start(section)) != 0) {

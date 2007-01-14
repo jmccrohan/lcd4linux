@@ -625,7 +625,7 @@ int drv_BuE_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.17 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* start display */
     if ((ret = drv_BuE_start(section)) != 0) {

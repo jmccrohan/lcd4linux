@@ -270,7 +270,7 @@ int drv_LUIse_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.6 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_LUIse_blit;

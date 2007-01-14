@@ -511,7 +511,7 @@ int drv_G15_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.10 $");
+    info("%s: %s", Name, "$Rev$");
 
     DEBUG("entered");
 

@@ -593,7 +593,7 @@ int drv_M5_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.25 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* display preferences */
     XRES = -1;			/* pixel width of one char  */

@@ -284,7 +284,7 @@ int drv_SL_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.7 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

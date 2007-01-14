@@ -328,7 +328,7 @@ int drv_Noritake_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.8 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* start display */
     if ((ret = drv_Noritake_start(section)) != 0)

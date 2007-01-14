@@ -268,7 +268,7 @@ int drv_UH_init(const char *section, const int quiet)
     int ret;
     int i;
 
-    info("%s: %s", Name, "$Revision: 1.5 $");
+    info("%s: %s", Name, "$Rev$");
 
 
 

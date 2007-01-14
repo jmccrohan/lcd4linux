@@ -129,7 +129,7 @@ int drv_NULL_init(const char *section, const __attribute__ ((unused))
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.10 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* display preferences */
     XRES = 6;			/* pixel width of one char  */

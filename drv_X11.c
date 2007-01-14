@@ -315,7 +315,7 @@ int drv_X11_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.17 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* start display */
     if ((ret = drv_X11_start(section)) != 0)

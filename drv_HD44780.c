@@ -1245,7 +1245,7 @@ int drv_HD_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.64 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */

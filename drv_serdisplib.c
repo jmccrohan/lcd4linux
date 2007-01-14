@@ -284,7 +284,7 @@ int drv_SD_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Revision: 1.10 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_SD_blit;
