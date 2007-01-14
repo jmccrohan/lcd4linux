@@ -111,25 +111,28 @@ AC_TYPE_SSIZE_T
 AC_HEADER_TIME
 AC_TYPE_UID_T
 
+
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-AC_PROG_GCC_TRADITIONAL
 
 # uClibc has no getloadavg()
 # AC_FUNC_GETLOADAVG sounds promising, but does not really work
 #AC_FUNC_GETLOADAVG
 
-#removed for uClibc compatibility
+AC_PROG_GCC_TRADITIONAL
+
+# removed for uClibc compatibility
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
 
+AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([dup2 floor gethostbyname gettimeofday memset pow putenv regcomp socket sqrt strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strstr strtol uname])
+AC_CHECK_FUNCS([dup2 floor gethostbyname gettimeofday memmove memset pow putenv regcomp select socket sqrt strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strstr strtol strtoul uname])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
