@@ -1,4 +1,5 @@
-/* $Id: drv_LCDTerm.c,v 1.5 2006/01/30 06:25:52 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for the LCDTerm serial-to-HD44780 adapter boards
  * http://www.bobblick.com/techref/projects/lcdterm/lcdterm.html

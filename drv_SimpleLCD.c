@@ -1,4 +1,5 @@
-/* $Id: drv_SimpleLCD.c,v 1.7 2006/01/30 06:25:53 reinelt Exp $
+/* $Id$
+ * $URL$
  * 
  * driver for a simple serial terminal.
  * 

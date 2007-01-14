@@ -1,4 +1,5 @@
-/* $Id: plugin_iconv.c,v 1.3 2006/09/29 04:48:22 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * iconv charset conversion plugin
  *

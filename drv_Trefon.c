@@ -1,4 +1,5 @@
-/* $Id: drv_Trefon.c,v 1.7 2006/09/08 19:00:46 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for TREFON USB LCD displays - http://www.trefon.de
  *

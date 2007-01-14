@@ -1,4 +1,5 @@
-/* $Id: drv_WincorNixdorf.c,v 1.2 2006/01/30 06:25:54 reinelt Exp $
+/* $Id$
+ * $URL$
  * 
  * driver for WincorNixdorf serial cashier displays BA63 and BA66
  * 

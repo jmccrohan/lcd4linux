@@ -1,4 +1,5 @@
-/* $Id: drv_generic_serial.c,v 1.19 2006/09/14 03:49:14 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for serial and usbserial displays
  *

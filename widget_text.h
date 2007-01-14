@@ -1,4 +1,5 @@
-/* $Id: widget_text.h,v 1.10 2006/08/13 18:14:03 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * simple text widget handling
  *

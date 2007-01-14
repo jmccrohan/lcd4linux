@@ -1,4 +1,5 @@
-/* $Id: drv_Cwlinux.c,v 1.26 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for Cwlinux display modules
  *

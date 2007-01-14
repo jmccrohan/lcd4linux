@@ -1,4 +1,5 @@
-/* $Id: debug.c,v 1.13 2005/05/08 04:32:43 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * debug() and error() functions
  *

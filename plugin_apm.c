@@ -1,4 +1,5 @@
-/* $Id: plugin_apm.c,v 1.6 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for APM (battery status)
  *

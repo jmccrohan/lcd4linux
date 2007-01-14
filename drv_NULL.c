@@ -1,4 +1,5 @@
-/* $Id: drv_NULL.c,v 1.10 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * NULL driver (for testing)
  *

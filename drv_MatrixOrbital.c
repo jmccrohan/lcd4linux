@@ -1,4 +1,5 @@
-/* $Id: drv_MatrixOrbital.c,v 1.42 2006/01/30 06:25:53 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for Matrix Orbital serial display modules
  *

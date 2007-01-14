@@ -1,4 +1,5 @@
-/* $Id: plugin_meminfo.c,v 1.12 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for /proc/meminfo parsing
  *

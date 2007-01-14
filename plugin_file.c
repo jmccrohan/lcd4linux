@@ -1,4 +1,5 @@
-/* $Id: plugin_file.c,v 1.3 2006/09/13 05:33:39 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin to perform simple file operations
  *

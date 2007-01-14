@@ -1,4 +1,5 @@
-/* $Id: drv_Sample.c,v 1.8 2006/06/19 11:54:08 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * sample lcd4linux driver
  *

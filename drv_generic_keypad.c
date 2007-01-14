@@ -1,4 +1,5 @@
-/* $Id: drv_generic_keypad.c,v 1.3 2006/02/22 15:59:39 cmay Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for keypads
  *

@@ -1,4 +1,5 @@
-/* $Id: drv_LPH7508.c,v 1.10 2006/02/27 06:14:46 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for Pollin LPH7508
  *

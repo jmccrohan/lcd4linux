@@ -1,4 +1,5 @@
-/* $Id: plugin_statfs.c,v 1.2 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for statfs() syscall
  *

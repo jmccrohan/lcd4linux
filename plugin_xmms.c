@@ -1,4 +1,5 @@
-/* $Id: plugin_xmms.c,v 1.14 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * XMMS-Plugin for LCD4Linux
  * Copyright (C) 2003 Markus Keil <markus_keil@t-online.de>

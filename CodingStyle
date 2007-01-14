@@ -1,3 +1,7 @@
+$Id$
+$URL$
+
+
 LCD4Linux Coding Style
 
 We decided to use a common coding style to make patches and diffs 
@@ -16,7 +20,6 @@ indent -kr -l150
 There's a script called 'indent.sh' that comes with the LCD4Linux 
 source package; all it does is call indent with all .c and .h files.
 
-It is always a good idea to call 'indent.sh' before any CVS operation,
+It is always a good idea to call 'indent.sh' before any SVN operation,
 this ensures that diffs and updates won't get mixed up because of
 cosmetic changes.
-

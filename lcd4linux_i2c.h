@@ -1,4 +1,5 @@
-/* $Id: lcd4linux_i2c.h,v 1.4 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * user space i2c sturctures and defines, taken from the official kernel i2c 
  * includes to solve the problem when compiling user space application

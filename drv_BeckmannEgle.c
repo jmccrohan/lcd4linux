@@ -1,4 +1,5 @@
-/* $Id: drv_BeckmannEgle.c,v 1.17 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for Beckmann+Egle "Mini Terminals" and "Compact Terminals"
  * Copyright (C) 2000 Michael Reinelt <reinelt@eunet.at>

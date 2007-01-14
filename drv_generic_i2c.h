@@ -1,4 +1,5 @@
-/* $Id: drv_generic_i2c.h,v 1.8 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for i2c displays
  *

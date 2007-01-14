@@ -1,4 +1,5 @@
-/* $Id: drv_G15.c,v 1.10 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * Driver for Logitech G-15 keyboard LCD screen
  *

@@ -1,4 +1,5 @@
-/* $Id: plugin_imon.c,v 1.17 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * imond/telmond data processing
  *

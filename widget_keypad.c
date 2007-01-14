@@ -1,4 +1,5 @@
-/* $Id: widget_keypad.c,v 1.3 2006/07/19 01:35:31 cmay Exp $
+/* $Id$
+ * $URL$
  *
  * keypad widget handling
  *

@@ -1,4 +1,5 @@
-/* $Id: font_6x8.h,v 1.4 2006/08/14 19:24:22 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * 6x8 font
  *

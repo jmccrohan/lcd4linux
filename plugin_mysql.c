@@ -1,4 +1,5 @@
-/* $Id: plugin_mysql.c,v 1.11 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for execute SQL queries into a MySQL DBSM.
  *

@@ -1,4 +1,5 @@
-/* $Id: drv_LUIse.c,v 1.6 2006/04/09 14:17:50 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * LUIse lcd4linux driver
  *

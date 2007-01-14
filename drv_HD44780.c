@@ -1,4 +1,5 @@
-/* $Id: drv_HD44780.c,v 1.64 2006/08/10 20:40:46 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for HD44780-based displays
  *

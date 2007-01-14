@@ -1,4 +1,5 @@
-/* $Id: plugin_proc_stat.c,v 1.26 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for /proc/stat parsing
  *

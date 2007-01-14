@@ -1,4 +1,5 @@
-/* $Id: evaluator.c,v 1.33 2006/09/29 04:48:22 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * expression evaluation
  *

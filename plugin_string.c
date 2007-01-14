@@ -1,4 +1,5 @@
-/* $Id: plugin_string.c,v 1.11 2006/07/31 03:48:09 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * string plugin
  *

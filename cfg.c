@@ -1,4 +1,6 @@
-/* $Id: cfg.c,v 1.49 2006/02/07 05:36:13 reinelt Exp $^
+/* $Id$
+ * $URL$
+ * $URL$
  *
  * config file stuff
  *

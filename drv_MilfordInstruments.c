@@ -1,4 +1,5 @@
-/* $Id: drv_MilfordInstruments.c,v 1.15 2006/01/30 06:25:53 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for Milford Instruments 'BPK' piggy-back serial interface board
  * for standard Hitachi 44780 compatible lcd modules.

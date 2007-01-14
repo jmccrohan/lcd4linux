@@ -1,4 +1,5 @@
-/* $Id: layout.h,v 1.5 2006/02/27 07:53:52 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new layouter framework
  *

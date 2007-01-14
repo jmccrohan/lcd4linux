@@ -1,4 +1,5 @@
-/* $Id: plugin_sample.c,v 1.11 2005/11/04 04:53:10 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin template
  *

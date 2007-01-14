@@ -1,4 +1,5 @@
-/* $Id: widget_timer.h,v 1.3 2006/10/01 11:54:38 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * timer widget handling
  *

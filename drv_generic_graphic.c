@@ -1,4 +1,5 @@
-/* $Id: drv_generic_graphic.c,v 1.35 2006/09/29 04:48:22 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for graphic displays
  *

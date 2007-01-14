@@ -1,4 +1,5 @@
-/* $Id: widget.c,v 1.26 2006/08/09 17:25:34 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * generic widget handling
  *

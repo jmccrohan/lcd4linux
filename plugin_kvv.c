@@ -1,4 +1,5 @@
-/* $Id: plugin_kvv.c,v 1.7 2006/08/23 17:45:37 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * plugin kvv (karlsruher verkehrsverbund)
  *

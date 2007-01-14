@@ -1,4 +1,5 @@
-/* $Id: widget_icon.h,v 1.9 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * icon widget handling
  *

@@ -1,4 +1,5 @@
-/* $Id: rgb.c,v 1.1 2006/01/30 05:47:38 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic color handling
  *

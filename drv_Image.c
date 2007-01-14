@@ -1,4 +1,5 @@
-/* $Id: drv_Image.c,v 1.19 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style Image (PPM/PNG) Driver for LCD4Linux 
  *

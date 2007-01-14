@@ -1,4 +1,5 @@
-/* $Id: udelay.c,v 1.23 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * short delays
  *

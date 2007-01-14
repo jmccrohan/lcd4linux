@@ -1,4 +1,5 @@
-/* $Id: drv_LCDLinux.c,v 1.14 2006/07/12 20:47:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for the LCD-Linux HD44780 kernel driver
  * http://lcd-linux.sourceforge.net

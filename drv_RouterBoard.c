@@ -1,4 +1,5 @@
-/* $Id: drv_RouterBoard.c,v 1.7 2006/01/30 06:25:53 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for the "Router Board LCD port" 
  * see port details at http://www.routerboard.com

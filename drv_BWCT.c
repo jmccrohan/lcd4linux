@@ -1,4 +1,5 @@
-/* $Id: drv_BWCT.c,v 1.6 2006/01/30 06:25:48 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for BWCT USB LCD displays
  *

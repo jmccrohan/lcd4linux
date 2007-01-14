@@ -1,4 +1,5 @@
-/* $Id: plugin.h,v 1.4 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin handler for the Evaluator
  *

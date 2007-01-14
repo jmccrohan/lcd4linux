@@ -1,4 +1,5 @@
-/* $Id: udelay.h,v 1.12 2006/09/13 20:07:59 entropy Exp $
+/* $Id$
+ * $URL$
  *
  * short delays 
  *

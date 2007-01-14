@@ -1,4 +1,5 @@
-/* $Id: drv_X11.c,v 1.17 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style X11 Driver for LCD4Linux 
  *

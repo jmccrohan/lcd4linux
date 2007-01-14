@@ -1,4 +1,5 @@
-/* $Id: thread.h,v 1.9 2006/09/14 03:49:14 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * thread handling (mutex, shmem, ...)
  *

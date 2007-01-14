@@ -1,4 +1,5 @@
-/* $Id: widget_bar.h,v 1.10 2006/08/13 06:46:51 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * bar widget handling
  *

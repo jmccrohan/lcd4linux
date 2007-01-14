@@ -1,4 +1,5 @@
-/* $Id: widget.h,v 1.22 2006/08/14 05:54:04 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic widget handling
  *

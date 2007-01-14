@@ -1,4 +1,5 @@
-/* $Id: widget_icon.c,v 1.23 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * icon widget handling
  *

@@ -1,4 +1,5 @@
-/* $Id: property.c,v 1.3 2006/08/13 18:14:03 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * dynamic properties
  *

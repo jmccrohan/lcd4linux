@@ -1,4 +1,5 @@
-/* $Id: debug.h,v 1.11 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * debug messages
  *

@@ -1,4 +1,5 @@
-/* $Id: widget_bar.c,v 1.19 2006/08/09 17:25:34 harbaum Exp $
+/* $Id$
+ * $URL$
  *
  * bar widget handling
  *

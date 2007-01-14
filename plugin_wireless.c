@@ -1,4 +1,5 @@
-/* $Id: plugin_wireless.c,v 1.9 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * Wireless Extension plugin
  *

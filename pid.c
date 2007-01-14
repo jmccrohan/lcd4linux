@@ -1,4 +1,5 @@
-/* $Id: pid.c,v 1.10 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * PID file handling
  *

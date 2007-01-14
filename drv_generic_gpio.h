@@ -1,4 +1,5 @@
-/* $Id: drv_generic_gpio.h,v 1.2 2006/01/03 06:13:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for GPIO's
  *

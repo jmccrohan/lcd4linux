@@ -1,4 +1,5 @@
-/* $Id: drv_M50530.c,v 1.25 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for M50530-based displays
  *

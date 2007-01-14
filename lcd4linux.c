@@ -1,4 +1,6 @@
-/* $Id: lcd4linux.c,v 1.84 2006/09/14 11:19:29 entropy Exp $
+/* $Id$
+ * $URL$
+ * $URL$
  *
  * LCD4Linux
  *

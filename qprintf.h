@@ -1,4 +1,5 @@
-/* $Id: qprintf.h,v 1.5 2005/01/18 06:30:23 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * simple but quick snprintf() replacement
  *

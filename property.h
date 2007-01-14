@@ -1,4 +1,5 @@
-/* $Id: property.h,v 1.3 2006/08/14 05:54:04 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * dynamic properties
  *

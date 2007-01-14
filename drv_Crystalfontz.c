@@ -1,4 +1,5 @@
-/* $Id: drv_Crystalfontz.c,v 1.47 2006/09/14 03:49:14 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for Crystalfontz display modules
  *

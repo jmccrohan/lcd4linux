@@ -1,4 +1,5 @@
-/* $Id: drv_Noritake.c,v 1.8 2006/02/27 08:12:34 reinelt Exp $
+/* $Id$
+ * $URL$
  * 
  * Driver for a Noritake GU128x32-311 graphical display.
  * 

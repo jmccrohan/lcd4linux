@@ -1,4 +1,5 @@
-/* $Id: plugin_i2c_sensors.c,v 1.26 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * I2C sensors plugin
  *

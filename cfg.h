@@ -1,4 +1,5 @@
-/* $Id: cfg.h,v 1.13 2005/05/08 04:32:43 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * config file stuff
  *

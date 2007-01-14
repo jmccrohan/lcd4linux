@@ -1,4 +1,5 @@
-/* $Id: plugin.c,v 1.47 2006/09/19 11:20:52 entropy Exp $
+/* $Id$
+ * $URL$
  *
  * plugin handler for the Evaluator
  *

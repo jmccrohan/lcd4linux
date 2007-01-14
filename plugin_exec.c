@@ -1,4 +1,5 @@
-/* $Id: plugin_exec.c,v 1.12 2006/07/12 21:01:41 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * plugin for external processes
  *

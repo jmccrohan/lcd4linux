@@ -1,4 +1,5 @@
-/* $Id: timer.h,v 1.6 2005/05/08 04:32:45 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic timer handling
  *

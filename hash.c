@@ -1,4 +1,5 @@
-/* $Id: hash.c,v 1.26 2005/05/08 04:32:44 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * hashes (associative arrays)
  *

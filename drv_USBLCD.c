@@ -1,4 +1,5 @@
-/* $Id: drv_USBLCD.c,v 1.25 2006/09/08 19:00:46 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for USBLCD displays
  *

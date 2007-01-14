@@ -1,4 +1,5 @@
-/* $Id: drv_generic.c,v 1.7 2006/08/13 09:53:10 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper
  *

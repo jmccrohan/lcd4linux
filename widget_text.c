@@ -1,4 +1,5 @@
-/* $Id: widget_text.c,v 1.29 2006/09/29 04:48:22 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * simple text widget handling
  *

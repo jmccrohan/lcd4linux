@@ -1,4 +1,5 @@
-/* $Id: drv_generic_gpio.c,v 1.4 2006/01/05 18:56:57 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for GPO's
  *

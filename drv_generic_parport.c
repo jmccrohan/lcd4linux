@@ -1,4 +1,5 @@
-/* $Id: drv_generic_parport.c,v 1.21 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for serial and parport access
  *

@@ -1,4 +1,5 @@
-/* $Id: drv.h,v 1.10 2005/05/08 04:32:43 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new framework for display drivers
  *

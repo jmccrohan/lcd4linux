@@ -1,4 +1,5 @@
-/* $Id: drv_generic_parport.h,v 1.12 2005/12/12 05:52:03 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for parallel port displays
  *

@@ -1,4 +1,5 @@
-/* $Id: drv_LCD2USB.c,v 1.11 2006/07/19 01:35:31 cmay Exp $
+/* $Id$
+ * $URL$
  *
  * driver for USB2LCD display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics

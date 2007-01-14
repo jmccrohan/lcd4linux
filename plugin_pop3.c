@@ -1,4 +1,5 @@
-/* $Id: plugin_pop3.c,v 1.10 2006/02/25 13:36:33 geronet Exp $
+/* $Id$
+ * $URL$
  *
  * Plugin to check POP3 mail accounts
  *

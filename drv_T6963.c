@@ -1,4 +1,5 @@
-/* $Id: drv_T6963.c,v 1.23 2006/08/16 14:18:14 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for T6963-based displays
  *

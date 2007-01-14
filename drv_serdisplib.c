@@ -1,4 +1,5 @@
-/* $Id: drv_serdisplib.c,v 1.10 2006/02/27 08:12:34 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * driver for serdisplib displays
  *

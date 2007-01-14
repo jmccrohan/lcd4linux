@@ -1,4 +1,5 @@
-/* $Id: plugin_mpd.c,v 1.1 2006/04/15 05:22:52 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * mpd informations
  *

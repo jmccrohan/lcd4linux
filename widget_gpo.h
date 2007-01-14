@@ -1,4 +1,5 @@
-/* $Id: widget_gpo.h,v 1.1 2005/12/18 16:18:36 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * GPO widget handling
  *

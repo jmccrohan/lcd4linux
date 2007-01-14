@@ -1,4 +1,5 @@
-/* $Id: drv_generic_text.c,v 1.36 2006/07/31 03:48:09 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * generic driver helper for text-based displays
  *

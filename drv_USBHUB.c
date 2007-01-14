@@ -1,4 +1,5 @@
-/* $Id: drv_USBHUB.c,v 1.5 2006/09/07 09:06:25 reinelt Exp $
+/* $Id$
+ * $URL$
  *
  * new style driver for USBLCD displays
  *
