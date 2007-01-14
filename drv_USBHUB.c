@@ -24,24 +24,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_USBHUB.c,v $
- * Revision 1.5  2006/09/07 09:06:25  reinelt
- * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
- *
- * Revision 1.4  2006/08/14 19:24:22  harbaum
- * Umlaut support, added KVV HTTP-User-Agent
- *
- * Revision 1.3  2006/08/14 05:54:04  reinelt
- * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
- *
- * Revision 1.2  2006/08/13 06:46:51  reinelt
- * T6963 soft-timing & enhancements; indent
- *
- * Revision 1.1  2006/08/08 19:35:22  reinelt
- * USBHUB driver from Ernst Bachmann
- *
- *
  */
 
 /* 

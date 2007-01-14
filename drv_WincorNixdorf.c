@@ -25,14 +25,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Log: drv_WincorNixdorf.c,v $
- * Revision 1.2  2006/01/30 06:25:54  reinelt
- * added CVS Revision
- *
- * Revision 1.1  2005/08/22 05:44:43  reinelt
- * new driver 'WincorNixdorf'
- * some fixes to the bar code
- *
  */
 
 /* 

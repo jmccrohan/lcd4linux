@@ -22,58 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic_graphic.h,v $
- * Revision 1.13  2006/07/31 03:48:09  reinelt
- * preparations for scrolling
- *
- * Revision 1.12  2006/02/27 06:14:46  reinelt
- * graphic bug resulting in all black pixels solved
- *
- * Revision 1.11  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
- * Revision 1.10  2006/01/03 06:13:46  reinelt
- * GPIO's for MatrixOrbital
- *
- * Revision 1.9  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.8  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.7  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.6  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.5  2004/06/20 10:09:55  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.4  2004/06/08 21:46:38  reinelt
- *
- * splash screen for X11 driver (and generic graphic driver)
- *
- * Revision 1.3  2004/06/01 06:45:30  reinelt
- *
- * some Fixme's processed
- * documented some code
- *
- * Revision 1.2  2004/02/18 06:39:20  reinelt
- * T6963 driver for graphic displays finished
- *
- * Revision 1.1  2004/02/15 21:43:43  reinelt
- * T6963 driver nearly finished
- * framework for graphic displays done
- * i2c_sensors patch from Xavier
- * some more old generation files removed
- *
  */
 
 

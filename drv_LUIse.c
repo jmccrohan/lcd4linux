@@ -22,26 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_LUIse.c,v $
- * Revision 1.6  2006/04/09 14:17:50  reinelt
- * autoconf/library fixes, image and graphic display inversion
- *
- * Revision 1.5  2006/03/10 18:06:52  tooly-bln
- * replace drv_generic_graphic_FB with drv_generic_graphic_black
- *
- * Revision 1.4  2006/02/08 04:55:05  reinelt
- * moved widget registration to drv_generic_graphic
- *
- * Revision 1.3  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.2  2006/01/06 16:56:49  tooly-bln
- * *** empty log message ***
- *
- * Revision 1.1  2006/01/03 13:20:06  reinelt
- * LUIse driver added
- *
  */
 
 /* 

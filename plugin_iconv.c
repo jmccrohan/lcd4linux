@@ -22,18 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_iconv.c,v $
- * Revision 1.3  2006/09/29 04:48:22  reinelt
- * image widget uses properties now; new property 'reload'
- *
- * Revision 1.2  2006/09/15 19:06:47  entropy
- * debug spam reduced, comment typo fixed
- *
- * Revision 1.1  2006/09/15 19:00:50  entropy
- * iconv charset converter plugin
- *
- *
  */
 
 /* 

@@ -22,32 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_Sample.c,v $
- * Revision 1.8  2006/06/19 11:54:08  reinelt
- * removed dependency to usb.h from sample driver
- *
- * Revision 1.7  2006/02/27 06:14:46  reinelt
- * graphic bug resulting in all black pixels solved
- *
- * Revision 1.6  2006/02/08 04:55:05  reinelt
- * moved widget registration to drv_generic_graphic
- *
- * Revision 1.5  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.4  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
- * Revision 1.3  2006/01/05 18:56:57  reinelt
- * more GPO stuff
- *
- * Revision 1.2  2005/12/19 05:08:31  reinelt
- * GPO's added to the Sample driver
- *
- * Revision 1.1  2005/11/04 14:10:38  reinelt
- * drv_Sample and drv_LPH7508
- *
  */
 
 /* 

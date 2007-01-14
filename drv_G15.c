@@ -23,38 +23,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_G15.c,v $
- * Revision 1.10  2006/08/13 06:46:51  reinelt
- * T6963 soft-timing & enhancements; indent
- *
- * Revision 1.9  2006/07/12 21:01:41  reinelt
- * thread_destroy, minor cleanups
- *
- * Revision 1.8  2006/07/12 20:47:51  reinelt
- * indent
- *
- * Revision 1.7  2006/07/12 20:45:30  reinelt
- * G15 and thread patch by Anton
- *
- * Revision 1.6  2006/02/27 06:14:46  reinelt
- * graphic bug resulting in all black pixels solved
- *
- * Revision 1.5  2006/02/08 04:55:03  reinelt
- * moved widget registration to drv_generic_graphic
- *
- * Revision 1.4  2006/01/30 06:25:49  reinelt
- * added CVS Revision
- *
- * Revision 1.3  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
- * Revision 1.2  2006/01/21 17:43:25  reinelt
- * minor cosmetic fixes
- *
- * Revision 1.1  2006/01/21 13:26:44  reinelt
- * Logitech G-15 keyboard LCD driver from Dave Ingram
- *
  */
 
 /* 

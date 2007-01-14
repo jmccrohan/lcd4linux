@@ -25,32 +25,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_apm.c,v $
- * Revision 1.6  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.5  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.4  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.3  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.2  2004/06/17 06:23:43  reinelt
- *
- * hash handling rewritten to solve performance issues
- *
- * Revision 1.1  2004/03/14 07:11:42  reinelt
- * parameter count fixed for plugin_dvb()
- * plugin_APM (battery status) ported
- *
  */
 
 /* 

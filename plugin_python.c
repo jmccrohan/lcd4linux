@@ -22,27 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_python.c,v $
- * Revision 1.4  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.3  2005/05/04 05:22:12  reinelt
- * * replaced fprintf(stderr,...  with error()
- * * corrected a "dangling reference" memory problem
- * * removed some PyErr_Print() spam
- * * fixed a segmentation fault that occured when python module was not
- * found
- * * improved error messages
- *
- * Revision 1.2  2005/05/03 11:13:24  reinelt
- * rearranged autoconf a bit,
- * libX11 will be linked only if really needed (i.e. when the X11 driver has been selected)
- * plugin_python filled with life
- *
- * Revision 1.1  2005/05/02 10:29:20  reinelt
- * preparations for python bindings and python plugin
- *
  */
 
 /* 

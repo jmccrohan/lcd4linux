@@ -22,18 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic_keypad.c,v $
- * Revision 1.3  2006/02/22 15:59:39  cmay
- * removed KEYPADSIZE cruft per harbaum's suggestion
- *
- * Revision 1.2  2006/02/21 15:55:59  cmay
- * removed new update function for keypad, consolidated it with draw
- *
- * Revision 1.1  2006/02/21 05:50:34  reinelt
- * keypad support from Cris Maj
- *
- *
  */
 
 #include <stdio.h>

@@ -22,38 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_serdisplib.c,v $
- * Revision 1.10  2006/02/27 08:12:34  reinelt
- * use serdisplib's full color support
- *
- * Revision 1.9  2006/02/27 06:14:46  reinelt
- * graphic bug resulting in all black pixels solved
- *
- * Revision 1.8  2006/02/08 04:55:05  reinelt
- * moved widget registration to drv_generic_graphic
- *
- * Revision 1.7  2006/01/30 06:25:54  reinelt
- * added CVS Revision
- *
- * Revision 1.6  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
- * Revision 1.5  2005/05/28 09:06:14  reinelt
- * serdisplib cosmetics
- *
- * Revision 1.4  2005/05/12 14:55:47  reinelt
- * plugins for serdisplib driver
- *
- * Revision 1.3  2005/05/12 05:52:43  reinelt
- * serdisplib GET_VERSION_MAJOR macro
- *
- * Revision 1.2  2005/05/11 04:27:49  reinelt
- * small serdisplib bugs fixed
- *
- * Revision 1.1  2005/05/10 13:20:14  reinelt
- * added serdisplib driver
- *
  */
 
 /* 

@@ -22,17 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: property.c,v $
- * Revision 1.3  2006/08/13 18:14:03  harbaum
- * Added KVV plugin
- *
- * Revision 1.2  2006/08/13 11:38:20  reinelt
- * text widget uses dynamic properties
- *
- * Revision 1.1  2006/08/13 09:53:10  reinelt
- * dynamic properties added (used by 'style' of text widget)
- *
  */
 
 

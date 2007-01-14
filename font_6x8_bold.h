@@ -22,17 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: font_6x8_bold.h,v $
- * Revision 1.3  2006/08/14 19:24:22  harbaum
- * Umlaut support, added KVV HTTP-User-Agent
- *
- * Revision 1.2  2006/08/13 18:14:03  harbaum
- * Added KVV plugin
- *
- * Revision 1.1  2006/08/09 17:25:34  harbaum
- * Better bar color support and new bold font
- *
  */
 
 #define ______ 0x00

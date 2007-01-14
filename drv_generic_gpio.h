@@ -22,14 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic_gpio.h,v $
- * Revision 1.2  2006/01/03 06:13:45  reinelt
- * GPIO's for MatrixOrbital
- *
- * Revision 1.1  2005/12/18 16:18:36  reinelt
- * GPO's added again
- *
  */
 
 

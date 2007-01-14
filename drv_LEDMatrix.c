@@ -22,39 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_LEDMatrix.c,v $
- * Revision 1.10  2006/09/07 09:06:25  reinelt
- * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
- *
- * Revision 1.9  2006/08/14 19:24:22  harbaum
- * Umlaut support, added KVV HTTP-User-Agent
- *
- * Revision 1.8  2006/08/14 05:54:04  reinelt
- * minor warnings fixed, CFLAGS changed (no-strict-aliasing)
- *
- * Revision 1.7  2006/08/13 18:45:25  harbaum
- * Little cleanup ...
- *
- * Revision 1.6  2006/08/13 18:14:03  harbaum
- * Added KVV plugin
- *
- * Revision 1.5  2006/08/13 09:53:10  reinelt
- * dynamic properties added (used by 'style' of text widget)
- *
- * Revision 1.4  2006/08/13 06:46:51  reinelt
- * T6963 soft-timing & enhancements; indent
- *
- * Revision 1.3  2006/08/09 17:25:34  harbaum
- * Better bar color support and new bold font
- *
- * Revision 1.2  2006/08/08 20:16:28  harbaum
- * Added "extracolor" (used for e.g. bar border) and RGB support for LEDMATRIX
- *
- * Revision 1.1  2006/08/05 21:08:01  harbaum
- * New LEDMATRIX driver (see http://www.harbaum.org/till/ledmatrix)
- *
- *
  */
 
 /* 

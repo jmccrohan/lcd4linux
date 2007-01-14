@@ -25,61 +25,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_Curses.c,v $
- * Revision 1.14  2006/09/07 09:06:25  reinelt
- * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
- *
- * Revision 1.13  2006/07/19 01:48:11  cmay
- * Ran indent.sh to make pretty code.
- *
- * Revision 1.12  2006/07/19 01:35:31  cmay
- * Renamed keypad direction names to avoid conflict with Curses library defs.
- * Added keypad support to Curses display driver.
- *
- * Revision 1.11  2006/01/30 06:25:49  reinelt
- * added CVS Revision
- *
- * Revision 1.10  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.9  2005/01/18 06:30:22  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.8  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.7  2004/06/26 09:27:20  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.6  2004/06/20 10:09:54  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.5  2004/06/06 06:51:59  reinelt
- *
- * do not display end splash screen if quiet=1
- *
- * Revision 1.4  2004/06/05 06:41:39  reinelt
- *
- * chancged splash screen again
- *
- * Revision 1.3  2004/06/05 06:13:11  reinelt
- *
- * splash screen for all text-based display drivers
- *
- * Revision 1.2  2004/06/02 09:41:19  reinelt
- *
- * prepared support for startup splash screen
- *
- * Revision 1.1  2004/05/26 11:37:36  reinelt
- *
- * Curses driver ported.
- *
  */
 
 /* 

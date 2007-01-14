@@ -22,20 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: pid.h,v $
- * Revision 1.4  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.3  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.2  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
- *
- * Revision 1.1  2003/08/08 08:05:23  reinelt
- * added PID file handling
- *
  */
 
 #ifndef _PID_H_

@@ -22,30 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_kvv.c,v $
- * Revision 1.7  2006/08/23 17:45:37  harbaum
- * Umlaut translation bugfix
- *
- * Revision 1.6  2006/08/17 19:11:41  harbaum
- * Small plugin_kvv bugfixes and new abbreviate option
- *
- * Revision 1.5  2006/08/16 14:18:14  reinelt
- * T6963 enhancements: soft timing, DualScan, Cell size
- *
- * Revision 1.4  2006/08/15 17:28:27  harbaum
- * Cleaned up thread and error handling
- *
- * Revision 1.3  2006/08/14 19:24:22  harbaum
- * Umlaut support, added KVV HTTP-User-Agent
- *
- * Revision 1.2  2006/08/13 18:45:25  harbaum
- * Little cleanup ...
- *
- * Revision 1.1  2006/08/13 18:14:03  harbaum
- * Added KVV plugin
- *
- *
  */
 
 /* 

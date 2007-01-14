@@ -20,20 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: widget_timer.c,v $
- * Revision 1.4  2006/10/01 11:54:38  reinelt
- * timer widget uses properties
- *
- * Revision 1.3  2006/07/31 03:48:09  reinelt
- * preparations for scrolling
- *
- * Revision 1.2  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.1  2006/01/23 06:17:18  reinelt
- * timer widget added
- *
  */
 
 /* 

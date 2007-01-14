@@ -23,50 +23,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_LCDLinux.c,v $
- * Revision 1.14  2006/07/12 20:47:51  reinelt
- * indent
- *
- * Revision 1.13  2006/04/17 08:10:42  reinelt
- * LCDLinux patch from Mattia; widget_image moved to EXTRA_SOURCE
- *
- * Revision 1.12  2006/01/30 06:25:52  reinelt
- * added CVS Revision
- *
- * Revision 1.11  2006/01/18 11:49:48  reinelt
- * adopted to lcd-linux-0.9.2
- *
- * Revision 1.10  2005/08/27 07:02:25  reinelt
- * LCD-Linux updated to 0.9.0
- *
- * Revision 1.9  2005/06/15 05:24:35  reinelt
- * updated LCD-Linux driver to version 0.8.9
- *
- * Revision 1.8  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.7  2005/05/02 05:15:46  reinelt
- * make busy-flag checking configurable for LCD-Linux driver
- *
- * Revision 1.6  2005/04/30 06:02:09  reinelt
- * LCD-Linux display size set up from lcd4linux.conf
- *
- * Revision 1.5  2005/04/09 07:36:42  reinelt
- * updated LCD-Linux driver to version 0.8.8
- *
- * Revision 1.4  2005/02/24 07:06:48  reinelt
- * SimpleLCD driver added
- *
- * Revision 1.3  2005/02/24 06:51:40  reinelt
- * LCD-Linux driver GOTO_COST corrected
- *
- * Revision 1.2  2005/01/30 06:43:22  reinelt
- * driver for LCD-Linux finished
- *
- * Revision 1.1  2005/01/22 22:57:57  reinelt
- * LCD-Linux driver added
- *
  */
 
 /* 

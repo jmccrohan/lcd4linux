@@ -21,47 +21,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: pid.c,v $
- * Revision 1.10  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.9  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.8  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.7  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.6  2004/03/19 06:37:47  reinelt
- * asynchronous thread handling started
- *
- * Revision 1.5  2004/03/03 04:44:16  reinelt
- * changes (cosmetics?) to the big patch from Martin
- * hash patch un-applied
- *
- * Revision 1.4  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.3  2004/01/29 04:40:02  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.2  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
- *
- * Revision 1.1  2003/08/08 08:05:23  reinelt
- * added PID file handling
- *
  */
 
 /* 

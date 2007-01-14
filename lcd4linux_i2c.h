@@ -31,25 +31,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: lcd4linux_i2c.h,v $
- * Revision 1.4  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.3  2005/07/06 04:40:18  reinelt
- * GCC-4 fixes
- *
- * Revision 1.2  2005/06/01 12:09:13  reinelt
- * removed ^M from lcd4linux_i2c.h; indent.sh run
- *
- * Revision 1.1  2005/05/31 20:42:55  lfcorreia
- * new file: lcd4linux_i2c.h
- * avoid the problems detecting the proper I2C kernel include files
- *
- * rearrange all the other autoconf stuff to remove I2C detection
- *
- * new method by Paul Kamphuis to write to the I2C device
- *
  */
 
 #ifndef _LCD4LINUX_I2C_H

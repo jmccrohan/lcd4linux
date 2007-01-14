@@ -22,20 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic.c,v $
- * Revision 1.7  2006/08/13 09:53:10  reinelt
- * dynamic properties added (used by 'style' of text widget)
- *
- * Revision 1.6  2006/08/13 06:46:51  reinelt
- * T6963 soft-timing & enhancements; indent
- *
- * Revision 1.5  2006/08/09 17:25:34  harbaum
- * Better bar color support and new bold font
- *
- * Revision 1.4  2006/07/31 03:48:09  reinelt
- * preparations for scrolling
- *
  */
 
 /* 

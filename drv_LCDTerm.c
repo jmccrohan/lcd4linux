@@ -23,23 +23,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_LCDTerm.c,v $
- * Revision 1.5  2006/01/30 06:25:52  reinelt
- * added CVS Revision
- *
- * Revision 1.4  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.3  2005/01/22 22:57:57  reinelt
- * LCD-Linux driver added
- *
- * Revision 1.2  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.1  2005/01/15 13:13:57  reinelt
- * LCDTerm driver added, take 2
- *
  */
 
 /* 

@@ -22,41 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_mysql.c,v $
- * Revision 1.11  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.10  2006/01/20 15:58:05  reinelt
- * MySQL::count() added again
- *
- * Revision 1.9  2006/01/20 15:43:25  reinelt
- * MySQL::query() returns a value, not the number of rows
- *
- * Revision 1.8  2006/01/16 15:39:58  reinelt
- * MySQL::queryvalue() extension from Harald Klemm
- *
- * Revision 1.7  2005/06/06 09:24:07  reinelt
- * two bugs in plugin_mysql.c fixed
- *
- * Revision 1.6  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.5  2005/04/01 05:16:04  reinelt
- * moved plugin init stuff to a seperate function called on first use
- *
- * Revision 1.4  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.3  2004/03/21 22:05:53  reinelt
- * MySQL plugin fixes from Javi
- *
- * Revision 1.2  2004/03/20 23:09:01  reinelt
- * MySQL plugin fixes from Javi
- *
- * Revision 1.1  2004/03/10 07:16:15  reinelt
- * MySQL plugin from Javier added
- *
  */
 
 /* DOC:

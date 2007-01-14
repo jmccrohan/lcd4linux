@@ -22,33 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_uname.c,v $
- * Revision 1.6  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.5  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.4  2005/01/09 10:53:24  reinelt
- * small type in plugin_uname fixed
- * new homepage lcd4linux.bulix.org
- *
- * Revision 1.3  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.2  2004/01/29 04:40:02  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.1  2004/01/14 11:33:00  reinelt
- * new plugin 'uname' which does what it's called
- * text widget nearly finished
- * first results displayed on MatrixOrbital
- *
  */
 
 /* 

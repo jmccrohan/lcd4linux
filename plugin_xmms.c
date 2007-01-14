@@ -20,60 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_xmms.c,v $
- * Revision 1.14  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.13  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.12  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.11  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.10  2004/06/17 06:23:43  reinelt
- *
- * hash handling rewritten to solve performance issues
- *
- * Revision 1.9  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.8  2004/02/05 23:58:18  mkeil
- * Fixed/Optimized Hashage-timings
- *
- * Revision 1.7  2004/01/29 04:40:02  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.6  2004/01/21 11:31:23  reinelt
- * two bugs with hash_age() ixed
- *
- * Revision 1.5  2004/01/21 10:48:17  reinelt
- * hash_age function added
- *
- * Revision 1.4  2004/01/16 11:12:26  reinelt
- * some bugs in plugin_xmms fixed, parsing moved to own function
- * plugin_proc_stat nearly finished
- *
- * Revision 1.3  2004/01/16 10:09:49  mkeil
- *   -include caching for values
- *
- * Revision 1.2  2004/01/06 22:33:14  reinelt
- * Copyright statements cleaned up
- *
- * Revision 1.1  2003/12/19 06:27:33  reinelt
- * added XMMS plugin from Markus Keil
- *
  */
 
 /* 

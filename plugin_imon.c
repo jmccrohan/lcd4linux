@@ -21,69 +21,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_imon.c,v $
- * Revision 1.17  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.16  2005/04/04 20:11:14  nicowallmeier
- * to be compatible with gcc 2.95
- *
- * Revision 1.15  2005/04/01 05:16:04  reinelt
- * moved plugin init stuff to a seperate function called on first use
- *
- * Revision 1.14  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.13  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.12  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.11  2004/06/24 20:18:08  nicowallmeier
- * minor bugfix
- *
- * Revision 1.10  2004/06/20 10:09:56  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.9  2004/06/17 06:23:43  reinelt
- *
- * hash handling rewritten to solve performance issues
- *
- * Revision 1.8  2004/05/27 06:29:29  nicowallmeier
- * Moved variables to Plugin:imon / Plugin:telmon
- *
- * Revision 1.7  2004/05/27 03:39:47  reinelt
- *
- * changed function naming scheme to plugin::function
- *
- * Revision 1.6  2004/03/13 14:58:15  nicowallmeier
- * Added clean termination of imond-connection (now correctly)
- *
- * Revision 1.4  2004/03/03 04:44:16  reinelt
- * changes (cosmetics?) to the big patch from Martin
- * hash patch un-applied
- *
- * Revision 1.3  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.2  2004/02/22 17:35:41  reinelt
- * some fixes for generic graphic driver and T6963
- * removed ^M from plugin_imon (Nico, are you editing under Windows?)
- *
- * Revision 1.1  2004/02/18 14:45:43  nicowallmeier
- * Imon/Telmon plugin ported
- *
  */
 
 #include "config.h"

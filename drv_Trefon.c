@@ -22,34 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_Trefon.c,v $
- * Revision 1.7  2006/09/08 19:00:46  reinelt
- * give up after 10 write errors to serial device
- *
- * Revision 1.6  2006/01/30 06:25:54  reinelt
- * added CVS Revision
- *
- * Revision 1.5  2005/08/21 08:18:56  reinelt
- * CrystalFontz ACK processing
- *
- * Revision 1.4  2005/08/20 10:10:13  reinelt
- * TREFON patch from Stephan Trautvetter:
- * drv_TF_init: CHAR0 set to 0 instead of 1
- * drv_TF_write: combine the GOTO and the data into one packet
- * drv_TF_write: add GOTO-Case for resolutions 8x1/20x4 characters
- * drv_TF_start: test for existing resolutions from TREFON USB-LCDs implemented
- * the use of 'asc255bug 1' is recommendable
- *
- * Revision 1.3  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.2  2005/04/24 05:27:09  reinelt
- * Trefon Backlight added
- *
- * Revision 1.1  2005/04/24 04:33:46  reinelt
- * driver for TREFON USB LCD's added
- *
  */
 
 /* 

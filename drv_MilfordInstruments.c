@@ -26,63 +26,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_MilfordInstruments.c,v $
- * Revision 1.15  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.14  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.13  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.12  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.11  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.10  2004/06/20 10:09:54  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.9  2004/06/06 06:51:59  reinelt
- *
- * do not display end splash screen if quiet=1
- *
- * Revision 1.8  2004/06/05 06:41:40  reinelt
- *
- * chancged splash screen again
- *
- * Revision 1.7  2004/06/05 06:13:12  reinelt
- *
- * splash screen for all text-based display drivers
- *
- * Revision 1.6  2004/06/02 09:41:19  reinelt
- *
- * prepared support for startup splash screen
- *
- * Revision 1.5  2004/05/31 05:38:02  reinelt
- *
- * fixed possible bugs with user-defined chars (clear high bits)
- * thanks to Andy Baxter for debugging the MilfordInstruments driver!
- *
- * Revision 1.4  2004/05/31 01:31:01  andy-b
- *
- *
- * fixed bug in Milford Instruments driver which drew extra graphics chars in
- * odd places when drawing double bars. (the display doesn't like it if you put
- * the escape character 0xfe inside a define char sequence).
- *
- * Revision 1.1  2004/05/26 05:03:27  reinelt
- *
- * MilfordInstruments driver ported
- *
  */
 
 /* 

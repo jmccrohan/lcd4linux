@@ -22,17 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_file.c,v $
- * Revision 1.3  2006/09/13 05:33:39  reinelt
- * plugin_file: return empty string if file cannot be read; widget_text: load property as 'string', not as variable (triggered an ugly bug with variable list reallocated)
- *
- * Revision 1.2  2006/07/19 01:57:01  cmay
- * fixed double read of last line in file
- *
- * Revision 1.1  2006/02/19 15:42:19  reinelt
- * file plugin from Chris Maj
- *
  */
 
 /* 

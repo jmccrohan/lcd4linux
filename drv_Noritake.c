@@ -22,37 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Log: drv_Noritake.c,v $
- * Revision 1.8  2006/02/27 08:12:34  reinelt
- * use serdisplib's full color support
- *
- * Revision 1.7  2006/02/27 06:15:55  reinelt
- * indent...
- *
- * Revision 1.6  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.5  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.4  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.3  2005/05/05 08:36:12  reinelt
- * changed SELECT to SLCTIN
- *
- * Revision 1.2  2005/05/04 07:18:44  obconseil
- * Driver modified according to Michels's recommendations :
- *
- * - Suppressed linux/parport.h depandancy. It was not needed anyway.
- * - Compile-time disable the wait_busy polling function, replaced with a time wait.
- * - Replaced the hardwire_* calls by their wire_* equivalent, to adapt other wirings.
- * - Created a "Models" structure, containing parameters for the display.
- * - Other cleanups, to remove compile-time warnings.
- *
- * Revision 1.1  2005/05/04 05:42:38  reinelt
- * Noritake driver added
- *
  */
 
 /*

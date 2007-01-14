@@ -22,56 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: debug.c,v $
- * Revision 1.13  2005/05/08 04:32:43  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.12  2005/01/18 06:30:22  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.11  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.10  2004/06/26 09:27:20  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.9  2004/06/20 10:09:54  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.8  2004/05/26 11:37:36  reinelt
- *
- * Curses driver ported.
- *
- * Revision 1.7  2004/02/10 07:42:35  reinelt
- * cut off all old-style files which are no longer used with NextGeneration
- *
- * Revision 1.6  2003/10/05 17:58:50  reinelt
- * libtool junk; copyright messages cleaned up
- *
- * Revision 1.5  2003/08/24 05:17:58  reinelt
- * liblcd4linux patch from Patrick Schemitz
- *
- * Revision 1.4  2003/08/08 06:58:06  reinelt
- * improved forking
- *
- * Revision 1.3  2001/03/12 12:39:36  reinelt
- *
- * reworked autoconf a lot: drivers may be excluded, #define's went to config.h
- *
- * Revision 1.2  2001/03/09 13:08:11  ltoetsch
- * Added Text driver
- *
- * Revision 1.1  2000/11/28 20:20:38  reinelt
- *
- * added debug.c
- * things like that should not hapen. debug.c exists for a few months now, but was never added to CVS. Shit happens....
- *
  */
 
 /* 

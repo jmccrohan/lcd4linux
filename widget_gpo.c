@@ -20,11 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: widget_gpo.c,v $
- * Revision 1.1  2005/12/18 16:18:36  reinelt
- * GPO's added again
- *
  */
 
 /* 

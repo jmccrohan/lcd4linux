@@ -22,38 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic_i2c.h,v $
- * Revision 1.8  2006/08/13 06:46:51  reinelt
- * T6963 soft-timing & enhancements; indent
- *
- * Revision 1.7  2006/07/31 03:48:09  reinelt
- * preparations for scrolling
- *
- * Revision 1.6  2006/02/27 06:15:55  reinelt
- * indent...
- *
- * Revision 1.5  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.4  2005/05/31 21:32:00  lfcorreia
- * fix my email address
- *
- * Revision 1.3  2005/05/31 20:42:55  lfcorreia
- * new file: lcd4linux_i2c.h
- * avoid the problems detecting the proper I2C kernel include files
- *
- * rearrange all the other autoconf stuff to remove I2C detection
- *
- * new method by Paul Kamphuis to write to the I2C device
- *
- * Revision 1.2  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.1  2005/03/28 19:39:23  reinelt
- * HD44780/I2C patch from Luis merged (still does not work for me)
- *
- *
  */  
     
 /* 

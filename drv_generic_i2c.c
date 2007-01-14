@@ -22,41 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_generic_i2c.c,v $
- * Revision 1.9  2006/09/07 09:06:25  reinelt
- * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
- *
- * Revision 1.8  2006/07/31 03:48:09  reinelt
- * preparations for scrolling
- *
- * Revision 1.7  2006/07/30 11:16:27  lfcorreia
- * Add back drv_generic_i2c_close function
- *
- * Revision 1.6  2006/07/29 21:04:43  lfcorreia
- * Better error handling, add proper I2C SLAVE device detection (not 100% finished)
- *
- * Revision 1.5  2005/06/01 12:50:25  reinelt
- * ifdef'ed unused function to avoid compiler warning
- *
- * Revision 1.4  2005/05/31 20:42:55  lfcorreia
- * new file: lcd4linux_i2c.h
- * avoid the problems detecting the proper I2C kernel include files
- *
- * rearrange all the other autoconf stuff to remove I2C detection
- *
- * new method by Paul Kamphuis to write to the I2C device
- *
- * Revision 1.3  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.2  2005/04/05 05:12:57  reinelt
- * i2c patch from Paul (still does not work here :-(
- *
- * Revision 1.1  2005/03/28 19:39:23  reinelt
- * HD44780/I2C patch from Luis merged (still does not work for me)
- *
- *
  */
 
     /*

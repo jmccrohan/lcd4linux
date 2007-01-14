@@ -23,42 +23,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * 
- * $Log: drv_LCD2USB.c,v $
- * Revision 1.11  2006/07/19 01:35:31  cmay
- * Renamed keypad direction names to avoid conflict with Curses library defs.
- * Added keypad support to Curses display driver.
- *
- * Revision 1.10  2006/04/09 14:17:50  reinelt
- * autoconf/library fixes, image and graphic display inversion
- *
- * Revision 1.9  2006/03/18 14:54:36  harbaum
- * Improved USB error recovery
- *
- * Revision 1.8  2006/02/22 15:59:39  cmay
- * removed KEYPADSIZE cruft per harbaum's suggestion
- *
- * Revision 1.7  2006/02/21 21:43:03  harbaum
- * Keypad support for LCD2USB
- *
- * Revision 1.6  2006/02/12 14:32:24  harbaum
- * Configurable bus/device id
- *
- * Revision 1.5  2006/02/09 20:32:49  harbaum
- * LCD2USB bus testing, version verification ...
- *
- * Revision 1.4  2006/01/30 20:21:51  harbaum
- * LCD2USB: Added support for displays with two controllers
- *
- * Revision 1.3  2006/01/30 06:25:52  reinelt
- * added CVS Revision
- *
- * Revision 1.2  2006/01/28 15:36:17  harbaum
- * Fix: string termination bug in eval()
- *
- * Revision 1.1  2006/01/26 19:26:27  harbaum
- * Added LCD2USB support
- *
  */
 
 /* 

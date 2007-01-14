@@ -22,19 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: widget_keypad.h,v $
- * Revision 1.3  2006/07/19 01:35:31  cmay
- * Renamed keypad direction names to avoid conflict with Curses library defs.
- * Added keypad support to Curses display driver.
- *
- * Revision 1.2  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.1  2006/02/21 05:50:34  reinelt
- * keypad support from Cris Maj
- *
- *
  */
 
 

@@ -22,54 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_sample.c,v $
- * Revision 1.11  2005/11/04 04:53:10  reinelt
- * sample plugin activated
- *
- * Revision 1.10  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.9  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.8  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.7  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.6  2004/06/01 06:04:25  reinelt
- *
- * made README.Plugins and plugin_sample up to date.
- *
- * Revision 1.5  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.4  2004/01/30 20:57:56  reinelt
- * HD44780 patch from Martin Hejl
- * dmalloc integrated
- *
- * Revision 1.3  2004/01/29 04:40:02  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.2  2004/01/13 10:03:01  reinelt
- * new util 'hash' for associative arrays
- * new plugin 'cpuinfo'
- *
- * Revision 1.1  2004/01/06 17:33:45  reinelt
- *
- * Evaluator: functions with variable argument lists
- * Evaluator: plugin_sample.c and README.Plugins added
- *
  */
 
 /* 

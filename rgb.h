@@ -22,11 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: rgb.h,v $
- * Revision 1.1  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
  */
 
 

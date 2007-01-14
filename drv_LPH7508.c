@@ -22,38 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_LPH7508.c,v $
- * Revision 1.10  2006/02/27 06:14:46  reinelt
- * graphic bug resulting in all black pixels solved
- *
- * Revision 1.9  2006/02/08 04:55:04  reinelt
- * moved widget registration to drv_generic_graphic
- *
- * Revision 1.8  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.7  2006/01/30 05:47:38  reinelt
- * graphic subsystem changed to full-color RGBA
- *
- * Revision 1.6  2006/01/05 18:56:57  reinelt
- * more GPO stuff
- *
- * Revision 1.5  2006/01/03 06:13:45  reinelt
- * GPIO's for MatrixOrbital
- *
- * Revision 1.4  2005/12/20 07:07:44  reinelt
- * further work on GPO's, HD44780 GPO support
- *
- * Revision 1.3  2005/12/18 16:18:36  reinelt
- * GPO's added again
- *
- * Revision 1.2  2005/12/13 14:07:28  reinelt
- * LPH7508 driver finished
- *
- * Revision 1.1  2005/11/04 14:10:38  reinelt
- * drv_Sample and drv_LPH7508
- *
  */
 
 /* 

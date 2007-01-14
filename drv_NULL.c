@@ -22,48 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: drv_NULL.c,v $
- * Revision 1.10  2006/09/07 09:06:25  reinelt
- * lots of wrong printf formats corrected (thanks to Ernst Bachmann)
- *
- * Revision 1.9  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.8  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.7  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.6  2004/06/26 12:04:59  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.5  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.4  2004/06/20 10:09:54  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.3  2004/06/06 06:51:59  reinelt
- *
- * do not display end splash screen if quiet=1
- *
- * Revision 1.2  2004/06/02 09:41:19  reinelt
- *
- * prepared support for startup splash screen
- *
- * Revision 1.1  2004/05/31 16:39:06  reinelt
- *
- * added NULL display driver (for debugging/profiling purposes)
- * added backlight/contrast initialisation for matrixOrbital
- * added Backlight initialisation for Cwlinux
- *
  */
 
 /* 

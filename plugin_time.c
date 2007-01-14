@@ -22,27 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_time.c,v $
- * Revision 1.5  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.4  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.3  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.2  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.1  2004/05/20 07:47:51  reinelt
- * added plugin_time
- *
  */
 
 /* 

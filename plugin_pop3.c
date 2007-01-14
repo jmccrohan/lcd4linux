@@ -26,46 +26,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_pop3.c,v $
- * Revision 1.10  2006/02/25 13:36:33  geronet
- * updated indent.sh, applied coding style
- *
- * Revision 1.9  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.8  2005/04/01 05:16:04  reinelt
- * moved plugin init stuff to a seperate function called on first use
- *
- * Revision 1.7  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.6  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.5  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.4  2004/05/31 21:05:13  reinelt
- *
- * fixed lots of bugs in the Cwlinux driver
- * do not emit EAGAIN error on the first retry
- * made plugin_i2c_sensors a bit less 'chatty'
- * moved init and exit functions to the bottom of plugin_pop3
- *
- * Revision 1.3  2004/05/20 07:14:46  reinelt
- * made all local functions static
- *
- * Revision 1.2  2004/04/17 13:03:34  nicowallmeier
- * minor bugfix
- *
- * Revision 1.1  2004/04/08 11:59:26  reinelt
- * added plugin_pop3 from Javi
- *
  */
 
 

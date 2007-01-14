@@ -22,31 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Log: drv_SimpleLCD.c,v $
- * Revision 1.7  2006/01/30 06:25:53  reinelt
- * added CVS Revision
- *
- * Revision 1.6  2005/08/22 05:44:43  reinelt
- * new driver 'WincorNixdorf'
- * some fixes to the bar code
- *
- * Revision 1.5  2005/07/06 04:40:18  reinelt
- * GCC-4 fixes
- *
- * Revision 1.4  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.3  2005/04/20 05:49:21  reinelt
- * Changed the code to add some VT100-compatible control sequences (see the comments above).
- * A configfile boolean option 'VT100_Support' (default to 1) indicate if the display in
- * used support these control-sequences or not.
- *
- * Revision 1.2  2005/04/02 05:28:58  reinelt
- * fixed gcc4 warnings about signed/unsigned mismatches
- *
- * Revision 1.1  2005/02/24 07:06:48  reinelt
- * SimpleLCD driver added
- *
  */
 
 /*

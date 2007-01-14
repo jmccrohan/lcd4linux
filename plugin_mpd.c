@@ -22,11 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_mpd.c,v $
- * Revision 1.1  2006/04/15 05:22:52  reinelt
- * mpd plugin from Stefan Kuhne
- *
  */
 
 /* 

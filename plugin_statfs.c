@@ -22,14 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: plugin_statfs.c,v $
- * Revision 1.2  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.1  2005/04/03 07:07:51  reinelt
- * added statfs plugin
- *
  */
 
 /* 

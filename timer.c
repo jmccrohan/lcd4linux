@@ -20,61 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: timer.c,v $
- * Revision 1.13  2005/05/08 04:32:45  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.12  2005/01/18 06:30:24  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.11  2004/09/19 09:31:19  reinelt
- * HD44780 busy flag checking improved: fall back to busy-waiting if too many errors occur
- *
- * Revision 1.10  2004/06/26 12:05:00  reinelt
- *
- * uh-oh... the last CVS log message messed up things a lot...
- *
- * Revision 1.9  2004/06/26 09:27:21  reinelt
- *
- * added '-W' to CFLAGS
- * changed all C++ comments to C ones
- * cleaned up a lot of signed/unsigned mistakes
- *
- * Revision 1.8  2004/06/20 10:09:56  reinelt
- *
- * 'const'ified the whole source
- *
- * Revision 1.7  2004/06/01 06:45:30  reinelt
- *
- * some Fixme's processed
- * documented some code
- *
- * Revision 1.6  2004/03/03 04:44:16  reinelt
- * changes (cosmetics?) to the big patch from Martin
- * hash patch un-applied
- *
- * Revision 1.5  2004/03/03 03:47:04  reinelt
- * big patch from Martin Hejl:
- * - use qprintf() where appropriate
- * - save CPU cycles on gettimeofday()
- * - add quit() functions to free allocated memory
- * - fixed lots of memory leaks
- *
- * Revision 1.4  2004/01/30 20:57:56  reinelt
- * HD44780 patch from Martin Hejl
- * dmalloc integrated
- *
- * Revision 1.3  2004/01/29 04:40:03  reinelt
- * every .c file includes "config.h" now
- *
- * Revision 1.2  2004/01/18 09:01:45  reinelt
- * /proc/stat parsing finished
- *
- * Revision 1.1  2004/01/13 08:18:20  reinelt
- * timer queues added
- * liblcd4linux deactivated turing transformation to new layout
- *
  */
 
 /* 

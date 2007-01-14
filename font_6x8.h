@@ -22,23 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *
- * $Log: font_6x8.h,v $
- * Revision 1.4  2006/08/14 19:24:22  harbaum
- * Umlaut support, added KVV HTTP-User-Agent
- *
- * Revision 1.3  2005/05/08 04:32:44  reinelt
- * CodingStyle added and applied
- *
- * Revision 1.2  2005/01/18 06:30:23  reinelt
- * added (C) to all copyright statements
- *
- * Revision 1.1  2004/02/15 21:43:43  reinelt
- * T6963 driver nearly finished
- * framework for graphic displays done
- * i2c_sensors patch from Xavier
- * some more old generation files removed
- *
  */
 
 #define ______ 0x00
