@@ -1,53 +1,5 @@
-   ---   LCD4Linux News   ---
+# $Id 
+# $URL$
 
-
-
-lcd4linux-0.98
-
-- improved signal-handling: lcd4linux can be restarted by sending a SIGHUP
-
-- lcd4linux uses syslog for messages/warnings etc.
-
-- support for GPO's (general purpose outputs, e.g. to connect a LED)
-  The MatroxOrbital Displays have one GPO, and you can connect up to eight
-  LED's to the parallel port using two IC's (see README.HD44780.GPO)
-
-- new delay loop for parallel port displays: uses either gettimeofday() or
-  rdtsc (time stamp counter on newer processors). This delay needs no longer
-  a calibration! The 'Delay'-entry in lcd4linux.conf has gone.
-
-- new raster driver for PNG creation
-
-- new curses-based text driver
-
-- security: lcd4linux.conf must have the same user/group than the executable, 
-  and must not me accesible by group and other (i.e. mode 0600). This is 
-  necessary because lcd4linux.conf can contain usernames and passwords for 
-  POP and IMAP queries.
-
-- support for plugins: new token 'x1'..'x9' for externel programs
-
-- new token 'ic' (ISDN connected/offline, mainly for a LED connected to a GPO)
-
-- APM client: new tokens 'bp', 'bs', 'bd' (battery percentage, status and 
-  duration)
-
-- mail client: new tokens 'e1'..'e9' for counting emails in local mailboxes
-
-- new configure-options '--with-drivers=<list>', so you can compile a minimal
-  executable which contains only the drivers you need.
-
-- seti@home client: new tokens 'hc' (% completed) and 'ht' (cpu time needed)
-
-- simple web-server driver (see README.Webinterface)
-
-- uses new (kernel 2.4) ppdev system to access parallel port via ioctl()
-
-- mail suport for pop3 and imap4, token 'u1' ..'u9' show unseen mail
-  (which is propably incorrect for normal mbox)
-
-- added another verbose level (-vvv) for debugging socket traffic
-
-- added nntp support for count of news/unread messages in subscribed NGs
-
-- implemented time series bar '$t'
+Sorry, there is no NEWS anymore.
+Go to http://lcd4linux.bulix.org for all the documentation.

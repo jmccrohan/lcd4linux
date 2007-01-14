@@ -1,3 +1,7 @@
+dnl $Id$
+dnl $URL$
+
+
 dnl @synopsis AC_PYTHON_DEVEL([version])
 dnl
 dnl Checks for Python and tries to get the include path to 'Python.h'.

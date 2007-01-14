@@ -1,19 +1,5 @@
-LCD4Linux development team:
+# $Id 
+# $URL$
 
-Michael Reinelt <reinelt@eunet.at>
-Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at>
-Leopold Tötsch <lt@toetsch.at>
-Axel Ehnert <axel@ehnert.net>
-Andrew Ip <aip@cwlinux.com>
-Robin Adams, Adams IT Services <info@usblcd.de>
-Xavier Vello <xavier66@free.fr>
-Martin Hejl (martin@hejl.de)
-Jesse Brook Kovach <jkovach@wam.umd.edu>
-Nico Wallmeier <nico.wallmeier@post.rwth-aachen.de>
-Luis Correia <lfcorreia@users.sf.net>
-Patrick Schemitz <schemitz@ekp.physik.uni-karlsruhe.de>
-Andy Baxter <andy@earthsong.free-online.co.uk>
-Thomas Siedentopf <thom-s@gmx.net>
-Markus Keil <markus_keil@t-online.de>
-Samuel Mimram <samuel.mimram@ens-lyon.fr>
-Luk Claes <infblue@users.sourceforge.net>
+Sorry, there is no AUTHORS anymore.
+Go to http://lcd4linux.bulix.org for a list of developers an contributors.

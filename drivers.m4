@@ -1,3 +1,7 @@
+dnl $Id$
+dnl $URL$
+
+
 dnl LCD4Linux Drivers conf part
 dnl
 dnl Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <reinelt@eunet.at>

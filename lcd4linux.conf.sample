@@ -1,3 +1,7 @@
+#  $Id$
+#  $URL$
+
+
 Variables {
    tick 500
    tack 100

@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# $Id$
+# $URL$
+
 # exit on errors
 set -e
 

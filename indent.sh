@@ -1,5 +1,9 @@
 #! /bin/bash
 
+# $Id$
+# $URL$
+
+
 # -kr    Use Kernighan & Ritchie coding style.
 # -l120  Set maximum line length for non-comment lines to 150.
 

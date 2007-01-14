@@ -1,3 +1,7 @@
+dnl $Id$
+dnl $URL$
+
+
 dnl Curses detection: Munged from Midnight Commander's configure.in
 dnl
 dnl What it does:

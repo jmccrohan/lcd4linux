@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#  $Id$
+#  $URL$
+
+
 rm -f smoketest.log lcd4linux
 
 make distclean
