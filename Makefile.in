@@ -290,6 +290,7 @@ drv_WincorNixdorf.c           \
 drv_X11.c                     \
                               \
 font_6x8.h                    \
+font_6x8_bold.h               \
 widget_image.c widget_image.h \
                               \
 lcd4linux_i2c.h               \
@@ -331,13 +332,9 @@ lcd4linux.lsm                 \
 curses.m4                     \
 AUTHORS                       \
 CREDITS                       \
-FAQ                           \
 NEWS                          \
 TODO                          \
 README                        \
-README.Drivers                \
-README.Plugins                \
-README.KDE                    \
 plugin_sample.c
 
 all: config.h
