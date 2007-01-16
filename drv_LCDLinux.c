@@ -63,7 +63,6 @@
 static char Name[] = "LCD-Linux";
 static char Device[] = "/dev/lcd";
 static int lcdlinux_fd = -1;
-static int raw_mode = 0;
 
 
 /****************************************/
@@ -96,7 +95,7 @@ static void drv_LL_send(const char *string, const int len)
 static void drv_LL_clear(void)
 {
     /* No return value check since this ioctl cannot fail */
-    ioctl(lcdlinux_fd, IOCTL_CLEAR_DISP);
+    ioctl(lcdlinux_fd, LCDL_CLEAR_DISP);
 }
 
 
@@ -113,20 +112,17 @@ static void drv_LL_write(const int row, const int col, const char *data, int len
 
 static void drv_LL_defchar(const int ascii, const unsigned char *matrix)
 {
-    char buffer[8];
-    int pos = 1024 + ascii;
+    char buf[9];
     int i;
 
-    for (i = 0; i < 8; i++) {
-	buffer[i] = *matrix++ & 0x1f;
+    buf[0] = ascii;
+    for (i = 1; i < 9; i++) {
+	buf[i] = *matrix++ & 0x1f;
     }
 
-    if (lseek(lcdlinux_fd, pos, SEEK_SET) == (off_t) - 1) {
-	error("%s: lseek(%s) failed: %s", Name, Device, strerror(errno));
+    if (ioctl(lcdlinux_fd, LCDL_SET_CGRAM_CHAR, &buf) != 0) {
+	error("%s: ioctl(LCDL_SET_CGRAM_CHAR) failed: %s", Name, strerror(errno));
     }
-
-    drv_LL_send(buffer, 8);
-
 }
 
 
@@ -160,20 +156,25 @@ static int drv_LL_start(const char *section, const int quiet)
 
     /* get display size */
     memset(&buf, 0, sizeof(buf));
-    if (ioctl(lcdlinux_fd, IOCTL_GET_PARAM, &buf) != 0) {
-	error("%s: ioctl(IOCTL_GET_PARAM) failed: %s", Name, strerror(errno));
+    if (ioctl(lcdlinux_fd, LCDL_GET_PARAM, &buf) != 0) {
+	error("%s: ioctl(LCDL_GET_PARAM) failed: %s", Name, strerror(errno));
 	error("%s: Could not query display information!", Name);
 	return -1;
     }
-    info("%s: %dx%d display with %d controllers, flags=0x%02x:",
+    info("%s: %dx%d display with %d controllers, flags=0x%02lx:",
 	 Name, buf.cntr_cols, buf.cntr_rows, buf.num_cntr, buf.flags);
-    info("%s:   busy-flag checking %sabled", Name, buf.flags & HD44780_CHECK_BF ? "en" : "dis");
-    info("%s:   bus width %d bits", Name, buf.flags & HD44780_4BITS_BUS ? 4 : 8);
-    info("%s:   font size %s", Name, buf.flags & HD44780_5X10_FONT ? "5x10" : "5x8");
-
-
+    info("%s:   busy-flag checking %sabled", Name, (buf.flags & HD44780_CHECK_BF) ? "en" : "dis");
+    info("%s:   bus width %d bits", Name, (buf.flags & HD44780_4BITS_BUS) ? 4 : 8);
+    info("%s:   font size %s", Name, (buf.flags & HD44780_5X10_FONT) ? "5x10" : "5x8");
 
     /* overwrite width size from lcd4linux.conf */
+    if (buf.vs_rows || buf.vs_cols) {
+	info("%s: disabling virtual screen", Name);
+	buf.vs_rows = 0;
+	buf.vs_cols = 0;
+	commit = 1;
+    }
+
     if ((rows > 0 && rows != buf.cntr_rows) || (cols > 0 && cols != buf.cntr_cols)) {
 	info("%s: changing size to %dx%d", Name, cols, rows);
 	buf.cntr_rows = rows;
@@ -208,8 +209,8 @@ static int drv_LL_start(const char *section, const int quiet)
 	commit = 1;
     }
 
-    if (commit && ioctl(lcdlinux_fd, IOCTL_SET_PARAM, &buf) != 0) {
-	error("%s: ioctl(IOCTL_SET_PARAM) failed: %s", Name, strerror(errno));
+    if (commit && ioctl(lcdlinux_fd, LCDL_SET_PARAM, &buf) != 0) {
+	error("%s: ioctl(LCDL_SET_PARAM) failed: %s", Name, strerror(errno));
 	return -1;
     }
 
@@ -218,8 +219,7 @@ static int drv_LL_start(const char *section, const int quiet)
 
     /* Disable control characters interpretation. */
     /* No return value check since this ioctl cannot fail */
-    raw_mode = 1;
-    ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
+    ioctl(lcdlinux_fd, LCDL_RAW_MODE, 1);
 
     if (!quiet) {
 	char buffer[40];
@@ -350,8 +350,7 @@ int drv_LL_quit(const int quiet)
 
     /* Enable control characters interpretation. */
     /* No return value check since this ioctl cannot fail */
-    raw_mode = 0;
-    ioctl(lcdlinux_fd, IOCTL_RAW_MODE, &raw_mode);
+    ioctl(lcdlinux_fd, LCDL_RAW_MODE, 0);
 
     /* close device */
     close(lcdlinux_fd);
