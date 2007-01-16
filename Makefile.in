@@ -14,8 +14,8 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am 730 2007-01-14 13:50:28Z michael $
-# $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/Makefile.am $
+# $Id$
+# $URL$
 
 # Process this file with automake to produce Makefile.in
 
