@@ -51,10 +51,11 @@
     
 #ifndef _DRV_GENERIC_I2C_H_
 #define _DRV_GENERIC_I2C_H_
-int drv_generic_i2c_open(const char *section, const char *driver);
-int drv_generic_i2c_close(void);
-unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
-void drv_generic_i2c_data(const unsigned char data);
-void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
-
-#endif				/*  */
+
+int drv_generic_i2c_open(const char *section, const char *driver);
+int drv_generic_i2c_close(void);
+unsigned char drv_generic_i2c_wire(const char *name, const char *deflt);
+void drv_generic_i2c_data(const unsigned char data);
+void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length);
+
+#endif
