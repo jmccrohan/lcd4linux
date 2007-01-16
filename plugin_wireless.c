@@ -57,6 +57,7 @@
 
 #include <sys/ioctl.h>
 #include <net/if_arp.h>
+#include <linux/if.h>
 #include <linux/wireless.h>
 #include <math.h>
 
