@@ -359,6 +359,7 @@ if test "$NORITAKE" = "yes"; then
 fi
 
 if test "$NULL" = "yes"; then
+   TEXT="yes"
    DRIVERS="$DRIVERS drv_NULL.o"
    AC_DEFINE(WITH_NULL,1,[NULL driver])
 fi

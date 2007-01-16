@@ -7598,6 +7598,7 @@ _ACEOF
 fi
 
 if test "$NULL" = "yes"; then
+   TEXT="yes"
    DRIVERS="$DRIVERS drv_NULL.o"
 
 cat >>confdefs.h <<\_ACEOF

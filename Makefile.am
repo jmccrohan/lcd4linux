@@ -135,7 +135,10 @@ lcd4kde.conf                  \
 lcd4linux.kdelnk              \
 lcd4linux.xpm                 \
 lcd4linux.lsm                 \
+ac_python_devel.m4            \
 curses.m4                     \
+drivers.m4                    \
+plugins.m4                    \
 AUTHORS                       \
 CREDITS                       \
 NEWS                          \
