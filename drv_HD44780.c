@@ -66,7 +66,10 @@
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_gpio.h"
+
+#ifdef WITH_PARPORT
 #include "drv_generic_parport.h"
+#endif
 
 #ifdef WITH_I2C
 #include "drv_generic_i2c.h"
@@ -80,10 +83,13 @@ static int Capabilities;
 
 
 /* Timings */
+#ifdef WITH_PARPORT
 static int T_CY, T_PW, T_AS, T_AH;
-static int T_POWER, T_INIT1, T_INIT2, T_EXEC, T_WRCG, T_CLEAR, T_HOME, T_ONOFF;
-static int T_GPO_ST, T_GPO_PW;
-static int T_POWER;
+#endif
+static int T_INIT1, T_INIT2, T_EXEC, T_WRCG, T_CLEAR, T_HOME, T_ONOFF;
+#ifdef WITH_PARPORT
+static int T_POWER, T_GPO_ST, T_GPO_PW;
+#endif
 
 static int Bits = 0;
 static int numControllers = 0;
@@ -100,9 +106,12 @@ static unsigned char SIGNAL_ENABLE;
 static unsigned char SIGNAL_ENABLE2;
 static unsigned char SIGNAL_ENABLE3;
 static unsigned char SIGNAL_ENABLE4;
-static unsigned char SIGNAL_BACKLIGHT;
+
 static unsigned char SIGNAL_GPO;
+#ifdef WITH_PARPORT
+static unsigned char SIGNAL_BACKLIGHT;
 static unsigned char SIGNAL_POWER;
+#endif
 
 /* maximum time to wait for the busy-flag (in usec) */
 #define MAX_BUSYFLAG_WAIT 10000
@@ -111,11 +120,14 @@ static unsigned char SIGNAL_POWER;
 #define MAX_BUSYFLAG_ERRORS 20
 
 /* flag for busy-waiting vs. busy flag checking */
+#ifdef WITH_PARPORT
 static int UseBusy = 0;
+#endif
 
 /* buffer holding the GPO state */
+#ifdef WITH_PARPORT
 static unsigned char GPO = 0;
-
+#endif
 
 typedef struct {
     int type;
@@ -161,6 +173,8 @@ static void (*drv_HD_stop) (void);
 /****************************************/
 /***  parport dependant functions     ***/
 /****************************************/
+
+#ifdef WITH_PARPORT
 
 static void drv_HD_PP_busy(const int controller)
 {
@@ -658,6 +672,8 @@ static void drv_HD_PP_stop(void)
 
 }
 
+#endif
+
 
 #ifdef WITH_I2C
 
@@ -888,6 +904,8 @@ static void drv_HD_defchar(const int ascii, const unsigned char *matrix)
 }
 
 
+#ifdef WITH_PARPORT
+
 static int drv_HD_backlight(int backlight)
 {
     if (!(Capabilities & CAP_BACKLIGHT))
@@ -899,9 +917,11 @@ static int drv_HD_backlight(int backlight)
 	backlight = 1;
 
     drv_generic_parport_control(SIGNAL_BACKLIGHT, backlight ? SIGNAL_BACKLIGHT : 0);
-
+    
     return backlight;
 }
+
+#endif
 
 
 static int drv_HD_brightness(int brightness)
@@ -924,6 +944,8 @@ static int drv_HD_brightness(int brightness)
     return brightness;
 }
 
+
+#ifdef WITH_PARPORT
 
 static int drv_HD_GPO(const int num, const int val)
 {
@@ -952,6 +974,10 @@ static int drv_HD_GPO(const int num, const int val)
     return v;
 }
 
+#endif
+
+
+#ifdef WITH_PARPORT
 
 static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
 {
@@ -980,6 +1006,8 @@ static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
 	debug("key %d press %d", keynum, updown);
     }
 }
+
+#endif
 
 
 static int drv_HD_start(const char *section, const int quiet)
@@ -1018,14 +1046,23 @@ static int drv_HD_start(const char *section, const int quiet)
     }
 
     if (strcasecmp(bus, "parport") == 0) {
+
+#ifdef WITH_PARPORT
 	info("%s: using parallel port", Name);
 	Bus = BUS_PP;
 	drv_HD_load = drv_HD_PP_load;
 	drv_HD_command = drv_HD_PP_command;
 	drv_HD_data = drv_HD_PP_data;
 	drv_HD_stop = drv_HD_PP_stop;
+#else
+	error("%s: %s.Bus '%s' from %s not available:", Name, section, bus, cfg_source());
+	error("%s: lcd4linux was compiled without parport support!", Name);
+	free(bus);
+	return -1;
+#endif
 
     } else if (strcasecmp(bus, "i2c") == 0) {
+
 #ifdef WITH_I2C
 	info("%s: using I2C bus", Name);
 	Bus = BUS_I2C;
@@ -1152,6 +1189,7 @@ static int drv_HD_start(const char *section, const int quiet)
     drv_HD_command(allControllers, 0x03, T_HOME);	/* return home */
 
     /* maybe set backlight */
+#ifdef WITH_PARPORT
     if (Capabilities & CAP_BACKLIGHT) {
 	int backlight;
 	if (cfg_number(section, "Backlight", 0, 0, 1, &backlight) > 0) {
@@ -1159,6 +1197,7 @@ static int drv_HD_start(const char *section, const int quiet)
 	    drv_HD_backlight(backlight);
 	}
     }
+#endif
 
     /* maybe set brightness */
     if (Capabilities & CAP_BRIGHTNESS) {
@@ -1170,9 +1209,11 @@ static int drv_HD_start(const char *section, const int quiet)
     }
 
     /* install keypad polling timer for LCM-162 */
+#ifdef WITH_PARPORT
     if (Capabilities & CAP_LCM162) {
 	timer_add(drv_HD_LCM162_timer, NULL, 10, 0);
     }
+#endif
 
     if (!quiet) {
 	char buffer[40];
@@ -1192,6 +1233,7 @@ static int drv_HD_start(const char *section, const int quiet)
 /****************************************/
 
 
+#ifdef WITH_PARPORT
 static void plugin_backlight(RESULT * result, RESULT * arg1)
 {
     double backlight;
@@ -1199,7 +1241,7 @@ static void plugin_backlight(RESULT * result, RESULT * arg1)
     backlight = drv_HD_backlight(R2N(arg1));
     SetResult(&result, R_NUMBER, &backlight);
 }
-
+#endif
 
 static void plugin_brightness(RESULT * result, RESULT * arg1)
 {
@@ -1257,8 +1299,9 @@ int drv_HD_init(const char *section, const int quiet)
     /* real worker functions */
     drv_generic_text_real_write = drv_HD_write;
     drv_generic_text_real_defchar = drv_HD_defchar;
+#ifdef WITH_PARPORT
     drv_generic_gpio_real_set = drv_HD_GPO;
-
+#endif
 
     /* start display */
     if ((ret = drv_HD_start(section, quiet)) != 0)
@@ -1305,9 +1348,11 @@ int drv_HD_init(const char *section, const int quiet)
     widget_register(&wc);
 
     /* register plugins */
+#ifdef WITH_PARPORT
     if (Capabilities & CAP_BACKLIGHT) {
 	AddFunction("LCD::backlight", 1, plugin_backlight);
     }
+#endif
     if (Capabilities & CAP_BRIGHTNESS) {
 	AddFunction("LCD::brightness", 1, plugin_brightness);
     }

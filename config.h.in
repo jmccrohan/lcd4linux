@@ -449,6 +449,9 @@
 /* NULL driver */
 #undef WITH_NULL
 
+/* parport bus driver */
+#undef WITH_PARPORT
+
 /* PNG driver */
 #undef WITH_PNG
 
@@ -463,6 +466,9 @@
 
 /* serdisplib driver */
 #undef WITH_SERDISPLIB
+
+/* serial bus driver */
+#undef WITH_SERIAL
 
 /* SimpleLCD driver */
 #undef WITH_SIMPLELCD

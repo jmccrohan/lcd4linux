@@ -110,6 +110,9 @@ for driver in $drivers; do
       HD44780)
          HD44780=$val
 	 ;;
+      HD44780-I2C)
+         HD44780_I2C=$val
+	 ;;
       LCD2USB)
          LCD2USB=$val
          ;;
@@ -266,6 +269,14 @@ fi
 if test "$HD44780" = "yes"; then
    TEXT="yes"
    PARPORT="yes"
+   I2C="yes"
+   GPIO="yes"
+   DRIVERS="$DRIVERS drv_HD44780.o"
+   AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+fi
+
+if test "$HD44780_I2C" = "yes"; then
+   TEXT="yes"
    I2C="yes"
    GPIO="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
@@ -516,11 +527,13 @@ fi
 # generic parport driver
 if test "$PARPORT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_parport.o"
+   AC_DEFINE(WITH_PARPORT, 1, [parport bus driver])
 fi
 
 # generic serial driver
 if test "$SERIAL" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_serial.o"
+   AC_DEFINE(WITH_SERIAL, 1, [serial bus driver])
 fi
 
 # generic i2c driver
