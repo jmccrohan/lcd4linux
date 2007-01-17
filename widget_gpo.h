@@ -4,7 +4,7 @@
  * GPO widget handling
  *
  * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
- * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -28,10 +28,13 @@
 #ifndef _WIDGET_GPO_H_
 #define _WIDGET_GPO_H_
 
+
+#include "property.h"
+
+
 typedef struct WIDGET_GPO {
-    char *expression;		/* expression that delivers the value */
-    void *tree;			/* pre-compiled expression that delivers the value */
-    int update;			/* update interval (msec) */
+    PROPERTY expression;	/* main GPO expression */
+    PROPERTY update;		/* update interval (msec) */
     int num;			/* GPO number */
     int val;			/* GPO value */
 } WIDGET_GPO;

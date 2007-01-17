@@ -4,7 +4,7 @@
  * GPO widget handling
  *
  * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
- * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "evaluator.h"
+#include "property.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_gpo.h"
@@ -54,23 +54,22 @@ void widget_gpo_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_GPO *GPO = W->data;
-    RESULT result = { 0, 0, 0, NULL };
 
-    int val;
+    /* evaluate properties */
+    property_eval(&GPO->expression);
+    property_eval(&GPO->update);
 
-    /* evaluate expression */
-    val = 0;
-    if (GPO->tree != NULL) {
-	Eval(GPO->tree, &result);
-	val = R2N(&result);
-	DelResult(&result);
-    }
     GPO->num = W->row;
-    GPO->val = val;
+    GPO->val = P2N(&GPO->expression);
 
     /* finally, draw it! */
     if (W->class->draw)
 	W->class->draw(W);
+
+    /* add a new one-shot timer */
+    if (P2N(&GPO->update) > 0) {
+	timer_add(widget_gpo_update, Self, P2N(&GPO->update), 1);
+    }
 
 }
 
@@ -89,25 +88,15 @@ int widget_gpo_init(WIDGET * Self)
     GPO = malloc(sizeof(WIDGET_GPO));
     memset(GPO, 0, sizeof(WIDGET_GPO));
 
-    /* get raw expression (we evaluate them ourselves) */
-    GPO->expression = cfg_get_raw(section, "expression", NULL);
-
-    /* sanity check */
-    if (GPO->expression == NULL || *GPO->expression == '\0') {
-	error("widget %s has no expression, using '0.0'", Self->name);
-	GPO->expression = "0";
-    }
-
-    /* compile expression */
-    Compile(GPO->expression, &GPO->tree);
-
-    /* update interval (msec), default 1 sec */
-    cfg_number(section, "update", 1000, 10, -1, &(GPO->update));
+    /* load properties */
+    property_load(section, "expression", "0", &GPO->expression);
+    property_load(section, "update", "1000", &GPO->update);
 
     free(section);
     Self->data = GPO;
 
-    timer_add(widget_gpo_update, Self, GPO->update, 0);
+    /* fire it the first time */
+    widget_gpo_update(Self);
 
     return 0;
 }
@@ -118,10 +107,11 @@ int widget_gpo_quit(WIDGET * Self)
     if (Self) {
 	if (Self->data) {
 	    WIDGET_GPO *GPO = Self->data;
-	    DelTree(GPO->tree);
+	    property_free(&GPO->expression);
+	    property_free(&GPO->update);
 	    free(Self->data);
+	    Self->data = NULL;
 	}
-	Self->data = NULL;
     }
     return 0;
 }
