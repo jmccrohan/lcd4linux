@@ -917,7 +917,7 @@ static int drv_HD_backlight(int backlight)
 	backlight = 1;
 
     drv_generic_parport_control(SIGNAL_BACKLIGHT, backlight ? SIGNAL_BACKLIGHT : 0);
-    
+
     return backlight;
 }
 
