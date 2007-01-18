@@ -343,7 +343,8 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
     unsigned char *bitmap = Icon->bitmap + YRES * Icon->curmap;
     int layer, row, col;
     int x, y;
-
+    int visible;
+    
     layer = W->layer;
     row = YRES * W->row;
     col = XRES * W->col;
@@ -360,13 +361,16 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
     /* maybe grow layout framebuffer */
     drv_generic_graphic_resizeFB(row + YRES, col + XRES);
 
+    /* Icon visible? */
+    visible = P2N(&Icon->visible) > 0;
+    
     /* render icon */
     for (y = 0; y < YRES; y++) {
 	int mask = 1 << XRES;
 	for (x = 0; x < XRES; x++) {
 	    int i = (row + y) * LCOLS + col + x;
 	    mask >>= 1;
-	    if (Icon->visible) {
+	    if (visible) {
 		if (bitmap[y] & mask)
 		    drv_generic_graphic_FB[layer][i] = fg;
 		else
@@ -376,10 +380,10 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 	    }
 	}
     }
-
+    
     /* flush area */
     drv_generic_graphic_blit(row, col, YRES, XRES);
-
+    
     return 0;
 
 }

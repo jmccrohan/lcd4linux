@@ -28,19 +28,20 @@
 #ifndef _WIDGET_ICON_H_
 #define _WIDGET_ICON_H_
 
+
+#include "property.h"
+
+
 typedef struct WIDGET_ICON {
-    char *speed_expr;		/* expression for update interval */
-    void *speed_tree;		/* pre-compiled expression for update interval */
-    int speed;			/* update interval (msec) */
-    char *visible_expr;		/* expression for visibility */
-    void *visible_tree;		/* pre-compiled expression for visibility */
-    int visible;		/* icon visible? */
+    PROPERTY speed;		/* update interval (msec) */
+    PROPERTY visible;		/* icon visible? */
     int ascii;			/* ascii code of icon (depends on the driver) */
     int curmap;			/* current bitmap sequence */
     int prvmap;			/* previous bitmap sequence  */
     int maxmap;			/* number of bitmap sequences */
     unsigned char *bitmap;	/* bitmaps of (animated) icon */
 } WIDGET_ICON;
+
 
 extern WIDGET_CLASS Widget_Icon;
 

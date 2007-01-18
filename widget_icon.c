@@ -41,7 +41,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
-#include "evaluator.h"
+#include "property.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_icon.h"
@@ -94,31 +94,13 @@ void widget_icon_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_ICON *Icon = W->data;
-    RESULT result = { 0, 0, 0, NULL };
 
     /* process the parent only */
     if (W->parent == NULL) {
 
-	/* evaluate expressions */
-	Icon->speed = 100;
-	if (Icon->speed_tree != NULL) {
-	    Eval(Icon->speed_tree, &result);
-	    Icon->speed = R2N(&result);
-	    if (Icon->speed <= 0)
-		Icon->speed = 0;
-	    else if (Icon->speed < 10)
-		Icon->speed = 10;
-	    DelResult(&result);
-	}
-
-	Icon->visible = 1;
-	if (Icon->visible_tree != NULL) {
-	    Eval(Icon->visible_tree, &result);
-	    Icon->visible = R2N(&result);
-	    if (Icon->visible < 0)
-		Icon->visible = 0;
-	    DelResult(&result);
-	}
+	/* evaluate properties */
+	property_eval(&Icon->speed);
+	property_eval(&Icon->visible);
 
 	/* rotate icon bitmap */
 	Icon->curmap++;
@@ -131,8 +113,8 @@ void widget_icon_update(void *Self)
 	W->class->draw(W);
 
     /* add a new one-shot timer */
-    if (Icon->speed > 0) {
-	timer_add(widget_icon_update, Self, Icon->speed, 1);
+    if (P2N(&Icon->speed) > 0) {
+	timer_add(widget_icon_update, Self, P2N(&Icon->speed), 1);
     }
 }
 
@@ -155,19 +137,9 @@ int widget_icon_init(WIDGET * Self)
 	Icon = malloc(sizeof(WIDGET_ICON));
 	memset(Icon, 0, sizeof(WIDGET_ICON));
 
-	/* get raw expressions (we evaluate them ourselves) */
-	Icon->speed_expr = cfg_get_raw(section, "speed", NULL);
-	Icon->visible_expr = cfg_get_raw(section, "visible", NULL);
-
-	/* sanity check */
-	if (Icon->speed_expr == NULL || *Icon->speed_expr == '\0') {
-	    error("Icon %s has no speed, using '100'", Self->name);
-	    Icon->speed_expr = "100";
-	}
-
-	/* compile'em */
-	Compile(Icon->speed_expr, &Icon->speed_tree);
-	Compile(Icon->visible_expr, &Icon->visible_tree);
+	/* load properties */
+	property_load(section, "speed", "100", &Icon->speed);
+	property_load(section, "visible", "1", &Icon->visible);
 
 	/* read bitmap */
 	widget_icon_read_bitmap(section, Icon);
@@ -204,8 +176,8 @@ int widget_icon_quit(WIDGET * Self)
 	if (Self->parent == NULL) {
 	    if (Self->data) {
 		WIDGET_ICON *Icon = Self->data;
-		DelTree(Icon->speed_tree);
-		DelTree(Icon->visible_tree);
+		property_free(&Icon->speed);
+		property_free(&Icon->visible);
 		if (Icon->bitmap)
 		    free(Icon->bitmap);
 		free(Self->data);

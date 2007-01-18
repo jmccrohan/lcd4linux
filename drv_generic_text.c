@@ -449,6 +449,7 @@ int drv_generic_text_icon_draw(WIDGET * W)
     static int icon_counter = 0;
     WIDGET_ICON *Icon = W->data;
     int row, col;
+    int visible;
     int invalidate = 0;
     unsigned char ascii;
 
@@ -473,8 +474,11 @@ int drv_generic_text_icon_draw(WIDGET * W)
 	Icon->ascii = CHAR0 + CHARS - icon_counter;
     }
 
+    /* Icon visible? */
+    visible = P2N(&Icon->visible) > 0;
+    
     /* maybe redefine icon */
-    if (Icon->curmap != Icon->prvmap && Icon->visible) {
+    if (Icon->curmap != Icon->prvmap && visible) {
 	Icon->prvmap = Icon->curmap;
 	if (drv_generic_text_real_defchar)
 	    drv_generic_text_real_defchar(Icon->ascii, Icon->bitmap + YRES * Icon->curmap);
@@ -482,7 +486,7 @@ int drv_generic_text_icon_draw(WIDGET * W)
     }
 
     /* use blank if invisible */
-    ascii = Icon->visible ? Icon->ascii : ' ';
+    ascii = visible ? Icon->ascii : ' ';
 
     /* transfer icon into layout buffer */
     LayoutFB[row * LCOLS + col] = ascii;
