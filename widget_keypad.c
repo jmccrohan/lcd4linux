@@ -40,7 +40,7 @@
 
 #include "debug.h"
 #include "cfg.h"
-#include "evaluator.h"
+#include "property.h"
 #include "timer.h"
 #include "widget.h"
 #include "widget_keypad.h"
@@ -53,20 +53,11 @@
 int widget_keypad_draw(WIDGET * Self)
 {
     WIDGET_KEYPAD *keypad = Self->data;
-    RESULT result = { 0, 0, 0, NULL };
 
-    int val;
+    /* evaluate properties */
+    property_eval(&keypad->expression);
 
-    /* evaluate expression */
-    val = 0;
-    if (keypad->tree != NULL) {
-	Eval(keypad->tree, &result);
-	val = R2N(&result);
-	DelResult(&result);
-    }
-    keypad->val = val;
-
-    return val;
+    return P2N(&keypad->expression);
 }
 
 
@@ -85,17 +76,8 @@ int widget_keypad_init(WIDGET * Self)
     keypad = malloc(sizeof(WIDGET_KEYPAD));
     memset(keypad, 0, sizeof(WIDGET_KEYPAD));
 
-    /* get raw expression (we evaluate them ourselves) */
-    keypad->expression = cfg_get_raw(section, "expression", NULL);
-
-    /* sanity check */
-    if (keypad->expression == NULL || *keypad->expression == '\0') {
-	error("widget %s has no expression, using '0.0'", Self->name);
-	keypad->expression = "0";
-    }
-
-    /* compile expression */
-    Compile(keypad->expression, &keypad->tree);
+    /* load properties */
+    property_load(section, "expression", "0", &keypad->expression);
 
     /* state: pressed (default), released */
     c = cfg_get(section, "state", "pressed");
@@ -145,8 +127,8 @@ int widget_keypad_quit(WIDGET * Self)
 {
     if (Self) {
 	if (Self->data) {
-	    WIDGET_KEYPAD *KEYPAD = Self->data;
-	    DelTree(KEYPAD->tree);
+	    WIDGET_KEYPAD *keypad = Self->data;
+	    property_free(&keypad->expression);
 	    free(Self->data);
 	}
 	Self->data = NULL;
