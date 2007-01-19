@@ -66,6 +66,7 @@ extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
+extern DRIVER drv_picoLCD;
 extern DRIVER drv_RouterBoard;
 extern DRIVER drv_Sample;
 extern DRIVER drv_serdisplib;
@@ -141,6 +142,10 @@ DRIVER *Driver[] = {
 #ifdef WITH_NULL
     &drv_NULL,
 #endif
+#ifdef WITH_picoLCD
+    &drv_picoLCD,
+#endif
+
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,
 #endif

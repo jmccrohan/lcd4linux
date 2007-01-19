@@ -35,7 +35,7 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,]
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, RouterBoard, Sample,]
+  [                        Noritake, NULL, PNG, PPM, picoLCD, RouterBoard, Sample,]
   [                        serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
   [                        USBHUB, WincorNixdorf, X11],
   drivers=$withval, 
@@ -76,9 +76,10 @@ for driver in $drivers; do
          MILINST="yes"
          NORITAKE="yes" 
          NULL="yes" 
+         picoLCD="yes"
          PNG="yes"
          PPM="yes"
-	 ROUTERBOARD="yes"
+         ROUTERBOARD="yes"
          SAMPLE="yes"
 	 SERDISPLIB="yes"
          SIMPLELCD="yes"
@@ -146,6 +147,9 @@ for driver in $drivers; do
       NULL)
          NULL=$val;
          ;;
+      picoLCD)
+         picoLCD=$val
+         ;;         
       PNG)
          PNG=$val
          ;;
@@ -373,6 +377,15 @@ if test "$NULL" = "yes"; then
    TEXT="yes"
    DRIVERS="$DRIVERS drv_NULL.o"
    AC_DEFINE(WITH_NULL,1,[NULL driver])
+fi
+
+if test "$picoLCD" = "yes"; then
+   TEXT="yes"
+   GPIO="yes"
+   SERIAL="yes"
+   #I2C="yes"
+   DRIVERS="$DRIVERS drv_picoLCD.o"
+   AC_DEFINE(WITH_picoLCD,1,[picoLCD driver])
 fi
 
 if test "$PNG" = "yes"; then

@@ -246,6 +246,14 @@ Display HD44780-kernelconcepts {
     }
 }
 
+Display picoLCD {
+    Driver 'picoLCD'
+    Size     '20x2'
+    Contrast  0
+    Backlight 1
+    Icons     4
+}
+
 Display SC1602D {
     Driver 'HD44780'
     Port '/dev/parports/0'	

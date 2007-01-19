@@ -83,6 +83,7 @@ drv_MatrixOrbital.c           \
 drv_MilfordInstruments.c      \
 drv_Noritake.c                \
 drv_NULL.c                    \
+drv_picoLCD.c		      \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
 drv_serdisplib.c              \
