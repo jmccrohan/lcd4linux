@@ -476,7 +476,7 @@ int drv_generic_text_icon_draw(WIDGET * W)
 
     /* Icon visible? */
     visible = P2N(&Icon->visible) > 0;
-    
+
     /* maybe redefine icon */
     if (Icon->curmap != Icon->prvmap && visible) {
 	Icon->prvmap = Icon->curmap;

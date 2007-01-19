@@ -344,7 +344,7 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
     int layer, row, col;
     int x, y;
     int visible;
-    
+
     layer = W->layer;
     row = YRES * W->row;
     col = XRES * W->col;
@@ -363,7 +363,7 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 
     /* Icon visible? */
     visible = P2N(&Icon->visible) > 0;
-    
+
     /* render icon */
     for (y = 0; y < YRES; y++) {
 	int mask = 1 << XRES;
@@ -380,10 +380,10 @@ int drv_generic_graphic_icon_draw(WIDGET * W)
 	    }
 	}
     }
-    
+
     /* flush area */
     drv_generic_graphic_blit(row, col, YRES, XRES);
-    
+
     return 0;
 
 }
