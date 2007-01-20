@@ -110,14 +110,12 @@ int widget_keypad_init(WIDGET * Self)
 int widget_keypad_find(WIDGET * Self, void *needle)
 {
     WIDGET_KEYPAD *keypad;
-    unsigned int *n = needle;
+    KEYPADKEY key = *(KEYPADKEY *) needle;
 
-    if (Self) {
-	if (Self->data) {
-	    keypad = Self->data;
-	    if (keypad->key == *n)
-		return 0;
-	}
+    if (Self && Self->data) {
+	keypad = Self->data;
+	if (keypad->key == key)
+	    return 0;
     }
 
     return -1;
@@ -125,12 +123,10 @@ int widget_keypad_find(WIDGET * Self, void *needle)
 
 int widget_keypad_quit(WIDGET * Self)
 {
-    if (Self) {
-	if (Self->data) {
-	    WIDGET_KEYPAD *keypad = Self->data;
-	    property_free(&keypad->expression);
-	    free(Self->data);
-	}
+    if (Self && Self->data) {
+	WIDGET_KEYPAD *keypad = Self->data;
+	property_free(&keypad->expression);
+	free(Self->data);
 	Self->data = NULL;
     }
     return 0;

@@ -106,14 +106,12 @@ int widget_gpo_init(WIDGET * Self)
 
 int widget_gpo_quit(WIDGET * Self)
 {
-    if (Self) {
-	if (Self->data) {
-	    WIDGET_GPO *GPO = Self->data;
-	    property_free(&GPO->expression);
-	    property_free(&GPO->update);
-	    free(Self->data);
-	    Self->data = NULL;
-	}
+    if (Self && Self->data) {
+	WIDGET_GPO *GPO = Self->data;
+	property_free(&GPO->expression);
+	property_free(&GPO->update);
+	free(Self->data);
+	Self->data = NULL;
     }
     return 0;
 }
