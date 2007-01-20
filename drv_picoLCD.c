@@ -166,7 +166,6 @@ static void drv_pL_send(void)
 	usb_bulk_write(lcd, USB_ENDPOINT_OUT + 1, Buffer, BufPtr - Buffer, 1000);
 #endif
     }
-
 #if 0
     gettimeofday(&end, NULL);
     debug("send %d bytes in %d usec (%d usec/byte)", BufPtr - Buffer,

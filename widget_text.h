@@ -28,9 +28,7 @@
 #ifndef _WIDGET_TEXT_H_
 #define _WIDGET_TEXT_H_
 
-
 #include "property.h"
-
 
 typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } TEXT_ALIGN;
 

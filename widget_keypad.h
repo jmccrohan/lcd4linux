@@ -28,9 +28,7 @@
 #ifndef _WIDGET_KEYPAD_H_
 #define _WIDGET_KEYPAD_H_
 
-
 #include "property.h"
-
 
 typedef enum {
     WIDGET_KEY_UP = 1,
@@ -42,7 +40,6 @@ typedef enum {
     WIDGET_KEY_PRESSED = 64,
     WIDGET_KEY_RELEASED = 128
 } KEYPADKEY;
-
 
 typedef struct WIDGET_KEYPAD {
     PROPERTY expression;	/* expression that delivers the value */
