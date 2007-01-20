@@ -230,6 +230,11 @@ int widget_image_init(WIDGET * Self)
 	property_load(section, "visible", "1", &Image->visible);
 	property_load(section, "inverted", "0", &Image->inverted);
 
+	/* sanity checks */
+	if (!property_valid(&Image->file)) {
+	    error("Warning: widget %s has no file", section);
+	}
+
 	free(section);
 	Self->data = Image;
 

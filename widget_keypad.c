@@ -77,7 +77,7 @@ int widget_keypad_init(WIDGET * Self)
     memset(keypad, 0, sizeof(WIDGET_KEYPAD));
 
     /* load properties */
-    property_load(section, "expression", "0", &keypad->expression);
+    property_load(section, "expression", NULL, &keypad->expression);
 
     /* state: pressed (default), released */
     c = cfg_get(section, "state", "pressed");

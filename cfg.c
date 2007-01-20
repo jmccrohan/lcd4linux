@@ -351,6 +351,7 @@ char *cfg_get_raw(const char *section, const char *key, const char *defval)
 
     if (val != NULL)
 	return val;
+
     return (char *) defval;
 }
 

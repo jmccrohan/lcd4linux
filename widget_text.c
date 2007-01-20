@@ -161,9 +161,10 @@ void widget_text_update(void *Self)
     char *string;
     int update = 0;
 
-    /* evaluate prefix and postfix */
+    /* evaluate properties */
     update += property_eval(&T->prefix);
     update += property_eval(&T->postfix);
+    update += property_eval(&T->style);
 
     /* evaluate value */
     property_eval(&T->value);
@@ -211,9 +212,6 @@ void widget_text_update(void *Self)
 	free(string);
     }
 
-    /* text style */
-    update += property_eval(&T->style);
-
     /* something has changed and should be updated */
     if (update) {
 	/* reset marquee counter if content has changed */
@@ -246,9 +244,14 @@ int widget_text_init(WIDGET * Self)
 
     /* load properties */
     property_load(section, "prefix", NULL, &Text->prefix);
-    property_load(section, "expression", NULL, &Text->value);
+    property_load(section, "expression", "", &Text->value);
     property_load(section, "postfix", NULL, &Text->postfix);
-    property_load(section, "style", "'norm'", &Text->style);
+    property_load(section, "style", NULL, &Text->style);
+
+    /* sanity checks */
+    if (!property_valid(&Text->value)) {
+	error("Warning: widget %s has no expression", section);
+    }
 
     /* field width, default 10 */
     cfg_number(section, "width", 10, 0, -1, &(Text->width));

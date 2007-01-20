@@ -64,7 +64,10 @@
 
 void property_load(const char *section, const char *name, const char *defval, PROPERTY * prop)
 {
+    char *expression;
+
     /* initialize structure */
+    prop->valid = 0;
     prop->name = NULL;
     prop->expression = NULL;
     prop->compiled = NULL;
@@ -74,7 +77,16 @@ void property_load(const char *section, const char *name, const char *defval, PR
     prop->name = strdup(name);
 
     /* load expression from config, but do not evaluate it */
-    prop->expression = cfg_get_raw(section, name, defval);
+    expression = cfg_get_raw(section, name, NULL);
+
+    if (expression == NULL) {
+	if (defval != NULL && *defval != '\0')
+	    debug("Notice: using default value <%s> for property '%s.%s'", defval, section, name);
+	prop->expression = (char *) defval;
+    } else {
+	prop->valid = 1;
+	prop->expression = expression;
+    }
 
     /* pre-compile the expression */
     Compile(prop->expression, &prop->compiled);
@@ -82,13 +94,18 @@ void property_load(const char *section, const char *name, const char *defval, PR
 }
 
 
+int property_valid(PROPERTY * prop)
+{
+    return prop->valid;
+}
+
+
 int property_eval(PROPERTY * prop)
 {
     RESULT old;
-    int update = 1;
+    int update;
 
     /* this is a bit ugly: we need to remember the old value */
-
     old.type = prop->result.type;
     old.size = prop->result.size;
     old.number = prop->result.number;
@@ -97,10 +114,11 @@ int property_eval(PROPERTY * prop)
     DelResult(&prop->result);
     Eval(prop->compiled, &prop->result);
 
+    /* check if property value has changed */
+    update = 1;
     if (prop->result.type & R_NUMBER && old.type & R_NUMBER && prop->result.number == old.number) {
 	update = 0;
     }
-
     if (prop->result.type & R_STRING && old.type & R_STRING && prop->result.size == old.size) {
 	if (prop->result.string == NULL && old.string == NULL) {
 	    update = 0;

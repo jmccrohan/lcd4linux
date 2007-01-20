@@ -1344,7 +1344,7 @@ Optional Packages:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,
                           LUIse, M50530, MatrixOrbital, MilfordInstruments,
-                          Noritake, NULL, PNG, PPM, RouterBoard, Sample,
+                          Noritake, NULL, PNG, PPM, picoLCD, RouterBoard, Sample,
                           serdisplib, SimpleLCD, T6963, Trefon, USBLCD,
                           USBHUB, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
@@ -7238,9 +7238,10 @@ for driver in $drivers; do
          MILINST="yes"
          NORITAKE="yes"
          NULL="yes"
+         picoLCD="yes"
          PNG="yes"
          PPM="yes"
-	 ROUTERBOARD="yes"
+         ROUTERBOARD="yes"
          SAMPLE="yes"
 	 SERDISPLIB="yes"
          SIMPLELCD="yes"
@@ -7307,6 +7308,9 @@ for driver in $drivers; do
          ;;
       NULL)
          NULL=$val;
+         ;;
+      picoLCD)
+         picoLCD=$val
          ;;
       PNG)
          PNG=$val
@@ -7618,6 +7622,19 @@ if test "$NULL" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_NULL 1
+_ACEOF
+
+fi
+
+if test "$picoLCD" = "yes"; then
+   TEXT="yes"
+   GPIO="yes"
+   SERIAL="yes"
+   #I2C="yes"
+   DRIVERS="$DRIVERS drv_picoLCD.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_picoLCD 1
 _ACEOF
 
 fi

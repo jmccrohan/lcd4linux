@@ -28,18 +28,16 @@
 #ifndef _WIDGET_BAR_H_
 #define _WIDGET_BAR_H_
 
+#include "property.h"
+
 typedef enum { DIR_EAST = 1, DIR_WEST = 2, DIR_NORTH = 4, DIR_SOUTH = 8 } DIRECTION;
 typedef enum { STYLE_HOLLOW = 1, STYLE_FIRST = 2, STYLE_LAST = 4 } STYLE;
 
 typedef struct WIDGET_BAR {
-    char *expression1;		/* expression that delivers the value */
-    char *expression2;		/* expression that delivers the value */
-    char *expr_min;		/* expression that delivers the minimum value */
-    char *expr_max;		/* expression that delivers the maximum value */
-    void *tree1;		/* pre-compiled expression that delivers the value */
-    void *tree2;		/* pre-compiled expression that delivers the value */
-    void *tree_min;		/* pre-compiled expression that delivers the minimum value */
-    void *tree_max;		/* pre-compiled expression that delivers the maximum value */
+    PROPERTY expression1;	/* value (length) of upper half */
+    PROPERTY expression2;	/* value (length) of lower half */
+    PROPERTY expr_min;		/* explicit minimum value */
+    PROPERTY expr_max;		/* explicit maximum value */
     DIRECTION direction;	/* bar direction */
     STYLE style;		/* bar style (hollow) */
     int length;			/* bar length */

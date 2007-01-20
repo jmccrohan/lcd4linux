@@ -32,6 +32,7 @@
 
 
 typedef struct {
+    int valid;
     char *name;
     char *expression;
     void *compiled;
@@ -40,6 +41,7 @@ typedef struct {
 
 
 void property_load(const char *section, const char *name, const char *defval, PROPERTY * prop);
+int property_valid(PROPERTY * prop);
 int property_eval(PROPERTY * prop);
 double P2N(PROPERTY * prop);
 char *P2S(PROPERTY * prop);

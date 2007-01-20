@@ -89,8 +89,13 @@ int widget_gpo_init(WIDGET * Self)
     memset(GPO, 0, sizeof(WIDGET_GPO));
 
     /* load properties */
-    property_load(section, "expression", "0", &GPO->expression);
+    property_load(section, "expression", NULL, &GPO->expression);
     property_load(section, "update", "1000", &GPO->update);
+
+    /* sanity checks */
+    if (!property_valid(&GPO->expression)) {
+	error("Warning: widget %s has no expression", section);
+    }
 
     free(section);
     Self->data = GPO;

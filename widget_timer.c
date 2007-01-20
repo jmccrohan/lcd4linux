@@ -92,7 +92,7 @@ int widget_timer_init(WIDGET * Self)
     memset(Timer, 0, sizeof(WIDGET_TIMER));
 
     /* load properties */
-    property_load(section, "expression", "1", &Timer->expression);
+    property_load(section, "expression", NULL, &Timer->expression);
     property_load(section, "update", "100", &Timer->update);
     property_load(section, "active", "1", &Timer->active);
 
