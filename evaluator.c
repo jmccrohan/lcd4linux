@@ -310,6 +310,10 @@ double R2N(RESULT * result)
 	return 0.0;
     }
 
+    if (result->type == 0) {
+	return 0.0;
+    }
+
     if (result->type & R_NUMBER) {
 	return result->number;
     }
@@ -329,6 +333,10 @@ char *R2S(RESULT * result)
 {
     if (result == NULL) {
 	error("Evaluator: internal error: NULL result");
+	return NULL;
+    }
+
+    if (result->type == 0) {
 	return NULL;
     }
 

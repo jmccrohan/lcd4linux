@@ -413,13 +413,13 @@ int cfg_number(const char *section, const char *key, const int defval, const int
     DelResult(&result);
 
     if (*value < min) {
-	error("bad '%s' value '%d' in %s, minimum is %d", key, *value, cfg_source(), min);
+	error("bad '%s.%s' value '%d' in %s, minimum is %d", section, key, *value, cfg_source(), min);
 	*value = min;
 	return -1;
     }
 
     if (max > min && max != -1 && *value > max) {
-	error("bad '%s' value '%d' in %s, maximum is %d", key, *value, cfg_source(), max);
+	error("bad '%s.%s' value '%d' in %s, maximum is %d", section, key, *value, cfg_source(), max);
 	*value = max;
 	return -1;
     }
