@@ -219,8 +219,10 @@ int drv_generic_gpio_get(const int num)
 int drv_generic_gpio_draw(WIDGET * W)
 {
     WIDGET_GPO *gpo = W->data;
-    int num = gpo->num;
-    int val = gpo->val;
+    int num, val;
+
+    num = W->row;
+    val = P2N(&gpo->expression);
 
     if (num < 0 || num >= GPOS) {
 	error("%s: gpio_draw(%d): GPO out of range (0..%d)", Driver, num + 1, GPOS);

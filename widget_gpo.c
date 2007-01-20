@@ -59,9 +59,6 @@ void widget_gpo_update(void *Self)
     property_eval(&GPO->expression);
     property_eval(&GPO->update);
 
-    GPO->num = W->row;
-    GPO->val = P2N(&GPO->expression);
-
     /* finally, draw it! */
     if (W->class->draw)
 	W->class->draw(W);

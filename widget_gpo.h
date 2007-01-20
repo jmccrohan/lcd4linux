@@ -33,8 +33,6 @@
 typedef struct WIDGET_GPO {
     PROPERTY expression;	/* main GPO expression */
     PROPERTY update;		/* update interval (msec) */
-    int num;			/* GPO number */
-    int val;			/* GPO value */
 } WIDGET_GPO;
 
 
