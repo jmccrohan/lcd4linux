@@ -51,6 +51,7 @@ void DeleteFunctions(void);
 
 void DelResult(RESULT * result);
 RESULT *SetResult(RESULT ** result, const int type, const void *value);
+RESULT *CopyResult(RESULT ** result, RESULT * value);
 
 double R2N(RESULT * result);
 char *R2S(RESULT * result);

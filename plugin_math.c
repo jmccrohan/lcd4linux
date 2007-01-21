@@ -114,6 +114,26 @@ static void my_ceil(RESULT * result, RESULT * arg)
     SetResult(&result, R_NUMBER, &value);
 }
 
+static void my_decode(RESULT * result, int argc, RESULT * argv[])
+{
+    int index;
+    
+    if (argc < 2) {
+	error("decode(): wrong number of parameters");
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    index = R2N(argv[0]);
+    
+    if (index < 0 || index >= argc-1) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+    
+    CopyResult (&result, argv[index+1]);
+}
+
 
 int plugin_init_math(void)
 {
@@ -137,6 +157,9 @@ int plugin_init_math(void)
     /* floor, ceil */
     AddFunction("floor", 1, my_floor);
     AddFunction("ceil", 1, my_ceil);
+
+    /* decode */
+    AddFunction("decode", -1, my_decode);
 
     return 0;
 }

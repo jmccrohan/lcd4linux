@@ -274,7 +274,7 @@ RESULT *SetResult(RESULT ** result, const int type, const void *value)
 }
 
 
-static RESULT *CopyResult(RESULT ** result, RESULT * value)
+RESULT *CopyResult(RESULT ** result, RESULT * value)
 {
     if (*result == NULL) {
 	if ((*result = NewResult()) == NULL)
