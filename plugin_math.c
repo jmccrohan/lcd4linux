@@ -117,7 +117,7 @@ static void my_ceil(RESULT * result, RESULT * arg)
 static void my_decode(RESULT * result, int argc, RESULT * argv[])
 {
     int index;
-    
+
     if (argc < 2) {
 	error("decode(): wrong number of parameters");
 	SetResult(&result, R_STRING, "");
@@ -125,13 +125,13 @@ static void my_decode(RESULT * result, int argc, RESULT * argv[])
     }
 
     index = R2N(argv[0]);
-    
-    if (index < 0 || index >= argc-1) {
+
+    if (index < 0 || index >= argc - 1) {
 	SetResult(&result, R_STRING, "");
 	return;
     }
-    
-    CopyResult (&result, argv[index+1]);
+
+    CopyResult(&result, argv[index + 1]);
 }
 
 
