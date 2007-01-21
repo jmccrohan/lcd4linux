@@ -54,7 +54,6 @@ void widget_bar_update(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
     WIDGET_BAR *Bar = W->data;
-    RESULT result = { 0, 0, 0, NULL };
 
     double val1, val2;
     double min, max;
