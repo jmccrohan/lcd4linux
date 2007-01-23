@@ -5,7 +5,7 @@
  * LCD4Linux
  *
  * Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <reinelt@eunet.at>
- * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004, 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <time.h>
 
+#include "svn_version.h"
 #include "cfg.h"
 #include "debug.h"
 #include "qprintf.h"
@@ -56,8 +57,8 @@
 
 #define PIDFILE "/var/run/lcd4linux.pid"
 
-static char *release = "LCD4Linux " VERSION;
-static char *copyright = "Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
+static char *release = "LCD4Linux " VERSION "-" SVN_VERSION;
+static char *copyright = "Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
 extern char *output;
 
@@ -255,7 +256,7 @@ int main(int argc, char *argv[])
 	running_foreground = 1;
     }
 
-    info("Version " VERSION " starting");
+    info("Version " VERSION "-" SVN_VERSION " starting");
     if (!running_foreground && (my_argv[0] == NULL || my_argv[0][0] != '/')) {
 	info("invoked without full path; restart may not work!");
     }

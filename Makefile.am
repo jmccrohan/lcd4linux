@@ -18,7 +18,7 @@ lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 
 lcd4linux_SOURCES =           \
-lcd4linux.c                   \
+lcd4linux.c   svn_version.h   \
 cfg.c         cfg.h           \
 debug.c       debug.h         \
 drv.c         drv.h           \
@@ -83,7 +83,6 @@ drv_MatrixOrbital.c           \
 drv_MilfordInstruments.c      \
 drv_Noritake.c                \
 drv_NULL.c                    \
-drv_picoLCD.c		      \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
 drv_serdisplib.c              \
@@ -131,6 +130,7 @@ plugin_xmms.c
 
 
 EXTRA_DIST =                  \
+svn_version.sh                \
 lcd4linux.conf.sample         \
 lcd4kde.conf                  \
 lcd4linux.kdelnk              \
@@ -146,4 +146,13 @@ NEWS                          \
 TODO                          \
 README                        \
 plugin_sample.c
+
+
+
+# create subversion version
+
+.PHONY: svn_version
+
+svn_version:
+	svn_version.sh
 
