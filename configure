@@ -7548,7 +7548,7 @@ _ACEOF
 fi
 
 if test "$LEDMATRIX" = "yes"; then
-   GRAPHICS="yes"
+   GRAPHIC="yes"
    DRIVERS="$DRIVERS drv_LEDMatrix.o"
 
 cat >>confdefs.h <<\_ACEOF
@@ -7558,7 +7558,7 @@ _ACEOF
 fi
 
 if test "$LPH7508" = "yes"; then
-   GRAPHICS="yes"
+   GRAPHIC="yes"
    GPIO="yes"
    PARPORT="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
@@ -7827,6 +7827,12 @@ _ACEOF
 fi
 
 
+# Image driver
+if test "$IMAGE" = "yes"; then
+   GRAPHIC="yes"
+   DRIVERS="$DRIVERS drv_Image.o"
+fi
+
 if test "$DRIVERS" = ""; then
    { { echo "$as_me:$LINENO: error: You should activate at least one driver..." >&5
 echo "$as_me: error: You should activate at least one driver..." >&2;}
@@ -7836,12 +7842,6 @@ fi
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
-fi
-
-# Image driver
-if test "$IMAGE" = "yes"; then
-   GRAPHIC="yes"
-   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 # generic graphic driver

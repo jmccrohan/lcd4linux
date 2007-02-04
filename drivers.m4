@@ -330,13 +330,13 @@ if test "$LCDTERM" = "yes"; then
 fi
 
 if test "$LEDMATRIX" = "yes"; then
-   GRAPHICS="yes"
+   GRAPHIC="yes"
    DRIVERS="$DRIVERS drv_LEDMatrix.o"
    AC_DEFINE(WITH_LEDMATRIX,1,[LEDMatrix driver])
 fi
 
 if test "$LPH7508" = "yes"; then
-   GRAPHICS="yes"
+   GRAPHIC="yes"
    GPIO="yes"
    PARPORT="yes"
    DRIVERS="$DRIVERS drv_LPH7508.o"
@@ -519,6 +519,12 @@ if test "$X11" = "yes"; then
 fi
 
 
+# Image driver
+if test "$IMAGE" = "yes"; then
+   GRAPHIC="yes"
+   DRIVERS="$DRIVERS drv_Image.o"
+fi
+
 if test "$DRIVERS" = ""; then
    AC_MSG_ERROR([You should activate at least one driver...])
 fi
@@ -526,12 +532,6 @@ fi
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
-fi
-
-# Image driver
-if test "$IMAGE" = "yes"; then
-   GRAPHIC="yes"
-   DRIVERS="$DRIVERS drv_Image.o"
 fi
 
 # generic graphic driver
