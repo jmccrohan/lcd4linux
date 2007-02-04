@@ -404,6 +404,9 @@
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
 
+/* Electronic Assembly RS232 graphic driver */
+#undef WITH_EA232graphic
+
 /* G-15 driver */
 #undef WITH_G15
 

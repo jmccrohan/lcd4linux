@@ -63,6 +63,7 @@ for driver in $drivers; do
          CRYSTALFONTZ="yes"
          CURSES="yes"
          CWLINUX="yes"
+         EA232graphic="yes"
          G15="yes"
          HD44780="yes"
          LCD2USB="yes"
@@ -104,6 +105,9 @@ for driver in $drivers; do
          ;;
       Cwlinux)
          CWLINUX=$val
+         ;;
+      EA232graphic)
+         EA232graphic=$val
          ;;
       G15)
          G15=$val
@@ -257,6 +261,14 @@ if test "$CWLINUX" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
+fi
+
+if test "$EA232graphic" = "yes"; then
+   GRAPHIC="yes"
+   SERIAL="yes"
+   GPIO="yes"
+   DRIVERS="$DRIVERS drv_EA232graphic.o"
+   AC_DEFINE(WITH_EA232graphic,1,[Electronic Assembly RS232 graphic driver])
 fi
 
 if test "$G15" = "yes"; then

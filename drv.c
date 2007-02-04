@@ -52,6 +52,7 @@ extern DRIVER drv_BWCT;
 extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
+extern DRIVER drv_EA232graphic;
 extern DRIVER drv_G15;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
@@ -94,11 +95,14 @@ DRIVER *Driver[] = {
 #ifdef WITH_CRYSTALFONTZ
     &drv_Crystalfontz,
 #endif
+#ifdef WITH_CURSES
+    &drv_Curses,
+#endif
 #ifdef WITH_CWLINUX
     &drv_Cwlinux,
 #endif
-#ifdef WITH_CURSES
-    &drv_Curses,
+#ifdef WITH_EA232graphic
+    &drv_EA232graphic,
 #endif
 #ifdef WITH_G15
     &drv_G15,
