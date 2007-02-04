@@ -46,9 +46,7 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#ifdef HAVE_USB_H
 #include <usb.h>
-#endif
 
 #include "debug.h"
 #include "cfg.h"
@@ -71,20 +69,13 @@
 
 static char Name[] = "picoLCD";
 
-static int use_libusb = 1;
 static unsigned int gpo = 0;
 
 static char *Buffer;
 static char *BufPtr;
 
-#ifdef HAVE_USB_H
-
 static usb_dev_handle *lcd;
-static int interface;
-
 extern int usb_debug;
-
-#endif
 
 
 
@@ -92,13 +83,14 @@ extern int usb_debug;
 /***  hardware dependant functions    ***/
 /****************************************/
 
-#ifdef HAVE_USB_H
-
 static int drv_pL_open(void)
 {
     struct usb_bus *busses, *bus;
     struct usb_device *dev;
-    char buf[1024];
+    char driver[1024];
+    char product[1024];
+    char manufacturer[1024];
+    char serialnumber[1024];
     int ret;
 
     lcd = NULL;
@@ -118,21 +110,35 @@ static int drv_pL_open(void)
 
 		info("%s: found picoLCD on bus %s device %s", Name, bus->dirname, dev->filename);
 
-		interface = 0;
 		lcd = usb_open(dev);
 
-		ret = usb_get_driver_np(lcd, 0, buf, sizeof(buf));
+		ret = usb_get_driver_np(lcd, 0, driver, sizeof(driver));
 
 		if (ret == 0) {
-		    info("interface 0 already claimed attempting to detach it\n");
-		    ret = usb_detach_kernel_driver_np(lcd, 0);
-		    printf("usb_detach_kernel_driver_np returned %d\n", ret);
+		    info("%s: interface 0 already claimed by '%s'", Name, driver);
+		    info("%s: attempting to detach driver...", Name);
+		    if (usb_detach_kernel_driver_np(lcd, 0) < 0) {
+			error("%s: usb_detach_kernel_driver_np() failed!", Name);
+			return -1;
+		    }
 		}
 
-		if (usb_claim_interface(lcd, interface) < 0) {
+		usb_set_configuration(lcd, 1);
+		usleep(100);
+
+		if (usb_claim_interface(lcd, 0) < 0) {
 		    error("%s: usb_claim_interface() failed!", Name);
 		    return -1;
 		}
+
+		usb_set_altinterface(lcd, 0);
+
+		usb_get_string_simple(lcd, dev->descriptor.iProduct, product, sizeof(product));
+		usb_get_string_simple(lcd, dev->descriptor.iManufacturer, manufacturer, sizeof(manufacturer));
+		usb_get_string_simple(lcd, dev->descriptor.iSerialNumber, serialnumber, sizeof(serialnumber));
+
+		info("%s: Manufacturer='%s' Product='%s' SerialNumber='%s'", Name, manufacturer, product, serialnumber);
+
 		return 0;
 	    }
 	}
@@ -144,63 +150,36 @@ static int drv_pL_open(void)
 
 static int drv_pL_close(void)
 {
-    usb_release_interface(lcd, interface);
+    usb_release_interface(lcd, 0);
     usb_close(lcd);
 
     return 0;
 }
 
-#endif
 
-
-static void drv_pL_send(void)
+static void drv_pL_send(unsigned char *data, int size)
 {
-
-#if 0
-    struct timeval now, end;
-    gettimeofday(&now, NULL);
-#endif
-
-    if (use_libusb) {
-#ifdef HAVE_USB_H
-	usb_bulk_write(lcd, USB_ENDPOINT_OUT + 1, Buffer, BufPtr - Buffer, 1000);
-#endif
-    }
-#if 0
-    gettimeofday(&end, NULL);
-    debug("send %d bytes in %d usec (%d usec/byte)", BufPtr - Buffer,
-	  (1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec),
-	  (1000000 * (end.tv_sec - now.tv_sec) + end.tv_usec - now.tv_usec) / (BufPtr - Buffer));
-#endif
-
-    BufPtr = Buffer;
-}
-
-
-static void drv_pL_command(const unsigned char cmd)
-{
-    *BufPtr++ = cmd;
+    usb_interrupt_write(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
 }
 
 
 static void drv_pL_clear(void)
 {
-    drv_pL_command(0x94);	/* clear display */
-    drv_pL_send();		/* flush buffer */
+    unsigned char cmd[1] = { 0x94 };	/* clear display */
+    drv_pL_send(cmd, 1);
 }
 
 static int drv_pL_contrast(int contrast)
 {
+    unsigned char cmd[2] = { 0x92 };	/* set contrast */
 
     if (contrast < 0)
 	contrast = 0;
     if (contrast > 255)
 	contrast = 255;
 
-    drv_pL_command(0x92);
-    drv_pL_command(contrast);
-
-    drv_pL_send();
+    cmd[1] = contrast;
+    drv_pL_send(cmd, 2);
 
     return contrast;
 }
@@ -208,21 +187,23 @@ static int drv_pL_contrast(int contrast)
 
 static int drv_pL_backlight(int backlight)
 {
+    unsigned char cmd[2] = { 0x91 };	/* set backlight */
+
     if (backlight < 0)
 	backlight = 0;
     if (backlight > 1)
 	backlight = 1;
 
-    drv_pL_command(0x91);
-    drv_pL_command(backlight);
-
-    drv_pL_send();
+    cmd[1] = backlight;
+    drv_pL_send(cmd, 2);
 
     return backlight;
 }
 
 static int drv_pL_gpo(int num, int val)
 {
+    unsigned char cmd[2] = { 0x81 };	/* set GPO */
+
     if (num < 0)
 	num = 0;
     if (num > 7)
@@ -239,8 +220,8 @@ static int drv_pL_gpo(int num, int val)
     else
 	gpo &= ~(1 << num);
 
-    drv_pL_command(0x81);
-    drv_pL_command(gpo);
+    cmd[1] = gpo;
+    drv_pL_send(cmd, 2);
 
     return val;
 }
@@ -248,35 +229,33 @@ static int drv_pL_gpo(int num, int val)
 
 static void drv_pL_write(const int row, const int col, const char *data, int len)
 {
+    unsigned char cmd[64];
+    int i;
 
-    drv_pL_command(0x98);
-    drv_pL_command(row);
-    drv_pL_command(col);
-    drv_pL_command(len);
+    cmd[0] = 0x98;		/* goto/write */
+    cmd[1] = row;
+    cmd[2] = col;
+    cmd[3] = len;
 
+    i = 4;
     while (len--) {
-	if (*data == 0)
-	    *BufPtr++ = 0;
-	*BufPtr++ = *data++;
+	cmd[i++] = *data++;
     }
 
-    drv_pL_send();
+    drv_pL_send(cmd, i);
 }
 
 static void drv_pL_defchar(const int ascii, const unsigned char *matrix)
 {
+    unsigned char cmd[10] = { 0x9c };	/* define character */
     int i;
 
-    drv_pL_command(0x9c);
-    drv_pL_command(ascii);
-
+    cmd[1] = ascii;
     for (i = 0; i < 8; i++) {
-	if ((*matrix & 0x1f) == 0)
-	    *BufPtr++ = 0;
-	*BufPtr++ = *matrix++ & 0x1f;
+	cmd[i + 2] = *matrix++ & 0x1f;
     }
 
-    drv_pL_send();
+    drv_pL_send(cmd, 10);
 }
 
 
@@ -285,14 +264,6 @@ static int drv_pL_start(const char *section, const int quiet)
     int rows = -1, cols = -1;
     int value;
     char *s;
-
-#ifdef HAVE_USB_H
-    use_libusb = 1;
-    debug("using libusb");
-#else
-    error("%s: lcd4linux was compiled without libusb support!", Name);
-    return -1;
-#endif
 
     s = cfg_get(section, "Size", NULL);
     if (s == NULL || *s == '\0') {
@@ -308,13 +279,9 @@ static int drv_pL_start(const char *section, const int quiet)
     DROWS = rows;
     DCOLS = cols;
 
-
-#ifdef HAVE_USB_H
     if (drv_pL_open() < 0) {
 	return -1;
     }
-#endif
-
 
     /* Init the command buffer */
     Buffer = (char *) malloc(1024);
@@ -325,12 +292,12 @@ static int drv_pL_start(const char *section, const int quiet)
     BufPtr = Buffer;
 
     if (cfg_number(section, "Contrast", 0, 0, 255, &value) > 0) {
-	info("Setting contrast to %d\n", value);
+	info("Setting contrast to %d", value);
 	drv_pL_contrast(value);
     }
 
     if (cfg_number(section, "Backlight", 0, 0, 1, &value) > 0) {
-	info("Setting backlight to %d\n", value);
+	info("Setting backlight to %d", value);
 	drv_pL_backlight(value);
     }
 
@@ -474,9 +441,6 @@ int drv_pL_quit(const int quiet)
 
     info("%s: shutting down.", Name);
 
-    /* flush buffer */
-    drv_pL_send();
-
     drv_generic_text_quit();
 
     /* clear display */
@@ -487,11 +451,7 @@ int drv_pL_quit(const int quiet)
 	drv_generic_text_greet("goodbye!", NULL);
     }
 
-    if (use_libusb) {
-#ifdef HAVE_USB_H
-	drv_pL_close();
-#endif
-    }
+    drv_pL_close();
 
     if (Buffer) {
 	free(Buffer);
