@@ -392,12 +392,15 @@ if test "$NULL" = "yes"; then
 fi
 
 if test "$picoLCD" = "yes"; then
-   TEXT="yes"
-   GPIO="yes"
-   SERIAL="yes"
-   #I2C="yes"
-   DRIVERS="$DRIVERS drv_picoLCD.o"
-   AC_DEFINE(WITH_picoLCD,1,[picoLCD driver])
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      GPIO="yes"
+      SERIAL="yes"
+      DRIVERS="$DRIVERS drv_picoLCD.o"
+      AC_DEFINE(WITH_picoLCD,1,[picoLCD driver])
+   else
+      AC_MSG_WARN(usb.h not found: picoLCD driver disabled)
+   fi
 fi
 
 if test "$PNG" = "yes"; then

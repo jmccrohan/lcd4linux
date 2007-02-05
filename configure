@@ -7643,16 +7643,20 @@ _ACEOF
 fi
 
 if test "$picoLCD" = "yes"; then
-   TEXT="yes"
-   GPIO="yes"
-   SERIAL="yes"
-   #I2C="yes"
-   DRIVERS="$DRIVERS drv_picoLCD.o"
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      GPIO="yes"
+      SERIAL="yes"
+      DRIVERS="$DRIVERS drv_picoLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_picoLCD 1
 _ACEOF
 
+   else
+      { echo "$as_me:$LINENO: WARNING: usb.h not found: picoLCD driver disabled" >&5
+echo "$as_me: WARNING: usb.h not found: picoLCD driver disabled" >&2;}
+   fi
 fi
 
 if test "$PNG" = "yes"; then
