@@ -1,5 +1,28 @@
+2007-02-25  michael
+
+	* Makefile.am, Makefile.in, debug.h, drv_BWCT.c,
+	  drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c,
+	  drv_Cwlinux.c, drv_EA232graphic.c, drv_G15.c, drv_HD44780.c,
+	  drv_Image.c, drv_LCD2USB.c, drv_LCDLinux.c, drv_LCDTerm.c,
+	  drv_LEDMatrix.c, drv_LPH7508.c, drv_LUIse.c, drv_M50530.c,
+	  drv_MatrixOrbital.c, drv_MilfordInstruments.c, drv_NULL.c,
+	  drv_Noritake.c, drv_RouterBoard.c, drv_Sample.c, drv_SimpleLCD.c,
+	  drv_T6963.c, drv_Trefon.c, drv_USBHUB.c, drv_USBLCD.c,
+	  drv_WincorNixdorf.c, drv_X11.c, drv_generic_graphic.c,
+	  drv_generic_i2c.c, drv_generic_i2c.h, drv_generic_text.c,
+	  drv_picoLCD.c, drv_serdisplib.c, font_6x8.h, font_6x8_bold.h,
+	  plugin_i2c_sensors.c, plugin_kvv.c, plugin_mysql.c,
+	  svn_version.h, widget_bar.c, widget_gpo.c, widget_icon.c,
+	  widget_image.c, widget_keypad.c, widget_text.c, widget_timer.c:
+	  lots of compiler warnings removed, C++-style comments removed,
+	  changed struc initialisation from 'field:value' to '.field=value'
+
 2007-02-24  michael
 
+	* plugin_string.c: strstr() and substr() added to string plugin
+	* ChangeLog: ChangeLog processed with svn2cl
+	* configure, configure.in, svn_version.h: trunk version incremented
+	  to 0.10.2-SVN
 	* configure, configure.in, svn_version.h: Version number changed to
 	  0.10.1-RC1
 
