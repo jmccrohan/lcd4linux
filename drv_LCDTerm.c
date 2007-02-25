@@ -284,8 +284,8 @@ int drv_LT_quit(const int quiet)
 
 
 DRIVER drv_LCDTerm = {
-  name:Name,
-  list:drv_LT_list,
-  init:drv_LT_init,
-  quit:drv_LT_quit,
+    .name = Name,
+    .list = drv_LT_list,
+    .init = drv_LT_init,
+    .quit = drv_LT_quit,
 };

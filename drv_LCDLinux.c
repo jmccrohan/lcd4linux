@@ -360,8 +360,8 @@ int drv_LL_quit(const int quiet)
 
 
 DRIVER drv_LCDLinux = {
-  name:Name,
-  list:drv_LL_list,
-  init:drv_LL_init,
-  quit:drv_LL_quit,
+    .name = Name,
+    .list = drv_LL_list,
+    .init = drv_LL_init,
+    .quit = drv_LL_quit,
 };

@@ -1385,8 +1385,8 @@ int drv_HD_quit(const int quiet)
 
 
 DRIVER drv_HD44780 = {
-  name:Name,
-  list:drv_HD_list,
-  init:drv_HD_init,
-  quit:drv_HD_quit,
+    .name = Name,
+    .list = drv_HD_list,
+    .init = drv_HD_init,
+    .quit = drv_HD_quit,
 };

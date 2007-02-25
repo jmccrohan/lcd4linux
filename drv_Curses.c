@@ -366,8 +366,8 @@ int drv_Curs_quit(const int quiet)
 
 
 DRIVER drv_Curses = {
-  name:Name,
-  list:drv_Curs_list,
-  init:drv_Curs_init,
-  quit:drv_Curs_quit,
+    .name = Name,
+    .list = drv_Curs_list,
+    .init = drv_Curs_init,
+    .quit = drv_Curs_quit,
 };

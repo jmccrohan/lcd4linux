@@ -135,10 +135,10 @@ int widget_keypad_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_Keypad = {
-  name:"keypad",
-  type:WIDGET_TYPE_KEYPAD,
-  init:widget_keypad_init,
-  draw:widget_keypad_draw,
-  find:widget_keypad_find,
-  quit:widget_keypad_quit,
+    .name = "keypad",
+    .type = WIDGET_TYPE_KEYPAD,
+    .init = widget_keypad_init,
+    .draw = widget_keypad_draw,
+    .find = widget_keypad_find,
+    .quit = widget_keypad_quit,
 };

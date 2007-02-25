@@ -214,9 +214,9 @@ int widget_bar_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_Bar = {
-  name:"bar",
-  type:WIDGET_TYPE_RC,
-  init:widget_bar_init,
-  draw:NULL,
-  quit:widget_bar_quit,
+    .name = "bar",
+    .type = WIDGET_TYPE_RC,
+    .init = widget_bar_init,
+    .draw = NULL,
+    .quit = widget_bar_quit,
 };

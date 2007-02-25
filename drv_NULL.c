@@ -188,8 +188,8 @@ int drv_NULL_quit(const __attribute__ ((unused))
 
 
 DRIVER drv_NULL = {
-  name:Name,
-  list:drv_NULL_list,
-  init:drv_NULL_init,
-  quit:drv_NULL_quit,
+    .name = Name,
+    .list = drv_NULL_list,
+    .init = drv_NULL_init,
+    .quit = drv_NULL_quit,
 };

@@ -368,8 +368,8 @@ int drv_X11_quit(const __attribute__ ((unused))
 
 
 DRIVER drv_X11 = {
-  name:Name,
-  list:drv_X11_list,
-  init:drv_X11_init,
-  quit:drv_X11_quit,
+    .name = Name,
+    .list = drv_X11_list,
+    .init = drv_X11_init,
+    .quit = drv_X11_quit,
 };

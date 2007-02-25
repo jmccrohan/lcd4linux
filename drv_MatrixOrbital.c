@@ -550,8 +550,8 @@ int drv_MO_quit(const int quiet)
 
 
 DRIVER drv_MatrixOrbital = {
-  name:Name,
-  list:drv_MO_list,
-  init:drv_MO_init,
-  quit:drv_MO_quit,
+    .name = Name,
+    .list = drv_MO_list,
+    .init = drv_MO_init,
+    .quit = drv_MO_quit,
 };

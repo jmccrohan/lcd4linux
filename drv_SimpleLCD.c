@@ -343,8 +343,8 @@ int drv_SL_quit(const int quiet)
 
 
 DRIVER drv_SimpleLCD = {
-  name:Name,
-  list:drv_SL_list,
-  init:drv_SL_init,
-  quit:drv_SL_quit,
+    .name = Name,
+    .list = drv_SL_list,
+    .init = drv_SL_init,
+    .quit = drv_SL_quit,
 };

@@ -585,17 +585,17 @@ int drv_Sample_quit2(const int quiet)
 
 /* use this one for a text display */
 DRIVER drv_Sample = {
-  name:Name,
-  list:drv_Sample_list,
-  init:drv_Sample_init,
-  quit:drv_Sample_quit,
+    .name = Name,
+    .list = drv_Sample_list,
+    .init = drv_Sample_init,
+    .quit = drv_Sample_quit,
 };
 
 
 /* use this one for a graphic display */
 DRIVER drv_Sample2 = {
-  name:Name,
-  list:drv_Sample_list,
-  init:drv_Sample_init2,
-  quit:drv_Sample_quit2,
+    .name = Name,
+    .list = drv_Sample_list,
+    .init = drv_Sample_init2,
+    .quit = drv_Sample_quit2,
 };

@@ -416,8 +416,8 @@ int drv_CW_quit(const int quiet)
 
 
 DRIVER drv_Cwlinux = {
-  name:Name,
-  list:drv_CW_list,
-  init:drv_CW_init,
-  quit:drv_CW_quit,
+    .name = Name,
+    .list = drv_CW_list,
+    .init = drv_CW_init,
+    .quit = drv_CW_quit,
 };

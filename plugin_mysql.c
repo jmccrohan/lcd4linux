@@ -73,7 +73,7 @@ static int configure_mysql(void)
     static int configured = 0;
 
     char server[256];
-    unsigned int port;
+    int port;
     char user[128];
     char password[256];
     char database[256];

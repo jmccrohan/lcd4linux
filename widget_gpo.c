@@ -119,9 +119,9 @@ int widget_gpo_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_GPO = {
-  name:"gpo",
-  type:WIDGET_TYPE_GPO,
-  init:widget_gpo_init,
-  draw:NULL,
-  quit:widget_gpo_quit,
+    .name = "gpo",
+    .type = WIDGET_TYPE_GPO,
+    .init = widget_gpo_init,
+    .draw = NULL,
+    .quit = widget_gpo_quit,
 };

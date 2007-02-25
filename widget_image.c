@@ -79,7 +79,7 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
     if (Image->bitmap) {
 	int i;
 	for (i = 0; i < Image->height * Image->width; i++) {
-	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    RGBA empty = {.R = 0x00,.G = 0x00,.B = 0x00,.A = 0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
@@ -138,7 +138,7 @@ static void widget_image_render(const char *Name, WIDGET_IMAGE * Image)
 	    return;
 	}
 	for (i = 0; i < Image->height * Image->width; i++) {
-	  RGBA empty = { R: 0x00, G: 0x00, B: 0x00, A:0x00 };
+	    RGBA empty = {.R = 0x00,.G = 0x00,.B = 0x00,.A = 0x00 };
 	    Image->bitmap[i] = empty;
 	}
     }
@@ -282,9 +282,9 @@ int widget_image_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_Image = {
-  name:"image",
-  type:WIDGET_TYPE_XY,
-  init:widget_image_init,
-  draw:NULL,
-  quit:widget_image_quit,
+    .name = "image",
+    .type = WIDGET_TYPE_XY,
+    .init = widget_image_init,
+    .draw = NULL,
+    .quit = widget_image_quit,
 };

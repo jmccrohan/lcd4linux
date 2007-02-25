@@ -31,7 +31,7 @@ extern int running_foreground;
 extern int running_background;
 extern int verbose_level;
 
-void message(const int level, const char *format, ...) __attribute__ ((format(__printf__, 2, 3)));;
+void message(const int level, const char *format, ...) __attribute__ ((format(__printf__, 2, 3)));
 
 #define debug(args...) message (2, __FILE__ ": " args)
 #define info(args...)  message (1, args)

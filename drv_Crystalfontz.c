@@ -1076,8 +1076,8 @@ int drv_CF_quit(const int quiet)
 
 
 DRIVER drv_Crystalfontz = {
-  name:Name,
-  list:drv_CF_list,
-  init:drv_CF_init,
-  quit:drv_CF_quit,
+    .name = Name,
+    .list = drv_CF_list,
+    .init = drv_CF_init,
+    .quit = drv_CF_quit,
 };

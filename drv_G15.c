@@ -584,8 +584,8 @@ int drv_G15_quit(const int quiet)
 
 
 DRIVER drv_G15 = {
-  name:Name,
-  list:drv_G15_list,
-  init:drv_G15_init,
-  quit:drv_G15_quit,
+    .name = Name,
+    .list = drv_G15_list,
+    .init = drv_G15_init,
+    .quit = drv_G15_quit,
 };

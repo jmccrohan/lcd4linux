@@ -206,8 +206,8 @@ static int drv_RB_sock_init()
 
     memset(sacl, 0, sizeof(struct sockaddr_in));
     sacl->sin_family = AF_INET;
-    sacl->sin_port = htons(3333);	//Listen Port
-    sacl->sin_addr.s_addr = inet_addr("127.0.0.1");	//Listen Address
+    sacl->sin_port = htons(3333);	/* Listen Port */
+    sacl->sin_addr.s_addr = inet_addr("127.0.0.1");	/* Listen Address */
 
     if ((sock_c = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 	error("Socket open failed");
@@ -294,7 +294,7 @@ static void drv_RB_command(const unsigned char cmd, const int delay)
     ndelay(T_AS);
     drv_RB_outw(cmd);
 
-    // wait for command completion
+    /* wait for command completion */
     udelay(delay);
 
 }
@@ -317,7 +317,7 @@ static void drv_RB_data(const char *string, const int len, const int delay)
 	ndelay(T_AS);
 	drv_RB_outw(ch | LCD_AFDX);
 
-	// wait for command completion
+	/* wait for command completion */
 	udelay(delay);
 
     }
@@ -642,53 +642,52 @@ int drv_RB_quit(const int quiet)
 
 
 DRIVER drv_RouterBoard = {
-  name:Name,
-  list:drv_RB_list,
-  init:drv_RB_init,
-  quit:drv_RB_quit,
+    .name = Name,
+    .list = drv_RB_list,
+    .init = drv_RB_init,
+    .quit = drv_RB_quit,
 };
 
 
 
-/* 
+#if 0
 
 Simple example to send led status to port 3333
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <errno.h>
-
-int send_packet (unsigned char leds)
+int send_packet(unsigned char leds)
 {
     struct sockaddr_in *sas;
     int sock;
     char msg[20];
-    msg[0]=leds;
-    msg[1]=0;
-    
+    msg[0] = leds;
+    msg[1] = 0;
+
     if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 	fprintf(stderr, "Socket option failed.\n");
 	return -1;
     }
-    
-    if (( sas = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in))) == NULL) 
-            return -1 ;
-    memset( sas, 0, sizeof(struct sockaddr_in));
+
+    if ((sas = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in))) == NULL)
+	return -1;
+    memset(sas, 0, sizeof(struct sockaddr_in));
     sas->sin_family = AF_INET;
     sas->sin_port = htons(3333);
     sas->sin_addr.s_addr = inet_addr("127.0.0.1");
-    if(sendto(sock,msg,6, 0, (struct sockaddr *) sas, sizeof(struct sockaddr_in)) > 0) 
-      { free(sas);
+    if (sendto(sock, msg, 6, 0, (struct sockaddr *) sas, sizeof(struct sockaddr_in)) > 0) {
+	free(sas);
 	return 1;
-       }  //sent ok to dest
-
+    }
+    /* sent ok to dest */
     free(sas);
-    return -1;	//Send failed
+    return -1;			/* Send failed */
 }
-  
-int main ()
-{
- send_packet(0x03);
- return 0;
-} 
 
-*/
+int main()
+{
+    send_packet(0x03);
+    return 0;
+}
+
+#endif

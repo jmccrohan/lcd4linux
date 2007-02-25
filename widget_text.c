@@ -338,9 +338,9 @@ int widget_text_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_Text = {
-  name:"text",
-  type:WIDGET_TYPE_RC,
-  init:widget_text_init,
-  draw:NULL,
-  quit:widget_text_quit,
+    .name = "text",
+    .type = WIDGET_TYPE_RC,
+    .init = widget_text_init,
+    .draw = NULL,
+    .quit = widget_text_quit,
 };

@@ -681,8 +681,8 @@ int drv_M5_quit(const int quiet)
 
 
 DRIVER drv_M50530 = {
-  name:Name,
-  list:drv_M5_list,
-  init:drv_M5_init,
-  quit:drv_M5_quit,
+    .name = Name,
+    .list = drv_M5_list,
+    .init = drv_M5_init,
+    .quit = drv_M5_quit,
 };

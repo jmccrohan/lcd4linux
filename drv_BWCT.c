@@ -395,8 +395,8 @@ int drv_BW_quit(const int quiet)
 
 
 DRIVER drv_BWCT = {
-  name:Name,
-  list:drv_BW_list,
-  init:drv_BW_init,
-  quit:drv_BW_quit,
+    .name = Name,
+    .list = drv_BW_list,
+    .init = drv_BW_init,
+    .quit = drv_BW_quit,
 };

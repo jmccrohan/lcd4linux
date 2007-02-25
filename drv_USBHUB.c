@@ -62,8 +62,8 @@ static char Name[] = "USBHUB";
  * no Vendor/Product specified in config.
  */
 
-static int hubVendor = 0x0409;
-static int hubProduct = 0x0058;
+static unsigned int hubVendor = 0x0409;
+static unsigned int hubProduct = 0x0058;
 
 static usb_dev_handle *hub = NULL;
 
@@ -298,7 +298,7 @@ int drv_UH_init(const char *section, const int quiet)
 	}
 	sleep(1);
 	for (i = 0; i < GPOS; ++i) {
-	    drv_UH_set(i, 3);	// OFF
+	    drv_UH_set(i, 3);	/* OFF */
 	}
     }
 
@@ -333,8 +333,8 @@ int drv_UH_quit(const int quiet)
 
 
 DRIVER drv_USBHUB = {
-  name:Name,
-  list:drv_UH_list,
-  init:drv_UH_init,
-  quit:drv_UH_quit,
+    .name = Name,
+    .list = drv_UH_list,
+    .init = drv_UH_init,
+    .quit = drv_UH_quit,
 };

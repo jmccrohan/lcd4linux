@@ -547,8 +547,8 @@ int drv_EA232graphic_quit(const int quiet)
 
 /* use this one for a graphic display */
 DRIVER drv_EA232graphic = {
-  name:Name,
-  list:drv_EA232graphic_list,
-  init:drv_EA232graphic_init,
-  quit:drv_EA232graphic_quit,
+    .name = Name,
+    .list = drv_EA232graphic_list,
+    .init = drv_EA232graphic_init,
+    .quit = drv_EA232graphic_quit,
 };

@@ -569,8 +569,8 @@ int drv_T6_quit(const int quiet)
 
 
 DRIVER drv_T6963 = {
-  name:Name,
-  list:drv_T6_list,
-  init:drv_T6_init,
-  quit:drv_T6_quit,
+    .name = Name,
+    .list = drv_T6_list,
+    .init = drv_T6_init,
+    .quit = drv_T6_quit,
 };

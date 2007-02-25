@@ -193,9 +193,9 @@ int widget_icon_quit(WIDGET * Self)
 
 
 WIDGET_CLASS Widget_Icon = {
-  name:"icon",
-  type:WIDGET_TYPE_RC,
-  init:widget_icon_init,
-  draw:NULL,
-  quit:widget_icon_quit,
+    .name = "icon",
+    .type = WIDGET_TYPE_RC,
+    .init = widget_icon_init,
+    .draw = NULL,
+    .quit = widget_icon_quit,
 };

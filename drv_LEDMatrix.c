@@ -66,7 +66,7 @@
 #include "drv.h"
 #include "drv_generic_graphic.h"
 
-// display command bytes
+/* display command bytes */
 #define DSP_CMD_ECHO  0
 #define DSP_CMD_NOP   1
 #define DSP_CMD_IMAGE 2
@@ -78,7 +78,7 @@
 
 #define DSP_MEM (80 * 32 * 2 / 8)
 
-#define DEFAULT_X_OFFSET   1	// with a font width of 6
+#define DEFAULT_X_OFFSET   1	/* with a font width of 6 */
 
 static char Name[] = "LEDMatrix";
 static char *IPAddress = NULL;
@@ -115,7 +115,7 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 	}
     }
 
-    // scan entire display
+    /* scan entire display */
     tx_buffer[0] = DSP_CMD_IMAGE;
 
     do {
@@ -130,13 +130,13 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 	tv.tv_sec = 0;
 	tv.tv_usec = 100000;
 
-	// wait 1 sec for ack
+	/* wait 1 sec for ack */
 	if ((i = select(FD_SETSIZE, &rfds, NULL, NULL, &tv)) < 0) {
 	    info("%s: Select error: %s", Name, strerror(errno));
 	}
 
 	if (FD_ISSET(sock, &rfds)) {
-	    // wait for ack
+	    /* wait for ack */
 	    fromlen = sizeof(dsp_addr);
 	    i = recvfrom(sock, reply, sizeof(reply), 0, (struct sockaddr *) &cli_addr, &fromlen);
 	    if (i < 0) {
@@ -145,8 +145,8 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 		if ((i == 2) && (reply[0] == DSP_CMD_ACK) && (reply[1] == DSP_CMD_IMAGE)) {
 		    ack = 1;
 		} else if ((i > 1) && (reply[0] == DSP_CMD_IR)) {
-// maybe used later:
-//        ir_receive(reply+1, i-1);
+/* maybe used later: */
+/*        ir_receive(reply+1, i-1); */
 		} else {
 		    info("%s: Unexpected reply message", Name);
 		}
@@ -313,8 +313,8 @@ int drv_LEDMatrix_quit(const __attribute__ ((unused))
 
 
 DRIVER drv_LEDMatrix = {
-  name:Name,
-  list:drv_LEDMatrix_list,
-  init:drv_LEDMatrix_init,
-  quit:drv_LEDMatrix_quit,
+    .name = Name,
+    .list = drv_LEDMatrix_list,
+    .init = drv_LEDMatrix_init,
+    .quit = drv_LEDMatrix_quit,
 };

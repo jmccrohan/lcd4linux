@@ -329,8 +329,8 @@ int drv_LUIse_quit(const int quiet)
 
 /* use this one for a graphic display */
 DRIVER drv_LUIse = {
-  name:Name,
-  list:drv_LUIse_list,
-  init:drv_LUIse_init,
-  quit:drv_LUIse_quit,
+    .name = Name,
+    .list = drv_LUIse_list,
+    .init = drv_LUIse_init,
+    .quit = drv_LUIse_quit,
 };

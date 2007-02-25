@@ -777,7 +777,7 @@ static void drv_generic_text_bar_pack_segments(void)
     for (i = 0; i < nSegment; i++) {
 	for (j = 0; j < nSegment; j++) {
 	    error[i][j] = drv_generic_text_bar_segment_error(i, j);
-	    // debug ("[%d][%d] = %d", i, j, error[i][j]);
+	    /* debug ("[%d][%d] = %d", i, j, error[i][j]); */
 	}
     }
 

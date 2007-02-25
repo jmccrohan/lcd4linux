@@ -140,8 +140,10 @@ static void drv_GU311_wait_busy(void)
 
 static void drv_GU311_send_char(char c)
 {
-    //drv_GU311_wait_busy(); /* ensuite the display is ready to take the command */
+#if 0
     /* Disabled because all the cables does not have the busy line linked. */
+    drv_GU311_wait_busy();	/* ensuite the display is ready to take the command */
+#endif
     drv_generic_parport_data(c);
     ndelay(30);			/* delay to ensure data line stabilisation on long cables */
     drv_generic_parport_control(SIGNAL_WR, 0);	/* write line to enable */
@@ -380,8 +382,8 @@ int drv_Noritake_quit(const int quiet)
 
 
 DRIVER drv_Noritake = {
-  name:Name,
-  list:drv_Noritake_list,
-  init:drv_Noritake_init,
-  quit:drv_Noritake_quit,
+    .name = Name,
+    .list = drv_Noritake_list,
+    .init = drv_Noritake_init,
+    .quit = drv_Noritake_quit,
 };

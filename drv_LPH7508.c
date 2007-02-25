@@ -163,7 +163,8 @@ static void drv_L7_clear(void)
 
 static void drv_L7_blit(const int row, const int col, const int height, const int width)
 {
-    int r, p;
+    int r, p, c, a;
+    unsigned char m;
 
     /* transfer layout to display framebuffer */
     for (r = row; r < row + height; r++) {
@@ -171,15 +172,14 @@ static void drv_L7_blit(const int row, const int col, const int height, const in
 	if (r >= SROWS - 1)
 	    break;
 	/* page */
-	int p = r / 8;
-	int c;
+	p = r / 8;
 	for (c = col; c < col + width; c++) {
 	    if (c >= SCOLS)
 		break;
 	    /* RAM address */
-	    int a = p * SCOLS + c;
+	    a = p * SCOLS + c;
 	    /* bit mask */
-	    unsigned char m = 1 << (r % 8);
+	    m = 1 << (r % 8);
 	    if (drv_generic_graphic_black(r, c)) {
 		/* set bit */
 		Buffer1[a] |= m;
@@ -521,8 +521,8 @@ int drv_L7_quit(const int quiet)
 
 
 DRIVER drv_LPH7508 = {
-  name:Name,
-  list:drv_L7_list,
-  init:drv_L7_init,
-  quit:drv_L7_quit,
+    .name = Name,
+    .list = drv_L7_list,
+    .init = drv_L7_init,
+    .quit = drv_L7_quit,
 };

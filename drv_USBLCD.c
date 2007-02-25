@@ -161,7 +161,7 @@ static void drv_UL_send(void)
 
     if (use_libusb) {
 #ifdef HAVE_USB_H
-	// Fixme: Endpoint hardcoded to 1 ???
+	/* Fixme: Endpoint hardcoded to 1 ??? */
 	usb_bulk_write(lcd, 1, Buffer, BufPtr - Buffer, 1000);
 #endif
     } else {
@@ -503,8 +503,8 @@ int drv_UL_quit(const int quiet)
 
 
 DRIVER drv_USBLCD = {
-  name:Name,
-  list:drv_UL_list,
-  init:drv_UL_init,
-  quit:drv_UL_quit,
+    .name = Name,
+    .list = drv_UL_list,
+    .init = drv_UL_init,
+    .quit = drv_UL_quit,
 };

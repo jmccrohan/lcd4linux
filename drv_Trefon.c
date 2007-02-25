@@ -126,22 +126,22 @@ static int drv_TF_close(void)
 }
 
 
-static void drv_TF_send(char *data, int size)
+static void drv_TF_send(unsigned char *data, int size)
 {
-    char buffer[64];
+    unsigned char buffer[64];
 
     /* the controller always wants a 64-byte packet */
     memset(buffer, 0, 64);
     memcpy(buffer, data, size);
 
-    // Endpoint hardcoded to 2
-    usb_bulk_write(lcd, 2, buffer, 64, 2000);
+    /* Endpoint hardcoded to 2 */
+    usb_bulk_write(lcd, 2, (char *) buffer, 64, 2000);
 }
 
 
 static void drv_TF_command(const unsigned char cmd)
 {
-    char buffer[4] = { PKT_START, PKT_CTRL, 0, PKT_END };
+    unsigned char buffer[4] = { PKT_START, PKT_CTRL, 0, PKT_END };
     buffer[2] = cmd;
     drv_TF_send(buffer, 4);
 }
@@ -155,27 +155,27 @@ static void drv_TF_clear(void)
 
 static void drv_TF_write(const int row, const int col, const char *data, const int len)
 {
-    char buffer[64];
-    char *p;
+    unsigned char buffer[64];
+    unsigned char *p;
     int pos = 0;
 
-    if (DCOLS == 8 && DROWS == 1) {	// 8x1 Characters
+    if (DCOLS == 8 && DROWS == 1) {	/* 8x1 Characters */
 	pos = row * 0x40 + col;
-    } else if (DCOLS == 16 && DROWS == 2) {	// 16x2 Characters
+    } else if (DCOLS == 16 && DROWS == 2) {	/* 16x2 Characters */
 	pos = row * 0x40 + col;
-    } else if (DCOLS == 20 && DROWS == 4) {	// 20x4 Characters
+    } else if (DCOLS == 20 && DROWS == 4) {	/* 20x4 Characters */
 	pos = row * 0x20 + col;
     } else {
 	error("%s: internal error: DCOLS=%d DROWS=%d", Name, DCOLS, DROWS);
 	return;
     }
 
-    // combine the GOTO and the data into one packet
+    /* combine the GOTO and the data into one packet */
     p = buffer;
     *p++ = PKT_START;
-    *p++ = PKT_CTRL;		// Goto
+    *p++ = PKT_CTRL;		/* Goto */
     *p++ = 0x80 | pos;
-    *p++ = PKT_DATA;		// Data
+    *p++ = PKT_DATA;		/* Data */
     *p++ = (char) len;
     for (pos = 0; pos < len; pos++) {
 	*p++ = *data++;
@@ -189,8 +189,8 @@ static void drv_TF_write(const int row, const int col, const char *data, const i
 static void drv_TF_defchar(const int ascii, const unsigned char *matrix)
 {
 
-    char buffer[14];
-    char *p;
+    unsigned char buffer[14];
+    unsigned char *p;
     int i;
 
     p = buffer;
@@ -210,7 +210,7 @@ static void drv_TF_defchar(const int ascii, const unsigned char *matrix)
 
 static int drv_TF_backlight(int backlight)
 {
-    char buffer[4] = { PKT_START, PKT_BACKLIGHT, 0, PKT_END };
+    unsigned char buffer[4] = { PKT_START, PKT_BACKLIGHT, 0, PKT_END };
 
     if (backlight < 0)
 	backlight = 0;
@@ -224,7 +224,7 @@ static int drv_TF_backlight(int backlight)
 }
 
 
-// test for existing resolutions from TREFON USB-LCDs (TEXT-Mode only)
+/* test for existing resolutions from TREFON USB-LCDs (TEXT-Mode only) */
 int drv_TF_valid_resolution(int rows, int cols)
 {
 
@@ -411,8 +411,8 @@ int drv_TF_quit(const int quiet)
 
 
 DRIVER drv_Trefon = {
-  name:Name,
-  list:drv_TF_list,
-  init:drv_TF_init,
-  quit:drv_TF_quit,
+    .name = Name,
+    .list = drv_TF_list,
+    .init = drv_TF_init,
+    .quit = drv_TF_quit,
 };

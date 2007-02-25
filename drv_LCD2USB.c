@@ -169,13 +169,13 @@ static int drv_L2U_send(int request, int value, int index)
 	usb_release_interface(lcd, 0);
 	usb_close(lcd);
 
-	// try to close and reopen connection
+	/* try to close and reopen connection */
 	if (drv_L2U_open(bus_id, device_id) < 0) {
 	    error("%s: could not re-detect LCD2USB USB LCD", Name);
 	    got_signal = -1;
 	    return -1;
 	}
-	// and try to re-send command
+	/* and try to re-send command */
 	if (usb_control_msg(lcd, USB_TYPE_VENDOR, request, value, index, NULL, 0, 1000) < 0) {
 	    error("%s: retried USB request failed, aborting!", Name);
 	    got_signal = -1;
@@ -269,10 +269,10 @@ static void drv_L2U_get_controllers(void)
 	    error("%s: no controllers found", Name);
     } else {
 	error("%s: unable to read installed controllers", Name);
-	controllers = 0;	// don't access any controllers 
+	controllers = 0;	/* don't access any controllers */
     }
 
-    // convert into controller map matching our protocol
+    /* convert into controller map matching our protocol */
     controllers = ((controllers & 1) ? LCD_CTRL_0 : 0) | ((controllers & 2) ? LCD_CTRL_1 : 0);
 }
 
@@ -673,8 +673,8 @@ int drv_L2U_quit(const int quiet)
 
 
 DRIVER drv_LCD2USB = {
-  name:Name,
-  list:drv_L2U_list,
-  init:drv_L2U_init,
-  quit:drv_L2U_quit,
+    .name = Name,
+    .list = drv_L2U_list,
+    .init = drv_L2U_init,
+    .quit = drv_L2U_quit,
 };

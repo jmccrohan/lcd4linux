@@ -113,7 +113,7 @@ static int parse_i2c_sensors_sysfs(const char *key)
     fgets(buffer, sizeof(buffer), stream);
     fclose(stream);
 
-    if (!buffer) {
+    if (buffer[0] == '\0') {
 	error("i2c_sensors: %s empty ?!", file);
 	return -1;
     }
@@ -183,7 +183,7 @@ static int parse_i2c_sensors_procfs(const char *key)
     fgets(buffer, sizeof(buffer), stream);
     fclose(stream);
 
-    if (!buffer) {
+    if (buffer[0] == '\0') {
 	error("i2c_sensors: %s empty ?!", file);
 	return -1;
     }

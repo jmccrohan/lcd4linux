@@ -137,9 +137,9 @@ int widget_timer_register(void)
 
 
 WIDGET_CLASS Widget_Timer = {
-  name:"timer",
-  type:WIDGET_TYPE_TIMER,
-  init:widget_timer_init,
-  draw:NULL,
-  quit:widget_timer_quit,
+    .name = "timer",
+    .type = WIDGET_TYPE_TIMER,
+    .init = widget_timer_init,
+    .draw = NULL,
+    .quit = widget_timer_quit,
 };

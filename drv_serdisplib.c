@@ -337,8 +337,8 @@ int drv_SD_quit(const int quiet)
 
 
 DRIVER drv_serdisplib = {
-  name:Name,
-  list:drv_SD_list,
-  init:drv_SD_init,
-  quit:drv_SD_quit,
+    .name = Name,
+    .list = drv_SD_list,
+    .init = drv_SD_init,
+    .quit = drv_SD_quit,
 };

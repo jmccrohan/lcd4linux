@@ -62,7 +62,7 @@
 #define HTTP_REQUEST "/webfgi/StopInfoInplace.aspx?ID=%s"
 #define USER_AGENT   "lcd4linux - KVV plugin (http://ssl.bulix.org/projects/lcd4linux/wiki/plugin_kvv)"
 
-#define DEFAULT_STATION_ID    "89"	// Hauptbahnhof
+#define DEFAULT_STATION_ID    "89"	/* Hauptbahnhof */
 
 /* example ids: 
  * 89     = Hauptbahnhof
@@ -107,9 +107,9 @@ static int get_element(char *input, char *name, char **data)
 {
     int skip = 0;
     int len = 0;
-    int state = 0;		// nothing found yet
+    int state = 0;		/* nothing found yet */
 
-    // search entire string
+    /* search entire string */
     while (*input) {
 
 	if (skip == 0) {
@@ -122,7 +122,7 @@ static int get_element(char *input, char *name, char **data)
 		break;
 
 	    case 1:
-		// ignore white spaces
+		/* ignore white spaces */
 		if (*input != ' ') {
 		    if (strncasecmp(input, name, strlen(name)) == 0) {
 			state = 2;
@@ -157,11 +157,11 @@ static int get_attrib(char *input, char *name, char **data)
 {
     int skip = 0;
     int len = 0;
-    int state = 0;		// nothing found
+    int state = 0;		/* nothing found */
 
-    // search in this element
+    /* search in this element */
     while (*input != '>') {
-	// ignore white spaces
+	/* ignore white spaces */
 	if (((*input != ' ') && (*input != '\t')) && (skip == 0)) {
 	    switch (state) {
 	    case 0:
@@ -241,7 +241,7 @@ static int http_open(char *name)
 
 static void get_text(char *input, char *end, char *dest, int dlen)
 {
-    int state = 0;		// nothing yet, outside any element
+    int state = 0;		/* nothing yet, outside any element */
     int cnt = 0;
 
     while (*input) {
@@ -307,19 +307,19 @@ static void process_station_string(char *str)
 
     /* erase multiple spaces and replace umlauts */
     p = q = str;
-    last = 1;			// no leading spaces
+    last = 1;			/* no leading spaces */
     while (*p) {
 	if ((!last) || (*p != ' ')) {
 
 	    /* translate from latin1 to hd44780 */
-	    if (*p == (char) 228)	// lower a umlaut
-		*q++ = 0xe1;
-	    else if (*p == (char) 223)	// sz ligature
-		*q++ = 0xe2;
-	    else if (*p == (char) 246)	// lower o umlaut
-		*q++ = 0xef;
-	    else if (*p == (char) 252)	// lower u umlaut
-		*q++ = 0xf5;
+	    if (*p == (char) 228)	/* lower a umlaut */
+		*q++ = (char) 0xe1;
+	    else if (*p == (char) 223)	/* sz ligature */
+		*q++ = (char) 0xe2;
+	    else if (*p == (char) 246)	/* lower o umlaut */
+		*q++ = (char) 0xef;
+	    else if (*p == (char) 252)	/* lower u umlaut */
+		*q++ = (char) 0xf5;
 	    else
 		*q++ = *p;
 	}
@@ -370,7 +370,7 @@ static void kvv_client( __attribute__ ((unused))
 	    error("[KVV] Error accessing server/proxy: %s", strerror(errno));
 	    return;
 	}
-	// create and set get request
+	/* create and set get request */
 	if (snprintf(obuffer, sizeof(obuffer),
 		     "GET http://%s" HTTP_REQUEST " HTTP/1.1\n"
 		     "Host: %s\n" "User-Agent: " USER_AGENT "\n\n", server_name, station_id,
@@ -406,7 +406,7 @@ static void kvv_client( __attribute__ ((unused))
 	}
 	while (i > 0);
 
-	ibuffer[count] = 0;	// terminate string
+	ibuffer[count] = 0;	/* terminate string */
 	close(sock);
 
 	if (!count)
@@ -416,11 +416,11 @@ static void kvv_client( __attribute__ ((unused))
 	    char *input, *cookie, *name, *value;
 	    int input_len, cookie_len, name_len, value_len;
 
-	    // buffer to html encode value
+	    /* buffer to html encode value */
 	    char value_enc[512];
 	    int value_enc_len;
 
-	    // find cookie
+	    /* find cookie */
 	    cookie_len = 0;
 	    cookie = strstr(ibuffer, "Set-Cookie:");
 	    if (cookie) {
@@ -432,7 +432,7 @@ static void kvv_client( __attribute__ ((unused))
 		while (cookie[cookie_len] != ';')
 		    cookie_len++;
 	    }
-	    // find input element
+	    /* find input element */
 	    input_len = get_element(ibuffer, "input", &input);
 
 
@@ -467,7 +467,7 @@ static void kvv_client( __attribute__ ((unused))
 
 		sock = http_open(connect_to);
 
-		// send POST
+		/* send POST */
 		if (snprintf(obuffer, sizeof(obuffer),
 			     "POST http://%s" HTTP_REQUEST " HTTP/1.1\n"
 			     "Host: %s\n"
@@ -506,7 +506,7 @@ static void kvv_client( __attribute__ ((unused))
 
 		ibuffer[count] = 0;
 
-//              printf("Result (%d):\n%s\n", count, ibuffer);
+		/* printf("Result (%d):\n%s\n", count, ibuffer); */
 
 		/* close connection */
 		close(sock);
@@ -528,7 +528,7 @@ static void kvv_client( __attribute__ ((unused))
 
 		    if (strstr(ibuffer, "Die Daten konnten nicht abgefragt werden.") != NULL) {
 			info("[KVV] Server returned error!");
-//                      printf("%s\n", ibuffer);
+			/* printf("%s\n", ibuffer); */
 			shm->error = 1;
 		    } else
 			shm->error = 0;
@@ -572,13 +572,13 @@ static void kvv_client( __attribute__ ((unused))
 				    get_text(td, "td", str, sizeof(str));
 
 				    if (shm->entries < MAX_LINES) {
-					// allocate a new slot
+					/* allocate a new slot */
 					shm->entries++;
 					shm->entry[shm->entries - 1].time = -1;
 					memset(shm->entry[shm->entries - 1].line, 0, MAX_LINE_LENGTH + 1);
 					memset(shm->entry[shm->entries - 1].station, 0, MAX_STATION_LENGTH + 1);
 
-					// add new lines entry
+					/* add new lines entry */
 					strncpy(shm->entry[shm->entries - 1].line, str, MAX_LINE_LENGTH);
 				    } else
 					overflow = 1;	/* don't add further entries */

@@ -114,14 +114,14 @@ static int drv_IMG_flush_PPM(void)
 
     if (bitbuf == NULL) {
 	if ((bitbuf = malloc(xsize * ysize * sizeof(*bitbuf))) == NULL) {
-	    error("%s: malloc(%d) failed: %s", Name, xsize * ysize * sizeof(*bitbuf), strerror(errno));
+	    error("%s: malloc(%d) failed: %s", Name, (int) xsize * ysize * sizeof(*bitbuf), strerror(errno));
 	    return -1;
 	}
     }
 
     if (rowbuf == NULL) {
 	if ((rowbuf = malloc(3 * xsize * sizeof(*rowbuf))) == NULL) {
-	    error("Raster: malloc(%d) failed: %s", 3 * xsize * sizeof(*rowbuf), strerror(errno));
+	    error("Raster: malloc(%d) failed: %s", (int) 3 * xsize * sizeof(*rowbuf), strerror(errno));
 	    return -1;
 	}
     }
@@ -461,8 +461,8 @@ int drv_IMG_quit(const __attribute__ ((unused))
 
 
 DRIVER drv_Image = {
-  name:Name,
-  list:drv_IMG_list,
-  init:drv_IMG_init,
-  quit:drv_IMG_quit,
+    .name = Name,
+    .list = drv_IMG_list,
+    .init = drv_IMG_init,
+    .quit = drv_IMG_quit,
 };

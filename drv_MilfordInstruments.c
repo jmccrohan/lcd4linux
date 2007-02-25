@@ -278,8 +278,8 @@ int drv_MI_quit(const int quiet)
 
 
 DRIVER drv_MilfordInstruments = {
-  name:Name,
-  list:drv_MI_list,
-  init:drv_MI_init,
-  quit:drv_MI_quit,
+    .name = Name,
+    .list = drv_MI_list,
+    .init = drv_MI_init,
+    .quit = drv_MI_quit,
 };

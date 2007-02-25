@@ -464,8 +464,8 @@ int drv_pL_quit(const int quiet)
 
 
 DRIVER drv_picoLCD = {
-  name:Name,
-  list:drv_pL_list,
-  init:drv_pL_init,
-  quit:drv_pL_quit,
+    .name = Name,
+    .list = drv_pL_list,
+    .init = drv_pL_init,
+    .quit = drv_pL_quit,
 };

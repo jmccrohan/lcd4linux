@@ -167,7 +167,7 @@ void drv_generic_i2c_data(const unsigned char data)
 }
 
 
-void drv_generic_i2c_command(const unsigned char command, const unsigned char *data, const unsigned char length)
+void drv_generic_i2c_command(const unsigned char command, /*const */ unsigned char *data, const unsigned char length)
 {
-    i2c_smbus_write_block_data(i2c_device, command, length, (unsigned char *) data);
+    i2c_smbus_write_block_data(i2c_device, command, length, data);
 }

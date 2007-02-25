@@ -13,6 +13,9 @@ bin_PROGRAMS = lcd4linux
 # Fixme: -W should be renamed to -Wextra someday...
 AM_CFLAGS = -D_GNU_SOURCE -Wall -W -fno-strict-aliasing
 
+# use this for lots of warnings
+#AM_CFLAGS = -D_GNU_SOURCE -std=c90 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
+
 lcd4linux_LDFLAGS = 
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
