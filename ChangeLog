@@ -1,5 +1,11 @@
+2007-02-26  michael
+
+	* drv_BeckmannEgle.c, drv_LEDMatrix.c, drv_WincorNixdorf.c:
+	  compiler warnings on x86_64 fixed
+
 2007-02-25  michael
 
+	* ChangeLog, svn_version.h: ChangeLog refreshed
 	* Makefile.am, Makefile.in, debug.h, drv_BWCT.c,
 	  drv_BeckmannEgle.c, drv_Crystalfontz.c, drv_Curses.c,
 	  drv_Cwlinux.c, drv_EA232graphic.c, drv_G15.c, drv_HD44780.c,
