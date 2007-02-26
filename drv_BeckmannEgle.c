@@ -352,7 +352,7 @@ static int drv_BuE_CT_start(const char *section)
     /* read version */
     drv_generic_serial_write(ESC "?V", 3);
     usleep(100000);
-    if ((len = drv_generic_serial_read(buffer, -1 * sizeof(buffer))) > 0) {
+    if ((len = drv_generic_serial_read(buffer, -1 * (int) sizeof(buffer))) > 0) {
 	int v, r, s;
 	if (sscanf(buffer, "V:%d.%d,%d;", &v, &r, &s) != 3) {
 	    error("%s: error parsing display identification <%*s>", Name, len, buffer);

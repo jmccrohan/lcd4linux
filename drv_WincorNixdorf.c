@@ -140,7 +140,7 @@ static int drv_WN_start(const char *section, const int quiet)
 	drv_generic_serial_write(ESC "[0c", 4);
 	usleep(100 * 1000);
 
-	if ((len = drv_generic_serial_read(buffer, -1 * sizeof(buffer))) > 0) {
+	if ((len = drv_generic_serial_read(buffer, -1 * (int) sizeof(buffer))) > 0) {
 	    info("%s: waiting 15 seconds for selftest", Name);
 	    drv_generic_serial_write(buffer, len);
 	    sleep(15);

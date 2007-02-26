@@ -145,8 +145,8 @@ static void drv_LEDMatrix_blit(const int row, const int col, const int height, c
 		if ((i == 2) && (reply[0] == DSP_CMD_ACK) && (reply[1] == DSP_CMD_IMAGE)) {
 		    ack = 1;
 		} else if ((i > 1) && (reply[0] == DSP_CMD_IR)) {
-/* maybe used later: */
-/*        ir_receive(reply+1, i-1); */
+		    /* maybe used later: */
+		    /* ir_receive(reply+1, i-1); */
 		} else {
 		    info("%s: Unexpected reply message", Name);
 		}
