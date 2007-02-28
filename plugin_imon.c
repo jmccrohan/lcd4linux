@@ -471,6 +471,116 @@ static void my_imon_rates(RESULT * result, RESULT * arg1, RESULT * arg2)
     SetResult(&result, R_STRING, val);
 }
 
+static int parse_imon_quantity(const char *channel)
+{
+    char buf[256], fill1[25], in[25], fill2[25], out[25];
+    char *s;
+    int age;
+
+    qprintf(buf, sizeof(buf), "quantity %s in", channel);
+
+    /* reread every half sec only */
+    age = hash_age(&IMON, buf);
+    if (age > 0 && age <= 500)
+	return 0;
+
+    init();			/* establish connection */
+
+    if (err)
+	return -1;
+
+    qprintf(buf, sizeof(buf), "quantity %s", channel);
+    s = get_value(buf);
+
+    if (sscanf(s, "%s %s %s %s", fill1, in, fill2, out) != 4)
+	return -1;
+
+    qprintf(buf, sizeof(buf), "quantity %s in", channel);
+    hash_put(&IMON, buf, in);
+    qprintf(buf, sizeof(buf), "quantity %s out", channel);
+    hash_put(&IMON, buf, out);
+
+    return 0;
+}
+
+static int parse_imon_status(const char *channel)
+{
+    char buf[256], status[25];
+    char *s;
+    int age;
+
+    qprintf(buf, sizeof(buf), "status %s", channel);
+
+    /* reread every half sec only */
+    age = hash_age(&IMON, buf);
+    if (age > 0 && age <= 500)
+	return 0;
+
+    init();			/* establish connection */
+
+    if (err)
+	return -1;
+
+    qprintf(buf, sizeof(buf), "status %s", channel);
+    s = get_value(buf);
+
+    if (sscanf(s, "%s", status) != 1)
+	return -1;
+
+    qprintf(buf, sizeof(buf), "status %s", channel);
+    if (strcasecmp(status, "Online") == 0)
+	hash_put(&IMON, buf, "1");
+    else
+	hash_put(&IMON, buf, "0");
+
+    return 0;
+}
+
+static void my_imon_quantity(RESULT * result, RESULT * arg1, RESULT * arg2)
+{
+    char *val;
+    char buf[256];
+
+    if (configure_imon() < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    if (parse_imon_quantity(R2S(arg1)) < 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    qprintf(buf, sizeof(buf), "quantity %s %s", R2S(arg1), R2S(arg2));
+
+    val = hash_get(&IMON, buf, NULL);
+    if (val == NULL)
+	val = "";
+    SetResult(&result, R_STRING, val);
+}
+
+static void my_imon_status(RESULT * result, RESULT * arg1)
+{
+    char *val;
+    char buf[256];
+
+    if (configure_imon() < 0) {
+	SetResult(&result, R_NUMBER, "-1");
+	return;
+    }
+
+    if (parse_imon_status(R2S(arg1)) < 0) {
+	SetResult(&result, R_STRING, "-1");
+	return;
+    }
+
+    qprintf(buf, sizeof(buf), "status %s", R2S(arg1));
+
+    val = hash_get(&IMON, buf, NULL);
+    if (val == NULL)
+	val = "-1";
+    SetResult(&result, R_STRING, val);
+}
 
 static void my_imon(RESULT * result, RESULT * arg1)
 {
@@ -500,6 +610,8 @@ int plugin_init_imon(void)
     AddFunction("imon", 1, my_imon);
     AddFunction("imon::version", 0, my_imon_version);
     AddFunction("imon::rates", 2, my_imon_rates);
+    AddFunction("imon::quantity", 2, my_imon_quantity);
+    AddFunction("imon::status", 1, my_imon_status);
     AddFunction("imon::telmon", 1, my_telmon);
 
     return 0;
