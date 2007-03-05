@@ -396,6 +396,7 @@ if test "$picoLCD" = "yes"; then
       TEXT="yes"
       GPIO="yes"
       SERIAL="yes"
+      LIBUSB="yes"
       DRIVERS="$DRIVERS drv_picoLCD.o"
       AC_DEFINE(WITH_picoLCD,1,[picoLCD driver])
    else

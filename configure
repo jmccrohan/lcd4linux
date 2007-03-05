@@ -7647,6 +7647,7 @@ if test "$picoLCD" = "yes"; then
       TEXT="yes"
       GPIO="yes"
       SERIAL="yes"
+      LIBUSB="yes"
       DRIVERS="$DRIVERS drv_picoLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
