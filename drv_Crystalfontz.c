@@ -104,7 +104,7 @@ typedef struct {
 
 static MODEL Models[] = {
     {626, "626", 2, 16, 0, 0, 1, 0},
-    {631, "631", 2, 20, 0, 0, 3, 22},
+    {631, "631", 2, 20, 4, 0, 3, 22},
     {632, "632", 2, 16, 0, 0, 1, 0},
     {633, "633", 2, 16, 4, 4, 2, 18},
     {634, "634", 4, 20, 0, 0, 1, 0},
@@ -531,34 +531,52 @@ static int drv_CF_keypad(const int num)
     case 2:
 	break;
     case 3:
-	if (num < 8)
+	if ((num < 8) || ((num > 12) && (num < 17)))
 	    val = WIDGET_KEY_PRESSED;
 	else
 	    val = WIDGET_KEY_RELEASED;
 	switch (num) {
 	case 1:
-	case 8:
+	case 7:
 	    val += WIDGET_KEY_UP;
 	    break;
 	case 2:
-	case 9:
+	case 8:
 	    val += WIDGET_KEY_DOWN;
 	    break;
 	case 3:
-	case 10:
+	case 9:
 	    val += WIDGET_KEY_LEFT;
 	    break;
 	case 4:
-	case 11:
+	case 10:
 	    val += WIDGET_KEY_RIGHT;
 	    break;
 	case 5:
-	case 12:
+	case 11:
 	    val += WIDGET_KEY_CONFIRM;
 	    break;
-	case 7:
-	case 13:
+	case 6:
+	case 12:
 	    val += WIDGET_KEY_CANCEL;
+	    break;
+
+	    /* added for 631, too lazy to make new WIDGET_KEY defines */
+	case 13:
+	case 17:
+	    val += WIDGET_KEY_UP;	/* really UPLEFT */
+	    break;
+	case 14:
+	case 18:
+	    val += WIDGET_KEY_RIGHT;	/* really UPRIGHT */
+	    break;
+	case 15:
+	case 19:
+	    val += WIDGET_KEY_LEFT;	/* really DOWNLEFT */
+	    break;
+	case 16:
+	case 20:
+	    val += WIDGET_KEY_DOWN;	/* really DOWNRIGHT */
 	    break;
 	}
 	break;
