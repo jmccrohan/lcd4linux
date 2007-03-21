@@ -185,7 +185,7 @@ static void phonebook(char *number)
     if (!fp)
 	return;
 
-    while (fgets(line, 128, fp)) {
+    while (fgets(line, sizeof(line), fp)) {
 	if (*line == '#')
 	    continue;
 	if (!strncmp(line, number, strlen(number))) {

@@ -82,7 +82,7 @@ static void interactive_mode(void)
     RESULT result = { 0, 0, 0, NULL };
 
     printf("\neval> ");
-    for (fgets(line, 1024, stdin); !feof(stdin); fgets(line, 1024, stdin)) {
+    for (fgets(line, sizeof(line), stdin); !feof(stdin); fgets(line, sizeof(line), stdin)) {
 	if (line[strlen(line) - 1] == '\n')
 	    line[strlen(line) - 1] = '\0';
 	if (strlen(line) > 0) {
