@@ -99,7 +99,7 @@ static int parse_proc_stat(void)
 	    break;
 
 	if (strncmp(buffer, "cpu", 3) == 0) {
-	    char *key[] = { "user", "nice", "system", "idle" };
+	    char *key[] = { "user", "nice", "system", "idle", "iow", "irq", "sirq" };
 	    char delim[] = " \t\n";
 	    char *cpu, *beg, *end;
 	    int i;
@@ -111,7 +111,7 @@ static int parse_proc_stat(void)
 		*end = '\0';
 	    beg = end ? end + 1 : NULL;
 
-	    for (i = 0; i < 4 && beg != NULL; i++) {
+	    for (i = 0; i < 7 && beg != NULL; i++) {
 		while (strchr(delim, *beg))
 		    beg++;
 		if ((end = strpbrk(beg, delim)))
@@ -252,6 +252,7 @@ static void my_cpu(RESULT * result, RESULT * arg1, RESULT * arg2)
     int delay;
     double value;
     double cpu_user, cpu_nice, cpu_system, cpu_idle, cpu_total;
+    double cpu_iow, cpu_irq, cpu_sirq;
 
     if (parse_proc_stat() < 0) {
 	SetResult(&result, R_STRING, "");
@@ -266,7 +267,14 @@ static void my_cpu(RESULT * result, RESULT * arg1, RESULT * arg2)
     cpu_system = hash_get_delta(&Stat, "cpu.system", NULL, delay);
     cpu_idle = hash_get_delta(&Stat, "cpu.idle", NULL, delay);
 
-    cpu_total = cpu_user + cpu_nice + cpu_system + cpu_idle;
+    /* new fields for kernel 2.6 */
+    /* even if we dont have this param (ie kernel 2.4) */
+    /* the return is 0.0 and not change the results */
+    cpu_iow = hash_get_delta(&Stat, "cpu.iow", NULL, delay);
+    cpu_irq = hash_get_delta(&Stat, "cpu.irq", NULL, delay);
+    cpu_sirq = hash_get_delta(&Stat, "cpu.sirq", NULL, delay);
+
+    cpu_total = cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iow + cpu_irq + cpu_sirq;
 
     if (strcasecmp(key, "user") == 0)
 	value = cpu_user;
@@ -276,6 +284,12 @@ static void my_cpu(RESULT * result, RESULT * arg1, RESULT * arg2)
 	value = cpu_system;
     else if (strcasecmp(key, "idle") == 0)
 	value = cpu_idle;
+    else if (strcasecmp(key, "iowait") == 0)
+	value = cpu_iow;
+    else if (strcasecmp(key, "irq") == 0)
+	value = cpu_irq;
+    else if (strcasecmp(key, "softirq") == 0)
+	value = cpu_sirq;
     else if (strcasecmp(key, "busy") == 0)
 	value = cpu_total - cpu_idle;
 
