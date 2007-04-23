@@ -124,10 +124,6 @@ static void disconnect(struct Pointer mpd)
 }
 
 
-/* function 'artist' */
-/* takes one argument, a number */
-/* multiplies the number by 3.0 */
-/* same as 'mul2', but shorter */
 
 static void artist(RESULT * result, RESULT * query)
 {
@@ -146,6 +142,13 @@ static void artist(RESULT * result, RESULT * query)
 
 	if (song->artist) {
 	    value = strdup(song->artist);
+	    //add comment
+	    if (query) {
+		char *myarg;
+		myarg = strdup(R2S(query));
+		value = strcat(value, myarg);
+		free(myarg);
+	    }
 	}
 	mpd_freeInfoEntity(mpd.entity);
     }
@@ -159,7 +162,7 @@ static void artist(RESULT * result, RESULT * query)
 }
 
 
-static void title(RESULT * result, RESULT * query)
+static void title(RESULT * result)
 {
     char *value = " ";
     struct Pointer mpd = connect();
@@ -189,7 +192,7 @@ static void title(RESULT * result, RESULT * query)
 }
 
 
-static void album(RESULT * result, RESULT * query)
+static void album(RESULT * result)
 {
     char *value = " ";
     struct Pointer mpd = connect();
@@ -218,13 +221,207 @@ static void album(RESULT * result, RESULT * query)
     free(value);
 }
 
+#define _mpd_dummy				000
+#define _mpd_status_get_elapsed_song_time 	001
+#define _mpd_status_get_bitrate			002
+#define _mpd_status_get_total_song_time         003
+#define _mpd_player_get_repeat                  004
+#define _mpd_player_get_random			005
+
+void error_callback(MpdObj * mi, int errorid, char *msg, void *userdata)
+{
+    printf("Error %i: '%s'\n", errorid, msg);
+}
+
+static int mpd_get(int function)
+{
+    int ret = -1;
+    MpdObj *mi = NULL;
+
+    mi = mpd_new("localhost", 6600, NULL);
+    mpd_signal_connect_error(mi, (ErrorCallback) error_callback, NULL);
+    mpd_set_connection_timeout(mi, 5);
+
+    if (!mpd_connect(mi)) {
+	switch (function) {
+	case _mpd_dummy:
+	    ret = 1;
+	    break;
+	case _mpd_status_get_elapsed_song_time:
+	    ret = mpd_status_get_elapsed_song_time(mi);
+	    break;
+	case _mpd_status_get_bitrate:
+	    ret = mpd_status_get_bitrate(mi);
+	    break;
+	case _mpd_status_get_total_song_time:
+	    ret = mpd_status_get_total_song_time(mi);
+	    break;
+	case _mpd_player_get_repeat:
+	    ret = mpd_player_get_repeat(mi);
+	    break;
+	case _mpd_player_get_random:
+	    ret = mpd_player_get_random(mi);
+	    break;
+	}
+
+	mpd_disconnect(mi);
+	mpd_free(mi);
+    }
+    return ret;
+}
+
+static void elapsedTime(RESULT * result)
+{
+    char *value = " ";
+
+    int playTime = mpd_get(_mpd_status_get_elapsed_song_time);
+
+    if (playTime != -1) {
+	char myTime[6];
+	memset(myTime, 0, 6);
+	int minutes = (int) (playTime / 60);
+	int seconds = (int) (playTime % 60);
+	sprintf(myTime, "%02d:%02d", minutes, seconds);
+
+	value = strdup(myTime);
+    }
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
+
+static void elapsedTimeSec(RESULT * result)
+{
+    int playTime = mpd_get(_mpd_status_get_elapsed_song_time);
+    double d = 0.0;
+
+    if (playTime != -1)
+	d = playTime;
+
+    // store result     
+    SetResult(&result, R_NUMBER, &d);
+}
+
+static void totalTime(RESULT * result)
+{
+    char *value = " ";
+
+    int totTime = mpd_get(_mpd_status_get_total_song_time);
+    if (totTime != -1) {
+	char myTime[6];
+	memset(myTime, 0, 6);
+	int minutes = (int) (totTime / 60);
+	int seconds = (int) (totTime % 60);
+	sprintf(myTime, "%02d:%02d", minutes, seconds);
+
+	value = strdup(myTime);
+    } else
+	value = strdup("ERROR");
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
+
+static void totalTimeSec(RESULT * result)
+{
+    int totTime = mpd_get(_mpd_status_get_total_song_time);
+    double d = 0.0;
+
+    if (totTime != -1)
+	d = totTime;
+
+    // store result     
+    SetResult(&result, R_NUMBER, &d);
+}
+
+static void bitRate(RESULT * result)
+{
+    char *value = "";
+
+    int rate = mpd_get(_mpd_status_get_bitrate);
+
+    if (rate != -1) {
+	char rateStr[4];
+	memset(rateStr, 0, 4);
+	sprintf(rateStr, "%03d", rate);
+
+	value = strdup(rateStr);
+    }
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
+
+static void getRepeat(RESULT * result)
+{
+    char *value = " ";
+
+    int rep = mpd_get(_mpd_player_get_repeat);
+
+    if (rep != -1) {
+	if (rep)
+	    value = strdup("REP");
+	// else value = strdup("   ");          
+    }
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
+
+
+static void getRandom(RESULT * result)
+{
+    char *value = " ";
+
+    int ran = mpd_get(_mpd_player_get_random);
+
+    if (ran != -1) {
+	if (ran)
+	    value = strdup("RND");
+	// else value = strdup("   ");          
+    }
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
+
+static void getRepRand(RESULT * result)
+{
+    char *value = " ";
+
+    int ran = mpd_get(_mpd_player_get_random);
+    int rep = mpd_get(_mpd_player_get_repeat);
+
+    if (ran != -1 && rep != -1) {
+	char str[9];
+	if (rep)
+	    sprintf(str, "REP/");
+	else
+	    sprintf(str, "---/");
+	if (ran)
+	    sprintf(str, "%sRND", str);
+	else
+	    sprintf(str, "%s---", str);
+	value = strdup(str);
+    }
+    // store result     
+    SetResult(&result, R_STRING, value);
+}
 
 int plugin_init_mpd(void)
 {
-    AddFunction("mpd::artist", 0, artist);
+    /* Check for File */
+    if (mpd_get(_mpd_dummy) != 1) {
+	error("Error: Cannot connect to MPD! Is MPD started?");
+	return -1;
+    }
+
+    AddFunction("mpd::artist", 1, artist);
     AddFunction("mpd::title", 0, title);
     AddFunction("mpd::album", 0, album);
-
+    AddFunction("mpd::totalTime", 0, totalTime);
+    AddFunction("mpd::totalTimeSec", 0, totalTimeSec);
+    AddFunction("mpd::elapsedTime", 0, elapsedTime);
+    AddFunction("mpd::elapsedTimeSec", 0, elapsedTimeSec);
+    AddFunction("mpd::bitRate", 0, bitRate);
+    AddFunction("mpd::getRepeat", 0, getRepeat);
+    AddFunction("mpd::getRandom", 0, getRandom);
+    AddFunction("mpd::getRepRand", 0, getRepRand);
     return 0;
 }
 
