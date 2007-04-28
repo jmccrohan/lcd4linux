@@ -84,7 +84,7 @@ void widget_bar_update(void *Self)
     /* maximum: if expression is empty, do auto-scaling */
     if (property_valid(&Bar->expr_max)) {
 	property_eval(&Bar->expr_max);
-	max = P2N(&Bar->expr_min);
+	max = P2N(&Bar->expr_max);
     } else {
 	max = Bar->max;
 	if (val1 > max)
