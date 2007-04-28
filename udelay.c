@@ -56,6 +56,7 @@
 #include <sys/time.h>
 
 #ifdef HAVE_ASM_MSR_H
+#define u32 unsigned int
 #include <asm/msr.h>
 #endif
 
