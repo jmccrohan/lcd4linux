@@ -7442,6 +7442,7 @@ if test "$CWLINUX" = "yes"; then
    TEXT="yes"
    GPIO="yes"
    SERIAL="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
 
 cat >>confdefs.h <<\_ACEOF

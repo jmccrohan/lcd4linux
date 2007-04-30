@@ -259,6 +259,7 @@ if test "$CWLINUX" = "yes"; then
    TEXT="yes"
    GPIO="yes"
    SERIAL="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
 fi
