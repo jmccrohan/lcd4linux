@@ -14,7 +14,7 @@ bin_PROGRAMS = lcd4linux
 AM_CFLAGS = -D_GNU_SOURCE -Wall -W -fno-strict-aliasing
 
 # use this for lots of warnings
-#AM_CFLAGS = -D_GNU_SOURCE -std=c90 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
+#AM_CFLAGS = -D_GNU_SOURCE -std=c99 -m64 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
 
 lcd4linux_LDFLAGS = 
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@

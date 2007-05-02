@@ -413,7 +413,7 @@ static void kvv_client( __attribute__ ((unused))
 	    info("[KVV] empty/no reply");
 
 	if (count > 0) {
-	    char *input, *cookie, *name, *value;
+	    char *input, *cookie, *name = NULL, *value = NULL;
 	    int input_len, cookie_len, name_len, value_len;
 
 	    /* buffer to html encode value */

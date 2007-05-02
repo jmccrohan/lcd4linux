@@ -64,7 +64,12 @@ static struct Pointer connect()
     char *port = "6600";
     int iport;
     char *test;
-    struct Pointer mpd;
+
+    struct Pointer mpd = {
+	.conn = NULL,
+	.status = NULL,
+	.entity = NULL
+    };
 
     if ((test = getenv("MPD_HOST"))) {
 	host = test;
@@ -228,7 +233,8 @@ static void album(RESULT * result)
 #define _mpd_player_get_repeat                  004
 #define _mpd_player_get_random			005
 
-void error_callback(MpdObj * mi, int errorid, char *msg, void *userdata)
+void error_callback( __attribute__ ((unused)) MpdObj * mi, int errorid, char *msg, __attribute__ ((unused))
+		    void *userdata)
 {
     printf("Error %i: '%s'\n", errorid, msg);
 }

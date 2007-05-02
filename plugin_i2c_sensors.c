@@ -296,7 +296,7 @@ static int configure_i2c_sensors(void)
 	    path_cfg = realloc(path_cfg, strlen(path_cfg) + 2);
 	    strcat(path_cfg, "/");
 	}
-	debug("using i2c sensors at %s (from %s)", path, cfg_source());
+	debug("using i2c sensors at %s (from %s)", path_cfg, cfg_source());
 	path = realloc(path, strlen(path_cfg) + 1);
 	strcpy(path, path_cfg);
     }

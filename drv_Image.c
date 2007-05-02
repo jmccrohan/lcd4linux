@@ -114,14 +114,14 @@ static int drv_IMG_flush_PPM(void)
 
     if (bitbuf == NULL) {
 	if ((bitbuf = malloc(xsize * ysize * sizeof(*bitbuf))) == NULL) {
-	    error("%s: malloc(%d) failed: %s", Name, (int) xsize * ysize * sizeof(*bitbuf), strerror(errno));
+	    error("%s: malloc() failed: %s", Name, strerror(errno));
 	    return -1;
 	}
     }
 
     if (rowbuf == NULL) {
 	if ((rowbuf = malloc(3 * xsize * sizeof(*rowbuf))) == NULL) {
-	    error("Raster: malloc(%d) failed: %s", (int) 3 * xsize * sizeof(*rowbuf), strerror(errno));
+	    error("Raster: malloc() failed: %s", strerror(errno));
 	    return -1;
 	}
     }
