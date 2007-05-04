@@ -131,7 +131,7 @@ static int drv_LUIse_start(const char *section)
 	return -1;
     }
     if (sscanf(s, "%d", &devNum) < 0 || devNum > 4) {
-	error("s: bad DeviceNum '%s' from %s", Name, s, cfg_source());
+	error("%s: bad DeviceNum '%s' from %s", Name, s, cfg_source());
 	return -1;
     }
     info("%s: using DeviceNum '%d'", Name, devNum);
