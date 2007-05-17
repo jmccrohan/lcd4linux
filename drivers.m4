@@ -420,10 +420,14 @@ if test "$PPM" = "yes"; then
 fi
 
 if test "$ROUTERBOARD" = "yes"; then
-   TEXT="yes"
-   GPIO="yes"
-   DRIVERS="$DRIVERS drv_RouterBoard.o"
-   AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
+   if test "$has_io_h" = "true"; then
+      TEXT="yes"
+      GPIO="yes"
+      DRIVERS="$DRIVERS drv_RouterBoard.o"
+      AC_DEFINE(WITH_ROUTERBOARD,1,[RouterBoard driver])
+   else
+      AC_MSG_WARN(sys/io.h not found: RouterBoard driver disabled)
+   fi
 fi
 
 if test "$SAMPLE" = "yes"; then

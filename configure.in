@@ -65,6 +65,9 @@ fi
 # check for gd.h
 AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true"; break], [has_gd="false"])
 
+# check for sys/io.h (RouterBoard driver)
+AC_CHECK_HEADERS(sys/io.h, [has_io_h="true"], [has_io_h="false"])
+
 # check for usb.h
 AC_CHECK_HEADERS(usb.h, [has_usb="true"], [has_usb="false"])
 
@@ -97,7 +100,7 @@ sinclude(plugins.m4)
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h sys/vfs.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS(sys/io.h asm/io.h)
+AC_CHECK_HEADERS(asm/io.h)
 AC_CHECK_HEADERS(linux/parport.h linux/ppdev.h)
 AC_CHECK_HEADERS(asm/msr.h)
 
