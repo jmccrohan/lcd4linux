@@ -59,6 +59,7 @@ for plugin in $plugins; do
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
          PLUGIN_FILE="yes"
+         PLUGIN_GPS="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_ICONV="yes"
          PLUGIN_IMON="yes"
@@ -98,6 +99,9 @@ for plugin in $plugins; do
          ;;
       file)
          PLUGIN_FILE=$val
+         ;;
+      gps)
+         PLUGIN_GPS=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -198,6 +202,21 @@ fi
 if test "$PLUGIN_FILE" = "yes"; then
    PLUGINS="$PLUGINS plugin_file.o"
    AC_DEFINE(PLUGIN_FILE,1,[file plugin])
+fi
+if test "$PLUGIN_GPS" = "yes"; then
+   AC_CHECK_HEADERS(nmeap.h, [has_nmeap_header="true"], [has_nmeap_header="false"])
+   if test "$has_nmeap_header" = "true"; then	
+      AC_CHECK_LIB(nmeap, nmeap_init, [has_libnmeap_lib="true"], [has_libnmeap_lib="false"])
+      if test "$has_libnmeap_lib" = "true"; then
+        PLUGINS="$PLUGINS plugin_gps.o"
+        PLUGINLIBS="$PLUGINLIBS -lnmeap"
+        AC_DEFINE(PLUGIN_GPS,1,[gps plugin])
+      else
+        AC_MSG_WARN(libnmeap lib not found: gps plugin disabled)
+      fi
+   else
+      AC_MSG_WARN(nmeap.h header not found: gps plugin disabled)
+   fi 
 fi
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"

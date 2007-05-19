@@ -100,6 +100,9 @@
 /* Define to 1 if you have the <net/if_ppp.h> header file. */
 #undef HAVE_NET_IF_PPP_H
 
+/* Define to 1 if you have the <nmeap.h> header file. */
+#undef HAVE_NMEAP_H
+
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
@@ -289,6 +292,9 @@
 
 /* file plugin */
 #undef PLUGIN_FILE
+
+/* gps plugin */
+#undef PLUGIN_GPS
 
 /* i2c sensors plugin */
 #undef PLUGIN_I2C_SENSORS
