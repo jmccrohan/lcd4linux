@@ -416,6 +416,9 @@
 /* G-15 driver */
 #undef WITH_G15
 
+/* GD library */
+#undef WITH_GD
+
 /* HD44780 driver */
 #undef WITH_HD44780
 

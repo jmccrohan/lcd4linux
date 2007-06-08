@@ -110,7 +110,7 @@ DRIVER *Driver[] = {
 #ifdef WITH_HD44780
     &drv_HD44780,
 #endif
-#if (defined (WITH_PNG) || defined(WITH_PPM)) && defined(WITH_GD)
+#if (defined(WITH_PNG) && defined(WITH_GD)) || defined(WITH_PPM)
     &drv_Image,
 #endif
 #ifdef WITH_LCD2USB
@@ -149,7 +149,6 @@ DRIVER *Driver[] = {
 #ifdef WITH_picoLCD
     &drv_picoLCD,
 #endif
-
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,
 #endif

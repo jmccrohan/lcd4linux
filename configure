@@ -8012,6 +8012,11 @@ if test "$GRAPHIC" = "yes"; then
       DRVLIBS="$DRVLIBS -lgd"
 
 cat >>confdefs.h <<\_ACEOF
+#define WITH_GD 1
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
 #define WITH_IMAGE 1
 _ACEOF
 

@@ -80,7 +80,7 @@
 
 static char Name[] = "Image";
 
-static enum { PPM, PNG } Format;
+static enum { NIL, PPM, PNG } Format;
 
 static int pixel = -1;		/* pointsize in pixel */
 static int pgap = 0;		/* gap between points */
@@ -266,6 +266,8 @@ static void drv_IMG_flush(void)
 	drv_IMG_flush_PNG();
 #endif
 	break;
+    default:
+	break;
     }
 }
 
@@ -315,11 +317,21 @@ static int drv_IMG_start(const char *section)
 	return -1;
     }
 
+    Format = NIL;
+
+#ifdef WITH_PPM
     if (strcmp(s, "PPM") == 0) {
 	Format = PPM;
-    } else if (strcmp(s, "PNG") == 0) {
+    }
+#endif
+
+#ifdef WITH_PNG
+    if (strcmp(s, "PNG") == 0) {
 	Format = PNG;
-    } else {
+    }
+#endif
+
+    if (Format == NIL) {
 	error("%s: bad %s.Format '%s' from %s", Name, section, s, cfg_source());
 	free(s);
 	return -1;
@@ -411,7 +423,12 @@ static int drv_IMG_start(const char *section)
 /* list models */
 int drv_IMG_list(void)
 {
-    printf("PPM PNG");
+#ifdef WITH_PPM
+    printf("PPM ");
+#endif
+#ifdef WITH_PNG
+    printf("PNG ");
+#endif
     return 0;
 }
 
