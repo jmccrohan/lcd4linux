@@ -68,6 +68,9 @@ static int pgap = 0;		/* gap between points */
 static int rgap = 0;		/* row gap between lines */
 static int cgap = 0;		/* column gap between characters */
 static int border = 0;		/* window border */
+static int buttons = 0;		/* number of keypad buttons */
+static int btnwidth = 0;
+static int btnheight = 0;
 
 static int dimx, dimy;		/* total window dimension in pixel */
 
@@ -140,6 +143,11 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     int r, c;
     int x0, y0;
     int x1, y1;
+    XFontStruct *xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
+    int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
+    int yoffset = border + (DROWS / YRES) * rgap;
+    int yk;
+    char s[3];
 
     x0 = x - pixel;
     x1 = x + pixel + width;
@@ -158,6 +166,21 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
+
+    /* Keypad on the right side */
+    debug("buttons: %d (%dx%d), xfont: %dx%d",
+	  buttons, btnwidth, btnheight, xfs->max_bounds.width, xfs->max_bounds.ascent);
+    drv_X11_color(FG_COL);
+    for (r = 0; r < buttons; r++) {
+	yk = yoffset + r * (btnheight + pgap);
+	snprintf(s, sizeof(s), "%d", r);
+	debug("x: %d, y: %d, text: %s", xoffset, y, s);
+
+	XDrawRectangle(dp, w, gc, xoffset, yk, btnwidth, btnheight - 2);
+	XDrawString(dp, w, gc,
+		    xoffset + btnwidth / 2 - xfs->max_bounds.width / 2, yk + btnheight / 2 + xfs->max_bounds.ascent / 2,
+		    s, 1);
+    }
     XSync(dp, False);
 }
 
@@ -166,11 +189,21 @@ static void drv_X11_timer( __attribute__ ((unused))
 			  void *notused)
 {
     XEvent ev;
+    int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
+    int yoffset = border + (DROWS / YRES) * rgap;
+    int btn;
 
-    if (XCheckWindowEvent(dp, w, ExposureMask, &ev) == 0)
+    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask, &ev) == 0)
 	return;
     if (ev.type == Expose) {
 	drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
+    }
+    if (ev.type == ButtonPress) {
+	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
+	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
+	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap);
+	    info("Button %d pressed", btn);
+	}
     }
 }
 
@@ -227,6 +260,9 @@ static int drv_X11_start(const char *section)
     }
     free(s);
 
+    if (cfg_number(section, "buttons", 0, 0, 10, &buttons) < 0)
+	return -1;
+
     drv_X11_FB = malloc(DCOLS * DROWS * sizeof(*drv_X11_FB));
     if (drv_X11_FB == NULL) {
 	error("%s: framebuffer could not be allocated: malloc() failed", Name);
@@ -251,22 +287,26 @@ static int drv_X11_start(const char *section)
 
     dimx = DCOLS * pixel + (DCOLS - 1) * pgap + (DCOLS / XRES - 1) * cgap;
     dimy = DROWS * pixel + (DROWS - 1) * pgap + (DROWS / YRES - 1) * rgap;
+    if (buttons != 0) {
+	btnwidth = (DCOLS * pixel + (DCOLS - 1) * pgap) / 10;
+	btnheight = (DROWS * pixel + (DROWS - 1) * pgap) / buttons;
+    }
 
-    wa.event_mask = ExposureMask;
+    wa.event_mask = ExposureMask | ButtonPressMask;
 
-    w = XCreateWindow(dp, rw, 0, 0, dimx + 2 * border, dimy + 2 * border, 0, 0, InputOutput, vi, CWEventMask, &wa);
-
-    pm = XCreatePixmap(dp, w, dimx, dimy, dd);
-
-    sh.min_width = sh.max_width = dimx + 2 * border;
+    sh.min_width = sh.max_width = dimx + 2 * border + btnwidth;
     sh.min_height = sh.max_height = dimy + 2 * border;
     sh.flags = PPosition | PSize | PMinSize | PMaxSize;
+
+    w = XCreateWindow(dp, rw, 0, 0, sh.min_width, sh.min_height, 0, 0, InputOutput, vi, CWEventMask, &wa);
+
+    pm = XCreatePixmap(dp, w, dimx, dimy, dd);
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
 
     drv_X11_color(BC);
 
-    XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border, dimy + 2 * border);
+    XFillRectangle(dp, pm, gc, 0, 0, sh.min_width, sh.min_height);
     XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
 
@@ -277,6 +317,7 @@ static int drv_X11_start(const char *section)
 
     while (1) {
 	XNextEvent(dp, &ev);
+	info("XEvent %d", ev.type);
 	if (ev.type == Expose && ev.xexpose.count == 0)
 	    break;
     }
