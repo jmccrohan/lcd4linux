@@ -199,6 +199,30 @@ static FUNCTION *Function = NULL;
 static unsigned int nFunction = 0;
 
 
+/* strndup() may be not available on several platforms */
+#ifndef HAVE_STRNDUP
+char *strndup(const char *source, size_t len)
+{
+    char *tmp = NULL;
+
+    if (source == NULL)
+	return NULL;
+
+    if (len >= strlen(source))
+	return strdup(source);
+
+    tmp = malloc(len + 1);
+    if (tmp == 0)
+	return NULL;
+
+    strncpy(tmp, source, len);
+    tmp[len] = '\0';
+
+    return (tmp);
+}
+#endif
+
+
 void DelResult(RESULT * result)
 {
     result->type = 0;
