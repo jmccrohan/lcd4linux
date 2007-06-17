@@ -69,10 +69,26 @@ static void usage(void)
 {
     printf("%s\n", release);
     printf("%s\n", copyright);
-    printf("usage: lcd4linux [-h]\n");
-    printf("       lcd4linux [-l]\n");
-    printf("       lcd4linux [-c key=value] [-i] [-f config-file] [-v] [-p pid-file]\n");
-    printf("       lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
+    printf("\n");
+    printf("usage:\n");
+    printf(" lcd4linux [-h]\n");
+    printf(" lcd4linux [-l]\n");
+    printf(" lcd4linux [-c key=value] [-i] [-f config-file] [-v] [-p pid-file]\n");
+    printf(" lcd4linux [-c key=value] [-F] [-f config-file] [-o output-file] [-q] [-v]\n");
+    printf("\n");
+    printf("options:\n");
+    printf("  -h               help\n");
+    printf("  -l               list available display drivers\n");
+    printf("  -c <key>=<value> overwrite entries from the config-file\n");
+    printf("  -i               enter interactive mode (after display initialisation)\n");
+    printf("  -ii              enter interactive mode (before display initialisation)\n");
+    printf("  -f <config-file> use configuration from <config-file> instead of /etc/lcd4linux.conf\n");
+    printf("  -v               generate info messages\n");
+    printf("  -vv              generate debugging messages\n");
+    printf("  -p <pid-file>    specify a different pid-file location (default is /var/run/lcd4linux.pid)\n");
+    printf("  -F               do not fork and detach (run in foreground)\n");
+    printf("  -o <output-file> write picture to file (raster driver only)\n");
+    printf("  -q               suppress startup and exit splash screen\n");
 }
 
 static void interactive_mode(void)
