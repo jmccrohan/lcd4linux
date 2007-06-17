@@ -68,7 +68,7 @@ static void my_uname(RESULT * result, RESULT * arg1)
 	value = utsbuf.version;
     } else if (strcasecmp(key, "machine") == 0) {
 	value = utsbuf.machine;
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) && ! defined(__APPLE__)
     } else if (strcasecmp(key, "domainname") == 0) {
 	value = utsbuf.domainname;
 #endif
