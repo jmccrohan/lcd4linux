@@ -35,6 +35,7 @@
 extern RGBA FG_COL;		/* foreground color */
 extern RGBA HG_COL;		/* halfground color */
 extern RGBA BG_COL;		/* background color */
+extern RGBA BL_COL;             /* backlight color */
 
 /* these functions must be implemented by the real driver */
 extern void (*drv_generic_graphic_real_blit) (const int row, const int col, const int height, const int width);
