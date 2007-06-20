@@ -154,7 +154,8 @@ static int drv_X11_brightness(int brightness)
     col.G *= dim;
     col.B *= dim;
 
-    debug("%s: set backlight to %d%%, bl_col=0x%8x, dimmed=0x%8x", Name, (int)(dim * 100), BL_COL, col);
+    debug("%s: set backlight to %d%%, original backlight color: 0x%02x%02x%02x%02x, dimmed: 0x%02x%02x%02x%02x",
+          Name, (int)(dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
     for (i = 0; i < DCOLS * DROWS; i++) {
 	drv_X11_FB[i] = col;
     }
@@ -164,6 +165,9 @@ static int drv_X11_brightness(int brightness)
     XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
     XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
+
+    /* redraw every LCD pixel */
+    drv_X11_blit(0, 0, LROWS, LCOLS);
 
     return Brightness;
 }
@@ -242,7 +246,11 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     /* Keypad on the right side */
     if (x1 >= xoffset) {
         xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
-        drv_X11_color(FG_COL);
+        if (drv_X11_brightness(-1) > 127) {
+            drv_X11_color(FG_COL);
+        } else {
+            drv_X11_color(BG_COL);
+        }
         for (r = 0; r < buttons; r++) {
             yk = yoffset + r * (btnheight + pgap);
             switch(r) {
