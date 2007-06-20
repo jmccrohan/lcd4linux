@@ -55,7 +55,10 @@
 #include "timer.h"
 #include "plugin.h"
 #include "drv.h"
+#include "widget.h"
+#include "widget_keypad.h"
 #include "drv_generic_graphic.h"
+#include "drv_generic_keypad.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -130,6 +133,74 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 }
 
 
+static int drv_X11_brightness(int brightness)
+{
+    static unsigned char Brightness = 0;
+    RGBA col = BL_COL;
+    int i;
+    float dim;
+    
+    /* -1 is used to query the current brightness */
+    if (brightness == -1)
+	return Brightness;
+    
+    if (brightness < 0)
+	brightness = 0;
+    if (brightness > 255)
+	brightness = 255;
+    Brightness = brightness;
+    dim = Brightness / 255.0;
+    col.R *= dim;
+    col.G *= dim;
+    col.B *= dim;
+
+    debug("%s: set backlight to %d%%, bl_col=0x%8x, dimmed=0x%8x", Name, (int)(dim * 100), BL_COL, col);
+    for (i = 0; i < DCOLS * DROWS; i++) {
+	drv_X11_FB[i] = col;
+    }
+    
+    drv_X11_color(col);
+    
+    XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
+    XSetWindowBackground(dp, w, xc.pixel);
+    XClearWindow(dp, w);
+
+    return Brightness;
+}
+
+
+static int drv_X11_keypad(const int num)
+{
+    int val = WIDGET_KEY_PRESSED;
+    
+    switch (num) {
+        case 1:
+            val += WIDGET_KEY_UP;
+            break;
+        case 2:
+            val += WIDGET_KEY_DOWN;
+            break;
+        case 3:
+            val += WIDGET_KEY_LEFT;
+            break;
+        case 4:
+            val += WIDGET_KEY_RIGHT;
+            break;
+        case 5:
+            val += WIDGET_KEY_CONFIRM;
+            break;
+        case 6:
+            val += WIDGET_KEY_CANCEL;
+            break;
+        default:
+            error("%s: unknown keypad value %d", Name, num);
+    }
+    
+    debug("%s: key %c (0x%x) pressed", Name, num, num);
+    return val;
+}
+
+
 static void drv_X11_expose(const int x, const int y, const int width, const int height)
 {
     /*
@@ -143,12 +214,13 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     int r, c;
     int x0, y0;
     int x1, y1;
-    XFontStruct *xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
+    XFontStruct *xfs;
     int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
     int yoffset = border + (DROWS / YRES) * rgap;
     int yk;
-    char s[3];
-
+    char *s;
+    char unknownTxt[10];
+    
     x0 = x - pixel;
     x1 = x + pixel + width;
     y0 = y - pixel;
@@ -166,22 +238,43 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
-
+    
     /* Keypad on the right side */
-    debug("buttons: %d (%dx%d), xfont: %dx%d",
-	  buttons, btnwidth, btnheight, xfs->max_bounds.width, xfs->max_bounds.ascent);
-    drv_X11_color(FG_COL);
-    for (r = 0; r < buttons; r++) {
-	yk = yoffset + r * (btnheight + pgap);
-	snprintf(s, sizeof(s), "%d", r);
-	debug("x: %d, y: %d, text: %s", xoffset, y, s);
-
-	XDrawRectangle(dp, w, gc, xoffset, yk, btnwidth, btnheight - 2);
-	XDrawString(dp, w, gc,
-		    xoffset + btnwidth / 2 - xfs->max_bounds.width / 2, yk + btnheight / 2 + xfs->max_bounds.ascent / 2,
-		    s, 1);
+    if (x1 >= xoffset) {
+        xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
+        drv_X11_color(FG_COL);
+        for (r = 0; r < buttons; r++) {
+            yk = yoffset + r * (btnheight + pgap);
+            switch(r) {
+                case 0:
+                    s = "Up";
+                    break;
+                case 1:
+                    s = "Down";
+                    break;
+                case 2:
+                    s = "Left";
+                    break;
+                case 3:
+                    s = "Right";
+                    break;
+                case 4:
+                    s = "Confirm";
+                    break;
+                case 5:
+                    s = "Cancel";
+                    break;
+                default:
+                    snprintf(unknownTxt, sizeof(unknownTxt), "#%d??", r);
+                    s = unknownTxt;
+            }
+            XDrawRectangle(dp, w, gc, xoffset, yk, btnwidth, btnheight - 2);
+            XDrawString(dp, w, gc,
+                        xoffset + btnwidth / 2 - (xfs->max_bounds.width * strlen(s)) / 2, yk + btnheight / 2 + xfs->max_bounds.ascent / 2,
+                        s, strlen(s));    	
+        }
     }
-    XSync(dp, False);
+        //XSync(dp, False);
 }
 
 
@@ -191,19 +284,33 @@ static void drv_X11_timer( __attribute__ ((unused))
     XEvent ev;
     int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
     int yoffset = border + (DROWS / YRES) * rgap;
-    int btn;
-
-    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask, &ev) == 0)
+    static int btn = 0;
+ 
+    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0)
 	return;
-    if (ev.type == Expose) {
-	drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
-    }
-    if (ev.type == ButtonPress) {
-	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
-	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
-	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap);
-	    info("Button %d pressed", btn);
-	}
+    switch(ev.type) {
+        case Expose:
+            drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
+            break;
+        case ButtonPress:
+            if ( ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
+                 && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons -1 ) *pgap ) {
+                btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;    /* btn 0 is unused */
+                drv_X11_color(BG_COL);
+                XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1, btnheight - 2 - 1);
+                drv_generic_keypad_press(btn);
+            }
+            break;
+        case ButtonRelease:
+            if ( ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
+		 && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons -1 ) *pgap ) {
+                XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2, 1 /* true */);
+                btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;    /* btn 0 is unused */
+                info("%s: Button %d released", Name, btn);
+            }
+            break;
+        default:
+            debug("%s: unknown XEvent %d", Name, ev.type);
     }
 }
 
@@ -212,7 +319,6 @@ static int drv_X11_start(const char *section)
 {
     int i;
     char *s;
-    RGBA BC;
     XSetWindowAttributes wa;
     XSizeHints sh;
     XEvent ev;
@@ -254,14 +360,16 @@ static int drv_X11_start(const char *section)
     if (cfg_number(section, "border", 0, 0, -1, &border) < 0)
 	return -1;
 
+    /* we need the basecolor for the brightness early */
     s = cfg_get(section, "basecolor", "000000ff");
-    if (color2RGBA(s, &BC) < 0) {
+    if (color2RGBA(s, &BL_COL) < 0) {
 	error("%s: ignoring illegal color '%s'", Name, s);
     }
     free(s);
-
-    if (cfg_number(section, "buttons", 0, 0, 10, &buttons) < 0)
-	return -1;
+    
+    /* virtual keyboard: number of buttons (0..6) */
+    if (cfg_number(section, "buttons", 0, 0, 6, &buttons) < 0)
+    	return -1;
 
     drv_X11_FB = malloc(DCOLS * DROWS * sizeof(*drv_X11_FB));
     if (drv_X11_FB == NULL) {
@@ -270,7 +378,7 @@ static int drv_X11_start(const char *section)
     }
 
     for (i = 0; i < DCOLS * DROWS; i++) {
-	drv_X11_FB[i] = BC;
+	drv_X11_FB[i] = BL_COL;
     }
 
     if ((dp = XOpenDisplay(NULL)) == NULL) {
@@ -292,7 +400,7 @@ static int drv_X11_start(const char *section)
 	btnheight = (DROWS * pixel + (DROWS - 1) * pgap) / buttons;
     }
 
-    wa.event_mask = ExposureMask | ButtonPressMask;
+    wa.event_mask = ExposureMask | ButtonPressMask | ButtonReleaseMask;
 
     sh.min_width = sh.max_width = dimx + 2 * border + btnwidth;
     sh.min_height = sh.max_height = dimy + 2 * border;
@@ -304,11 +412,16 @@ static int drv_X11_start(const char *section)
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
 
-    drv_X11_color(BC);
+    drv_X11_color(BL_COL);
 
     XFillRectangle(dp, pm, gc, 0, 0, sh.min_width, sh.min_height);
     XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
+
+    /* set brightness (after first background painting) */
+    if (cfg_number(section, "Brightness", 0, 0, 255, &i) > 0) {
+	drv_X11_brightness(i);
+    }
 
     XStoreName(dp, w, "LCD4Linux");
     XMapWindow(dp, w);
@@ -317,7 +430,6 @@ static int drv_X11_start(const char *section)
 
     while (1) {
 	XNextEvent(dp, &ev);
-	info("XEvent %d", ev.type);
 	if (ev.type == Expose && ev.xexpose.count == 0)
 	    break;
     }
@@ -335,7 +447,24 @@ static int drv_X11_start(const char *section)
 /***            plugins               ***/
 /****************************************/
 
-/* none at the moment... */
+static void plugin_brightness(RESULT * result, const int argc, RESULT * argv[])
+{
+    double brightness;
+    
+    switch (argc) {
+        case 0:
+            brightness = drv_X11_brightness(-1);
+            SetResult(&result, R_NUMBER, &brightness);
+            break;
+        case 1:
+            brightness = drv_X11_brightness(R2N(argv[0]));
+            SetResult(&result, R_NUMBER, &brightness);
+            break;
+        default:
+            error("%s.brightness(): wrong number of parameters", Name);
+            SetResult(&result, R_STRING, "");
+    }
+}
 
 
 /****************************************/
@@ -364,11 +493,16 @@ int drv_X11_init(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_X11_blit;
+    drv_generic_keypad_real_press = drv_X11_keypad;
 
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
 
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
+	return ret;
+    
     drv_generic_graphic_clear();
 
     /* initially expose window */
@@ -384,7 +518,7 @@ int drv_X11_init(const char *section, const int quiet)
     }
 
     /* register plugins */
-    /* none at the moment... */
+    AddFunction("LCD::brightness", -1, plugin_brightness);
 
 
     return 0;
@@ -398,6 +532,7 @@ int drv_X11_quit(const __attribute__ ((unused))
 
     info("%s: shutting down.", Name);
     drv_generic_graphic_quit();
+    drv_generic_keypad_quit();
 
     if (drv_X11_FB) {
 	free(drv_X11_FB);
