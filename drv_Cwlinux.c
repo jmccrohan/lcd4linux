@@ -236,8 +236,8 @@ static int drv_CW_brightness(int brightness)
 
     if (brightness < 0)
 	brightness = 0;
-    if (brightness > 255)
-	brightness = 255;
+    if (brightness > 8)
+	brightness = 8;
     Brightness = brightness;
 
     switch (Brightness) {
