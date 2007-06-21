@@ -427,7 +427,7 @@ static int drv_X11_start(const char *section)
     XClearWindow(dp, w);
 
     /* set brightness (after first background painting) */
-    if (cfg_number(section, "Brightness", 0, 0, 255, &i) > 0) {
+    if (cfg_number(section, "Brightness", 255, 0, 255, &i) > 0) {
 	drv_X11_brightness(i);
     }
 
