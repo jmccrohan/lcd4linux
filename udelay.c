@@ -56,8 +56,11 @@
 #include <sys/time.h>
 
 #ifdef HAVE_ASM_MSR_H
-#define u32 unsigned int
+typedef u_int32_t u32;
+typedef u_int64_t u64;
+#define __KERNEL__
 #include <asm/msr.h>
+#undef __KERNEL__
 #endif
 
 
