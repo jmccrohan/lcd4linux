@@ -139,11 +139,11 @@ static int drv_X11_brightness(int brightness)
     RGBA col = BL_COL;
     int i;
     float dim;
-    
+
     /* -1 is used to query the current brightness */
     if (brightness == -1)
 	return Brightness;
-    
+
     if (brightness < 0)
 	brightness = 0;
     if (brightness > 255)
@@ -155,13 +155,13 @@ static int drv_X11_brightness(int brightness)
     col.B *= dim;
 
     debug("%s: set backlight to %d%%, original backlight color: 0x%02x%02x%02x%02x, dimmed: 0x%02x%02x%02x%02x",
-          Name, (int)(dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
+	  Name, (int) (dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
     for (i = 0; i < DCOLS * DROWS; i++) {
 	drv_X11_FB[i] = col;
     }
-    
+
     drv_X11_color(col);
-    
+
     XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
     XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
@@ -176,30 +176,30 @@ static int drv_X11_brightness(int brightness)
 static int drv_X11_keypad(const int num)
 {
     int val = WIDGET_KEY_PRESSED;
-    
+
     switch (num) {
-        case 1:
-            val += WIDGET_KEY_UP;
-            break;
-        case 2:
-            val += WIDGET_KEY_DOWN;
-            break;
-        case 3:
-            val += WIDGET_KEY_LEFT;
-            break;
-        case 4:
-            val += WIDGET_KEY_RIGHT;
-            break;
-        case 5:
-            val += WIDGET_KEY_CONFIRM;
-            break;
-        case 6:
-            val += WIDGET_KEY_CANCEL;
-            break;
-        default:
-            error("%s: unknown keypad value %d", Name, num);
+    case 1:
+	val += WIDGET_KEY_UP;
+	break;
+    case 2:
+	val += WIDGET_KEY_DOWN;
+	break;
+    case 3:
+	val += WIDGET_KEY_LEFT;
+	break;
+    case 4:
+	val += WIDGET_KEY_RIGHT;
+	break;
+    case 5:
+	val += WIDGET_KEY_CONFIRM;
+	break;
+    case 6:
+	val += WIDGET_KEY_CANCEL;
+	break;
+    default:
+	error("%s: unknown keypad value %d", Name, num);
     }
-    
+
     debug("%s: key %c (0x%x) pressed", Name, num, num);
     return val;
 }
@@ -224,7 +224,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     int yk;
     char *s;
     char unknownTxt[10];
-    
+
     x0 = x - pixel;
     x1 = x + pixel + width;
     y0 = y - pixel;
@@ -242,47 +242,47 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
-    
+
     /* Keypad on the right side */
     if (x1 >= xoffset) {
-        xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
-        if (drv_X11_brightness(-1) > 127) {
-            drv_X11_color(FG_COL);
-        } else {
-            drv_X11_color(BG_COL);
-        }
-        for (r = 0; r < buttons; r++) {
-            yk = yoffset + r * (btnheight + pgap);
-            switch(r) {
-                case 0:
-                    s = "Up";
-                    break;
-                case 1:
-                    s = "Down";
-                    break;
-                case 2:
-                    s = "Left";
-                    break;
-                case 3:
-                    s = "Right";
-                    break;
-                case 4:
-                    s = "Confirm";
-                    break;
-                case 5:
-                    s = "Cancel";
-                    break;
-                default:
-                    snprintf(unknownTxt, sizeof(unknownTxt), "#%d??", r);
-                    s = unknownTxt;
-            }
-            XDrawRectangle(dp, w, gc, xoffset, yk, btnwidth, btnheight - 2);
-            XDrawString(dp, w, gc,
-                        xoffset + btnwidth / 2 - (xfs->max_bounds.width * strlen(s)) / 2, yk + btnheight / 2 + xfs->max_bounds.ascent / 2,
-                        s, strlen(s));    	
-        }
+	xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
+	if (drv_X11_brightness(-1) > 127) {
+	    drv_X11_color(FG_COL);
+	} else {
+	    drv_X11_color(BG_COL);
+	}
+	for (r = 0; r < buttons; r++) {
+	    yk = yoffset + r * (btnheight + pgap);
+	    switch (r) {
+	    case 0:
+		s = "Up";
+		break;
+	    case 1:
+		s = "Down";
+		break;
+	    case 2:
+		s = "Left";
+		break;
+	    case 3:
+		s = "Right";
+		break;
+	    case 4:
+		s = "Confirm";
+		break;
+	    case 5:
+		s = "Cancel";
+		break;
+	    default:
+		snprintf(unknownTxt, sizeof(unknownTxt), "#%d??", r);
+		s = unknownTxt;
+	    }
+	    XDrawRectangle(dp, w, gc, xoffset, yk, btnwidth, btnheight - 2);
+	    XDrawString(dp, w, gc,
+			xoffset + btnwidth / 2 - (xfs->max_bounds.width * strlen(s)) / 2,
+			yk + btnheight / 2 + xfs->max_bounds.ascent / 2, s, strlen(s));
+	}
     }
-        //XSync(dp, False);
+    //XSync(dp, False);
 }
 
 
@@ -293,32 +293,34 @@ static void drv_X11_timer( __attribute__ ((unused))
     int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
     int yoffset = border + (DROWS / YRES) * rgap;
     static int btn = 0;
- 
+
     if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0)
 	return;
-    switch(ev.type) {
-        case Expose:
-            drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
-            break;
-        case ButtonPress:
-            if ( ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
-                 && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons -1 ) *pgap ) {
-                btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;    /* btn 0 is unused */
-                drv_X11_color(BG_COL);
-                XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1, btnheight - 2 - 1);
-                drv_generic_keypad_press(btn);
-            }
-            break;
-        case ButtonRelease:
-            if ( ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
-		 && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons -1 ) *pgap ) {
-                XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2, 1 /* true */);
-                btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;    /* btn 0 is unused */
-                info("%s: Button %d released", Name, btn);
-            }
-            break;
-        default:
-            debug("%s: unknown XEvent %d", Name, ev.type);
+    switch (ev.type) {
+    case Expose:
+	drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
+	break;
+    case ButtonPress:
+	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
+	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
+	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
+	    drv_X11_color(BG_COL);
+	    XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
+			   btnheight - 2 - 1);
+	    drv_generic_keypad_press(btn);
+	}
+	break;
+    case ButtonRelease:
+	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
+	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
+	    XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
+		       1 /* true */ );
+	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
+	    info("%s: Button %d released", Name, btn);
+	}
+	break;
+    default:
+	debug("%s: unknown XEvent %d", Name, ev.type);
     }
 }
 
@@ -374,10 +376,10 @@ static int drv_X11_start(const char *section)
 	error("%s: ignoring illegal color '%s'", Name, s);
     }
     free(s);
-    
+
     /* virtual keyboard: number of buttons (0..6) */
     if (cfg_number(section, "buttons", 0, 0, 6, &buttons) < 0)
-    	return -1;
+	return -1;
 
     drv_X11_FB = malloc(DCOLS * DROWS * sizeof(*drv_X11_FB));
     if (drv_X11_FB == NULL) {
@@ -458,19 +460,19 @@ static int drv_X11_start(const char *section)
 static void plugin_brightness(RESULT * result, const int argc, RESULT * argv[])
 {
     double brightness;
-    
+
     switch (argc) {
-        case 0:
-            brightness = drv_X11_brightness(-1);
-            SetResult(&result, R_NUMBER, &brightness);
-            break;
-        case 1:
-            brightness = drv_X11_brightness(R2N(argv[0]));
-            SetResult(&result, R_NUMBER, &brightness);
-            break;
-        default:
-            error("%s.brightness(): wrong number of parameters", Name);
-            SetResult(&result, R_STRING, "");
+    case 0:
+	brightness = drv_X11_brightness(-1);
+	SetResult(&result, R_NUMBER, &brightness);
+	break;
+    case 1:
+	brightness = drv_X11_brightness(R2N(argv[0]));
+	SetResult(&result, R_NUMBER, &brightness);
+	break;
+    default:
+	error("%s.brightness(): wrong number of parameters", Name);
+	SetResult(&result, R_STRING, "");
     }
 }
 
@@ -510,7 +512,7 @@ int drv_X11_init(const char *section, const int quiet)
     /* initialize generic key pad driver */
     if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
-    
+
     drv_generic_graphic_clear();
 
     /* initially expose window */
