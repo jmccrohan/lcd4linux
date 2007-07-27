@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2006 Stefan Kuhne <sk-privat@gmx.net>
  * Copyright (C) 2007 Robert Buchholz <rbu@gentoo.org>
+ * Copyright (C) 2007 Michael Vogt <michu@neophob.com>
  * Copyright (C) 2006 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
@@ -258,7 +259,27 @@ static int mpd_get(int function)
     int ret = -1;
     MpdObj *mi = NULL;
 
-    mi = mpd_new("localhost", 6600, NULL);
+    char *host = "localhost";
+    char *port = "6600";
+    int iport;
+    char *test;
+
+    if ((test = getenv("MPD_HOST"))) {
+	host = test;
+    }
+
+    if ((test = getenv("MPD_PORT"))) {
+	port = test;
+    }
+
+    iport = strtol(port, &test, 10);
+
+    if ((iport < 0) || (*test != '\0')) {
+	fprintf(stderr, "[MPD] MPD_PORT \"%s\" is not a positive integer\n", port);
+	exit(EXIT_FAILURE);
+    }
+
+    mi = mpd_new(host, iport, NULL);
     mpd_signal_connect_error(mi, (ErrorCallback) error_callback, NULL);
     mpd_set_connection_timeout(mi, 5);
 
