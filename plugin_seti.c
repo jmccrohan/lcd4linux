@@ -3,7 +3,7 @@
  *
  * plugin for seti@home status reporting
  *
- * Copyright (C) 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old seti client which is 

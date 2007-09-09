@@ -3,7 +3,7 @@
  *
  * simple but quick snprintf() replacement
  *
- * Copyright (C) 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * derived from a patch from Martin Hejl which is

@@ -3,7 +3,7 @@
  *
  * generic driver helper for serial and parport access
  *
- * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.

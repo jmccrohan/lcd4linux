@@ -8,7 +8,7 @@
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the MatrixOrbital driver which is
- * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
  *
  * This file is part of LCD4Linux.
  *

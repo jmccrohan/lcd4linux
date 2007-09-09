@@ -6,7 +6,7 @@
  * Copyright (C) 2006 Ernst Bachmann <e.bachmann@xebec.de>
  * Copyright (C) 2004,2006 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
- * Based on the USBLCD driver Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Based on the USBLCD driver Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
  *
  * This file is part of LCD4Linux.
  *

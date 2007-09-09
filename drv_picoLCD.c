@@ -3,7 +3,7 @@
  *
  * driver for picoLCD displays from mini-box.com
  *
- * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Copyright (C) 2007 Nicu Pavel, Mini-Box.com <npavel@mini-box.com>

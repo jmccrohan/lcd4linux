@@ -3,7 +3,7 @@
  *
  * new style driver for HD44780-based displays
  *
- * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Support for I2C bus

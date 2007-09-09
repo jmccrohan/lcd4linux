@@ -3,7 +3,7 @@
  *
  * GPO widget handling
  *
- * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify

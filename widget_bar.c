@@ -3,7 +3,7 @@
  *
  * bar widget handling
  *
- * Copyright (C) 2003, 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2003, 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify

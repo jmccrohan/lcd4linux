@@ -3,11 +3,11 @@
  *
  * plugin for ISDN subsystem
  *
- * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * Based on the old isdn client (isdn.c) which is
- * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
  *
  * This file is part of LCD4Linux.
  *

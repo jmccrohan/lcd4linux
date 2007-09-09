@@ -3,7 +3,7 @@
  *
  * PID file handling
  *
- * Copyright (C) 1999, 2000 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
  *
  * This file is part of LCD4Linux.
  *

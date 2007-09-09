@@ -4,7 +4,7 @@
  * driver for the LCDTerm serial-to-HD44780 adapter boards
  * http://www.bobblick.com/techref/projects/lcdterm/lcdterm.html
  *
- * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.

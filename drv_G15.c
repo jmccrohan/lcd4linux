@@ -4,7 +4,7 @@
  * Driver for Logitech G-15 keyboard LCD screen
  *
  * Copyright (C) 2006 Dave Ingram <dave@partis-project.net>
- * Copyright (C) 2005 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.

@@ -3,7 +3,7 @@
  *
  * thread handling (mutex, shmem, ...)
  *
- * Copyright (C) 2004 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * parts of this code are based on the old XWindow driver which is

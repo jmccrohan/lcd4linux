@@ -4,7 +4,7 @@ dnl $URL$
 
 dnl LCD4Linux Plugins conf part
 dnl
-dnl Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <reinelt@eunet.at>
+dnl Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <michael@reinelt.co.at>
 dnl Copyright (C) 2004, 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
 dnl
 dnl This file is part of LCD4Linux.

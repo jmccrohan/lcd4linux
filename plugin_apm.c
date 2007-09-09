@@ -3,7 +3,7 @@
  *
  * plugin for APM (battery status)
  *
- * Copyright (C) 2003 Michael Reinelt <reinelt@eunet.at>
+ * Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old 'battery.c' which is 
