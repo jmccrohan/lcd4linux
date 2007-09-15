@@ -39,6 +39,9 @@
  *	     -display raw nmea string from the gps receiver
  *	     -added support for gps device with 9600 baud (env. variable)
  *	     -added the option that the widget graps data from the buffer and not from the gps device (usefull for multible widgets)
+ *      v0.3 -improved nmea parsing
+ *           -improved gps-emulator
+ *           -time is now updated with rmc and gga sentence
  *
  * TODO:
  *	-update direction only when speed > 5 kmh
@@ -70,7 +73,10 @@
  *	#define OPTION_GET_BUFFERDATA	0x000001000	when you define more than 1 gps widget
  *							each widget will get updates and cause some ugly side effects, specially when you display the time
  *							by enabling this option, the widget will not read any nmea data from the serial port.
- *							KEEP IN MIND that there must be ONE widget which does NOT get buffered data (means read data from the port)
+ *							KEEP IN MIND that there must be ONE widget which get buffered data (means read data from the port)
+ *
+ *      #define SHOW_NMEA_STATUS        0x010000000	OK:0033/Error:0002/Incomplete:0002
+ *
  *
  *	Examples:  
  *		- gps::parse('0x011','0') will display the altitude and speed -> alt:500 spd:43
@@ -108,7 +114,8 @@
 #include "nmeap.h"
 
 #define EMULATE			//remove comment to enable gps data emulation...
-#define EMU_BUFFER_READ_SIZE 32	//how many bytes are read each loop aka emulation speed
+#define EMU_BUFFER_READ_SIZE 128	//how many bytes are read each loop aka emulation speed
+#define BUFFER_SIZE 256
 
 #define SHOW_ALTITUDE 		0x000000001
 #define SHOW_SPEED 		0x000000010
@@ -127,7 +134,7 @@
 						//by enabling this option, the widget will not read any nmea data from the serial port.
 						//KEEP IN MIND that there must be ONE widget which does not get buffered data (means read data from the port)
 #define OPTION_DEBUG		0x000010000
-
+#define SHOW_NMEA_STATUS	0x010000000
 
 static float course = 0.f;	//degrees
 static float altitude = 0.f;
@@ -138,7 +145,9 @@ static char gpsStatus = 'V';	//A=active or V=Void
 static unsigned long gpsTime = 0;	//UTC of position fix in hhmmss format 
 static unsigned long gpsDate = 0;	//Date in ddmmyy format
 
-static int msgCounter = 0;	//debug counter
+static int msgCounter = 0;	//parsed nmea-sentence
+static int errCounter = 0;	//parsed error nmea-sentence
+static int incomplCounter = 0;	//incomplete parsed nmea-sentence
 /* ---------------------------------------------------------------------------------------*/
 /* STEP 1 : allocate the data structures. be careful if you put them on the stack because */
 /*          they need to be live for the duration of the parser                           */
@@ -153,6 +162,10 @@ static unsigned int emu_read_ofs = 0;
 static int debug = 0;		//debug flag
 
 static char Name[] = "plugin_gps.c";
+
+static int fndStr = 0;		//how many bytes were saved from the last read
+static char backBuffer[BUFFER_SIZE];	//the buffer to save incomplete nmea strings
+
 
 #ifdef EMULATE
 char test_vector[] = {
@@ -176,8 +189,8 @@ char test_vector[] = {
 	"$GPGGA,165117.000,5601.0318,N,01211.3505,E,1,07,1.2,22.9,M,41.6,M,,0000*6F\r\n"
 	"$GPRMC,165117.000,A,5601.0318,N,01211.3505,E,0.08,45.32,190706,,*3F\r\n"
 	"$GPGGA,165118.000,5601.0318,N,01211.3505,E,1,07,1.2,23.0,M,41.6,M,,0000*68\r\n"
-	"$GPRMC,165118.000,A,5601.0318,N,01211.3505,E,0.10,37.49,190706,,*30\r\n"
-	"$GPGGA,165119.000,5601.0318,N,01211.3504,E,1,06,1.2,23.0,M,41.6,M,,0000*69\r\n"
+	"$GPRMC,165118.000,A,5601.0318,N,01211.3505,E,0.10,37.49,190706,,*30\r\n"*/
+    "$GPGGA,165119.000,5601.0318,N,01211.3504,E,1,06,1.2,23.0,M,41.6,M,,0000*69\r\n"
 	"$GPRMC,165119.000,A,5601.0318,N,01211.3504,E,0.08,27.23,190706,,*34\r\n"
 	"$GPGGA,165120.000,5601.0318,N,01211.3504,E,1,07,1.2,23.0,M,41.6,M,,0000*62\r\n"
 	"$GPRMC,165120.000,A,5601.0318,N,01211.3504,E,0.08,41.52,190706,,*38\r\n"
@@ -210,7 +223,7 @@ char test_vector[] = {
 	"$GPGGA,094059.000,5409.998934,N,00859.370505,E,1,12,0.82,-5.177,M,45.414,M,,*43\r\n"
 	"$GPRMC,094059.000,A,5409.998934,N,00859.370505,E,0.576,0.00,301206,,,A*53\r\n"
 	"$GPGGA,094100.000,5409.999097,N,00859.370542,E,1,12,0.82,-5.177,M,45.414,M,,*4C\r\n"
-	"$GPRMC,094100.000,A,5409.999097,N,00859.370542,E,0.705,0.00,301206,,,A\r\n" */
+	"$GPRMC,094100.000,A,5409.999097,N,00859.370542,E,0.705,0.00,301206,,,A\r\n"
 	"$GPGGA,004037.851,0000.0000,N,00000.0000,E,0,00,50.0,0.0,M,0.0,M,0.0,0000*7A\r\n"
 	"$GPGGA,175218.255,4657.3391,N,00726.2666,E,1,04,9.0,568.6,M,48.0,M,0.0,0000*7B\r\n"
 	"$GPGSA,A,3,26,29,17,12,,,,,,,,,9.5,9.08\r\n"
@@ -341,12 +354,44 @@ static void gpgga_callout( __attribute__ ((unused)) nmeap_context_t * context, v
     altitude = gga->altitude;
     satellites = gga->satellites;
     quality = gga->quality;
-    msgCounter++;
-    
-    if (debug==1)
-        debug("gps:debug: get gga callout, msg nr: %d\n",msgCounter);
-    
+    gpsTime = gga->time;
+
+    if (debug == 1)
+	debug("gps:debug: get gga callout\n");
+
 }
+
+
+//search a buffer for a string (forwards)
+int strLastOcc(char *theBuffer, char searchChar, int size)
+{
+    int i, ret;
+
+    ret = -1;
+    for (i = size; i >= 0; i--) {
+	if (theBuffer[i] == searchChar) {
+	    ret = i;
+	    break;
+	}
+    }
+    return ret;
+}
+
+//search a buffer for a string (backwards)  
+int strFirstOcc(char *theBuffer, char searchChar, int size)
+{
+    int i, ret;
+    ret = -1;
+    for (i = 0; i < size; i++) {
+	if (theBuffer[i] == searchChar) {
+	    ret = i;
+	    break;
+	}
+    }
+    return ret;
+}
+
+
 
 /** called when a gprmc message is received and parsed */
 static void gprmc_callout( __attribute__ ((unused)) nmeap_context_t * context, void *data, __attribute__ ((unused))
@@ -358,11 +403,10 @@ static void gprmc_callout( __attribute__ ((unused)) nmeap_context_t * context, v
     gpsStatus = rmc->warn;
     gpsTime = rmc->time;
     gpsDate = rmc->date;
-    msgCounter++;
-    
-    if (debug==1)
-        debug("gps:debug: get rmc callout, msg nr: %d\n",msgCounter);
-    
+
+    if (debug == 1)
+	debug("gps:debug: get rmc callout\n");
+
 }
 
 
@@ -440,37 +484,51 @@ static void parse(RESULT * result, RESULT * theOptions, RESULT * displayOptions)
 
     long options;
     long dispOptions;
-#define BUFFER_SIZE 128    
+
     char buffer[BUFFER_SIZE];
+    char bufferTmp[BUFFER_SIZE];
+
+    int validStart, validEnd;
 
     options = R2N(theOptions);
     dispOptions = R2N(displayOptions);
     //error("options: %x\n",options);
-    
+
     if (dispOptions & OPTION_DEBUG)
-	debug=1;	    
-    
+	debug = 1;
+
     if ((dispOptions & OPTION_GET_BUFFERDATA) == 0) {
 
 	/* ---------------------------------------- */
 	/* STEP 6 : get a buffer of input          */
 	/* --------------------------------------- */
+
+	memset(buffer, 0, BUFFER_SIZE);
+	if (fndStr > BUFFER_SIZE)
+	    fndStr = 0;
+	//copy unfinished nmea strings back
+	if (fndStr > 0) {
+	    memcpy(buffer, backBuffer, fndStr);
+	}
 #ifdef EMULATE
+	memcpy(&buffer[fndStr], &test_vector[emu_read_ofs], BUFFER_SIZE - fndStr);
+
 	len = rem = EMU_BUFFER_READ_SIZE;
 	emu_read_ofs += EMU_BUFFER_READ_SIZE;
-	if (emu_read_ofs > (sizeof(test_vector)-BUFFER_SIZE))
+	if (emu_read_ofs > (sizeof(test_vector) - BUFFER_SIZE)) {
 	    emu_read_ofs = 0;
-	memcpy(buffer, &test_vector[emu_read_ofs], BUFFER_SIZE);
+	    memset(buffer, 0, BUFFER_SIZE);
+	}
 #else
-	memset(buffer, 0, sizeof(buffer));
-	len = rem = read(fd_g, buffer, sizeof(buffer));
+
+	len = rem = read(fd_g, buffer, BUFFER_SIZE - fndStr);
 	if (len <= 0) {
 	    error("GPS Plugin, Error read from port, try using the GPS_PORT env variable (export GPS_PORT=/dev/mydev)");
 	    //break;
 	}
-	if (debug==1)
-	    debug("gps:debug: read %d bytes\n",len);
-	
+	if (debug == 1)
+	    debug("gps:debug: read %d bytes\n", len);
+
 #endif
 	if (dispOptions & OPTION_RAW_NMEA)
 	    printf("\n__[%s]", buffer + '\0');
@@ -478,22 +536,59 @@ static void parse(RESULT * result, RESULT * theOptions, RESULT * displayOptions)
 	/* ---------------------------------------------- */
 	/* STEP 7 : process input until buffer is used up */
 	/* ---------------------------------------------- */
-//#ifdef EMULATE
-//	offset = emu_read_ofs;
-//#else
-	offset = 0;
-//#endif
+	validStart = strFirstOcc(buffer, '$', len);
+	validEnd = strLastOcc(buffer, '\n', len);
 
-	while (rem > 0) {
-//#ifdef EMULATE
-//	    status = nmeap_parseBuffer(&nmea, &test_vector[offset], &rem);
-//#else
+	if (validStart >= 0 && validEnd > 0 && validStart < validEnd) {
+	    //valid string found
+	    memcpy(bufferTmp, buffer, sizeof(buffer));	//save buffer
+	    memset(backBuffer, 0, sizeof(backBuffer));	//clear backup buffer
+	    memcpy(backBuffer, buffer + validEnd, len - validEnd);	// save incomplete nmea string
+	    memset(buffer, 0, sizeof(buffer));	//clean buffer
+	    memcpy(buffer, bufferTmp + validStart, validEnd - validStart + 1);	//copy valid name string
+	    fndStr = len - validEnd + validStart;	//save the size of the buffer
+	} else {
+	    //no valid nmea string found
+	    fndStr = 0;
+	    memset(buffer, 0, sizeof(buffer));
+	    memset(backBuffer, 0, sizeof(backBuffer));
+	}
+
+	offset = 0;
+	if (debug == 1)
+	    debug("backBuffer: %s\n", backBuffer);
+
+	//the nmeap_parseBuffer function needs whole nmea strings, combined string will NOT work!
+	validStart = strFirstOcc(buffer, '$', len);
+	validEnd = strFirstOcc(buffer, '\n', len);
+	while (validStart >= 0 && validEnd > 0 && validStart < validEnd) {
+	    memset(bufferTmp, 0, sizeof(bufferTmp));	//empty temp buffer
+	    memcpy(bufferTmp, buffer + offset + validStart, validEnd - validStart + 1);	//fill temp buffer
+
+	    if (debug == 1)
+		debug("submit: %s\n", bufferTmp);
+
+	    rem = len - offset;
+	    status = nmeap_parseBuffer(&nmea, (const char *) &bufferTmp, &rem);	//parse it
+	    if (status == -1) {
+		errCounter++;
+		error("parser error occured! (cnt: %i)\n", errCounter);
+	    } else if (status == 0) {
+		incomplCounter++;
+	    } else if (status > 0)
+		msgCounter++;
+
+	    offset += validEnd - validStart + 1;	//update offset
+	    validStart = strFirstOcc(buffer + offset, '$', len - offset);	//find next sentence
+	    validEnd = strFirstOcc(buffer + offset, '\n', len - offset);
+	}
+
+
+/*	while (rem > 0) {
 	    status = nmeap_parseBuffer(&nmea, &buffer[offset], &rem);
 	    debug("\nGPS::debug: remaining: %d bytes\n",rem);
-	    //error("loop, remaining=%d, read bytes=%d\n",rem,offset);        
-//#endif
 	    offset += (len - rem);
-	}
+	}*/
     }				// end of OPTION get bufferdata
 
 
@@ -586,7 +681,15 @@ static void parse(RESULT * result, RESULT * theOptions, RESULT * displayOptions)
 	    sprintf(outputStr, "%sdat:%s ", outputStr, digitizer);
     }
 
-    if (options == 0) {		//error, no parameter defined!
+
+    if (dispOptions & SHOW_NMEA_STATUS) {
+	if (dispOptions & OPTION_NO_PREFIX)
+	    sprintf(outputStr, "%s%04d/%04d/%04d ", outputStr, msgCounter, errCounter, incomplCounter);
+	else
+	    sprintf(outputStr, "%sOK:%03d/Er:%03d/In:%03d ", outputStr, msgCounter, errCounter, incomplCounter);
+    }
+
+    if (options == 0 && dispOptions == 0) {	//error, no parameter defined!
 	error("gps::parse() ERROR, no parameter specified!");
 	value = strdup("GPS ARG ERR");
     } else {
