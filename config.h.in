@@ -464,6 +464,12 @@
 /* parport bus driver */
 #undef WITH_PARPORT
 
+/* Pertelian driver */
+#undef WITH_PERTELIAN
+
+/* picoLCD driver */
+#undef WITH_PICOLCD
+
 /* PNG driver */
 #undef WITH_PNG
 
@@ -502,9 +508,6 @@
 
 /* X11 driver */
 #undef WITH_X11
-
-/* picoLCD driver */
-#undef WITH_picoLCD
 
 /* Define to 1 if the X Window System is missing or not being used. */
 #undef X_DISPLAY_MISSING

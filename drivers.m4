@@ -35,8 +35,8 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,]
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, picoLCD, RouterBoard, Sample,]
-  [                        serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
+  [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, RouterBoard,]
+  [                        Sample, serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
   [                        USBHUB, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
@@ -77,7 +77,8 @@ for driver in $drivers; do
          MILINST="yes"
          NORITAKE="yes" 
          NULL="yes" 
-         picoLCD="yes"
+         PERTELIAN="yes"
+         PICOLCD="yes"
          PNG="yes"
          PPM="yes"
          ROUTERBOARD="yes"
@@ -151,8 +152,11 @@ for driver in $drivers; do
       NULL)
          NULL=$val;
          ;;
+      Pertelian)
+         PERTELIAN=$val
+         ;;
       picoLCD)
-         picoLCD=$val
+         PICOLCD=$val
          ;;         
       PNG)
          PNG=$val
@@ -392,14 +396,25 @@ if test "$NULL" = "yes"; then
    AC_DEFINE(WITH_NULL,1,[NULL driver])
 fi
 
-if test "$picoLCD" = "yes"; then
+if test "$PERTELIAN" = "yes"; then
+   # select either text or graphics mode
+   TEXT="yes"
+   # select bus: serial (including USB), parallel or i2c
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_Pertelian.o"
+   AC_DEFINE(WITH_PERTELIAN,1,[Pertelian driver])
+fi
+
+
+
+if test "$PICOLCD" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       GPIO="yes"
       SERIAL="yes"
       LIBUSB="yes"
       DRIVERS="$DRIVERS drv_picoLCD.o"
-      AC_DEFINE(WITH_picoLCD,1,[picoLCD driver])
+      AC_DEFINE(WITH_PICOLCD,1,[picoLCD driver])
    else
       AC_MSG_WARN(usb.h not found: picoLCD driver disabled)
    fi

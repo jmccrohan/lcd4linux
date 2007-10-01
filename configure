@@ -1344,8 +1344,8 @@ Optional Packages:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
                           G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,
                           LUIse, M50530, MatrixOrbital, MilfordInstruments,
-                          Noritake, NULL, PNG, PPM, picoLCD, RouterBoard, Sample,
-                          serdisplib, SimpleLCD, T6963, Trefon, USBLCD,
+                          Noritake, NULL, PNG, PPM, Pertelian, picoLCD, RouterBoard,
+                          Sample, serdisplib, SimpleLCD, T6963, Trefon, USBLCD,
                           USBHUB, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
@@ -7388,7 +7388,8 @@ for driver in $drivers; do
          MILINST="yes"
          NORITAKE="yes"
          NULL="yes"
-         picoLCD="yes"
+         PERTELIAN="yes"
+         PICOLCD="yes"
          PNG="yes"
          PPM="yes"
          ROUTERBOARD="yes"
@@ -7462,8 +7463,11 @@ for driver in $drivers; do
       NULL)
          NULL=$val;
          ;;
+      Pertelian)
+         PERTELIAN=$val
+         ;;
       picoLCD)
-         picoLCD=$val
+         PICOLCD=$val
          ;;
       PNG)
          PNG=$val
@@ -7792,7 +7796,22 @@ _ACEOF
 
 fi
 
-if test "$picoLCD" = "yes"; then
+if test "$PERTELIAN" = "yes"; then
+   # select either text or graphics mode
+   TEXT="yes"
+   # select bus: serial (including USB), parallel or i2c
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_Pertelian.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_PERTELIAN 1
+_ACEOF
+
+fi
+
+
+
+if test "$PICOLCD" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       GPIO="yes"
@@ -7801,7 +7820,7 @@ if test "$picoLCD" = "yes"; then
       DRIVERS="$DRIVERS drv_picoLCD.o"
 
 cat >>confdefs.h <<\_ACEOF
-#define WITH_picoLCD 1
+#define WITH_PICOLCD 1
 _ACEOF
 
    else
