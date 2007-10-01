@@ -12,9 +12,6 @@
 /* Define to 1 if you have the <asm/io.h> header file. */
 #undef HAVE_ASM_IO_H
 
-/* Define to 1 if you have the <asm/msr.h> header file. */
-#undef HAVE_ASM_MSR_H
-
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H

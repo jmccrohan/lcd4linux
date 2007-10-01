@@ -55,14 +55,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#ifdef HAVE_ASM_MSR_H
-typedef u_int32_t u32;
-typedef u_int64_t u64;
-#define __KERNEL__
-#include <asm/msr.h>
-#undef __KERNEL__
-#endif
-
 
 #include "debug.h"
 #include "cfg.h"
@@ -70,79 +62,10 @@ typedef u_int64_t u64;
 #include "udelay.h"
 
 
-static unsigned int ticks_per_usec = 0;
-
-
-static void getCPUinfo(int *hasTSC, double *MHz)
-{
-    int fd;
-    char buffer[4096], *p;
-
-    *hasTSC = 0;
-    *MHz = -1;
-
-    fd = open("/proc/cpuinfo", O_RDONLY);
-    if (fd == -1) {
-	error("udelay: open(/proc/cpuinfo) failed: %s", strerror(errno));
-	return;
-    }
-    if (read(fd, &buffer, sizeof(buffer) - 1) == -1) {
-	error("udelay: read(/proc/cpuinfo) failed: %s", strerror(errno));
-	close(fd);
-	return;
-    }
-    close(fd);
-
-    p = strstr(buffer, "flags");
-    if (p == NULL) {
-	info("udelay: /proc/cpuinfo has no 'flags' line");
-    } else {
-	p = strstr(p, "tsc");
-	if (p == NULL) {
-	    info("udelay: CPU does not support Time Stamp Counter");
-	} else {
-	    info("udelay: CPU supports Time Stamp Counter");
-	    *hasTSC = 1;
-	}
-    }
-
-    p = strstr(buffer, "cpu MHz");
-    if (p == NULL) {
-	info("udelay: /proc/cpuinfo has no 'cpu MHz' line");
-    } else {
-	if (sscanf(p + 7, " : %lf", MHz) != 1) {
-	    error("udelay: parse(/proc/cpuinfo) failed: unknown 'cpu MHz' format");
-	    *MHz = -1;
-	} else {
-	    info("udelay: CPU runs at %f MHz", *MHz);
-	}
-    }
-
-}
-
 
 void udelay_init(void)
 {
-#ifdef HAVE_ASM_MSR_H
-
-    int tsc;
-    double mhz;
-
-    getCPUinfo(&tsc, &mhz);
-
-    if (tsc && mhz > 0.0) {
-	ticks_per_usec = ceil(mhz);
-	info("udelay: using TSC delay loop, %u ticks per microsecond", ticks_per_usec);
-    } else
-#else
-    error("udelay: The file 'include/asm/msr.h' was missing at compile time.");
-    error("udelay: Even if your CPU supports TSC, it will not be used!");
-    error("udelay: You *really* should install msr.h and recompile LCD4linux!");
-#endif
-    {
-	ticks_per_usec = 0;
-	info("udelay: using gettimeofday() delay loop");
-    }
+    info("udelay: using gettimeofday() delay loop");
 }
 
 
@@ -175,37 +98,17 @@ unsigned long timing(const char *driver, const char *section, const char *name, 
 void ndelay(const unsigned long nsec)
 {
 
-#ifdef HAVE_ASM_MSR_H
+    struct timeval now, end;
 
-    if (ticks_per_usec) {
-
-	unsigned int t1, t2;
-	unsigned long tsc;
-
-	tsc = (nsec * ticks_per_usec + 999) / 1000;
-
-	rdtscl(t1);
-	do {
-	    rep_nop();
-	    rdtscl(t2);
-	} while ((t2 - t1) < tsc);
-
-    } else
-#endif
-
-    {
-	struct timeval now, end;
-
-	gettimeofday(&end, NULL);
-	end.tv_usec += (nsec + 999) / 1000;
-	while (end.tv_usec > 1000000) {
-	    end.tv_usec -= 1000000;
-	    end.tv_sec++;
-	}
-
-	do {
-	    rep_nop();
-	    gettimeofday(&now, NULL);
-	} while (now.tv_sec == end.tv_sec ? now.tv_usec < end.tv_usec : now.tv_sec < end.tv_sec);
+    gettimeofday(&end, NULL);
+    end.tv_usec += (nsec + 999) / 1000;
+    while (end.tv_usec > 1000000) {
+	end.tv_usec -= 1000000;
+	end.tv_sec++;
     }
+
+    do {
+	rep_nop();
+	gettimeofday(&now, NULL);
+    } while (now.tv_sec == end.tv_sec ? now.tv_usec < end.tv_usec : now.tv_sec < end.tv_sec);
 }

@@ -531,6 +531,7 @@ if test "$X11" = "yes"; then
       AC_MSG_WARN(X11 headers or libraries not available: X11 driver disabled)
    else
       GRAPHIC="yes"
+      KEYPAD="yes"
       DRIVERS="$DRIVERS drv_X11.o"
       if test "x$ac_x_libraries" = "x"; then
 	DRVLIBS="$DRVLIBS -lX11"
