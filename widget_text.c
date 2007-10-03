@@ -85,6 +85,11 @@ void widget_text_scroll(void *Self)
 	if (pad < 0)
 	    pad = 0;
 	break;
+    case ALIGN_AUTOMATIC:
+	if (len <= width) {
+	    pad = 0;
+	    break;
+	}
     case ALIGN_MARQUEE:
 	pad = width - T->scroll;
 	T->scroll++;
@@ -219,7 +224,7 @@ void widget_text_update(void *Self)
 	/* if there's a marquee scroller active, it has its own */
 	/* update callback timer, so we do nothing here; otherwise */
 	/* we simply call this scroll callback directly */
-	if (T->align != ALIGN_MARQUEE) {
+	if (T->align != ALIGN_MARQUEE || T->align != ALIGN_AUTOMATIC) {
 	    widget_text_scroll(Self);
 	}
     }
@@ -279,6 +284,9 @@ int widget_text_init(WIDGET * Self)
     case 'M':
 	Text->align = ALIGN_MARQUEE;
 	break;
+    case 'A':
+	Text->align = ALIGN_AUTOMATIC;
+	break;
     default:
 	error("widget %s has unknown alignment '%s', using 'Left'", section, c);
 	Text->align = ALIGN_LEFT;
@@ -292,7 +300,7 @@ int widget_text_init(WIDGET * Self)
 	Text->update = 10;
 
     /* marquee scroller speed: interval (msec), default 500msec */
-    if (Text->align == ALIGN_MARQUEE) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC) {
 	cfg_number(section, "speed", 500, 10, -1, &(Text->speed));
     }
 
@@ -306,7 +314,7 @@ int widget_text_init(WIDGET * Self)
     timer_add(widget_text_update, Self, Text->update, Text->update == 0);
 
     /* a marquee scroller has its own timer and callback */
-    if (Text->align == ALIGN_MARQUEE) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC) {
 	timer_add(widget_text_scroll, Self, Text->speed, 0);
     }
 

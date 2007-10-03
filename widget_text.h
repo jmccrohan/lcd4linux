@@ -30,7 +30,7 @@
 
 #include "property.h"
 
-typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE } TEXT_ALIGN;
+typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE, ALIGN_AUTOMATIC } TEXT_ALIGN;
 
 typedef struct WIDGET_TEXT {
     PROPERTY prefix;		/* label on the left side */
@@ -41,7 +41,7 @@ typedef struct WIDGET_TEXT {
     char *buffer;		/* string with 'width+1' bytes allocated  */
     int width;			/* field width */
     int precision;		/* number of digits after the decimal point */
-    TEXT_ALIGN align;		/* alignment: L(eft), C(enter), R(ight), M(arquee) */
+    TEXT_ALIGN align;		/* alignment: L(eft), C(enter), R(ight), M(arquee), A(utomatic) */
     int update;			/* update interval */
     int scroll;			/* marquee starting point */
     int speed;			/* marquee scrolling speed */
