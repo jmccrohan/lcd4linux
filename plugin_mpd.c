@@ -67,7 +67,10 @@
 
 TODO: 
  -what happens if the db is updating? int mpd_status_db_is_updating() 0/1
- -port configuration to lcd4linux.cfg (like mysql)
+
+BUGS:
+ -getMpdUptime() does not update its counter
+ -getMpdPlaytime() does not update its counter
 
 */
 
@@ -240,10 +243,13 @@ static int mpd_update()
     l_mpdPlaylistLength = mpd_playlist_get_playlist_length(mi);
     l_currentSongPos 	= mpd_player_get_current_song_pos(mi);
 
-    /* dummy checks */
+    /* sanity checks */
     if (l_volume < 0 || l_volume > 100)
 	l_volume = 0;
 
+    if (l_bitRate < 0)
+	l_bitRate = 0;
+	
     song = mpd_playlist_get_current_song(mi);
     if (song) {
 
