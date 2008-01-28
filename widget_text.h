@@ -30,7 +30,7 @@
 
 #include "property.h"
 
-typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE, ALIGN_AUTOMATIC } TEXT_ALIGN;
+typedef enum { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_MARQUEE, ALIGN_AUTOMATIC, ALIGN_PINGPONG } TEXT_ALIGN;
 
 typedef struct WIDGET_TEXT {
     PROPERTY prefix;		/* label on the left side */
@@ -45,6 +45,8 @@ typedef struct WIDGET_TEXT {
     int update;			/* update interval */
     int scroll;			/* marquee starting point */
     int speed;			/* marquee scrolling speed */
+    int direction;		/* pingpong direction, 0=right, 1=left */
+    int delay;			/* pingpong scrolling, wait before switch direction */
 } WIDGET_TEXT;
 
 

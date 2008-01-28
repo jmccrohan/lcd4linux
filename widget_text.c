@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2003, 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2008 Michael Vogt <michu@neophob.com> 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,6 +96,42 @@ void widget_text_scroll(void *Self)
 	T->scroll++;
 	if (T->scroll >= width + len)
 	    T->scroll = 0;
+	break;	
+    case ALIGN_PINGPONG:
+#define PINGPONGWAIT 2
+
+	/* scrolling is not necessary - center the string */
+	if (len <= width) {
+	    pad = (width - len) / 2;
+	}
+	else {
+	    if (T->direction == 1)
+		T->scroll++;		/* scroll right */
+	    else
+		T->scroll--;		/* scroll left */
+		
+	    /*pad = if positive, add leading space characters, else offset of string begin */	
+	    pad = 0-T->scroll;
+	    
+	    if (pad < 0-(len-width)) {
+		if (T->delay-- < 1) {	/* wait before switch direction */
+		    T->direction = 0;	/* change scroll direction */
+		    T->delay = PINGPONGWAIT;
+		    T->scroll -= PINGPONGWAIT;
+		} /* else debug("wait1"); */
+		pad = 0-(len-width);
+	    } 
+	    else
+	    if (pad > 0) {
+		if (T->delay-- < 1) {
+		    T->direction = 1;
+		    T->delay = PINGPONGWAIT;
+		    T->scroll += PINGPONGWAIT;
+		} /* else debug("wait2"); */
+		pad = 0;
+	    }
+	    
+	}
 	break;
     default:			/* not reached  */
 	pad = 0;
@@ -219,12 +256,18 @@ void widget_text_update(void *Self)
 
     /* something has changed and should be updated */
     if (update) {
-	/* reset marquee counter if content has changed */
+	/* reset marquee counter if content has changed */	
 	T->scroll = 0;
+	
+	/* Init pingpong scroller. start scrolling left (wrong way) to get a delay */
+	if (T->align == ALIGN_PINGPONG) {
+	    T->direction = 0;	
+	    T->delay = PINGPONGWAIT;
+	}
 	/* if there's a marquee scroller active, it has its own */
 	/* update callback timer, so we do nothing here; otherwise */
 	/* we simply call this scroll callback directly */
-	if (T->align != ALIGN_MARQUEE || T->align != ALIGN_AUTOMATIC) {
+	if (T->align != ALIGN_MARQUEE || T->align != ALIGN_AUTOMATIC || T->align != ALIGN_PINGPONG) {
 	    widget_text_scroll(Self);
 	}
     }
@@ -287,6 +330,9 @@ int widget_text_init(WIDGET * Self)
     case 'A':
 	Text->align = ALIGN_AUTOMATIC;
 	break;
+    case 'P':
+	Text->align = ALIGN_PINGPONG;
+	break;				    	
     default:
 	error("widget %s has unknown alignment '%s', using 'Left'", section, c);
 	Text->align = ALIGN_LEFT;
@@ -300,7 +346,7 @@ int widget_text_init(WIDGET * Self)
 	Text->update = 10;
 
     /* marquee scroller speed: interval (msec), default 500msec */
-    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG) {
 	cfg_number(section, "speed", 500, 10, -1, &(Text->speed));
     }
 
@@ -314,7 +360,7 @@ int widget_text_init(WIDGET * Self)
     timer_add(widget_text_update, Self, Text->update, Text->update == 0);
 
     /* a marquee scroller has its own timer and callback */
-    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG) {
 	timer_add(widget_text_scroll, Self, Text->speed, 0);
     }
 
