@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * mpd informations v0.7
+ * mpd informations v0.8
  *
  * Copyright (C) 2006 Stefan Kuhne <sk-privat@gmx.net>
  * Copyright (C) 2007 Robert Buchholz <rbu@gentoo.org>
@@ -27,11 +27,6 @@
  */
 
 /* 
- * exported functions:
- *
- * int plugin_init_sample (void)
- *  adds various functions
- *
  * changelog v0.5 (20.11.2007):
  *   changed: 	mpd::artist(), mpd::title(), mpd::album()
  *              init code, call only if a function is used.
@@ -61,16 +56,19 @@
  *  changed:	-connection handling improved, do not disconnect/reconnect for each query
  *               -> uses less ressources
  *
+ * changelog v0.8 (30.01.2007):
+ *  changed:  -libmpd is not needed anymore, use libmpdclient.c instead
+ *  fixed:    -getMpdUptime()
+ *            -getMpdPlaytime()
+ *            -type definition
+ *  added:    -mpd::getSamplerateHz
+ *            -getAudioChannels
  */
 
 /*
 
 TODO: 
- -what happens if the db is updating? int mpd_status_db_is_updating() 0/1
-
-BUGS:
- -getMpdUptime() does not update its counter
- -getMpdPlaytime() does not update its counter
+ -what happens if the db is updating? 
 
 */
 
@@ -86,34 +84,33 @@ BUGS:
 /* struct timeval */
 #include <sys/time.h>
 
-
-/* you need libmpd to compile this plugin! http://sarine.nl/libmpd */
-#include <libmpd/libmpd.h>
+//source: http://www.musicpd.org/libmpdclient.shtml
+#include "libmpdclient.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
 
 /* current song */
-#define TAGLEN 512
-#define MAX_PATH 1024
-static char *artist[TAGLEN];
-static char *album[TAGLEN];
-static char *title[TAGLEN];
-static char *filename[MAX_PATH];
-static long l_totalTimeSec;
-static long l_elapsedTimeSec;
+
+static int l_totalTimeSec;
+static int l_elapsedTimeSec;
 static int l_bitRate;
 static int l_repeatEnabled;
 static int l_randomEnabled;
 static int l_state;
 static int l_volume;
-static int l_songsInDb;
-static long l_mpdUptime;
-static long l_mpdPlaytime;
-static long l_mpdDbPlaytime;
-static long l_mpdPlaylistLength;
+static int l_numberOfSongs;
+static unsigned long l_uptime;
+static unsigned long l_playTime;
+static unsigned long l_dbPlayTime;
+static int l_playlistLength;
+/* pos in playlist */
 static int l_currentSongPos;
+static unsigned int l_sampleRate; 	
+static int l_channels; 	
+
+static mpd_Song *currentSong;
 
 /* connection information */
 static char host[255];
@@ -122,15 +119,9 @@ static int iport;
 static int waittime;
 struct timeval timestamp;
 
-static MpdObj *mi = NULL;
+static mpd_Connection * conn;
 static char Section[] = "Plugin:MPD";
 
-
-static void error_callback( __attribute__ ((unused)) MpdObj * mi, int errorid, char *msg, __attribute__ ((unused))
-		    void *userdata)
-{
-    debug("[MPD] caught error %i: '%s'", errorid, msg);
-}
 
 
 static int configure_mpd(void)
@@ -174,75 +165,109 @@ static int configure_mpd(void)
     }
 
     debug("[MPD] connection detail: [%s:%d]", host, iport);
-
-    mi = mpd_new(host, iport, pw);
-    mpd_signal_connect_error(mi, (ErrorCallback) error_callback, NULL);
-    mpd_set_connection_timeout(mi, 5);
-
-    configured = 1;
+    configured = 1;    
+    
+    //test connection - if it fails i dont care
+    conn = mpd_newConnection(host, iport, 10);
+    if(conn->error) {
+      error("[MPD] error mpd_newConnection: %s", conn->errorStr);
+      mpd_closeConnection(conn);
+      //return -1;
+    }
+	
     return configured;
 }
 
 
 static int mpd_update()
 {
-    int ret = -1;
-    mpd_Song *song;
-    static char *notagArt = "No artist tag";
-    static char *notagTit = "No title tag";
-    static char *notagAlb = "No album tag";
-    static char *nofilename = "No Filename";
-    struct timeval now;
-    int len;
+    int ret = -1;    
+    struct timeval now;    
+
+    /* reread every 1000 msec only */
+    gettimeofday(&now, NULL);    
+    int timedelta = (now.tv_sec - timestamp.tv_sec) * 1000 + (now.tv_usec - timestamp.tv_usec) / 1000;
+    if (timedelta < waittime) {      
+	return 1;
+    }    
 
     //check if configured
     if (configure_mpd() < 0) {
 	return -1;
     }
 
-    /* reread every 1000 msec only */
-    gettimeofday(&now, NULL);    
-    int timedelta = (now.tv_sec - timestamp.tv_sec) * 1000 + (now.tv_usec - timestamp.tv_usec) / 1000;
-    if (timedelta < waittime) {
-	return 1;
-    }
-
-    //debug("[MPD] time delta: %i", timedelta);
-
-    //send password if enabled
-    if (pw[0] != 0)
-	mpd_send_password(mi);
-    
     //check if connected
-    if (mpd_check_connected(mi) != 1) {
-	debug("[MPD] not connected, try to reconnect...");
-	mpd_connect(mi);
-	
-	if (mpd_check_connected(mi) != 1) {
-	    debug("[MPD] connection failed, give up...");
-	    return -1;
-	}
-	debug("[MPD] connection ok...");
-    }
+    if(conn->error) {
+      debug("[MPD] not connected, try to reconnect...");
+      mpd_closeConnection(conn);
+      conn = mpd_newConnection(host, iport, 10);
 
-    ret = 0;
+      if(conn->error) {
+        error("[MPD] connection failed, give up...");
+        return -1;
+      }
+      
+      debug("[MPD] connection ok...");
+    }    
     
-    mpd_status_update(mi);
+    mpd_Status * status=NULL;
+    mpd_Stats *stats=NULL;
+    mpd_InfoEntity * entity;
+    
+    mpd_sendCommandListOkBegin(conn);
+    mpd_sendStatsCommand(conn); 
+    mpd_sendStatusCommand(conn);
+    mpd_sendCurrentSongCommand(conn);
+    mpd_sendCommandListEnd(conn);
 
-    l_elapsedTimeSec 	= mpd_status_get_elapsed_song_time(mi);
-    l_bitRate 		= mpd_status_get_bitrate(mi);
-    l_totalTimeSec 	= mpd_status_get_total_song_time(mi);
-    l_repeatEnabled	= mpd_player_get_repeat(mi);
-    l_randomEnabled 	= mpd_player_get_random(mi);
-    l_state 		= mpd_player_get_state(mi);
-    l_volume 		= mpd_status_get_volume(mi);
-    l_songsInDb 	= mpd_stats_get_total_songs(mi);
-    l_mpdUptime 	= mpd_stats_get_uptime(mi);
-    l_mpdPlaytime 	= mpd_stats_get_playtime(mi);
-    l_mpdDbPlaytime 	= mpd_stats_get_db_playtime(mi);
-    l_mpdPlaylistLength = mpd_playlist_get_playlist_length(mi);
-    l_currentSongPos 	= mpd_player_get_current_song_pos(mi);
+//stats
+    stats = mpd_getStats(conn);
+    if(stats==NULL) {			
+	error("[MPD] error mpd_getStats: %s", conn->errorStr);
+	goto cleanup;
+    }  
 
+//status
+    mpd_nextListOkCommand(conn);    
+    if((status = mpd_getStatus(conn))==NULL) {
+	error("[MPD] error mpd_nextListOkCommand: %s", conn->errorStr);
+	goto cleanup;
+    }
+		
+//song    
+    mpd_nextListOkCommand(conn);
+    while((entity = mpd_getNextInfoEntity(conn))) {
+	mpd_Song * song = entity->info.song;
+
+	if(entity->type!=MPD_INFO_ENTITY_TYPE_SONG) {
+	    mpd_freeInfoEntity(entity);
+	    continue;
+	}
+	if (currentSong!=NULL)
+    	    mpd_freeSong(currentSong);
+	
+	currentSong = mpd_songDup(song);
+	mpd_freeInfoEntity(entity);
+    }
+		
+    l_elapsedTimeSec 	= status->elapsedTime;
+    l_totalTimeSec 	= status->totalTime;
+    l_repeatEnabled	= status->repeat;
+    l_randomEnabled 	= status->random;
+    l_bitRate 		= status->bitRate;    
+    l_state 		= status->state;
+    l_volume 		= status->volume;
+    l_playlistLength 	= status->playlistLength;
+    l_currentSongPos 	= status->song+1;
+    l_sampleRate 	= status->sampleRate;
+    l_channels 		= status->channels;
+    
+    l_numberOfSongs 	= stats->numberOfSongs;
+    l_uptime 		= stats->uptime;
+    l_playTime 		= stats->playTime;
+    l_dbPlayTime 	= stats->dbPlayTime;
+
+		
     /* sanity checks */
     if (l_volume < 0 || l_volume > 100)
 	l_volume = 0;
@@ -250,51 +275,29 @@ static int mpd_update()
     if (l_bitRate < 0)
 	l_bitRate = 0;
 	
-    song = mpd_playlist_get_current_song(mi);
-    if (song) {
-
-	    /* copy song information to local variables */
-	    memset(album, 0, TAGLEN);
-	    if (song->album != 0) {
-		len = strlen(song->album);
-		if (len > TAGLEN)
-		    len = TAGLEN;
-		memcpy(album, song->album, len);
-
-	    } else
-		memcpy(album, notagAlb, strlen(notagAlb));
-
-	    memset(artist, 0, TAGLEN);
-	    if (song->artist != 0) {
-		len = strlen(song->artist);
-		if (len > TAGLEN)
-		    len = TAGLEN;
-		memcpy(artist, song->artist, len);
-	    } else
-		memcpy(artist, notagArt, strlen(notagArt));
-
-	    memset(title, 0, TAGLEN);
-	    if (song->title != 0) {
-		len = strlen(song->title);
-		if (len > TAGLEN)
-		    len = TAGLEN;
-		memcpy(title, song->title, len);
-	    } else
-		memcpy(title, notagTit, strlen(notagTit));
-
-	    memset(filename, 0, MAX_PATH);
-	    if (song->file != 0) {
-		len = strlen(song->file);
-		if (len > MAX_PATH)
-		    len = MAX_PATH;
-		memcpy(filename, song->file, len);
-	    } else
-		memcpy(filename, nofilename, strlen(nofilename));
-    }
+    if (l_elapsedTimeSec > l_totalTimeSec || l_elapsedTimeSec < 0)
+	l_elapsedTimeSec = 0;
+    ret = 0;
     
-//    mpd_disconnect(mi);		/* you need to disconnect here */
-    gettimeofday(&timestamp, NULL);
+cleanup:
+    if (stats!=NULL)
+	mpd_freeStats(stats);
+      
+    if (status!=NULL)  
+	mpd_freeStatus(status);
 
+    if(conn->error) {
+	error("[MPD] error: %s", conn->errorStr);
+	return -1;
+    }
+
+    mpd_finishCommand(conn);
+    if(conn->error) {			
+	error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	return -1;
+    }	
+	
+    gettimeofday(&timestamp, NULL);
     return ret;
 }
 
@@ -342,40 +345,57 @@ static void getRandomInt(RESULT * result)
     SetResult(&result, R_NUMBER, &d);
 }
 
+/* if no tag is availabe, use filename */
 static void getArtist(RESULT * result)
 {
-    int cSong = mpd_update();
-    if (cSong != 0) {		/* inform user this information is cached... */
-//	debug("[MPD] use cached artist information...");
-    }
-    SetResult(&result, R_STRING, artist);
+    mpd_update();
+    if (currentSong!=NULL) {
+	if (currentSong->artist!=NULL) {
+	    SetResult(&result, R_STRING, currentSong->artist);
+	} else {
+	    if (currentSong->file!=NULL)
+		SetResult(&result, R_STRING, currentSong->file);
+	    else
+		SetResult(&result, R_STRING, "");
+	}
+    } else SetResult(&result, R_STRING, "");
+    
 }
 
 static void getTitle(RESULT * result)
 {
-    int cSong = mpd_update();
-    if (cSong != 0) {		/* inform user this information is cached... */
-//	debug("[MPD] use cached title information...");
-    }
-    SetResult(&result, R_STRING, title);
+    mpd_update();
+    if (currentSong!=NULL) {
+	if (currentSong->title!=NULL) {
+    	    SetResult(&result, R_STRING, currentSong->title);
+	} else SetResult(&result, R_STRING, "");
+    } else SetResult(&result, R_STRING, "");
+
 }
 
 static void getAlbum(RESULT * result)
 {
-    int cSong = mpd_update();
-    if (cSong != 0) {		/* inform user this information is cached... */
-//	debug("[MPD] use cached album information...");
-    }
-    SetResult(&result, R_STRING, album);
+    mpd_update();
+    if (currentSong!=NULL) {    
+	if (currentSong->album!=NULL)
+    	    SetResult(&result, R_STRING, currentSong->album);
+        else 
+    	    SetResult(&result, R_STRING, "");
+    } 
+    else SetResult(&result, R_STRING, "");
 }
 
 static void getFilename(RESULT * result)
 {
-    int cSong = mpd_update();
-    if (cSong != 0) {		/* inform user this information is cached... */
-//	debug("[MPD] use cached filename information...");
-    }
-    SetResult(&result, R_STRING, filename);
+    mpd_update();
+    if (currentSong!=NULL) {
+	if (currentSong->file!=NULL)
+    	    SetResult(&result, R_STRING, currentSong->file);
+        else 
+    	    SetResult(&result, R_STRING, "");
+    } 
+    else SetResult(&result, R_STRING, "");
+    
 }
 
 /*  
@@ -392,13 +412,13 @@ static void getStateInt(RESULT * result)
     mpd_update();
 
     switch (l_state) {
-    case MPD_PLAYER_PLAY:
+    case MPD_STATUS_STATE_PLAY:
 	ret = 1;
 	break;
-    case MPD_PLAYER_PAUSE:
+    case MPD_STATUS_STATE_PAUSE:
 	ret = 2;
 	break;
-    case MPD_PLAYER_STOP:
+    case MPD_STATUS_STATE_STOP:
 	ret = 3;
 	break;
     default:
@@ -419,13 +439,12 @@ static void getVolume(RESULT * result)
     SetResult(&result, R_NUMBER, &d);
 }
 
-/* return the # of songs in thr mpd db .. */
+/* return the # of songs in the mpd db .. */
 static void getSongsInDb(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_songsInDb;
-    /* return 0..100 or < 0 when failed */
+    d = (double)l_numberOfSongs;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -433,7 +452,7 @@ static void getMpdUptime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_mpdUptime;
+    d = (double)l_uptime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -441,7 +460,7 @@ static void getMpdPlayTime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_mpdPlaytime;
+    d = (double)l_playTime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -449,7 +468,7 @@ static void getMpdDbPlayTime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_mpdDbPlaytime;
+    d = (double)l_dbPlayTime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -457,7 +476,7 @@ static void getMpdPlaylistLength(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_mpdPlaylistLength;
+    d = (double)l_playlistLength;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -466,6 +485,22 @@ static void getCurrentSongPos(RESULT * result)
     double d;
     mpd_update();
     d = (double)l_currentSongPos;
+    SetResult(&result, R_NUMBER, &d);
+}
+
+static void getAudioChannels(RESULT * result)
+{
+    double d;
+    mpd_update();
+    d = (double)l_channels;
+    SetResult(&result, R_NUMBER, &d);
+}
+
+static void getSamplerateHz(RESULT * result)
+{
+    double d;
+    mpd_update();
+    d = (double)l_sampleRate;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -515,18 +550,13 @@ static void formatTimeDDHHMM(RESULT * result, RESULT * param)
 int plugin_init_mpd(void)
 {
     int check;
-    debug("[MPD] v0.7, check lcd4linux configuration file...");
+    debug("[MPD] v0.8, check lcd4linux configuration file...");
 
     check = configure_mpd();
     if (check)
-	debug("[MPD] done");
+	debug("[MPD] connected!");
     else
-	debug("[MPD] error!");
-
-    memset(album, 0, TAGLEN);
-    memset(artist, 0, TAGLEN);
-    memset(title, 0, TAGLEN);
-    memset(filename, 0, MAX_PATH);
+	debug("[MPD] error, NOT connected!");
     
     gettimeofday(&timestamp, NULL);	
 
@@ -537,6 +567,8 @@ int plugin_init_mpd(void)
     AddFunction("mpd::totalTimeSec", 0, totalTimeSec);
     AddFunction("mpd::elapsedTimeSec", 0, elapsedTimeSec);
     AddFunction("mpd::bitRate", 0, bitRate);
+    AddFunction("mpd::getSamplerateHz", 0, getSamplerateHz);
+    AddFunction("mpd::getAudioChannels", 0, getAudioChannels);
     AddFunction("mpd::getRepeatInt", 0, getRepeatInt);
     AddFunction("mpd::getRandomInt", 0, getRandomInt);
     AddFunction("mpd::getStateInt", 0, getStateInt);
@@ -558,5 +590,7 @@ int plugin_init_mpd(void)
 void plugin_exit_mpd(void)
 {
     debug("[MPD] disconnect from mpd");
-    mpd_free(mi);
+    if (currentSong!=NULL)
+	mpd_freeSong(currentSong);
+    mpd_closeConnection(conn);
 }
