@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * mpd informations v0.8
+ * mpd informations v0.81
  *
  * Copyright (C) 2006 Stefan Kuhne <sk-privat@gmx.net>
  * Copyright (C) 2007 Robert Buchholz <rbu@gentoo.org>
@@ -91,6 +91,8 @@ TODO:
 #include <dmalloc.h>
 #endif
 
+#define TIMEOUT_IN_S 10
+
 /* current song */
 
 static int l_totalTimeSec;
@@ -116,6 +118,7 @@ static mpd_Song *currentSong;
 static char host[255];
 static char pw[255];
 static int iport;
+static int plugin_enabled;
 static int waittime;
 struct timeval timestamp;
 
@@ -133,6 +136,17 @@ static int configure_mpd(void)
     if (configured != 0)
 	return configured;
 
+    /* read enabled */
+    if (cfg_number(Section, "enabled", 0, 0, 1, &plugin_enabled) < 1) {
+	plugin_enabled = 0;
+    }
+    
+    if (plugin_enabled != 1){
+	info("[MPD] WARNING: Plugin is not enabled! (set 'enabled 1' to enable this plugin)");
+	configured = 1;
+	return configured;    
+    }
+
     /* read server */
     s = cfg_get(Section, "server", "localhost");
     if (*s == '\0') {
@@ -140,7 +154,7 @@ static int configure_mpd(void)
 	strcpy(host, "localhost");
     } else
 	strcpy(host, s);
-
+	
     free(s);
 
     /* read port */
@@ -165,16 +179,7 @@ static int configure_mpd(void)
     }
 
     debug("[MPD] connection detail: [%s:%d]", host, iport);
-    configured = 1;    
-    
-    //test connection - if it fails i dont care
-    conn = mpd_newConnection(host, iport, 10);
-    if(conn->error) {
-      error("[MPD] error mpd_newConnection: %s", conn->errorStr);
-      mpd_closeConnection(conn);
-      //return -1;
-    }
-	
+    configured = 1;        
     return configured;
 }
 
@@ -187,7 +192,9 @@ static int mpd_update()
     /* reread every 1000 msec only */
     gettimeofday(&now, NULL);    
     int timedelta = (now.tv_sec - timestamp.tv_sec) * 1000 + (now.tv_usec - timestamp.tv_usec) / 1000;
+    
     if (timedelta < waittime) {      
+	//debug("[MPD] waittime not reached...\n");
 	return 1;
     }    
 
@@ -197,18 +204,22 @@ static int mpd_update()
     }
 
     //check if connected
-    if(conn->error) {
-      debug("[MPD] not connected, try to reconnect...");
-      mpd_closeConnection(conn);
-      conn = mpd_newConnection(host, iport, 10);
-
-      if(conn->error) {
-        error("[MPD] connection failed, give up...");
-        return -1;
-      }
-      
-      debug("[MPD] connection ok...");
-    }    
+    if (conn==NULL || conn->error) {
+	if (conn) {
+    	    debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
+	    mpd_closeConnection(conn);
+        }
+	else debug("[MPD] initialize connect to [%s]:[%i]\n", host, iport);
+	
+	conn = mpd_newConnection(host, iport, TIMEOUT_IN_S);
+        if(conn->error) {
+    	    error("[MPD] connection failed, give up...");
+	    gettimeofday(&timestamp, NULL);
+    	    return -1;
+        }
+	
+	debug("[MPD] connection fixed...");
+    }
     
     mpd_Status * status=NULL;
     mpd_Stats *stats=NULL;
@@ -216,6 +227,12 @@ static int mpd_update()
     
     mpd_sendCommandListOkBegin(conn);
     mpd_sendStatsCommand(conn); 
+
+    if(conn->error) {
+	error("[MPD] error: %s", conn->errorStr);
+	return -1;
+    }
+
     mpd_sendStatusCommand(conn);
     mpd_sendCurrentSongCommand(conn);
     mpd_sendCommandListEnd(conn);
@@ -550,13 +567,16 @@ static void formatTimeDDHHMM(RESULT * result, RESULT * param)
 int plugin_init_mpd(void)
 {
     int check;
-    debug("[MPD] v0.8, check lcd4linux configuration file...");
+    debug("[MPD] v0.81, check lcd4linux configuration file...");
 
     check = configure_mpd();
+    if (plugin_enabled != 1) 
+	return 0;
+    
     if (check)
-	debug("[MPD] connected!");
+	debug("[MPD] configured!");
     else
-	debug("[MPD] error, NOT connected!");
+	debug("[MPD] error, NOT configured!");
     
     gettimeofday(&timestamp, NULL);	
 
@@ -589,8 +609,10 @@ int plugin_init_mpd(void)
 
 void plugin_exit_mpd(void)
 {
-    debug("[MPD] disconnect from mpd");
-    if (currentSong!=NULL)
-	mpd_freeSong(currentSong);
-    mpd_closeConnection(conn);
+    if (plugin_enabled == 1){
+	debug("[MPD] disconnect from mpd");
+	if (currentSong!=NULL)
+	    mpd_freeSong(currentSong);
+	mpd_closeConnection(conn);
+    }
 }
