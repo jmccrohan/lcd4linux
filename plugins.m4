@@ -256,20 +256,16 @@ if test "$PLUGIN_MEMINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_meminfo.o"
    AC_DEFINE(PLUGIN_MEMINFO,1,[meminfo plugin])
 fi
-if test "$PLUGIN_MPD" = "yes"; then
-   AC_CHECK_HEADERS(libmpd/libmpd.h, [has_libmpd_header="true"], [has_libmpd_header="false"])
-   if test "$has_libmpd_header" = "true"; then	
-      AC_CHECK_LIB(mpd, mpd_connect, [has_libmpd_lib="true"], [has_libmpd_lib="false"])
-      if test "$has_libmpd_lib" = "true"; then
-        PLUGINS="$PLUGINS plugin_mpd.o"
-        PLUGINLIBS="$PLUGINLIBS -lmpd"
-        AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])
-      else
-        AC_MSG_WARN(libmpd lib not found: mpd plugin disabled)
-      fi
+if test "$PLUGIN_MPD" = "yes"; then   
+   if test -f "libmpdclient.h"
+   then      
+	PLUGINS="$PLUGINS plugin_mpd.o libmpdclient.o"
+	AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])      
    else
-      AC_MSG_WARN(libmpd/libmpd.h header not found: mpd plugin disabled)
-   fi 
+      AC_MSG_WARN(libmpdclient.h header not found: mpd plugin disabled)
+      AC_MSG_WARN(get libmpdclient.h from http://www.musicpd.org/libmpdclient.shtml)
+      AC_MSG_WARN(and copy those 2 files in the lcd4linux directory.)
+   fi
 fi
 if test "$PLUGIN_MYSQL" = "yes"; then
    AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header="true"], [has_mysql_header="false"])

@@ -77,6 +77,7 @@ TODO:
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <signal.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -577,7 +578,9 @@ int plugin_init_mpd(void)
 	debug("[MPD] configured!");
     else
 	debug("[MPD] error, NOT configured!");
-    
+
+    //when mpd dies, do NOT exit application, ignore it!
+    signal(SIGPIPE, SIG_IGN);
     gettimeofday(&timestamp, NULL);	
 
     AddFunction("mpd::artist", 0, getArtist);
