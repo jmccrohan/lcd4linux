@@ -85,7 +85,7 @@ TODO:
 /* struct timeval */
 #include <sys/time.h>
 
-//source: http://www.musicpd.org/libmpdclient.shtml
+/* source: http://www.musicpd.org/libmpdclient.shtml */
 #include "libmpdclient.h"
 
 #ifdef WITH_DMALLOC
@@ -195,14 +195,15 @@ static int mpd_update()
     int timedelta = (now.tv_sec - timestamp.tv_sec) * 1000 + (now.tv_usec - timestamp.tv_usec) / 1000;
 
     if (timedelta < waittime) {
-	//debug("[MPD] waittime not reached...\n");
+	/* debug("[MPD] waittime not reached...\n"); */
 	return 1;
     }
-    //check if configured
+
+    /* check if configured */
     if (configure_mpd() < 0) {
 	return -1;
     }
-    //check if connected
+    /* check if connected */
     if (conn == NULL || conn->error) {
 	if (conn) {
 	    debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
@@ -236,19 +237,18 @@ static int mpd_update()
     mpd_sendCurrentSongCommand(conn);
     mpd_sendCommandListEnd(conn);
 
-//stats
     stats = mpd_getStats(conn);
     if (stats == NULL) {
 	error("[MPD] error mpd_getStats: %s", conn->errorStr);
 	goto cleanup;
     }
-//status
+
     mpd_nextListOkCommand(conn);
     if ((status = mpd_getStatus(conn)) == NULL) {
 	error("[MPD] error mpd_nextListOkCommand: %s", conn->errorStr);
 	goto cleanup;
     }
-//song    
+
     mpd_nextListOkCommand(conn);
     while ((entity = mpd_getNextInfoEntity(conn))) {
 	mpd_Song *song = entity->info.song;
@@ -578,7 +578,7 @@ int plugin_init_mpd(void)
     else
 	debug("[MPD] error, NOT configured!");
 
-    //when mpd dies, do NOT exit application, ignore it!
+    /* when mpd dies, do NOT exit application, ignore it! */
     signal(SIGPIPE, SIG_IGN);
     gettimeofday(&timestamp, NULL);
 
