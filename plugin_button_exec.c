@@ -77,8 +77,8 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
     args[i] = (char *) 0;
     env[0] = (char *) 0;
     pid = fork();
-    if (pid == 0) {		// child-process
-	// char *args[] = {"-r", "-t", "-l", (char *) 0 };
+    if (pid == 0) {		/* child-process */
+	/* char *args[] = {"-r", "-t", "-l", (char *) 0 }; */
 	info("executing program");
 	execve(prog, args, env);
 	errsv = errno;
