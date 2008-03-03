@@ -54,6 +54,7 @@ for plugin in $plugins; do
          ;;
       all)
          PLUGIN_APM="yes"
+				 PLUGIN_BUTTON_EXEC="yes"
          PLUGIN_CPUINFO="yes"
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
@@ -85,6 +86,9 @@ for plugin in $plugins; do
       apm)
          PLUGIN_APM=$val
          ;;
+			button_exec)
+			   PLUGIN_BUTTON_EXEC=$val
+				 ;;
       cpuinfo)
          PLUGIN_CPUINFO=$val
          ;;
@@ -177,6 +181,10 @@ if test "$PLUGIN_APM" = "yes"; then
    PLUGINS="$PLUGINS plugin_apm.o"
    AC_DEFINE(PLUGIN_APM,1,[apm plugin])
 fi
+if test "$PLUGIN_BUTTON_EXEC" = "yes"; then
+   PLUGINS="$PLUGINS plugin_button_exec.o"
+   AC_DEFINE(PLUGIN_BUTTON_EXEC,1,[button_exec plugin])
+fi
 if test "$PLUGIN_CPUINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_cpuinfo.o"
    AC_DEFINE(PLUGIN_CPUINFO,1,[cpuinfo plugin])
@@ -223,7 +231,7 @@ if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    AC_DEFINE(PLUGIN_I2C_SENSORS,1,[i2c sensors plugin])
 fi
 if test "$PLUGIN_ICONV" = "yes"; then
-   AM_ICONV
+   dnl AM_ICONV
    if test "$am_cv_func_iconv" = "yes"; then 
       PLUGINS="$PLUGINS plugin_iconv.o"
       PLUGINLIBS="$PLUGINLIBS $LIBICONV"

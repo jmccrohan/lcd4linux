@@ -100,6 +100,8 @@ int plugin_init_python(void);
 void plugin_exit_python(void);
 int plugin_init_sample(void);
 void plugin_exit_sample(void);
+int plugin_init_button_exec(void);
+void plugin_exit_button_exec(void);
 int plugin_init_seti(void);
 void plugin_exit_seti(void);
 int plugin_init_statfs(void);
@@ -188,6 +190,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_SAMPLE
     plugin_init_sample();
+#endif
+#ifdef PLUGIN_BUTTON_EXEC
+    plugin_init_button_exec();
 #endif
 #ifdef PLUGIN_SETI
     plugin_init_seti();
@@ -279,6 +284,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_SAMPLE
     plugin_exit_sample();
+#endif
+#ifdef PLUGIN_BUTTON_EXEC
+    plugin_exit_button_exec();
 #endif
 #ifdef PLUGIN_SETI
     plugin_exit_seti();
