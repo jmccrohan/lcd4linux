@@ -69,6 +69,8 @@
 
 #ifdef WITH_PARPORT
 #include "drv_generic_parport.h"
+#include "drv_generic_keypad.h"
+#include "widget_keypad.h"
 #endif
 
 #ifdef WITH_I2C
@@ -979,6 +981,12 @@ static int drv_HD_GPO(const int num, const int val)
 
 #ifdef WITH_PARPORT
 
+
+static int drv_HD_LCM162_keypad_handler(const int num)
+{
+  return num;
+}
+
 static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
 {
     static unsigned char data = 0x00;
@@ -1000,8 +1008,21 @@ static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
     if (data != temp) {
 	data = temp;
 
+	int KEYPAD_VAL=0;
 	keynum = (data & mask3 ? 1 : 0) + (data & mask5 ? 2 : 0);
+	switch(keynum)
+	  {
+	  default:
+	  case 0: KEYPAD_VAL=WIDGET_KEY_CANCEL; break;
+	  case 1: KEYPAD_VAL=WIDGET_KEY_UP; break;
+	  case 2: KEYPAD_VAL=WIDGET_KEY_CONFIRM; break;
+	  case 3: KEYPAD_VAL=WIDGET_KEY_DOWN; break;
+	  }
+
 	updown = (data & mask6 ? 1 : 0);
+	KEYPAD_VAL += updown ? WIDGET_KEY_PRESSED : WIDGET_KEY_RELEASED;
+
+	drv_generic_keypad_press(KEYPAD_VAL);
 
 	debug("key %d press %d", keynum, updown);
     }
@@ -1212,6 +1233,7 @@ static int drv_HD_start(const char *section, const int quiet)
 #ifdef WITH_PARPORT
     if (Capabilities & CAP_LCM162) {
 	timer_add(drv_HD_LCM162_timer, NULL, 10, 0);
+	drv_generic_keypad_real_press = drv_HD_LCM162_keypad_handler;
     }
 #endif
 
@@ -1330,6 +1352,9 @@ int drv_HD_init(const char *section, const int quiet)
 
     /* initialize generic GPIO driver */
     if ((ret = drv_generic_gpio_init(section, Name)) != 0)
+	return ret;
+
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
 
     /* register text widget */

@@ -27,7 +27,7 @@
 
 #include "widget.h"
 
-/* these functinos must be implemented by the real driver */
+/* these functions must be implemented by the real driver */
 extern int (*drv_generic_keypad_real_press) (const int num);
 
 /* generic functions and widget callbacks */
