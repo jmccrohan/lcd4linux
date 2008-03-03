@@ -91,6 +91,7 @@ drv_Pertelian                 \
 drv_picoLCD.c                 \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
+drv_st2205.c                  \
 drv_serdisplib.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \

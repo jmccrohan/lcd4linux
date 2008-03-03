@@ -36,8 +36,8 @@ AC_ARG_WITH(
   [                        G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,]
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, RouterBoard,]
-  [                        Sample, serdisplib, SimpleLCD, T6963, Trefon, USBLCD,]
-  [                        USBHUB, WincorNixdorf, X11],
+  [                        Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
+  [                        USBLCD, USBHUB, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
 )
@@ -83,6 +83,7 @@ for driver in $drivers; do
          PPM="yes"
          ROUTERBOARD="yes"
          SAMPLE="yes"
+         ST2205="yes"
 	 SERDISPLIB="yes"
          SIMPLELCD="yes"
          T6963="yes"
@@ -175,6 +176,9 @@ for driver in $drivers; do
          ;;
       SimpleLCD)
          SIMPLELCD=$val
+         ;;
+      st2205)
+         ST2205=$val
          ;;
       T6963)
          T6963=$val
@@ -478,6 +482,17 @@ if test "$SIMPLELCD" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_SimpleLCD.o"
    AC_DEFINE(WITH_SIMPLELCD,1,[SimpleLCD driver])
+fi
+
+if test "$ST2205" = "yes"; then
+   if test "$has_st2205" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_st2205.o"
+      DRVLIBS="$DRVLIBS -L/usr/local/lib -lst2205"
+      AC_DEFINE(WITH_ST2205,1,[st2205 driver])
+   else
+      AC_MSG_WARN(st2205.h not found: st2205 driver disabled)
+   fi
 fi
 
 if test "$T6963" = "yes"; then

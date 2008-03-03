@@ -121,6 +121,9 @@
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
 
+/* Define to 1 if you have the <st2205.h> header file. */
+#undef HAVE_ST2205_H
+
 /* Define to 1 if `stat' has the bug that it succeeds when given the
    zero-length file name argument. */
 #undef HAVE_STAT_EMPTY_STRING_BUG
@@ -487,6 +490,9 @@
 
 /* SimpleLCD driver */
 #undef WITH_SIMPLELCD
+
+/* st2205 driver */
+#undef WITH_ST2205
 
 /* T6963 driver */
 #undef WITH_T6963

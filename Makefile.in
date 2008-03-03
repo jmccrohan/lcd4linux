@@ -286,6 +286,7 @@ drv_Pertelian                 \
 drv_picoLCD.c                 \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
+drv_st2205.c                  \
 drv_serdisplib.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
@@ -478,6 +479,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_text.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_picoLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_serdisplib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_st2205.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/evaluator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/layout.Po@am__quote@
