@@ -984,7 +984,7 @@ static int drv_HD_GPO(const int num, const int val)
 
 static int drv_HD_LCM162_keypad_handler(const int num)
 {
-  return num;
+    return num;
 }
 
 static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
@@ -1008,16 +1008,23 @@ static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
     if (data != temp) {
 	data = temp;
 
-	int KEYPAD_VAL=0;
+	int KEYPAD_VAL = 0;
 	keynum = (data & mask3 ? 1 : 0) + (data & mask5 ? 2 : 0);
-	switch(keynum)
-	  {
-	  default:
-	  case 0: KEYPAD_VAL=WIDGET_KEY_CANCEL; break;
-	  case 1: KEYPAD_VAL=WIDGET_KEY_UP; break;
-	  case 2: KEYPAD_VAL=WIDGET_KEY_CONFIRM; break;
-	  case 3: KEYPAD_VAL=WIDGET_KEY_DOWN; break;
-	  }
+	switch (keynum) {
+	default:
+	case 0:
+	    KEYPAD_VAL = WIDGET_KEY_CANCEL;
+	    break;
+	case 1:
+	    KEYPAD_VAL = WIDGET_KEY_UP;
+	    break;
+	case 2:
+	    KEYPAD_VAL = WIDGET_KEY_CONFIRM;
+	    break;
+	case 3:
+	    KEYPAD_VAL = WIDGET_KEY_DOWN;
+	    break;
+	}
 
 	updown = (data & mask6 ? 1 : 0);
 	KEYPAD_VAL += updown ? WIDGET_KEY_PRESSED : WIDGET_KEY_RELEASED;

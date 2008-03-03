@@ -110,8 +110,8 @@ static unsigned long l_dbPlayTime;
 static int l_playlistLength;
 /* pos in playlist */
 static int l_currentSongPos;
-static unsigned int l_sampleRate; 	
-static int l_channels; 	
+static unsigned int l_sampleRate;
+static int l_channels;
 
 static mpd_Song *currentSong;
 
@@ -123,7 +123,7 @@ static int plugin_enabled;
 static int waittime;
 struct timeval timestamp;
 
-static mpd_Connection * conn;
+static mpd_Connection *conn;
 static char Section[] = "Plugin:MPD";
 
 
@@ -141,11 +141,11 @@ static int configure_mpd(void)
     if (cfg_number(Section, "enabled", 0, 0, 1, &plugin_enabled) < 1) {
 	plugin_enabled = 0;
     }
-    
-    if (plugin_enabled != 1){
+
+    if (plugin_enabled != 1) {
 	info("[MPD] WARNING: Plugin is not enabled! (set 'enabled 1' to enable this plugin)");
 	configured = 1;
-	return configured;    
+	return configured;
     }
 
     /* read server */
@@ -155,7 +155,7 @@ static int configure_mpd(void)
 	strcpy(host, "localhost");
     } else
 	strcpy(host, s);
-	
+
     free(s);
 
     /* read port */
@@ -180,56 +180,54 @@ static int configure_mpd(void)
     }
 
     debug("[MPD] connection detail: [%s:%d]", host, iport);
-    configured = 1;        
+    configured = 1;
     return configured;
 }
 
 
 static int mpd_update()
 {
-    int ret = -1;    
-    struct timeval now;    
+    int ret = -1;
+    struct timeval now;
 
     /* reread every 1000 msec only */
-    gettimeofday(&now, NULL);    
+    gettimeofday(&now, NULL);
     int timedelta = (now.tv_sec - timestamp.tv_sec) * 1000 + (now.tv_usec - timestamp.tv_usec) / 1000;
-    
-    if (timedelta < waittime) {      
+
+    if (timedelta < waittime) {
 	//debug("[MPD] waittime not reached...\n");
 	return 1;
-    }    
-
+    }
     //check if configured
     if (configure_mpd() < 0) {
 	return -1;
     }
-
     //check if connected
-    if (conn==NULL || conn->error) {
+    if (conn == NULL || conn->error) {
 	if (conn) {
-    	    debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
+	    debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
 	    mpd_closeConnection(conn);
-        }
-	else debug("[MPD] initialize connect to [%s]:[%i]\n", host, iport);
-	
+	} else
+	    debug("[MPD] initialize connect to [%s]:[%i]\n", host, iport);
+
 	conn = mpd_newConnection(host, iport, TIMEOUT_IN_S);
-        if(conn->error) {
-    	    error("[MPD] connection failed, give up...");
+	if (conn->error) {
+	    error("[MPD] connection failed, give up...");
 	    gettimeofday(&timestamp, NULL);
-    	    return -1;
-        }
-	
+	    return -1;
+	}
+
 	debug("[MPD] connection fixed...");
     }
-    
-    mpd_Status * status=NULL;
-    mpd_Stats *stats=NULL;
-    mpd_InfoEntity * entity;
-    
-    mpd_sendCommandListOkBegin(conn);
-    mpd_sendStatsCommand(conn); 
 
-    if(conn->error) {
+    mpd_Status *status = NULL;
+    mpd_Stats *stats = NULL;
+    mpd_InfoEntity *entity;
+
+    mpd_sendCommandListOkBegin(conn);
+    mpd_sendStatsCommand(conn);
+
+    if (conn->error) {
 	error("[MPD] error: %s", conn->errorStr);
 	return -1;
     }
@@ -240,81 +238,79 @@ static int mpd_update()
 
 //stats
     stats = mpd_getStats(conn);
-    if(stats==NULL) {			
+    if (stats == NULL) {
 	error("[MPD] error mpd_getStats: %s", conn->errorStr);
 	goto cleanup;
-    }  
-
+    }
 //status
-    mpd_nextListOkCommand(conn);    
-    if((status = mpd_getStatus(conn))==NULL) {
+    mpd_nextListOkCommand(conn);
+    if ((status = mpd_getStatus(conn)) == NULL) {
 	error("[MPD] error mpd_nextListOkCommand: %s", conn->errorStr);
 	goto cleanup;
     }
-		
 //song    
     mpd_nextListOkCommand(conn);
-    while((entity = mpd_getNextInfoEntity(conn))) {
-	mpd_Song * song = entity->info.song;
+    while ((entity = mpd_getNextInfoEntity(conn))) {
+	mpd_Song *song = entity->info.song;
 
-	if(entity->type!=MPD_INFO_ENTITY_TYPE_SONG) {
+	if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
 	    mpd_freeInfoEntity(entity);
 	    continue;
 	}
-	if (currentSong!=NULL)
-    	    mpd_freeSong(currentSong);
-	
+	if (currentSong != NULL)
+	    mpd_freeSong(currentSong);
+
 	currentSong = mpd_songDup(song);
 	mpd_freeInfoEntity(entity);
     }
-		
-    l_elapsedTimeSec 	= status->elapsedTime;
-    l_totalTimeSec 	= status->totalTime;
-    l_repeatEnabled	= status->repeat;
-    l_randomEnabled 	= status->random;
-    l_bitRate 		= status->bitRate;    
-    l_state 		= status->state;
-    l_volume 		= status->volume;
-    l_playlistLength 	= status->playlistLength;
-    l_currentSongPos 	= status->song+1;
-    l_sampleRate 	= status->sampleRate;
-    l_channels 		= status->channels;
-    
-    l_numberOfSongs 	= stats->numberOfSongs;
-    l_uptime 		= stats->uptime;
-    l_playTime 		= stats->playTime;
-    l_dbPlayTime 	= stats->dbPlayTime;
 
-		
+    l_elapsedTimeSec = status->elapsedTime;
+    l_totalTimeSec = status->totalTime;
+    l_repeatEnabled = status->repeat;
+    l_randomEnabled = status->random;
+    l_bitRate = status->bitRate;
+    l_state = status->state;
+    l_volume = status->volume;
+    l_playlistLength = status->playlistLength;
+    l_currentSongPos = status->song + 1;
+    l_sampleRate = status->sampleRate;
+    l_channels = status->channels;
+
+    l_numberOfSongs = stats->numberOfSongs;
+    l_uptime = stats->uptime;
+    l_playTime = stats->playTime;
+    l_dbPlayTime = stats->dbPlayTime;
+
+
     /* sanity checks */
     if (l_volume < 0 || l_volume > 100)
 	l_volume = 0;
 
     if (l_bitRate < 0)
 	l_bitRate = 0;
-	
+
     if (l_elapsedTimeSec > l_totalTimeSec || l_elapsedTimeSec < 0)
 	l_elapsedTimeSec = 0;
     ret = 0;
-    
-cleanup:
-    if (stats!=NULL)
+
+  cleanup:
+    if (stats != NULL)
 	mpd_freeStats(stats);
-      
-    if (status!=NULL)  
+
+    if (status != NULL)
 	mpd_freeStatus(status);
 
-    if(conn->error) {
+    if (conn->error) {
 	error("[MPD] error: %s", conn->errorStr);
 	return -1;
     }
 
     mpd_finishCommand(conn);
-    if(conn->error) {			
+    if (conn->error) {
 	error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	return -1;
-    }	
-	
+    }
+
     gettimeofday(&timestamp, NULL);
     return ret;
 }
@@ -324,7 +320,7 @@ static void elapsedTimeSec(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_elapsedTimeSec;
+    d = (double) l_elapsedTimeSec;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -333,7 +329,7 @@ static void totalTimeSec(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_totalTimeSec;
+    d = (double) l_totalTimeSec;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -341,7 +337,7 @@ static void bitRate(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_bitRate;
+    d = (double) l_bitRate;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -350,7 +346,7 @@ static void getRepeatInt(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_repeatEnabled;
+    d = (double) l_repeatEnabled;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -359,7 +355,7 @@ static void getRandomInt(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_randomEnabled;
+    d = (double) l_randomEnabled;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -367,53 +363,56 @@ static void getRandomInt(RESULT * result)
 static void getArtist(RESULT * result)
 {
     mpd_update();
-    if (currentSong!=NULL) {
-	if (currentSong->artist!=NULL) {
+    if (currentSong != NULL) {
+	if (currentSong->artist != NULL) {
 	    SetResult(&result, R_STRING, currentSong->artist);
 	} else {
-	    if (currentSong->file!=NULL)
+	    if (currentSong->file != NULL)
 		SetResult(&result, R_STRING, currentSong->file);
 	    else
 		SetResult(&result, R_STRING, "");
 	}
-    } else SetResult(&result, R_STRING, "");
-    
+    } else
+	SetResult(&result, R_STRING, "");
+
 }
 
 static void getTitle(RESULT * result)
 {
     mpd_update();
-    if (currentSong!=NULL) {
-	if (currentSong->title!=NULL) {
-    	    SetResult(&result, R_STRING, currentSong->title);
-	} else SetResult(&result, R_STRING, "");
-    } else SetResult(&result, R_STRING, "");
+    if (currentSong != NULL) {
+	if (currentSong->title != NULL) {
+	    SetResult(&result, R_STRING, currentSong->title);
+	} else
+	    SetResult(&result, R_STRING, "");
+    } else
+	SetResult(&result, R_STRING, "");
 
 }
 
 static void getAlbum(RESULT * result)
 {
     mpd_update();
-    if (currentSong!=NULL) {    
-	if (currentSong->album!=NULL)
-    	    SetResult(&result, R_STRING, currentSong->album);
-        else 
-    	    SetResult(&result, R_STRING, "");
-    } 
-    else SetResult(&result, R_STRING, "");
+    if (currentSong != NULL) {
+	if (currentSong->album != NULL)
+	    SetResult(&result, R_STRING, currentSong->album);
+	else
+	    SetResult(&result, R_STRING, "");
+    } else
+	SetResult(&result, R_STRING, "");
 }
 
 static void getFilename(RESULT * result)
 {
     mpd_update();
-    if (currentSong!=NULL) {
-	if (currentSong->file!=NULL)
-    	    SetResult(&result, R_STRING, currentSong->file);
-        else 
-    	    SetResult(&result, R_STRING, "");
-    } 
-    else SetResult(&result, R_STRING, "");
-    
+    if (currentSong != NULL) {
+	if (currentSong->file != NULL)
+	    SetResult(&result, R_STRING, currentSong->file);
+	else
+	    SetResult(&result, R_STRING, "");
+    } else
+	SetResult(&result, R_STRING, "");
+
 }
 
 /*  
@@ -452,7 +451,7 @@ static void getVolume(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_volume;
+    d = (double) l_volume;
     /* return 0..100 or < 0 when failed */
     SetResult(&result, R_NUMBER, &d);
 }
@@ -462,7 +461,7 @@ static void getSongsInDb(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_numberOfSongs;
+    d = (double) l_numberOfSongs;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -470,7 +469,7 @@ static void getMpdUptime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_uptime;
+    d = (double) l_uptime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -478,7 +477,7 @@ static void getMpdPlayTime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_playTime;
+    d = (double) l_playTime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -486,7 +485,7 @@ static void getMpdDbPlayTime(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_dbPlayTime;
+    d = (double) l_dbPlayTime;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -494,7 +493,7 @@ static void getMpdPlaylistLength(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_playlistLength;
+    d = (double) l_playlistLength;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -502,7 +501,7 @@ static void getCurrentSongPos(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_currentSongPos;
+    d = (double) l_currentSongPos;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -510,7 +509,7 @@ static void getAudioChannels(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_channels;
+    d = (double) l_channels;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -518,7 +517,7 @@ static void getSamplerateHz(RESULT * result)
 {
     double d;
     mpd_update();
-    d = (double)l_sampleRate;
+    d = (double) l_sampleRate;
     SetResult(&result, R_NUMBER, &d);
 }
 
@@ -571,9 +570,9 @@ int plugin_init_mpd(void)
     debug("[MPD] v0.81, check lcd4linux configuration file...");
 
     check = configure_mpd();
-    if (plugin_enabled != 1) 
+    if (plugin_enabled != 1)
 	return 0;
-    
+
     if (check)
 	debug("[MPD] configured!");
     else
@@ -581,7 +580,7 @@ int plugin_init_mpd(void)
 
     //when mpd dies, do NOT exit application, ignore it!
     signal(SIGPIPE, SIG_IGN);
-    gettimeofday(&timestamp, NULL);	
+    gettimeofday(&timestamp, NULL);
 
     AddFunction("mpd::artist", 0, getArtist);
     AddFunction("mpd::title", 0, getTitle);
@@ -612,9 +611,9 @@ int plugin_init_mpd(void)
 
 void plugin_exit_mpd(void)
 {
-    if (plugin_enabled == 1){
+    if (plugin_enabled == 1) {
 	debug("[MPD] disconnect from mpd");
-	if (currentSong!=NULL)
+	if (currentSong != NULL)
 	    mpd_freeSong(currentSong);
 	mpd_closeConnection(conn);
     }

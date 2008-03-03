@@ -113,7 +113,7 @@
 
 #include "nmeap.h"
 
-//#define EMULATE			//remove comment to enable gps data emulation...
+//#define EMULATE                       //remove comment to enable gps data emulation...
 #define EMU_BUFFER_READ_SIZE 128	//how many bytes are read each loop aka emulation speed
 #define BUFFER_SIZE 256
 
