@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * mpd informations v0.81
+ * mpd informations v0.82
  *
  * Copyright (C) 2006 Stefan Kuhne <sk-privat@gmx.net>
  * Copyright (C) 2007 Robert Buchholz <rbu@gentoo.org>
@@ -93,6 +93,7 @@ TODO:
 #endif
 
 #define TIMEOUT_IN_S 10
+#define ERROR_DISPLAY 5
 
 /* current song */
 
@@ -125,7 +126,7 @@ struct timeval timestamp;
 
 static mpd_Connection *conn;
 static char Section[] = "Plugin:MPD";
-
+static int errorcnt = 0;
 
 
 static int configure_mpd(void)
@@ -206,18 +207,23 @@ static int mpd_update()
     /* check if connected */
     if (conn == NULL || conn->error) {
 	if (conn) {
-	    debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
+	    if (errorcnt < ERROR_DISPLAY)
+		debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);	    
 	    mpd_closeConnection(conn);
 	} else
 	    debug("[MPD] initialize connect to [%s]:[%i]\n", host, iport);
 
 	conn = mpd_newConnection(host, iport, TIMEOUT_IN_S);
-	if (conn->error) {
-	    error("[MPD] connection failed, give up...");
+	if (conn->error) {	    
+	    if (errorcnt < ERROR_DISPLAY)
+		error("[MPD] connection failed, give up...");
+	    if (errorcnt == ERROR_DISPLAY)
+		error("[MPD] stop logging, until connection is fixed!");
+	    errorcnt++;
 	    gettimeofday(&timestamp, NULL);
 	    return -1;
 	}
-
+	errorcnt = 0;
 	debug("[MPD] connection fixed...");
     }
 
@@ -567,7 +573,7 @@ static void formatTimeDDHHMM(RESULT * result, RESULT * param)
 int plugin_init_mpd(void)
 {
     int check;
-    debug("[MPD] v0.81, check lcd4linux configuration file...");
+    debug("[MPD] v0.82, check lcd4linux configuration file...");
 
     check = configure_mpd();
     if (plugin_enabled != 1)
