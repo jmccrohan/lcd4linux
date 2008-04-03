@@ -151,7 +151,7 @@ DRIVER *Driver[] = {
 #ifdef WITH_PERTELIAN
     &drv_Pertelian,
 #endif
-#ifdef WITH_picoLCD
+#ifdef WITH_PICOLCD
     &drv_picoLCD,
 #endif
 #ifdef WITH_ROUTERBOARD
