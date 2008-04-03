@@ -353,6 +353,86 @@ static void drv_CF_send(const unsigned char cmd, const unsigned char len, const 
 }
 
 
+/* check http://www.crystalfontz.com/products/634/cgrom.html */
+/* HINT: the input should using the ISO-8859-1 charset */
+void convertToCgrom2(char *str)
+{
+    unsigned int i;
+    for (i = 0; i < strlen(str); i++) {
+	switch ((unsigned char) str[i]) {
+	case 0x5d:		/* ] */
+	    str[i] = 252;
+	    break;
+	case 0x5b:		/* [ */
+	    str[i] = 250;
+	    break;
+	case 0x24:		/* $ */
+	    str[i] = 162;
+	    break;
+	case 0x40:		/* @ */
+	    str[i] = 160;
+	    break;
+	case 0x5c:		/* \ */
+	    str[i] = 251;
+	    break;
+	case 0x7b:		/* { */
+	    str[i] = 253;
+	    break;
+	case 0x7d:		/* } */
+	    str[i] = 255;
+	    break;
+	case 0x7c:
+	    str[i] = 254;	/* pipe */
+	    break;
+	case 0x27:
+	case 0x60:
+	case 0xB4:
+	    str[i] = 39;	/* ' */
+	    break;
+	case 0xe8:
+	    str[i] = 164;	/* french e */
+	    break;
+	case 0xe9:
+	    str[i] = 165;	/* french e */
+	    break;
+	case 0xc8:
+	    str[i] = 197;	/* french E */
+	    break;
+	case 0xc9:
+	    str[i] = 207;	/* french E */
+	    break;
+
+	case 0xe4:
+	    str[i] = 123;	/* small german ae */
+	    break;
+	case 0xc4:
+	    str[i] = 91;	/* big german ae */
+	    break;
+	case 0xf6:
+	    str[i] = 124;	/* small german oe */
+	    break;
+	case 0xd6:
+	    str[i] = 92;	/* big german oe */
+	    break;
+	case 0xfc:
+	    str[i] = 126;	/* small german ue */
+	    break;
+	case 0xdc:
+	    str[i] = 94;	/* big german ue */
+	    break;
+	case 0x5e:		/* ^ */
+	    str[i] = 253;
+	    break;
+	case 0x5f:		/* _ */
+	    str[i] = 254;
+	    break;
+	default:
+	    break;
+	}
+    }
+}
+
+
 static void drv_CF_write1(const int row, const int col, const char *data, const int len)
 {
     char cmd[3] = "\021xy";	/* set cursor position */
@@ -363,6 +443,11 @@ static void drv_CF_write1(const int row, const int col, const char *data, const 
 	cmd[1] = (char) col;
 	cmd[2] = (char) row;
 	drv_generic_serial_write(cmd, 3);
+    }
+
+    /* Model 634 and 632 use another ROM */
+    if (Model == 4 || Model == 2) {
+	convertToCgrom2((char *) data);
     }
 
     drv_generic_serial_write(data, len);
@@ -411,7 +496,6 @@ static void drv_CF_write3(const int row, const int col, const char *data, const 
     memcpy(cmd + 2, data, l);
 
     drv_CF_send(31, l + 2, cmd);
-
 }
 
 

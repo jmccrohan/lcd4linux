@@ -208,13 +208,13 @@ static int mpd_update()
     if (conn == NULL || conn->error) {
 	if (conn) {
 	    if (errorcnt < ERROR_DISPLAY)
-		debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);	    
+		debug("[MPD] Error: [%s], try to reconnect to [%s]:[%i]\n", conn->errorStr, host, iport);
 	    mpd_closeConnection(conn);
 	} else
 	    debug("[MPD] initialize connect to [%s]:[%i]\n", host, iport);
 
 	conn = mpd_newConnection(host, iport, TIMEOUT_IN_S);
-	if (conn->error) {	    
+	if (conn->error) {
 	    if (errorcnt < ERROR_DISPLAY)
 		error("[MPD] connection failed, give up...");
 	    if (errorcnt == ERROR_DISPLAY)
