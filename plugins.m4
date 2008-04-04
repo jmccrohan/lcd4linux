@@ -54,8 +54,8 @@ for plugin in $plugins; do
          ;;
       all)
          PLUGIN_APM="yes"
-	 PLUGIN_BUTTON_EXEC="yes"
 	 PLUGIN_ASTERISK="yes"
+	 PLUGIN_BUTTON_EXEC="yes"
          PLUGIN_CPUINFO="yes"
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"

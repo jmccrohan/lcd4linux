@@ -40,17 +40,11 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
-/* Define if you have the iconv() function. */
-#undef HAVE_ICONV
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
-
-/* Define to 1 if you have the <libmpd/libmpd.h> header file. */
-#undef HAVE_LIBMPD_LIBMPD_H
 
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
@@ -244,9 +238,6 @@
 /* Define to 1 if you have the <X11/Xutil.h> header file. */
 #undef HAVE_X11_XUTIL_H
 
-/* Define as const if the declaration of iconv() needs const. */
-#undef ICONV_CONST
-
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
@@ -277,6 +268,12 @@
 
 /* apm plugin */
 #undef PLUGIN_APM
+
+/* asterisk plugin */
+#undef PLUGIN_ASTERISK
+
+/* button_exec plugin */
+#undef PLUGIN_BUTTON_EXEC
 
 /* cpuinfo plugin */
 #undef PLUGIN_CPUINFO
