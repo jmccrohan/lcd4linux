@@ -54,7 +54,8 @@ for plugin in $plugins; do
          ;;
       all)
          PLUGIN_APM="yes"
-				 PLUGIN_BUTTON_EXEC="yes"
+	 PLUGIN_BUTTON_EXEC="yes"
+	 PLUGIN_ASTERISK="yes"
          PLUGIN_CPUINFO="yes"
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
@@ -89,6 +90,9 @@ for plugin in $plugins; do
 			button_exec)
 			   PLUGIN_BUTTON_EXEC=$val
 				 ;;
+      asterisk)
+         PLUGIN_ASTERISK=$val
+         ;;
       cpuinfo)
          PLUGIN_CPUINFO=$val
          ;;
@@ -184,6 +188,10 @@ fi
 if test "$PLUGIN_BUTTON_EXEC" = "yes"; then
    PLUGINS="$PLUGINS plugin_button_exec.o"
    AC_DEFINE(PLUGIN_BUTTON_EXEC,1,[button_exec plugin])
+fi
+if test "$PLUGIN_ASTERISK" = "yes"; then
+   PLUGINS="$PLUGINS plugin_asterisk.o"
+   AC_DEFINE(PLUGIN_ASTERISK,1,[asterisk plugin])
 fi
 if test "$PLUGIN_CPUINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_cpuinfo.o"

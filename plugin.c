@@ -58,6 +58,8 @@ void plugin_exit_time(void);
 
 int plugin_init_apm(void);
 void plugin_exit_apm(void);
+int plugin_init_asterisk(void);
+void plugin_exit_asterisk(void);
 int plugin_init_cpuinfo(void);
 void plugin_exit_cpuinfo(void);
 int plugin_init_diskstats(void);
@@ -126,6 +128,9 @@ int plugin_init(void)
 
 #ifdef PLUGIN_APM
     plugin_init_apm();
+#endif
+#ifdef PLUGIN_ASTERISK
+    plugin_init_asterisk();
 #endif
 #ifdef PLUGIN_CPUINFO
     plugin_init_cpuinfo();
@@ -221,6 +226,9 @@ void plugin_exit(void)
 {
 #ifdef PLUGIN_APM
     plugin_exit_apm();
+#endif
+#ifdef PLUGIN_ASTERISK
+    plugin_exit_asterisk();
 #endif
 #ifdef PLUGIN_CPUINFO
     plugin_exit_cpuinfo();
