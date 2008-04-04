@@ -108,6 +108,7 @@ widget_image.c widget_image.h \
 lcd4linux_i2c.h               \
                               \
 plugin_apm.c                  \
+plugin_asterisk.c             \
 plugin_button_exec.c          \
 plugin_cpuinfo.c              \
 plugin_diskstats.c            \
