@@ -68,6 +68,8 @@ int plugin_init_dvb(void);
 void plugin_exit_dvb(void);
 int plugin_init_exec(void);
 void plugin_exit_exec(void);
+int plugin_init_fifo(void);
+void plugin_exit_fifo(void);
 int plugin_init_file(void);
 void plugin_exit_file(void);
 int plugin_init_gps(void);
@@ -143,6 +145,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_init_exec();
+#endif
+#ifdef PLUGIN_FIFO
+    plugin_init_fifo();
 #endif
 #ifdef PLUGIN_FILE
     plugin_init_file();
@@ -241,6 +246,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_exit_exec();
+#endif
+#ifdef PLUGIN_FIFO
+    plugin_exit_fifo();
 #endif
 #ifdef PLUGIN_FILE
     plugin_exit_file();

@@ -60,6 +60,7 @@ for plugin in $plugins; do
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
+         PLUGIN_FIFO="yes"
          PLUGIN_FILE="yes"
          PLUGIN_GPS="yes"
          PLUGIN_I2C_SENSORS="yes"
@@ -104,6 +105,9 @@ for plugin in $plugins; do
          ;;
       exec)
          PLUGIN_EXEC=$val
+         ;;
+      fifo)
+         PLUGIN_FIFO=$val
          ;;
       file)
          PLUGIN_FILE=$val
@@ -218,6 +222,10 @@ fi
 if test "$PLUGIN_FILE" = "yes"; then
    PLUGINS="$PLUGINS plugin_file.o"
    AC_DEFINE(PLUGIN_FILE,1,[file plugin])
+fi
+if test "$PLUGIN_FIFO" = "yes"; then
+   PLUGINS="$PLUGINS plugin_fifo.o"
+   AC_DEFINE(PLUGIN_FIFO,1,[fifo plugin])
 fi
 if test "$PLUGIN_GPS" = "yes"; then
    AC_CHECK_HEADERS(nmeap.h, [has_nmeap_header="true"], [has_nmeap_header="false"])

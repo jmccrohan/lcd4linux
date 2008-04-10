@@ -114,6 +114,7 @@ plugin_cpuinfo.c              \
 plugin_diskstats.c            \
 plugin_dvb.c                  \
 plugin_exec.c                 \
+plugin_fifo.c                 \
 plugin_file.c                 \
 plugin_gps.c                  \
 plugin_i2c_sensors.c          \
