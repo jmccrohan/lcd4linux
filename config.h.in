@@ -287,6 +287,9 @@
 /* exec plugin */
 #undef PLUGIN_EXEC
 
+/* fifo plugin */
+#undef PLUGIN_FIFO
+
 /* file plugin */
 #undef PLUGIN_FILE
 
