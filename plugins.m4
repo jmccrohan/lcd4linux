@@ -247,7 +247,7 @@ if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    AC_DEFINE(PLUGIN_I2C_SENSORS,1,[i2c sensors plugin])
 fi
 if test "$PLUGIN_ICONV" = "yes"; then
-   dnl AM_ICONV
+   AM_ICONV
    if test "$am_cv_func_iconv" = "yes"; then 
       PLUGINS="$PLUGINS plugin_iconv.o"
       PLUGINLIBS="$PLUGINLIBS $LIBICONV"
