@@ -68,12 +68,15 @@ static char fifopath[1024];
 static void configure_fifo(void)
 {
     char *s;
+    memset(fifopath, 0, 1024);
     s = cfg_get(Section, "fifopath", "/tmp/lcd4linux.fifo");
     if (*s == '\0') {
 	info("[FIFO] empty '%s.fifopath' entry from %s, assuming '/tmp/lcd4linux.fifo'", Section, cfg_source());
 	strcpy(fifopath, "/tmp/lcd4linux.fifo");
-    } else
+    } else {
 	strcpy(fifopath, s);
+	info("[FIFO] read '%s.fifopath', value is '%s'", Section, fifopath);
+    }
     free(s);
 }
 
@@ -153,10 +156,12 @@ static void fiforead(RESULT * result)
     strcat(buf, "ERROR");
     if (checkFifo() == 0) {
 	memset(buf, 0, FIFO_BUFFER_SIZE);
-	while (bytes > 0 && errno != EINTR)
+	while (bytes > 0 && errno != EINTR) {
 	    bytes = read(fd.input, buf, FIFO_BUFFER_SIZE);
+	}
+	
 	if (bytes < 0) {
-	    error("[FIFO] Error %i: %s\n", errno, strerror(errno));
+	    error("[FIFO] Error %i: %s", errno, strerror(errno));
 	} else {
 	    if (strlen(buf) > 0) {
 		strcpy(msg, buf);
@@ -166,7 +171,7 @@ static void fiforead(RESULT * result)
 		    msg[i] = ' ';
 	    }
 	}
-    }
+    } 
 
     /* store result */
     SetResult(&result, R_STRING, msg);
