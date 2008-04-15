@@ -41,6 +41,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 /* these should always be included */
 #include "debug.h"
