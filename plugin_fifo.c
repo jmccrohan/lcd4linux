@@ -151,16 +151,19 @@ static int openFifo()
 static void fiforead(RESULT * result)
 {
     char buf[FIFO_BUFFER_SIZE];
-    int i, bytes = 1;
+    unsigned int i;
+    int bytes = 1;
     memset(buf, 0, FIFO_BUFFER_SIZE);
     strcat(buf, "ERROR");
+
     if (checkFifo() == 0) {
 	memset(buf, 0, FIFO_BUFFER_SIZE);
-	while (bytes > 0 && errno != EINTR) {
+
+	while (bytes > 0 && errno != EINTR) {	
 	    bytes = read(fd.input, buf, FIFO_BUFFER_SIZE);
 	}
 	
-	if (bytes < 0) {
+	if (bytes < 0 || errno > 0) {
 	    error("[FIFO] Error %i: %s", errno, strerror(errno));
 	} else {
 	    if (strlen(buf) > 0) {
@@ -172,7 +175,6 @@ static void fiforead(RESULT * result)
 	    }
 	}
     } 
-
     /* store result */
     SetResult(&result, R_STRING, msg);
 }
@@ -188,6 +190,10 @@ int plugin_init_fifo(void)
     if (openFifo() < 0) {
 	return -1;
     }
+
+    /* ignore broken pipe */
+    signal(SIGPIPE, SIG_IGN);
+    
     memset(msg, 0, FIFO_BUFFER_SIZE);
     AddFunction("fifo::read", 0, fiforead);
     return 0;
