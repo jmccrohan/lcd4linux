@@ -76,6 +76,7 @@ drv_EA232graphic.c            \
 drv_G15.c                     \
 drv_HD44780.c                 \
 drv_Image.c                   \
+drv_IRLCD.c                   \
 drv_LCD2USB.c                 \
 drv_LCDLinux.c                \
 drv_LCDTerm.c                 \

@@ -1343,7 +1343,7 @@ Optional Packages:
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
-                          G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,
+                          G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,
                           LUIse, M50530, MatrixOrbital, MilfordInstruments,
                           Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,
                           RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,
@@ -7543,6 +7543,7 @@ for driver in $drivers; do
          EA232graphic="yes"
          G15="yes"
          HD44780="yes"
+	 IRLCD="yes"
          LCD2USB="yes"
 	 LCDLINUX="yes"
          LCDTERM="yes"
@@ -7598,6 +7599,9 @@ for driver in $drivers; do
       HD44780-I2C)
          HD44780_I2C=$val
 	 ;;
+      IRLCD)
+         IRLCD=$val
+         ;;
       LCD2USB)
          LCD2USB=$val
          ;;
@@ -7831,6 +7835,23 @@ cat >>confdefs.h <<\_ACEOF
 #define WITH_HD44780 1
 _ACEOF
 
+fi
+
+if test "$IRLCD" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      SERIAL="yes"
+      DRIVERS="$DRIVERS drv_IRLCD.o"
+      LIBUSB="yes"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_IRLCD 1
+_ACEOF
+
+   else
+      { echo "$as_me:$LINENO: WARNING: usb.h not found: IRLCD driver disabled" >&5
+echo "$as_me: WARNING: usb.h not found: IRLCD driver disabled" >&2;}
+   fi
 fi
 
 if test "$LCD2USB" = "yes"; then

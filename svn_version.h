@@ -1,1 +1,1 @@
-#define SVN_VERSION "796"
+#define SVN_VERSION "877:883M"

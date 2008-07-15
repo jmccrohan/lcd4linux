@@ -41,6 +41,13 @@ Display LCD-Linux {
     UseBusy 0
 }
 
+Display IRLCD {
+    Driver 'IRLCD'
+    Size '16x2'
+    Backlight 0
+    Icons 1
+}
+
 Display LCD2USB {
     Driver 'LCD2USB'
     Size '20x2'
@@ -1206,6 +1213,7 @@ Layout Debug {
 #Display 'T6963-240x128'
 #Display 'T6963-240x128D'
 #Display 'XWindow'
+#Display 'IRLCD'
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'

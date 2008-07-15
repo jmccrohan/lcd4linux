@@ -434,6 +434,9 @@
 /* image widget */
 #undef WITH_IMAGE
 
+/* IRLCD driver */
+#undef WITH_IRLCD
+
 /* LCD2USB driver */
 #undef WITH_LCD2USB
 

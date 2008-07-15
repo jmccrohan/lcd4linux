@@ -56,6 +56,7 @@ extern DRIVER drv_EA232graphic;
 extern DRIVER drv_G15;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
+extern DRIVER drv_IRLCD;
 extern DRIVER drv_LCD2USB;
 extern DRIVER drv_LCDLinux;
 extern DRIVER drv_LCDTerm;
@@ -115,6 +116,9 @@ DRIVER *Driver[] = {
 #endif
 #if (defined(WITH_PNG) && defined(WITH_GD)) || defined(WITH_PPM)
     &drv_Image,
+#endif
+#ifdef WITH_IRLCD
+    &drv_IRLCD,
 #endif
 #ifdef WITH_LCD2USB
     &drv_LCD2USB,

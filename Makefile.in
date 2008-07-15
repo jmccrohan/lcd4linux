@@ -275,6 +275,7 @@ drv_EA232graphic.c            \
 drv_G15.c                     \
 drv_HD44780.c                 \
 drv_Image.c                   \
+drv_IRLCD.c                   \
 drv_LCD2USB.c                 \
 drv_LCDLinux.c                \
 drv_LCDTerm.c                 \
@@ -456,6 +457,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_EA232graphic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_G15.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_HD44780.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_IRLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LCD2USB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LCDLinux.Po@am__quote@
