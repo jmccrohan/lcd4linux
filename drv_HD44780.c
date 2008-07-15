@@ -63,6 +63,7 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
 #include "drv_generic_text.h"
 #include "drv_generic_gpio.h"
