@@ -69,6 +69,7 @@ extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
 extern DRIVER drv_Pertelian;
 extern DRIVER drv_picoLCD;
+extern DRIVER drv_picoLCDGraphic;
 extern DRIVER drv_RouterBoard;
 extern DRIVER drv_Sample;
 extern DRIVER drv_st2205;
@@ -153,6 +154,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_PICOLCD
     &drv_picoLCD,
+#endif
+#ifdef WITH_PICOLCDGRAPHIC
+    &drv_picoLCDGraphic,
 #endif
 #ifdef WITH_ROUTERBOARD
     &drv_RouterBoard,

@@ -476,6 +476,9 @@
 /* picoLCD driver */
 #undef WITH_PICOLCD
 
+/* picoLCDGraphic driver */
+#undef WITH_PICOLCDGRAPHIC
+
 /* PNG driver */
 #undef WITH_PNG
 

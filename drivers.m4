@@ -35,8 +35,8 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
   [                        G15, HD44780, LCD2USB LCDLinux, LCDTerm, LPH7508,]
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, RouterBoard,]
-  [                        Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
+  [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,]
+  [                        RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
   [                        USBLCD, USBHUB, WincorNixdorf, X11],
   drivers=$withval, 
   drivers=all
@@ -79,6 +79,7 @@ for driver in $drivers; do
          NULL="yes" 
          PERTELIAN="yes"
          PICOLCD="yes"
+	 PICOLCDGRAPHIC="yes"
          PNG="yes"
          PPM="yes"
          ROUTERBOARD="yes"
@@ -159,6 +160,10 @@ for driver in $drivers; do
       picoLCD)
          PICOLCD=$val
          ;;         
+      picoLCDGraphic)
+         PICOLCDGRAPHIC=$val
+         ;;         
+         
       PNG)
          PNG=$val
          ;;
@@ -296,6 +301,7 @@ if test "$HD44780" = "yes"; then
    PARPORT="yes"
    I2C="yes"
    GPIO="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
 fi
@@ -421,6 +427,20 @@ if test "$PICOLCD" = "yes"; then
       AC_DEFINE(WITH_PICOLCD,1,[picoLCD driver])
    else
       AC_MSG_WARN(usb.h not found: picoLCD driver disabled)
+   fi
+fi
+
+if test "$PICOLCDGRAPHIC" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      GRAPHIC="yes"
+      GPIO="yes"
+      SERIAL="yes"
+      LIBUSB="yes"
+      DRIVERS="$DRIVERS drv_picoLCDGraphic.o"
+      AC_DEFINE(WITH_PICOLCDGRAPHIC,1,[picoLCDGraphic driver])
+   else
+      AC_MSG_WARN(usb.h not found: picoLCDGraphic driver disabled)
    fi
 fi
 

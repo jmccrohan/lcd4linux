@@ -254,6 +254,13 @@ Display picoLCD {
     Icons     1
 }
 
+Display picoLCDGraphic {
+    Driver 'picoLCDGraphic'
+    Size     '256x64'
+    Contrast  0
+    Backlight 100
+}
+
 Display SC1602D {
     Driver 'HD44780'
     Port '/dev/parports/0'	

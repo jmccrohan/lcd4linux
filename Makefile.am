@@ -89,6 +89,7 @@ drv_Noritake.c                \
 drv_NULL.c                    \
 drv_Pertelian                 \
 drv_picoLCD.c                 \
+drv_picoLCDGraphic.c          \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
 drv_st2205.c                  \
