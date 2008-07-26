@@ -56,13 +56,17 @@
  *  changed:	-connection handling improved, do not disconnect/reconnect for each query
  *               -> uses less ressources
  *
- * changelog v0.8 (30.01.2007):
+ * changelog v0.8 (30.01.2008):
  *  changed:  -libmpd is not needed anymore, use libmpdclient.c instead
  *  fixed:    -getMpdUptime()
  *            -getMpdPlaytime()
  *            -type definition
  *  added:    -mpd::getSamplerateHz
  *            -getAudioChannels
+ *
+ * changelog v0.83 (26.07.2008):
+ *  added:    -mpd::cmd* commands
+ *
  */
 
 /*
@@ -528,6 +532,121 @@ static void getSamplerateHz(RESULT * result)
 }
 
 
+static void nextSong()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+	mpd_sendNextCommand(conn);
+	mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void prevSong()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+        mpd_sendPrevCommand(conn);
+	mpd_finishCommand(conn);
+        if (conn->error) {
+    	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void stopSong()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+	mpd_sendStopCommand(conn);
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void pauseSong()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+	if (l_state == MPD_STATUS_STATE_PAUSE) {
+	    mpd_sendPauseCommand(conn, 0);
+	} else {
+	    mpd_sendPauseCommand(conn, 1);
+	}
+					
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void volUp()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+	l_volume += 5;
+	if (l_volume > 100) 
+	    l_volume=100;
+	mpd_sendSetvolCommand(conn, l_volume);
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void volDown()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+	if (l_volume > 5) 
+	    l_volume -= 5;
+	else
+	    l_volume = 0;
+	mpd_sendSetvolCommand(conn, l_volume);
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+static void toggleRepeat()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+    
+	l_repeatEnabled = !l_repeatEnabled;
+	mpd_sendRepeatCommand(conn, l_repeatEnabled);
+					
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
+
+static void toggleRandom()
+{
+    mpd_update();
+    if (currentSong != NULL) {
+    
+	l_randomEnabled = !l_randomEnabled;
+	mpd_sendRandomCommand(conn, l_randomEnabled);
+					
+        mpd_finishCommand(conn);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	}
+    }
+}
+
 
 static void formatTimeMMSS(RESULT * result, RESULT * param)
 {
@@ -573,7 +692,7 @@ static void formatTimeDDHHMM(RESULT * result, RESULT * param)
 int plugin_init_mpd(void)
 {
     int check;
-    debug("[MPD] v0.82, check lcd4linux configuration file...");
+    debug("[MPD] v0.83, check lcd4linux configuration file...");
 
     check = configure_mpd();
     if (plugin_enabled != 1)
@@ -608,6 +727,15 @@ int plugin_init_mpd(void)
     AddFunction("mpd::getMpdPlaylistLength", 0, getMpdPlaylistLength);
     AddFunction("mpd::getMpdPlaylistGetCurrentId", 0, getCurrentSongPos);
 
+    AddFunction("mpd::cmdNextSong", 0, nextSong);
+    AddFunction("mpd::cmdPrevSong", 0, prevSong);
+    AddFunction("mpd::cmdStopSong", 0, stopSong);
+    AddFunction("mpd::cmdTogglePauseSong", 0, pauseSong);
+    AddFunction("mpd::cmdVolUp", 0, volUp);
+    AddFunction("mpd::cmdVolDown", 0, volDown);
+    AddFunction("mpd::cmdToggleRandom", 0, toggleRandom);
+    AddFunction("mpd::cmdToggleRepeat", 0, toggleRepeat);
+    
     AddFunction("mpd::formatTimeMMSS", 1, formatTimeMMSS);
     AddFunction("mpd::formatTimeDDHHMM", 1, formatTimeDDHHMM);
 
