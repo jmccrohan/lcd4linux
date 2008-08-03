@@ -191,7 +191,7 @@ static int drv_IRLCD_send(int request, unsigned char *buffer, int size)
 /* text mode displays only */
 static void drv_IRLCD_clear(void)
 {
-    char cmd[1];
+    unsigned char cmd[1];
 
     cmd[0] = 0x01;		/* clear */
     drv_IRLCD_send(LCD_INSTR, cmd, 1);
@@ -203,7 +203,7 @@ static void drv_IRLCD_clear(void)
 /* text mode displays only */
 static void drv_IRLCD_write(const int row, const int col, const char *data, int len)
 {
-    char cmd[1];
+    unsigned char cmd[1];
     static int pos;
 
     /* for 2 lines display */
@@ -223,7 +223,7 @@ static void drv_IRLCD_write(const int row, const int col, const char *data, int 
 /* text mode displays only */
 static void drv_IRLCD_defchar(const int ascii, const unsigned char *matrix)
 {
-    char cmd[10];
+    unsigned char cmd[10];
     int i;
 
     /* Write to CGRAM */
