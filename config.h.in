@@ -413,6 +413,9 @@
 /* CwLinux driver */
 #undef WITH_CWLINUX
 
+/* D4D driver */
+#undef WITH_D4D
+
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
 

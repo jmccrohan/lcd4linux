@@ -548,10 +548,10 @@ static void prevSong()
 {
     mpd_update();
     if (currentSong != NULL) {
-        mpd_sendPrevCommand(conn);
+	mpd_sendPrevCommand(conn);
 	mpd_finishCommand(conn);
-        if (conn->error) {
-    	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
+	if (conn->error) {
+	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
     }
 }
@@ -561,7 +561,7 @@ static void stopSong()
     mpd_update();
     if (currentSong != NULL) {
 	mpd_sendStopCommand(conn);
-        mpd_finishCommand(conn);
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -577,8 +577,8 @@ static void pauseSong()
 	} else {
 	    mpd_sendPauseCommand(conn, 1);
 	}
-					
-        mpd_finishCommand(conn);
+
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -590,10 +590,10 @@ static void volUp()
     mpd_update();
     if (currentSong != NULL) {
 	l_volume += 5;
-	if (l_volume > 100) 
-	    l_volume=100;
+	if (l_volume > 100)
+	    l_volume = 100;
 	mpd_sendSetvolCommand(conn, l_volume);
-        mpd_finishCommand(conn);
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -604,12 +604,12 @@ static void volDown()
 {
     mpd_update();
     if (currentSong != NULL) {
-	if (l_volume > 5) 
+	if (l_volume > 5)
 	    l_volume -= 5;
 	else
 	    l_volume = 0;
 	mpd_sendSetvolCommand(conn, l_volume);
-        mpd_finishCommand(conn);
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -620,11 +620,11 @@ static void toggleRepeat()
 {
     mpd_update();
     if (currentSong != NULL) {
-    
+
 	l_repeatEnabled = !l_repeatEnabled;
 	mpd_sendRepeatCommand(conn, l_repeatEnabled);
-					
-        mpd_finishCommand(conn);
+
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -636,11 +636,11 @@ static void toggleRandom()
 {
     mpd_update();
     if (currentSong != NULL) {
-    
+
 	l_randomEnabled = !l_randomEnabled;
 	mpd_sendRandomCommand(conn, l_randomEnabled);
-					
-        mpd_finishCommand(conn);
+
+	mpd_finishCommand(conn);
 	if (conn->error) {
 	    error("[MPD] error mpd_finishCommand: %s", conn->errorStr);
 	}
@@ -735,7 +735,7 @@ int plugin_init_mpd(void)
     AddFunction("mpd::cmdVolDown", 0, volDown);
     AddFunction("mpd::cmdToggleRandom", 0, toggleRandom);
     AddFunction("mpd::cmdToggleRepeat", 0, toggleRepeat);
-    
+
     AddFunction("mpd::formatTimeMMSS", 1, formatTimeMMSS);
     AddFunction("mpd::formatTimeDDHHMM", 1, formatTimeDDHHMM);
 

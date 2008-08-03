@@ -25,20 +25,20 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 AC_MSG_CHECKING([which drivers to compile])
 AC_ARG_WITH(
-  drivers, 
+  drivers,
   [  --with-drivers=<list>   compile driver for displays in <list>,]
-  [                        drivers may be separated with commas,]	
-  [                        'all' (default) compiles all available drivers,]	
-  [                        drivers may be excluded with 'all,!<driver>',]	
-  [                        (try 'all,\!<driver>' if your shell complains...)]	
-  [                        possible drivers are:]	
-  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,]
+  [                        drivers may be separated with commas,]
+  [                        'all' (default) compiles all available drivers,]
+  [                        drivers may be excluded with 'all,!<driver>',]
+  [                        (try 'all,\!<driver>' if your shell complains...)]
+  [                        possible drivers are:]
+  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D]
   [                        G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,]
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,]
   [                        RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
   [                        USBLCD, USBHUB, WincorNixdorf, X11],
-  drivers=$withval, 
+  drivers=$withval,
   drivers=all
 )
 
@@ -46,16 +46,16 @@ drivers=`echo $drivers|sed 's/,/ /g'`
 
 for driver in $drivers; do
 
-   case $driver in 
-      !*) 
+   case $driver in
+      !*)
          val="no"
          driver=`echo $driver|cut -c 2-`
          ;;
-       *) 
+       *)
          val="yes"
          ;;
    esac
-	
+
    case "$driver" in
       all)
          BECKMANNEGLE="yes"
@@ -63,6 +63,7 @@ for driver in $drivers; do
          CRYSTALFONTZ="yes"
          CURSES="yes"
          CWLINUX="yes"
+         D4D="yes"
          EA232graphic="yes"
          G15="yes"
          HD44780="yes"
@@ -76,8 +77,8 @@ for driver in $drivers; do
          M50530="yes"
          MATRIXORBITAL="yes"
          MILINST="yes"
-         NORITAKE="yes" 
-         NULL="yes" 
+         NORITAKE="yes"
+         NULL="yes"
          PERTELIAN="yes"
          PICOLCD="yes"
 	 PICOLCDGRAPHIC="yes"
@@ -109,6 +110,9 @@ for driver in $drivers; do
          ;;
       Cwlinux)
          CWLINUX=$val
+         ;;
+      D4D)
+         D4D=$val
          ;;
       EA232graphic)
          EA232graphic=$val
@@ -163,11 +167,11 @@ for driver in $drivers; do
          ;;
       picoLCD)
          PICOLCD=$val
-         ;;         
+         ;;
       picoLCDGraphic)
          PICOLCDGRAPHIC=$val
-         ;;         
-         
+         ;;
+
       PNG)
          PNG=$val
          ;;
@@ -207,7 +211,7 @@ for driver in $drivers; do
       X11)
          X11=$val
          ;;
-      *) 	
+      *)
          AC_MSG_ERROR([Unknown driver '$driver'])
          ;;
    esac
@@ -269,7 +273,7 @@ if test "$CURSES" = "yes"; then
       AC_DEFINE(WITH_CURSES,1,[Curses driver])
    else
       AC_MSG_WARN(curses not found: Curses driver disabled)
-   fi   
+   fi
 fi
 
 if test "$CWLINUX" = "yes"; then
@@ -279,6 +283,14 @@ if test "$CWLINUX" = "yes"; then
    KEYPAD="yes"
    DRIVERS="$DRIVERS drv_Cwlinux.o"
    AC_DEFINE(WITH_CWLINUX,1,[CwLinux driver])
+fi
+
+if test "$D4D" = "yes"; then
+   TEXT="yes"
+   GRAPHIC="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_D4D.o"
+   AC_DEFINE(WITH_D4D,1,[D4D driver])
 fi
 
 if test "$EA232graphic" = "yes"; then
@@ -350,7 +362,7 @@ if test "$LCDLINUX" = "yes"; then
       AC_DEFINE(WITH_LCDLINUX,1,[LCD-Linux driver])
    else
       AC_MSG_WARN(linux/lcd-linux.h or linux/hd44780.h not found: LCD-Linux driver disabled)
-   fi   
+   fi
 fi
 
 if test "$LCDTERM" = "yes"; then
@@ -589,7 +601,7 @@ if test "$X11" = "yes"; then
       else
         DRVLIBS="$DRVLIBS -L$ac_x_libraries -lX11"
       fi
-      CPP_FLAGS="$CPPFLAGS $X_CFLAGS" 
+      CPP_FLAGS="$CPPFLAGS $X_CFLAGS"
       AC_DEFINE(WITH_X11, 1, [X11 driver])
    fi
 fi
@@ -604,7 +616,7 @@ fi
 if test "$DRIVERS" = ""; then
    AC_MSG_ERROR([You should activate at least one driver...])
 fi
-   
+
 # generic text driver
 if test "$TEXT" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_text.o"
@@ -618,7 +630,7 @@ if test "$GRAPHIC" = "yes"; then
       DRVLIBS="$DRVLIBS -lgd"
       AC_DEFINE(WITH_GD, 1, [GD library])
       AC_DEFINE(WITH_IMAGE, 1, [image widget])
-   fi	
+   fi
 fi
 
 # generic GPIO driver

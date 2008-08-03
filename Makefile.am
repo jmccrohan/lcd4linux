@@ -16,7 +16,7 @@ AM_CFLAGS = -D_GNU_SOURCE -Wall -W -fno-strict-aliasing
 # use this for lots of warnings
 #AM_CFLAGS = -D_GNU_SOURCE -std=c99 -m64 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
 
-lcd4linux_LDFLAGS = 
+lcd4linux_LDFLAGS =
 lcd4linux_LDADD   = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 
@@ -72,6 +72,7 @@ drv_BWCT.c                    \
 drv_Crystalfontz.c            \
 drv_Curses.c                  \
 drv_Cwlinux.c                 \
+drv_D4D.c                     \
 drv_EA232graphic.c            \
 drv_G15.c                     \
 drv_HD44780.c                 \

@@ -24,7 +24,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * drv_list (void)
@@ -52,6 +52,7 @@ extern DRIVER drv_BWCT;
 extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
+extern DRIVER drv_D4D;
 extern DRIVER drv_EA232graphic;
 extern DRIVER drv_G15;
 extern DRIVER drv_HD44780;
@@ -104,6 +105,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_CWLINUX
     &drv_Cwlinux,
+#endif
+#ifdef WITH_D4D
+    &drv_D4D,
 #endif
 #ifdef WITH_EA232graphic
     &drv_EA232graphic,

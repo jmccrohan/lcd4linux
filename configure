@@ -1342,7 +1342,7 @@ Optional Packages:
                           drivers may be excluded with 'all,!<driver>',
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
-                          BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux,
+                          BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D
                           G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,
                           LUIse, M50530, MatrixOrbital, MilfordInstruments,
                           Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,
@@ -7540,6 +7540,7 @@ for driver in $drivers; do
          CRYSTALFONTZ="yes"
          CURSES="yes"
          CWLINUX="yes"
+         D4D="yes"
          EA232graphic="yes"
          G15="yes"
          HD44780="yes"
@@ -7586,6 +7587,9 @@ for driver in $drivers; do
          ;;
       Cwlinux)
          CWLINUX=$val
+         ;;
+      D4D)
+         D4D=$val
          ;;
       EA232graphic)
          EA232graphic=$val
@@ -7779,6 +7783,18 @@ if test "$CWLINUX" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define WITH_CWLINUX 1
+_ACEOF
+
+fi
+
+if test "$D4D" = "yes"; then
+   TEXT="yes"
+   GRAPHIC="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_D4D.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_D4D 1
 _ACEOF
 
 fi
