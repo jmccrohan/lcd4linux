@@ -227,9 +227,9 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	for (i = 0; i < len; i++) {
 	    cmd_sd[2] = (col + i) * XRES;
 	    sec = SECTOR + (unsigned char) data[i] * SECTOR_SIZE;
-	    cmd_sd[9] = address_hi(sec);
+	    cmd_sd[ 9] = address_hi (sec);
 	    cmd_sd[10] = address_mid(sec);
-	    cmd_sd[11] = address_lo(sec);
+	    cmd_sd[11] = address_lo (sec);
 	    drv_D4D_send_extra(cmd_sd, sizeof(cmd_sd), 3, 6);
 	}
     }
@@ -238,7 +238,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 
 static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
 {
-/* error("drv_D4D_defchar"); */
+    /* error("drv_D4D_defchar"); */
     char cmd[11];
     int i;
 
@@ -255,7 +255,7 @@ static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
 
 static void drv_D4D_blit(const int row, const int col, const int height, const int width)
 {
-/* error("drv_D4D_blit(%i, %i, %i, %i)",row, col, height, width); */
+    /* error("drv_D4D_blit(%i, %i, %i, %i)",row, col, height, width); */
     int r, c;
     RGBA rgb, pixel0_0, pixel;
     short int color;
@@ -284,7 +284,6 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 	    { 'r', col, msb(row), lsb(row), col + width - 1, msb(row2), lsb(row2), msb(color), lsb(color) };
 	drv_D4D_send_extra(cmdRect, sizeof(cmdRect), 2, 5);
     } else {
-
 	char cmd[] = { 'I', col, msb(row), lsb(row), width, msb(height), lsb(height), MODE };
 	drv_D4D_send_nowait_extra(cmd, sizeof(cmd), 2, 5);
 	for (r = row; r < row + height; r++) {
@@ -301,7 +300,7 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 		    colorArray[0] = lsb(color);
 		    drv_D4D_send_nowait(colorArray, 1);
 		}
-/*    	drv_D4D_send_nowait(colorArray, MODE/8); */
+                /* drv_D4D_send_nowait(colorArray, MODE/8); */
 	    }
 	}
 	drv_D4D_receive_ACK();
@@ -377,9 +376,9 @@ static int drv_D4D_start(const char *section)
 	case 0x96:
 	    res[i] = 96;
 	    break;
-	case 0x24:
+	case 0x24: /* undocumented? */
 	    res[i] = 240;
-	    break;		/* undocumented? */
+	    break;
 	default:
 	    error("Can't detect display dimensions!");
 	    return -1;
@@ -443,7 +442,7 @@ static int drv_D4D_start(const char *section)
 	DCOLS = DCOLS / XRES;
 	DROWS = DROWS / YRES;
 	switch (yres_cfg) {	/* font in ROM */
-	case 8:		/* FONT=1; break; */
+	case 8:
 	    switch (xres_cfg) {
 	    case 6:
 		FONT = 0;
@@ -468,7 +467,6 @@ static int drv_D4D_start(const char *section)
 	    error("%s: unknown height in %s.Font '%s' from %s", Name, section, s, cfg_source());
 	    return -1;
 	}
-	/* if(xres_cfg==6) FONT=0; */
     }
 
     info("XRES=%i, YRES=%i;  DCOLS=%i, DROWS=%d;  FONT=%d, SECTOR=%i, SECTOR_SIZE=%i\n", XRES, YRES, DCOLS, DROWS,
@@ -481,7 +479,6 @@ static int drv_D4D_start(const char *section)
 	char powerOn[] = { 'Y', 3, 1 };
 	drv_D4D_send(powerOn, sizeof(powerOn));
 
-	/*! */
 	/*char background[] = {'B', msb(BG_COLOR), lsb(BG_COLOR)};
 	   drv_D4D_send(background, sizeof(background)); */
     }
@@ -526,7 +523,7 @@ int drv_D4D_text_draw(WIDGET * W)
 }
 
 
-int lastVal[48 * 40 * 2];	/* ToDo: MAX_WIDGETS*2 */
+int lastVal[40 * 40 * 2];	/* ToDo: MAX_WIDGETS*2 */
 int drv_D4D_bar_draw(WIDGET * W)
 {
     /* optimizations:
@@ -583,21 +580,17 @@ int drv_D4D_bar_draw(WIDGET * W)
 	int y1 = row * YRES + (YRES / 2) * i;
 	cmd[2] = msb(y1);
 	cmd[3] = lsb(y1);
-	int y2 = y1 + (YRES /*-1*/ ) / vals - 1;
+	int y2 = y1 + (YRES) / vals - 1;
 	cmd[5] = msb(y2);
 	cmd[6] = lsb(y2);
 	if (val[i] > lastVal[lastValIndex]) {
-	    /* cmd[1]=col*XRES; */
 	    cmd[1] = col * XRES + lastVal[lastValIndex];
-	    /* cmd[3]=cmd[1]+val[i]-1; */
 	    cmd[4] = cmd[1] + val[i] - lastVal[lastValIndex] - 1;
 	    cmd[7] = msb(FG_COLOR);
 	    cmd[8] = lsb(FG_COLOR);
 	    drv_D4D_send_extra(cmd, sizeof(cmd), 2, 5);
 	} else if (val[i] < lastVal[lastValIndex]) {
-	    /* cmd[1]=cmd[3]+1; */
 	    cmd[1] = col * XRES + val[i] - 1 + 1;
-	    /* cmd[3]=col*XRES+max; */
 	    cmd[4] = cmd[1] + lastVal[lastValIndex] - val[i];
 	    cmd[7] = msb(BG_COLOR);
 	    cmd[8] = lsb(BG_COLOR);
@@ -653,7 +646,7 @@ int drv_D4D_list(void)
 
 int drv_D4D_init(const char *section, const int quiet)
 {
-    info("drv_D4D_init()");
+    /* error("drv_D4D_init()"); */
     WIDGET_CLASS wc;
     int ret;
 
