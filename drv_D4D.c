@@ -1,7 +1,7 @@
 /* $Id: drv_D4D.c 840 2007-09-09 12:17:42Z michael $
  * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/drv_D4D.c $
  *
- * lcd4linux driver for 4D Systems serial displays
+ * LCD4Linux driver for 4D Systems Display Graphics Modules
  *
  * Copyright (C) 2008 Sven Killig <sven@killig.de>
  * Modified from sample code by:
@@ -104,7 +104,7 @@ static int drv_D4D_open(const char *section)
     fd = drv_generic_serial_open(section, Name, 0);
     if (fd < 0)
 	return -1;
-    fcntl(fd, F_SETFL, 0);
+    fcntl(fd, F_SETFL, 0);	/* blocking read */
     return 0;
 }
 
@@ -119,10 +119,8 @@ static int drv_D4D_close(void)
 static void drv_D4D_receive_ACK()
 {
     char ret[1];
-    while (drv_generic_serial_read(ret, sizeof(ret)) != 1) {
-	usleep(1); /* loop should be unneccessary */
-    }
-    /* drv_generic_serial_poll(ret,1); */
+    while (drv_generic_serial_read(ret, sizeof(ret)) != 1)
+	usleep(1);		/* loop should be unneccessary */
     if (ret[0] == 0x15) {
 	error("NAK!");
     } else if (ret[0] != 6) {
@@ -143,6 +141,7 @@ static void drv_D4D_send(const char *data, const unsigned int len)
 
 static void drv_D4D_send_nowait_extra(const char *data, const unsigned int len, unsigned char pos1, unsigned char pos2)
 {
+    /* possibly leave out bytes at pos1 and pos2 for older protocol format */
     if (EXTRA) {
 	drv_D4D_send_nowait(data, len);
     } else {
@@ -181,7 +180,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
     int user_y[len];
     int i, k = 0;
 
-    if (!SECTOR) {
+    if (!SECTOR) {		/* font in ROM */
 
 	for (i = 0; i < len; i++) {
 	    if (data[i] >= 31 && data[i] < CHAR0) {
@@ -205,7 +204,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	    }
 	}
 
-	char cmd[] = { 's', col, row, FONT, msb(FG_COLOR), lsb(FG_COLOR) };
+	char cmd[] = { 's', col, row, FONT, msb(FG_COLOR), lsb(FG_COLOR) };	/* normal chars */
 	drv_D4D_send_nowait(cmd, sizeof(cmd));
 	if (len > 256)
 	    len = 256;
@@ -214,7 +213,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	cmdNull[0] = 0;
 	drv_D4D_send(cmdNull, 1);
 
-	char cmd_user[] = { 'D', 0, 0, 0, 0, 0, msb(FG_COLOR), lsb(FG_COLOR) };
+	char cmd_user[] = { 'D', 0, 0, 0, 0, 0, msb(FG_COLOR), lsb(FG_COLOR) };	/* user defined symbols */
 	for (i = 0; i < k; i++) {
 	    cmd_user[2] = user_char[i];
 	    cmd_user[3] = user_x[i];
@@ -222,7 +221,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	    cmd_user[5] = lsb(user_y[i]);
 	    drv_D4D_send_extra(cmd_user, sizeof(cmd_user), 1, 4);
 	}
-    } else {
+    } else {			/* font on SD card */
 	int sec;
 	char cmd_sd[] = { '@', 'I', 0, msb(row * YRES), lsb(row * YRES), XRES, msb(YRES), lsb(YRES), 16, 0, 0, 0 };
 	for (i = 0; i < len; i++) {
@@ -239,7 +238,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 
 static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
 {
-    /* error("drv_D4D_defchar"); */
+/* error("drv_D4D_defchar"); */
     char cmd[11];
     int i;
 
@@ -256,13 +255,14 @@ static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
 
 static void drv_D4D_blit(const int row, const int col, const int height, const int width)
 {
-    /* error("drv_D4D_blit(%i, %i, %i, %i)",row, col, height, width); */
+/* error("drv_D4D_blit(%i, %i, %i, %i)",row, col, height, width); */
     int r, c;
     RGBA rgb, pixel0_0, pixel;
     short int color;
     char colorArray[2];
 
 
+    /* optimization: single colour rectangle? */
     pixel0_0 = drv_generic_graphic_rgb(0, 0);
     char unicolor = 1;
     for (r = row; r < row + height; r++) {
@@ -296,12 +296,12 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 		} else {
 		    color = RGB_24to16(rgb.R, rgb.G, rgb.B);
 		    colorArray[0] = msb(color);
-		    drv_D4D_send_nowait(colorArray, 1);	/* doesn't work if sent together (error: "partial write(/dev/tts/1): len=2 ret=1") */
+		    drv_D4D_send_nowait(colorArray, 1);	/* doesn't werk if sent together (error: "partial write(/dev/tts/1): len=2 ret=1") */
 		    /* colorArray[1]=lsb(color); */
 		    colorArray[0] = lsb(color);
 		    drv_D4D_send_nowait(colorArray, 1);
 		}
-		/* drv_D4D_send_nowait(colorArray, MODE/8); */
+/*    	drv_D4D_send_nowait(colorArray, MODE/8); */
 	    }
 	}
 	drv_D4D_receive_ACK();
@@ -319,14 +319,14 @@ static int drv_D4D_contrast(int contrast)
     char cmd[] = { 'Y', 2, contrast };
     drv_D4D_send(cmd, sizeof(cmd));
 
-    /* CONTRAST_ = contrast; */
+    /* CONTRAST_=contrast; */
     return contrast;
 }
 
 
 static int drv_D4D_start(const char *section)
 {
-    info("drv_D4D_start()");
+    /* error("drv_D4D_start()"); */
     int contrast;
     int xres_cfg = -1, yres_cfg = -1;
     char *s;
@@ -354,7 +354,7 @@ static int drv_D4D_start(const char *section)
     int res[2];
     int i;
     for (i = 0; i < 2; i++) {
-	switch (answer[3 + i]) {
+	switch ((unsigned char) answer[3 + i]) {
 	case 0x22:
 	    res[i] = 220;
 	    break;
@@ -374,14 +374,15 @@ static int drv_D4D_start(const char *section)
 	case 0x76:
 	    res[i] = 176;
 	    break;
-	case 0x96: /* Fixme: case label value exceeds maximum value for type */
+	case 0x96:
 	    res[i] = 96;
 	    break;
 	case 0x24:
-	    res[i] = 240; /* undocumented? */
-	    break;
+	    res[i] = 240;
+	    break;		/* undocumented? */
 	default:
-	    error ("Fixme");
+	    error("Can't detect display dimensions!");
+	    return -1;
 	}
     }
     DCOLS = res[0];
@@ -401,7 +402,7 @@ static int drv_D4D_start(const char *section)
 	return -1;
     }
 
-    if (yres_cfg == -1) {
+    if (yres_cfg == -1) {	/* font on SD card */
 	SECTOR = xres_cfg * 512;
 	char setAddress[] =
 	    { '@', 'A', address_mmsb(SECTOR), address_mlsb(SECTOR), address_lmsb(SECTOR), address_llsb(SECTOR) };
@@ -441,9 +442,19 @@ static int drv_D4D_start(const char *section)
 
 	DCOLS = DCOLS / XRES;
 	DROWS = DROWS / YRES;
-	switch (yres_cfg) {
-	case 8:
-	    FONT = 1;
+	switch (yres_cfg) {	/* font in ROM */
+	case 8:		/* FONT=1; break; */
+	    switch (xres_cfg) {
+	    case 6:
+		FONT = 0;
+		break;
+	    case 8:
+		FONT = 1;
+		break;
+	    default:
+		error("%s: unknown width in %s.Font '%s' from %s", Name, section, s, cfg_source());
+		return -1;
+	    };
 	    break;
 	case 12:
 	    FONT = 2;
@@ -451,13 +462,17 @@ static int drv_D4D_start(const char *section)
 	case 16:
 	    FONT = 3;
 	    break;
+	case -1:
+	    break;
+	default:
+	    error("%s: unknown height in %s.Font '%s' from %s", Name, section, s, cfg_source());
+	    return -1;
 	}
-	if (xres_cfg == 5)
-	    FONT = 0;
+	/* if(xres_cfg==6) FONT=0; */
     }
 
-    printf("XRES=%i; YRES=%i, DCOLS=%i; DROWS=%d; FONT=%d; SECTOR=%i; SECTOR_SIZE=%i\n", XRES, YRES, DCOLS, DROWS, FONT,
-	   SECTOR, SECTOR_SIZE);
+    info("XRES=%i, YRES=%i;  DCOLS=%i, DROWS=%d;  FONT=%d, SECTOR=%i, SECTOR_SIZE=%i\n", XRES, YRES, DCOLS, DROWS,
+	 FONT, SECTOR, SECTOR_SIZE);
 
 
 
@@ -466,7 +481,8 @@ static int drv_D4D_start(const char *section)
 	char powerOn[] = { 'Y', 3, 1 };
 	drv_D4D_send(powerOn, sizeof(powerOn));
 
-	/* char background[] = {'B', msb(BG_COLOR), lsb(BG_COLOR)};
+	/*! */
+	/*char background[] = {'B', msb(BG_COLOR), lsb(BG_COLOR)};
 	   drv_D4D_send(background, sizeof(background)); */
     }
 
@@ -478,7 +494,7 @@ static int drv_D4D_start(const char *section)
 
 
     if (!MODE) {
-	unsigned char buffer[] = { 0x18, 0x24, 0x24, 0x18, 0, 0, 0, 0 }; /* degree */
+	unsigned char buffer[] = { 0x18, 0x24, 0x24, 0x18, 0, 0, 0, 0 };	/* degree */
 	drv_D4D_defchar(CHAR0, buffer);
 	CHARS--;
 	CHAR0++;
@@ -510,9 +526,13 @@ int drv_D4D_text_draw(WIDGET * W)
 }
 
 
-int lastVal[48 * 40 * 2];	/* MAX_WIDGETS*2 */
+int lastVal[48 * 40 * 2];	/* ToDo: MAX_WIDGETS*2 */
 int drv_D4D_bar_draw(WIDGET * W)
 {
+    /* optimizations:
+       - draw filled rectangles instead of user defined bar characters
+       - cache last values */
+
     WIDGET_BAR *Bar = W->data;
     int row, col, len, res, max, val1, val2;
     DIRECTION dir;
@@ -552,16 +572,18 @@ int drv_D4D_bar_draw(WIDGET * W)
     val[0] = val1;
     val[1] = val2;
     int i, vals;
-    if (val1 == val2 && lastVal[row * DCOLS + col] == lastVal[row * DCOLS + col + DROWS * DCOLS])
+    int lastValIndex0 = row * DCOLS + col;
+    int cells = DROWS * DCOLS;
+    if (val1 == val2 && lastVal[lastValIndex0] == lastVal[lastValIndex0 + cells])
 	vals = 1;
     else
 	vals = 2;
     for (i = 0; i < vals; i++) {
-	int lastValIndex = row * DCOLS + col + DROWS * DCOLS * (i + 1);
+	int lastValIndex = lastValIndex0 + cells * (i /*+1 */ );
 	int y1 = row * YRES + (YRES / 2) * i;
 	cmd[2] = msb(y1);
 	cmd[3] = lsb(y1);
-	int y2 = y1 + (YRES) / vals - 1;	/* YRES-1 */
+	int y2 = y1 + (YRES /*-1*/ ) / vals - 1;
 	cmd[5] = msb(y2);
 	cmd[6] = lsb(y2);
 	if (val[i] > lastVal[lastValIndex]) {
@@ -624,7 +646,7 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 
 int drv_D4D_list(void)
 {
-    printf("4D Systems serial displays");
+    printf("4D Systems Display Graphics Modules");
     return 0;
 }
 
@@ -689,7 +711,6 @@ int drv_D4D_init(const char *section, const int quiet)
 	    return ret;
 
 	drv_generic_text_bar_add_segment(0, 0, 255, 32);
-	/* drv_generic_text_bar_add_segment(255, 255, 255, 31); */  /* ASCII 255 = block */
 
 
 	wc = Widget_Text;
@@ -714,7 +735,7 @@ int drv_D4D_init(const char *section, const int quiet)
 
 int drv_D4D_quit(const int quiet)
 {
-    error("drv_D4D_quit()");
+    /* error("drv_D4D_quit()"); */
 
     info("%s: shutting down.", Name);
 
@@ -733,6 +754,7 @@ int drv_D4D_quit(const int quiet)
 	    drv_generic_text_greet("goodbye!", NULL);
     }
 
+    /* fade */
     /*int i;
        for(i=CONTRAST_;i>=0;i--) {
        drv_D4D_contrast(i);
