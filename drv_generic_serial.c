@@ -24,7 +24,7 @@
  *
  */
 
-/* 
+/*
  *
  * exported fuctions:
  *
@@ -221,7 +221,7 @@ int drv_generic_serial_open(const char *section, const char *driver, const unsig
 	return -1;
     }
 
-    if (cfg_number(section, "Speed", 19200, 1200, 115200, &i) < 0)
+    if (cfg_number(section, "Speed", 19200, 1200, 230400, &i) < 0)
 	return -1;
     switch (i) {
     case 1200:
@@ -248,6 +248,11 @@ int drv_generic_serial_open(const char *section, const char *driver, const unsig
     case 115200:
 	Speed = B115200;
 	break;
+#ifdef B230400
+    case 230400:
+	Speed = B230400;
+	break;
+#endif
     default:
 	error("%s: unsupported speed '%d' from %s", Driver, i, cfg_source());
 	return -1;
