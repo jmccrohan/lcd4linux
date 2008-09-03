@@ -227,9 +227,9 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	for (i = 0; i < len; i++) {
 	    cmd_sd[2] = (col + i) * XRES;
 	    sec = SECTOR + (unsigned char) data[i] * SECTOR_SIZE;
-	    cmd_sd[ 9] = address_hi (sec);
+	    cmd_sd[9] = address_hi(sec);
 	    cmd_sd[10] = address_mid(sec);
-	    cmd_sd[11] = address_lo (sec);
+	    cmd_sd[11] = address_lo(sec);
 	    drv_D4D_send_extra(cmd_sd, sizeof(cmd_sd), 3, 6);
 	}
     }
@@ -300,7 +300,7 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 		    colorArray[0] = lsb(color);
 		    drv_D4D_send_nowait(colorArray, 1);
 		}
-                /* drv_D4D_send_nowait(colorArray, MODE/8); */
+		/* drv_D4D_send_nowait(colorArray, MODE/8); */
 	    }
 	}
 	drv_D4D_receive_ACK();
@@ -376,7 +376,7 @@ static int drv_D4D_start(const char *section)
 	case 0x96:
 	    res[i] = 96;
 	    break;
-	case 0x24: /* undocumented? */
+	case 0x24:		/* undocumented? */
 	    res[i] = 240;
 	    break;
 	default:
