@@ -37,7 +37,7 @@ AC_ARG_WITH(
   [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,]
   [                        RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
-  [                        USBLCD, USBHUB, WincorNixdorf, X11],
+  [                        ULA200, USBLCD, USBHUB, WincorNixdorf, X11],
   drivers=$withval,
   drivers=all
 )
@@ -199,6 +199,9 @@ for driver in $drivers; do
       Trefon)
          Trefon=$val
          ;;
+      ULA200)
+         ULA200=$val
+         ;;
       USBHUB)
          USBHUB=$val
          ;;
@@ -234,6 +237,7 @@ KEYPAD="no"
 
 # generic libraries
 LIBUSB="no"
+LIBFTDI="no"
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"
@@ -561,6 +565,14 @@ if test "$Trefon" = "yes"; then
    fi
 fi
 
+if test "$ULA200" = "yes"; then
+   TEXT="yes"
+   LIBUSB="yes"
+   LIBFTDI="yes"
+   DRIVERS="$DRIVERS drv_ula200.o"
+   AC_DEFINE(WITH_ULA200,1,[ULA200 driver])
+fi
+
 if test "$USBHUB" = "yes"; then
    if test "$has_usb" = "true"; then
       GPIO="yes"
@@ -664,6 +676,11 @@ fi
 # libusb
 if test "$LIBUSB" = "yes"; then
    DRVLIBS="$DRVLIBS -lusb"
+fi
+
+# libftdi
+if test "$LIBFTDI" = "yes"; then
+   DRVLIBS="$DRVLIBS -lftdi"
 fi
 
 AC_SUBST(DRIVERS)

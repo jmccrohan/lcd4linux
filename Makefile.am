@@ -99,6 +99,7 @@ drv_serdisplib.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
 drv_Trefon.c                  \
+drv_ULA200.c                  \
 drv_USBHUB.c                  \
 drv_USBLCD.c                  \
 drv_WincorNixdorf.c           \

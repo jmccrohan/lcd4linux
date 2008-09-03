@@ -370,6 +370,13 @@ Display CT20x4 {
 }
 
 
+Display ULA200 {
+    Driver 'ULA200'
+    Size '20x4'
+    Icons 0
+    Backlight 1
+}
+
 Display USBLCD {
     Driver 'USBLCD'
 #   Port '/dev/lcd0'

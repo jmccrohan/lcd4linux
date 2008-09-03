@@ -79,6 +79,7 @@ extern DRIVER drv_serdisplib;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
 extern DRIVER drv_Trefon;
+extern DRIVER drv_ula200;
 extern DRIVER drv_USBHUB;
 extern DRIVER drv_USBLCD;
 extern DRIVER drv_WincorNixdorf;
@@ -186,6 +187,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_TREFON
     &drv_Trefon,
+#endif
+#ifdef WITH_ULA200
+    &drv_ula200,
 #endif
 #ifdef WITH_USBHUB
     &drv_USBHUB,

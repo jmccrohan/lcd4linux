@@ -515,6 +515,9 @@
 /* TREFON driver */
 #undef WITH_TREFON
 
+/* ULA200 driver */
+#undef WITH_ULA200
+
 /* USBHUB driver */
 #undef WITH_USBHUB
 
