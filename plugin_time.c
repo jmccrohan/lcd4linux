@@ -36,6 +36,7 @@
 #include "config.h"
 
 #include <time.h>
+#include <stdlib.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -59,6 +60,29 @@ static void my_strftime(RESULT * result, RESULT * arg1, RESULT * arg2)
     SetResult(&result, R_STRING, value);
 }
 
+static void my_stftime_tz(RESULT * result, RESULT * arg1, RESULT * arg2, RESULT * arg3)
+{
+    char value[256] = "";
+    time_t t = R2N(arg2);
+    char *tz = R2S(arg3);
+    char *old_tz;
+
+    old_tz = getenv("TZ");
+    setenv("TZ", tz, 1);
+    tzset();
+
+    strftime(value, sizeof(value), R2S(arg1), localtime(&t));
+
+    if (old_tz) {
+	setenv("TZ", old_tz, 1);
+    } else {
+	unsetenv("TZ");
+    }
+    tzset();
+
+    SetResult(&result, R_STRING, value);
+}
+
 
 int plugin_init_time(void)
 {
@@ -66,6 +90,7 @@ int plugin_init_time(void)
     /* register some basic time functions */
     AddFunction("time", 0, my_time);
     AddFunction("strftime", 2, my_strftime);
+    AddFunction("strftime_tz", 3, my_stftime_tz);
 
     return 0;
 }
