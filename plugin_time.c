@@ -68,6 +68,15 @@ static void my_stftime_tz(RESULT * result, RESULT * arg1, RESULT * arg2, RESULT 
     char *old_tz;
 
     old_tz = getenv("TZ");
+
+    /*
+     * because the next setenv() call may overwrite that string, we
+     * duplicate it here
+     */
+    if (old_tz) {
+	old_tz = strdup(old_tz);
+    }
+
     setenv("TZ", tz, 1);
     tzset();
 
@@ -79,6 +88,8 @@ static void my_stftime_tz(RESULT * result, RESULT * arg1, RESULT * arg2, RESULT 
 	unsetenv("TZ");
     }
     tzset();
+
+    free(old_tz);
 
     SetResult(&result, R_STRING, value);
 }
