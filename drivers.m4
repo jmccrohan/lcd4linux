@@ -91,6 +91,7 @@ for driver in $drivers; do
          SIMPLELCD="yes"
          T6963="yes"
          Trefon="yes"
+         ULA200="yes"
 	 USBHUB="yes"
          USBLCD="yes"
 	 WINCORNIXDORF="yes"
