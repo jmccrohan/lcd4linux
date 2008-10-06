@@ -1,5 +1,5 @@
-/* $Id: drv_D4D.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/drv_D4D.c $
+/* $Id$
+ * $URL$
  *
  * LCD4Linux driver for 4D Systems Display Graphics Modules
  *
@@ -650,7 +650,7 @@ int drv_D4D_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    info("%s: %s", Name, "$Rev: 840 $");
+    info("%s: %s", Name, "$Rev$");
 
     if ((ret = drv_D4D_start(section)) != 0)
 	return ret;

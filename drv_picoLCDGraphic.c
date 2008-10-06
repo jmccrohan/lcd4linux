@@ -1,5 +1,5 @@
-/* $Id: drv_picoLCDGraphic.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/drv_picoLCDGraphic.c $
+/* $Id$
+ * $URL$
  *
  * driver for picoLCD Graphic(256x64) displays from mini-box.com
  *
@@ -542,7 +542,7 @@ int drv_pLG_init(const char *section, const int quiet)
 {
     int ret;
 
-    info("%s: %s", Name, "$Rev: 840 $");
+    info("%s: %s", Name, "$Rev$");
 
     info("PICOLCD Graphic initialization\n");
 

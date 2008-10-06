@@ -1,5 +1,5 @@
-/* $Id: plugin_sample.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/plugin_sample.c $
+/* $Id$
+ * $URL$
  *
  * plugin that forks and exec's once a key is pressed. the difference to the exec plugin is: this can also only be done once!
  *

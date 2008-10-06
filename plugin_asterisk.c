@@ -1,5 +1,5 @@
-/* $Id: plugin_sample.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/plugin_sample.c $
+/* $Id$
+ * $URL$
  *
  * plugin for asterisk
  *

@@ -1,5 +1,5 @@
-/* $Id: drv_Sample.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/drv_Sample.c $
+/* $Id$
+ * $URL$
  *
  * ST2205U-driven hacked picture frame driver.
  * See http://picframe.spritesserver.nl/ for more info.

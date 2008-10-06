@@ -1,5 +1,5 @@
-/* $Id: drv_Sample.c 840 2007-09-09 12:17:42Z michael $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/trunk/drv_Sample.c $
+/* $Id$
+ * $URL$
  *
  * ULA200 driver for lcd4linux
  *
@@ -687,7 +687,7 @@ int drv_ula200_init(const char *section, const int quiet)
     WIDGET_CLASS wc;
     int ret;
 
-    ULA200_INFO("%s", "$Rev: 840 $");
+    ULA200_INFO("%s", "$Rev$");
 
     /* display preferences */
     XRES = ULA200_CELLWIDTH;	/* pixel width of one char  */

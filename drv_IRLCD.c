@@ -1,5 +1,5 @@
-/* $Id: drv_IRLCD.c 773 2008-07-14 12:00:00Z jpcivade $
- * $URL: https://ssl.bulix.org/svn/lcd4linux/branches/0.10.1/drv_IRLCD.c $
+/* $Id$
+ * $URL$
  *
  **************************************************************************
  * Driver for IRLCD : simple USB1.1 LCD + IR Receiver based on ATtiny2313 *
@@ -309,7 +309,7 @@ int drv_IRLCD_init(const char *section, const int quiet)
     int asc255bug;
     int ret;
 
-    info("%s: %s", Name, "$Rev: 773 $");
+    info("%s: %s", Name, "$Rev$");
 
     /* display preferences */
     XRES = 5;			/* pixel width of one char  */
