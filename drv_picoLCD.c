@@ -162,6 +162,12 @@ static void drv_pL_send(unsigned char *data, int size)
     usb_interrupt_write(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
 }
 
+static int drv_pL_read(unsigned char *data, int size)
+{
+    return usb_interrupt_read(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
+}
+
+
 
 static void drv_pL_clear(void)
 {
@@ -198,6 +204,20 @@ static int drv_pL_backlight(int backlight)
     drv_pL_send(cmd, 2);
 
     return backlight;
+}
+
+#define _USBLCD_MAX_DATA_LEN          24
+#define IN_REPORT_KEY_STATE           0x11
+static int drv_pL_gpi(int num)
+{
+    int ret;
+    unsigned char read_packet[_USBLCD_MAX_DATA_LEN];
+    ret = drv_pL_read(read_packet, _USBLCD_MAX_DATA_LEN);
+    if ((ret > 0) && (read_packet[0] == IN_REPORT_KEY_STATE)) {
+	debug("picoLCD: pressed key= 0x%02x\n", read_packet[1]);
+	return read_packet[1];
+    }
+    return 0;
 }
 
 static int drv_pL_gpo(int num, int val)
@@ -343,7 +363,6 @@ static void plugin_gpo(RESULT * result, RESULT * argv[])
     SetResult(&result, R_NUMBER, &gpo);
 }
 
-
 /****************************************/
 /***        widget callbacks          ***/
 /****************************************/
@@ -381,6 +400,7 @@ int drv_pL_init(const char *section, const int quiet)
     CHARS = 8;			/* number of user-defineable characters */
     CHAR0 = 0;			/* ASCII of first user-defineable char */
     GPOS = 8;
+    GPIS = 1;
     INVALIDATE = 1;
     GOTO_COST = 2;		/* number of bytes a goto command requires */
 
@@ -388,6 +408,7 @@ int drv_pL_init(const char *section, const int quiet)
     drv_generic_text_real_write = drv_pL_write;
     drv_generic_text_real_defchar = drv_pL_defchar;
     drv_generic_gpio_real_set = drv_pL_gpo;
+    drv_generic_gpio_real_get = drv_pL_gpi;
 
     /* start display */
     if ((ret = drv_pL_start(section, quiet)) != 0)
