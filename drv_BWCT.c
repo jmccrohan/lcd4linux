@@ -72,7 +72,6 @@ static char Name[] = "BWCT";
 static usb_dev_handle *lcd;
 static int interface;
 
-extern int usb_debug;
 extern int got_signal;
 
 
@@ -89,7 +88,7 @@ static int drv_BW_open(void)
 
     info("%s: scanning USB for BWCT LCD...", Name);
 
-    usb_debug = 0;
+    usb_set_debug(0);
 
     usb_init();
     usb_find_busses();

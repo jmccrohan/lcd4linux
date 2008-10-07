@@ -72,8 +72,6 @@ static char Name[] = "TREFON";
 static usb_dev_handle *lcd;
 static int interface;
 
-extern int usb_debug;
-
 
 /****************************************/
 /***  hardware dependant functions    ***/
@@ -88,7 +86,7 @@ static int drv_TF_open(void)
 
     info("%s: scanning USB for TREFON LCD...", Name);
 
-    usb_debug = 0;
+    usb_set_debug(0);
 
     usb_init();
     usb_find_busses();

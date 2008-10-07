@@ -84,7 +84,6 @@ static char *device_id = NULL, *bus_id = NULL;
 
 static usb_dev_handle *lcd;
 
-extern int usb_debug;
 extern int got_signal;
 
 /****************************************/
@@ -106,7 +105,7 @@ static int drv_IRLCD_open(char *bus_id, char *device_id)
     if (device_id != NULL)
 	info("%s: scanning for device id: %s", Name, device_id);
 
-    usb_debug = 0;
+    usb_set_debug(0);
 
     usb_init();
     usb_find_busses();

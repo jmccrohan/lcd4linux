@@ -86,8 +86,6 @@ static char *BufPtr;
 static usb_dev_handle *lcd;
 static int interface;
 
-extern int usb_debug;
-
 #endif
 
 
@@ -107,7 +105,7 @@ static int drv_UL_open(void)
 
     info("%s: scanning for USBLCD...", Name);
 
-    usb_debug = 0;
+    usb_set_debug(0);
 
     usb_init();
     usb_find_busses();

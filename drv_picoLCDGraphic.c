@@ -98,7 +98,6 @@ static char *Buffer;
 static char *BufPtr;
 
 static usb_dev_handle *lcd;
-extern int usb_debug;
 
 
 
@@ -120,7 +119,7 @@ static int drv_pLG_open(void)
 
     info("%s: scanning for picoLCD 256x64...", Name);
 
-    usb_debug = 0;
+    usb_set_debug(0);
 
     usb_init();
     usb_find_busses();
