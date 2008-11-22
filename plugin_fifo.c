@@ -164,7 +164,7 @@ static void fiforead(RESULT * result)
 	    bytes = read(fd.input, buf, FIFO_BUFFER_SIZE);
 	}
 
-	if (bytes < 0 || errno > 0) {
+	if (bytes < 0 || (errno > 0 && errno != EAGAIN)) {
 	    error("[FIFO] Error %i: %s", errno, strerror(errno));
 	} else {
 	    if (strlen(buf) > 0) {
