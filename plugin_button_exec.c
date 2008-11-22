@@ -64,7 +64,6 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
     char *args[argc + 1];
     char *arg;
     char *prog;
-    char *env[1];
 
     signal(SIGCHLD, SIG_IGN);
     prog = R2S(argv[0]);
@@ -74,13 +73,13 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
 	args[i] = arg;
 	info(arg);
     }
+    args[0] = prog;
     args[i] = (char *) 0;
-    env[0] = (char *) 0;
     pid = fork();
     if (pid == 0) {		/* child-process */
 	/* char *args[] = {"-r", "-t", "-l", (char *) 0 }; */
 	info("executing program");
-	execve(prog, args, env);
+	execvp(prog, args);
 	errsv = errno;
 	info("executing program failed");
 	info(strerror(errsv));
