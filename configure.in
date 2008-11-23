@@ -83,6 +83,9 @@ AC_CHECK_HEADERS(st2205.h, [has_st2205="true"], [has_st2205="false"])
 # check for LCD-Linux
 AC_CHECK_HEADERS(linux/lcd-linux.h linux/hd44780.h, [has_lcd_linux="true"], [has_lcd_linux="false"; break])
 
+# check for ftdi.h (ULA200)
+AC_CHECK_HEADERS(ftdi.h, [has_ftdi="true"], [has_ftdi="false"; break])
+
 # check for python
 AC_MSG_CHECKING(if python support is wanted)
 AC_ARG_WITH(python,

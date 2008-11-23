@@ -567,11 +567,15 @@ if test "$Trefon" = "yes"; then
 fi
 
 if test "$ULA200" = "yes"; then
-   TEXT="yes"
-   LIBUSB="yes"
-   LIBFTDI="yes"
-   DRIVERS="$DRIVERS drv_ula200.o"
-   AC_DEFINE(WITH_ULA200,1,[ULA200 driver])
+   if test "$has_ftdi" = "true"; then
+      TEXT="yes"
+      LIBUSB="yes"
+      LIBFTDI="yes"
+      DRIVERS="$DRIVERS drv_ula200.o"
+      AC_DEFINE(WITH_ULA200,1,[ULA200 driver])
+   else
+      AC_MSG_WARN(ftdi.h not found: ULA200 driver disabled)
+   fi
 fi
 
 if test "$USBHUB" = "yes"; then

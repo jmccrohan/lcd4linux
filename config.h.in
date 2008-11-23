@@ -28,6 +28,9 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 if you have the <ftdi.h> header file. */
+#undef HAVE_FTDI_H
+
 /* Define to 1 if you have the <gd/gd.h> header file. */
 #undef HAVE_GD_GD_H
 
