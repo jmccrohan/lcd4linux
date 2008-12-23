@@ -162,7 +162,7 @@ static int drv_LL_start(const char *section, const int quiet)
 	return -1;
     }
     info("%s: %dx%d display with %d controllers, flags=0x%02lx:",
-	 Name, buf.cntr_cols, buf.cntr_rows*buf.num_cntr, buf.num_cntr, buf.flags);
+	 Name, buf.cntr_cols, buf.cntr_rows * buf.num_cntr, buf.num_cntr, buf.flags);
     info("%s:   busy-flag checking %sabled", Name, (buf.flags & HD44780_CHECK_BF) ? "en" : "dis");
     info("%s:   bus width %d bits", Name, (buf.flags & HD44780_4BITS_BUS) ? 4 : 8);
     info("%s:   font size %s", Name, (buf.flags & HD44780_5X10_FONT) ? "5x10" : "5x8");
@@ -175,14 +175,14 @@ static int drv_LL_start(const char *section, const int quiet)
 	commit = 1;
     }
 
-    if ((rows > 0 && rows != buf.cntr_rows*buf.num_cntr) || (cols > 0 && cols != buf.cntr_cols)) {
+    if ((rows > 0 && rows != buf.cntr_rows * buf.num_cntr) || (cols > 0 && cols != buf.cntr_cols)) {
 	info("%s: changing size to %dx%d", Name, cols, rows);
-	buf.cntr_rows = rows/buf.num_cntr;
+	buf.cntr_rows = rows / buf.num_cntr;
 	buf.cntr_cols = cols;
 	commit = 1;
     }
 
-    DROWS = buf.cntr_rows*buf.num_cntr;
+    DROWS = buf.cntr_rows * buf.num_cntr;
     DCOLS = buf.cntr_cols;
 
     /* overwrite busy-flag checking from lcd4linux.conf */
