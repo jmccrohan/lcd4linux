@@ -615,7 +615,7 @@ static int drv_CF_keypad(const int num)
     case 2:
 	break;
     case 3:
-	if ((num < 8) || ((num > 12) && (num < 17)))
+	if ((num < 7) || ((num > 12) && (num < 17)))
 	    val = WIDGET_KEY_PRESSED;
 	else
 	    val = WIDGET_KEY_RELEASED;
