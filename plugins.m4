@@ -63,6 +63,7 @@ for plugin in $plugins; do
          PLUGIN_FIFO="yes"
          PLUGIN_FILE="yes"
          PLUGIN_GPS="yes"
+         PLUGIN_HDDTEMP="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_ICONV="yes"
          PLUGIN_IMON="yes"
@@ -114,6 +115,9 @@ for plugin in $plugins; do
          ;;
       gps)
          PLUGIN_GPS=$val
+         ;;
+      hddtemp)
+         PLUGIN_HDDTEMP=$hddtemp
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -241,6 +245,10 @@ if test "$PLUGIN_GPS" = "yes"; then
    else
       AC_MSG_WARN(nmeap.h header not found: gps plugin disabled)
    fi 
+fi
+if test "$PLUGIN_HDDTEMP" = "yes"; then
+   PLUGINS="$PLUGINS plugin_hddtemp.o"
+   AC_DEFINE(PLUGIN_HDDTEMP,1,[hddtemp plugin])
 fi
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"

@@ -305,6 +305,9 @@
 /* gps plugin */
 #undef PLUGIN_GPS
 
+/* hddtemp plugin */
+#undef PLUGIN_HDDTEMP
+
 /* i2c sensors plugin */
 #undef PLUGIN_I2C_SENSORS
 

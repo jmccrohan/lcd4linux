@@ -320,6 +320,7 @@ plugin_exec.c                 \
 plugin_fifo.c                 \
 plugin_file.c                 \
 plugin_gps.c                  \
+plugin_hddtemp.c              \
 plugin_i2c_sensors.c          \
 plugin_iconv.c                \
 plugin_imon.c                 \
@@ -512,6 +513,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_fifo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_gps.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_hddtemp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_i2c_sensors.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_iconv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_imon.Po@am__quote@

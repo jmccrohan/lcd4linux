@@ -74,6 +74,8 @@ int plugin_init_file(void);
 void plugin_exit_file(void);
 int plugin_init_gps(void);
 void plugin_exit_gps(void);
+int plugin_init_hddtemp(void);
+void plugin_exit_hddtemp(void);
 int plugin_init_i2c_sensors(void);
 void plugin_exit_i2c_sensors(void);
 int plugin_init_imon(void);
@@ -154,6 +156,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_GPS
     plugin_init_gps();
+#endif
+#ifdef PLUGIN_HDDTEMP
+    plugin_init_hddtemp();
 #endif
 #ifdef PLUGIN_I2C_SENSORS
     plugin_init_i2c_sensors();

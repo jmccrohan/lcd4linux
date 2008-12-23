@@ -8565,6 +8565,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_FIFO="yes"
          PLUGIN_FILE="yes"
          PLUGIN_GPS="yes"
+         PLUGIN_HDDTEMP="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_ICONV="yes"
          PLUGIN_IMON="yes"
@@ -8616,6 +8617,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       gps)
          PLUGIN_GPS=$val
+         ;;
+      hddtemp)
+         PLUGIN_HDDTEMP=$hddtemp
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -9147,6 +9151,14 @@ echo "$as_me: WARNING: libnmeap lib not found: gps plugin disabled" >&2;}
       { echo "$as_me:$LINENO: WARNING: nmeap.h header not found: gps plugin disabled" >&5
 echo "$as_me: WARNING: nmeap.h header not found: gps plugin disabled" >&2;}
    fi
+fi
+if test "$PLUGIN_HDDTEMP" = "yes"; then
+   PLUGINS="$PLUGINS plugin_hddtemp.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_HDDTEMP 1
+_ACEOF
+
 fi
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"
