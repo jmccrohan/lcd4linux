@@ -65,6 +65,9 @@
 #define PARPORT_STATUS_BUSY       0x80
 #endif
 
+/* these signals are inverted by hardware on the parallel port */
+#define PARPORT_CONTROL_INVERTED (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD)
+
 #if !defined(WITH_OUTB) && !defined(WITH_PPDEV)
 #error neither outb() nor ppdev() possible
 #error cannot compile parallel port driver
@@ -81,6 +84,9 @@ static char *Driver = "";
 static char *Section = "";
 static unsigned short Port = 0;
 static char *PPdev = NULL;
+
+/* Any bits set here will have their logic inverted at the parallel port */
+static unsigned char inverted_control_bits = 0;
 
 /* initial value taken from linux/parport_pc.c */
 static unsigned char ctr = 0xc;
@@ -205,23 +211,30 @@ int drv_generic_parport_close(void)
 static unsigned char drv_generic_parport_signal_ctrl(const char *name, const char *signal)
 {
     unsigned char wire;
+    int invert = 0;
+
+    /* Prefixing a signal name with '-' inverts the logic */
+    if (signal[0] == '-') {
+	invert = 1;
+	signal++;
+    }
 
     if (strcasecmp(signal, "STROBE") == 0) {
 	wire = PARPORT_CONTROL_STROBE;
-	info("%s: wiring: DISPLAY:%-9s - PARPORT:STROBE (Pin  1)", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:STROBE (Pin  1)%s", Driver, name, invert ? " [inverted]" : "");
     } else if (strcasecmp(signal, "AUTOFD") == 0) {
 	wire = PARPORT_CONTROL_AUTOFD;
-	info("%s: wiring: DISPLAY:%-9s - PARPORT:AUTOFD (Pin 14)", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:AUTOFD (Pin 14)%s", Driver, name, invert ? " [inverted]" : "");
     } else if (strcasecmp(signal, "INIT") == 0) {
 	wire = PARPORT_CONTROL_INIT;
-	info("%s: wiring: DISPLAY:%-9s - PARPORT:INIT   (Pin 16)", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:INIT   (Pin 16)%s", Driver, name, invert ? " [inverted]" : "");
     } else if (strcasecmp(signal, "SLCTIN") == 0) {
 	wire = PARPORT_CONTROL_SELECT;
-	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)%s", Driver, name, invert ? " [inverted]" : "");
     } else if (strcasecmp(signal, "SELECT") == 0) {
 	wire = PARPORT_CONTROL_SELECT;
 	error("%s: SELECT is deprecated. Please use SLCTIN instead!", Driver);
-	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)", Driver, name);
+	info("%s: wiring: DISPLAY:%-9s - PARPORT:SLCTIN (Pin 17)%s", Driver, name, invert ? " [inverted]" : "");
     } else if (strcasecmp(signal, "GND") == 0) {
 	wire = 0;
 	info("%s: wiring: DISPLAY:%-9s - PARPORT:GND", Driver, name);
@@ -229,6 +242,10 @@ static unsigned char drv_generic_parport_signal_ctrl(const char *name, const cha
 	error("%s: unknown signal <%s> for control line <%s>", Driver, signal, name);
 	error("%s: should be STROBE, AUTOFD, INIT, SLCTIN or GND", Driver);
 	return 0xff;
+    }
+
+    if (invert) {
+	inverted_control_bits |= wire;
     }
 
     return wire;
@@ -401,7 +418,7 @@ void drv_generic_parport_control(const unsigned char mask, const unsigned char v
 	return;
 
     /* Strobe, Select and AutoFeed are inverted! */
-    val = mask & (value ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
+    val = mask & (value ^ PARPORT_CONTROL_INVERTED ^ inverted_control_bits);
 
 #ifdef WITH_PPDEV
     if (PPdev) {
@@ -433,9 +450,8 @@ void drv_generic_parport_toggle(const unsigned char bits, const int level, const
     value2 = level ? 0 : bits;
 
     /* Strobe, Select and AutoFeed are inverted! */
-    value1 = bits & (value1 ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
-    value2 = bits & (value2 ^ (PARPORT_CONTROL_STROBE | PARPORT_CONTROL_SELECT | PARPORT_CONTROL_AUTOFD));
-
+    value1 = bits & (value1 ^ PARPORT_CONTROL_INVERTED ^ inverted_control_bits);
+    value2 = bits & (value2 ^ PARPORT_CONTROL_INVERTED ^ inverted_control_bits);
 
 #ifdef WITH_PPDEV
     if (PPdev) {

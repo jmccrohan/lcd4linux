@@ -111,6 +111,7 @@ static unsigned char SIGNAL_ENABLE3;
 static unsigned char SIGNAL_ENABLE4;
 
 static unsigned char SIGNAL_GPO;
+static unsigned char SIGNAL_GPI;
 #ifdef WITH_PARPORT
 static unsigned char SIGNAL_BACKLIGHT;
 static unsigned char SIGNAL_POWER;
@@ -127,7 +128,10 @@ static unsigned char SIGNAL_POWER;
 static int UseBusy = 0;
 #endif
 
-/* buffer holding the GPO state */
+/* which data bits should have their logic inverted */
+static int invert_data_bits = 0;
+
+/* buffer holding the GPIO state */
 #ifdef WITH_PARPORT
 static unsigned char GPO = 0;
 #endif
@@ -146,13 +150,14 @@ typedef struct {
 #define CAP_BUSY4BIT   (1<<5)
 #define CAP_HD66712    (1<<6)
 #define CAP_LCM162     (1<<7)
+#define CAP_GPI        (1<<8)
 
 #define BUS_PP  CAP_PARPORT
 #define BUS_I2C CAP_I2C
 
 
 static MODEL Models[] = {
-    {0x01, "generic", CAP_PARPORT | CAP_I2C | CAP_GPO | CAP_BACKLIGHT},
+    {0x01, "generic", CAP_PARPORT | CAP_I2C | CAP_GPO | CAP_GPI | CAP_BACKLIGHT},
     {0x02, "Noritake", CAP_PARPORT | CAP_I2C | CAP_GPO | CAP_BRIGHTNESS},
     {0x03, "Soekris", CAP_PARPORT | CAP_BUSY4BIT},
     {0x04, "HD66712", CAP_PARPORT | CAP_I2C | CAP_GPO | CAP_BACKLIGHT | CAP_HD66712},
@@ -221,7 +226,7 @@ static void drv_HD_PP_busy(const int controller)
 		/* Set RW, clear RS */
 		drv_generic_parport_control(SIGNAL_RW | SIGNAL_RS, SIGNAL_RW);
 	    } else {
-		drv_generic_parport_data(SIGNAL_RW);
+		drv_generic_parport_data(SIGNAL_RW ^ invert_data_bits);
 	    }
 
 	    /* Address set-up time */
@@ -231,7 +236,7 @@ static void drv_HD_PP_busy(const int controller)
 	    if (Bits == 8) {
 		drv_generic_parport_control(enable, enable);
 	    } else {
-		drv_generic_parport_data(SIGNAL_RW | enable);
+		drv_generic_parport_data((SIGNAL_RW | enable) ^ invert_data_bits);
 	    }
 
 	    counter = 0;
@@ -287,9 +292,9 @@ static void drv_HD_PP_busy(const int controller)
 		drv_generic_parport_control(SIGNAL_RW | SIGNAL_RS, 0);
 	    } else {
 		/* Lower EN */
-		drv_generic_parport_data(SIGNAL_RW);
+		drv_generic_parport_data(SIGNAL_RW ^ invert_data_bits);
 		ndelay(T_AH);
-		drv_generic_parport_data(0);
+		drv_generic_parport_data(0 ^ invert_data_bits);
 	    }
 
 	    /* set data-lines to output */
@@ -320,19 +325,19 @@ static void drv_HD_PP_nibble(const unsigned char controller, const unsigned char
     /* clear ENABLE */
     /* put data on DB1..DB4 */
     /* nibble already contains RS bit! */
-    drv_generic_parport_data(nibble);
+    drv_generic_parport_data(nibble ^ invert_data_bits);
 
     /* Address set-up time */
     ndelay(T_AS);
 
     /* rise ENABLE */
-    drv_generic_parport_data(nibble | enable);
+    drv_generic_parport_data((nibble | enable) ^ invert_data_bits);
 
     /* Enable pulse width */
     ndelay(T_PW);
 
     /* lower ENABLE */
-    drv_generic_parport_data(nibble);
+    drv_generic_parport_data(nibble ^ invert_data_bits);
 }
 
 
@@ -372,7 +377,7 @@ static void drv_HD_PP_command(const unsigned char controller, const unsigned cha
 	    enable |= SIGNAL_ENABLE4;
 
 	/* put data on DB1..DB8 */
-	drv_generic_parport_data(cmd);
+	drv_generic_parport_data(cmd ^ invert_data_bits);
 
 	/* clear RW and RS */
 	drv_generic_parport_control(SIGNAL_RW | SIGNAL_RS, 0);
@@ -438,7 +443,7 @@ static void drv_HD_PP_data(const unsigned char controller, const char *string, c
 	    }
 
 	    /* put data on DB1..DB8 */
-	    drv_generic_parport_data(*(string++));
+	    drv_generic_parport_data((*(string++)) ^ invert_data_bits);
 
 	    /* send command */
 	    drv_generic_parport_toggle(enable, 1, T_PW);
@@ -541,6 +546,8 @@ static int drv_HD_PP_load(const char *section)
 	    return -1;
 	if ((SIGNAL_GPO = drv_generic_parport_wire_ctrl("GPO", "GND")) == 0xff)
 	    return -1;
+	if ((SIGNAL_GPI = drv_generic_parport_wire_ctrl("GPI", "GND")) == 0xff)
+	    return -1;
 	if ((SIGNAL_POWER = drv_generic_parport_wire_ctrl("POWER", "GND")) == 0xff)
 	    return -1;
     }
@@ -551,6 +558,9 @@ static int drv_HD_PP_load(const char *section)
     }
     if (SIGNAL_GPO == 0) {
 	Capabilities &= ~CAP_GPO;
+    }
+    if (SIGNAL_GPI == 0) {
+	Capabilities &= ~CAP_GPI;
     }
 
     /* Timings */
@@ -601,7 +611,7 @@ static int drv_HD_PP_load(const char *section)
 				    SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
     } else {
 	drv_generic_parport_control(SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
-	drv_generic_parport_data(0);
+	drv_generic_parport_data(0 ^ invert_data_bits);
     }
 
     /* set direction: write */
@@ -667,7 +677,7 @@ static void drv_HD_PP_stop(void)
 				    SIGNAL_RW | SIGNAL_ENABLE | SIGNAL_ENABLE2 | SIGNAL_ENABLE3 | SIGNAL_ENABLE4 |
 				    SIGNAL_BACKLIGHT | SIGNAL_GPO, 0);
     } else {
-	drv_generic_parport_data(0);
+	drv_generic_parport_data(0 ^ invert_data_bits);
 	drv_generic_parport_control(SIGNAL_BACKLIGHT | SIGNAL_GPO | SIGNAL_POWER, 0);
     }
 
@@ -965,7 +975,7 @@ static int drv_HD_GPO(const int num, const int val)
     }
 
     /* put data on DB1..DB8 */
-    drv_generic_parport_data(GPO);
+    drv_generic_parport_data(GPO ^ invert_data_bits);
 
     /* 74HCT573 set-up time */
     ndelay(T_GPO_ST);
@@ -975,6 +985,27 @@ static int drv_HD_GPO(const int num, const int val)
     drv_generic_parport_toggle(SIGNAL_GPO, 1, T_GPO_PW);
 
     return v;
+}
+
+static int drv_HD_GPI(const int num)
+{
+    int v;
+
+    /* switch to read mode */
+    drv_generic_parport_direction(1);
+    drv_generic_parport_control(SIGNAL_GPI, SIGNAL_GPI);
+
+    /* 74HCT573 set-up time + enable pulse width */
+    ndelay(T_GPO_ST + T_GPO_PW);
+
+    /* read data from DB1..DB8 */
+    v = drv_generic_parport_read() ^ invert_data_bits;
+
+    /* switch back to write mode */
+    drv_generic_parport_control(SIGNAL_GPI, 0);
+    drv_generic_parport_direction(0);
+
+    return (v >> num) & 1;
 }
 
 #endif
@@ -1042,7 +1073,7 @@ static void drv_HD_LCM162_timer(void __attribute__ ((unused)) * notused)
 static int drv_HD_start(const char *section, const int quiet)
 {
     char *model, *size, *bus;
-    int rows = -1, cols = -1, gpos = -1, i;
+    int rows = -1, cols = -1, gpos = -1, gpis = -1, i;
     int size_defined = 0;
     int size_missing = 0;
 
@@ -1199,6 +1230,23 @@ static int drv_HD_start(const char *section, const int quiet)
 	info("%s: using %d GPO's", Name, GPOS);
     }
 
+    if (cfg_number(section, "GPIs", 0, 0, 8, &gpis) < 0)
+	return -1;
+    if (gpis > 0 && !(Capabilities & CAP_GPI)) {
+	error("%s: Model '%s' does not support GPI's!", Name, Models[Model].name);
+	gpis = 0;
+    }
+    GPIS = gpis;
+    if (GPIS > 0) {
+	info("%s: using %d GPI's", Name, GPIS);
+    }
+
+    if (cfg_number(section, "InvertDataBits", 0, 0, 256, &invert_data_bits) < 0)
+	return -1;
+    if (invert_data_bits) {
+	info("%s: inverting data bits (mask %02X)", Name, invert_data_bits);
+    }
+
     if (drv_HD_load(section) < 0) {
 	error("%s: start display failed!", Name);
 	return -1;
@@ -1331,6 +1379,7 @@ int drv_HD_init(const char *section, const int quiet)
     drv_generic_text_real_defchar = drv_HD_defchar;
 #ifdef WITH_PARPORT
     drv_generic_gpio_real_set = drv_HD_GPO;
+    drv_generic_gpio_real_get = drv_HD_GPI;
 #endif
 
     /* start display */
