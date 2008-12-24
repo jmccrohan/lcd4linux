@@ -80,6 +80,7 @@ static int drv_Pertelian_close(void)
     return 0;
 }
 
+
 static void drv_Pertelian_send(const char *data, const unsigned int len)
 {
     unsigned int i;
@@ -89,12 +90,11 @@ static void drv_Pertelian_send(const char *data, const unsigned int len)
 
     for (i = 0; i < len; i++) {
 	drv_generic_serial_write(&data[i], 1);
-	usleep(1);
+	usleep(100);
     }
 }
 
 
-/* text mode displays only */
 static void drv_Pertelian_clear(void)
 {
     char cmd[2];
@@ -105,7 +105,6 @@ static void drv_Pertelian_clear(void)
 }
 
 
-/* text mode displays only */
 static void drv_Pertelian_write(const int row, const int col, const char *data, int len)
 {
     char cmd[3];
@@ -116,7 +115,7 @@ static void drv_Pertelian_write(const int row, const int col, const char *data, 
     drv_Pertelian_send(data, len);
 }
 
-/* text mode displays only */
+
 static void drv_Pertelian_defchar(const int ascii, const unsigned char *matrix)
 {
     char cmd[11] = "";
@@ -129,6 +128,7 @@ static void drv_Pertelian_defchar(const int ascii, const unsigned char *matrix)
     }
     drv_Pertelian_send(cmd, 10);
 }
+
 
 static int drv_Pertelian_backlight(int backlight)
 {
@@ -148,7 +148,6 @@ static int drv_Pertelian_backlight(int backlight)
 }
 
 
-/* start text mode display */
 static int drv_Pertelian_start(const char *section)
 {
     int backlight;
@@ -193,7 +192,6 @@ static int drv_Pertelian_start(const char *section)
     }
 
     drv_Pertelian_clear();	/* clear display */
-
     return 0;
 }
 
@@ -202,6 +200,12 @@ static int drv_Pertelian_start(const char *section)
 /***            plugins               ***/
 /****************************************/
 
+static void plugin_backlight(RESULT * result, RESULT * arg1)
+{
+    double backlight = 0;
+    backlight = drv_Pertelian_backlight(R2N(arg1));
+    SetResult(&result, R_NUMBER, &backlight);
+}
 
 /****************************************/
 /***        widget callbacks          ***/
@@ -228,7 +232,6 @@ int drv_Pertelian_list(void)
 
 
 /* initialize driver & display */
-/* use this function for a text display */
 int drv_Pertelian_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
@@ -291,11 +294,9 @@ int drv_Pertelian_init(const char *section, const int quiet)
     wc = Widget_Bar;
     wc.draw = drv_generic_text_bar_draw;
     widget_register(&wc);
-
-
+    AddFunction("LCD::backlight", 1, plugin_backlight);
     return 0;
 }
-
 
 
 /* close driver & display */
@@ -314,11 +315,13 @@ int drv_Pertelian_quit(const int quiet)
 	drv_generic_text_greet("goodbye!", NULL);
     }
 
+    drv_Pertelian_backlight(0);
     debug("closing connection");
     drv_Pertelian_close();
 
     return (0);
 }
+
 
 DRIVER drv_Pertelian = {
     .name = Name,
