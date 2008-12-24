@@ -116,6 +116,8 @@ int plugin_init_uname(void);
 void plugin_exit_uname(void);
 int plugin_init_uptime(void);
 void plugin_exit_uptime(void);
+int plugin_init_w1retap(void);
+void plugin_exit_w1retap(void);
 int plugin_init_wireless(void);
 void plugin_exit_wireless(void);
 int plugin_init_xmms(void);
@@ -221,6 +223,9 @@ int plugin_init(void)
 #ifdef PLUGIN_UPTIME
     plugin_init_uptime();
 #endif
+#ifdef PLUGIN_W1RETAP
+    plugin_init_w1retap();
+#endif
 #ifdef PLUGIN_WIRELESS
     plugin_init_wireless();
 #endif
@@ -320,6 +325,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_UPTIME
     plugin_exit_uptime();
+#endif
+#ifdef PLUGIN_W1RETAP
+    plugin_exit_w1retap();
 #endif
 #ifdef PLUGIN_WIRELESS
     plugin_exit_wireless();

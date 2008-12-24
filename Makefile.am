@@ -141,6 +141,7 @@ plugin_seti.c                 \
 plugin_statfs.c               \
 plugin_uname.c                \
 plugin_uptime.c               \
+plugin_w1retap.c	      \
 plugin_wireless.c             \
 plugin_xmms.c
 

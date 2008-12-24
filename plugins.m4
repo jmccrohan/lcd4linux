@@ -83,6 +83,7 @@ for plugin in $plugins; do
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
          PLUGIN_UPTIME="yes"
+         PLUGIN_W1RETAP="yes"    	 
          PLUGIN_WIRELESS="yes"
          PLUGIN_XMMS="yes"   
          ;;
@@ -175,6 +176,9 @@ for plugin in $plugins; do
          ;;
       uptime)
          PLUGIN_UPTIME=$val
+         ;;
+      w1retap)
+         PLUGIN_W1RETAP=$val
          ;;
       wireless)
          PLUGIN_WIRELESS=$val
@@ -368,6 +372,10 @@ fi
 if test "$PLUGIN_UPTIME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uptime.o"
    AC_DEFINE(PLUGIN_UPTIME,1,[uptime plugin])
+fi
+if test "$PLUGIN_W1RETAP" = "yes"; then
+   PLUGINS="$PLUGINS plugin_w1retap.o"
+   AC_DEFINE(PLUGIN_W1RETAP,1,[w1retap plugin])
 fi
 if test "$PLUGIN_WIRELESS" = "yes"; then
    PLUGINS="$PLUGINS plugin_wireless.o"

@@ -365,6 +365,9 @@
 /* uptime plugin */
 #undef PLUGIN_UPTIME
 
+/* w1retap plugin */
+#undef PLUGIN_W1RETAP
+
 /* wireless plugin */
 #undef PLUGIN_WIRELESS
 

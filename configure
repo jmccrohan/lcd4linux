@@ -8585,6 +8585,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_STATFS="yes"
          PLUGIN_UNAME="yes"
          PLUGIN_UPTIME="yes"
+         PLUGIN_W1RETAP="yes"
          PLUGIN_WIRELESS="yes"
          PLUGIN_XMMS="yes"
          ;;
@@ -8677,6 +8678,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       uptime)
          PLUGIN_UPTIME=$val
+         ;;
+      w1retap)
+         PLUGIN_W1RETAP=$val
          ;;
       wireless)
          PLUGIN_WIRELESS=$val
@@ -10933,6 +10937,14 @@ if test "$PLUGIN_UPTIME" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_UPTIME 1
+_ACEOF
+
+fi
+if test "$PLUGIN_W1RETAP" = "yes"; then
+   PLUGINS="$PLUGINS plugin_w1retap.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_W1RETAP 1
 _ACEOF
 
 fi
