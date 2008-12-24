@@ -488,6 +488,9 @@
 /* Pertelian driver */
 #undef WITH_PERTELIAN
 
+/* PHAnderson driver */
+#undef WITH_PHANDERSON
+
 /* picoLCD driver */
 #undef WITH_PICOLCD
 

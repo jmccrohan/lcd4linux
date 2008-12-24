@@ -1342,10 +1342,10 @@ Optional Packages:
                           drivers may be excluded with 'all,!<driver>',
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
-                          BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D
+                          BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,
                           G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,
-                          LUIse, M50530, MatrixOrbital, MilfordInstruments,
-                          Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,
+                          LUIse, M50530, MatrixOrbital, MilfordInstruments, Noritake,
+                          NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD, picoLCDGraphic,
                           RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,
                           ULA200, USBLCD, USBHUB, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
@@ -7706,6 +7706,7 @@ for driver in $drivers; do
          NORITAKE="yes"
          NULL="yes"
          PERTELIAN="yes"
+         PHANDERSON="yes"
          PICOLCD="yes"
 	 PICOLCDGRAPHIC="yes"
          PNG="yes"
@@ -7791,6 +7792,9 @@ for driver in $drivers; do
          ;;
       Pertelian)
          PERTELIAN=$val
+         ;;
+      PHAnderson)
+         PHANDERSON=$val
          ;;
       picoLCD)
          PICOLCD=$val
@@ -8176,7 +8180,16 @@ _ACEOF
 
 fi
 
+if test "$PHANDERSON" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_PHAnderson.o"
 
+cat >>confdefs.h <<\_ACEOF
+#define WITH_PHANDERSON 1
+_ACEOF
+
+fi
 
 if test "$PICOLCD" = "yes"; then
    if test "$has_usb" = "true"; then
@@ -8592,9 +8605,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
       apm)
          PLUGIN_APM=$val
          ;;
-			button_exec)
-			   PLUGIN_BUTTON_EXEC=$val
-				 ;;
+      button_exec)
+	 PLUGIN_BUTTON_EXEC=$val
+	 ;;
       asterisk)
          PLUGIN_ASTERISK=$val
          ;;
@@ -10964,11 +10977,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
-
-#if test "$PLUGIN_" = "yes"; then
-#   PLUGINS="$PLUGINS plugin_.o"
-#   AC_DEFINE(PLUGIN_,1,[plugin])
-#fi
 
 if test "$PLUGINS" = ""; then
    { { echo "$as_me:$LINENO: error: You should include at least one plugin..." >&5

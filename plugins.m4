@@ -90,9 +90,9 @@ for plugin in $plugins; do
       apm)
          PLUGIN_APM=$val
          ;;
-			button_exec)
-			   PLUGIN_BUTTON_EXEC=$val
-				 ;;
+      button_exec)
+	 PLUGIN_BUTTON_EXEC=$val
+	 ;;
       asterisk)
          PLUGIN_ASTERISK=$val
          ;;
@@ -385,11 +385,6 @@ if test "$PLUGIN_XMMS" = "yes"; then
    PLUGINS="$PLUGINS plugin_xmms.o"
    AC_DEFINE(PLUGIN_XMMS,1,[xmms plugin])
 fi
-
-#if test "$PLUGIN_" = "yes"; then
-#   PLUGINS="$PLUGINS plugin_.o"
-#   AC_DEFINE(PLUGIN_,1,[plugin])
-#fi
 
 if test "$PLUGINS" = ""; then
    AC_MSG_ERROR([You should include at least one plugin...])

@@ -288,7 +288,8 @@ drv_MatrixOrbital.c           \
 drv_MilfordInstruments.c      \
 drv_Noritake.c                \
 drv_NULL.c                    \
-drv_Pertelian                 \
+drv_Pertelian.c               \
+drv_PHAnderson.c              \
 drv_picoLCD.c                 \
 drv_picoLCDGraphic.c          \
 drv_RouterBoard.c             \
@@ -475,6 +476,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_MilfordInstruments.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_NULL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Noritake.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_PHAnderson.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Pertelian.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_RouterBoard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Sample.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_SimpleLCD.Po@am__quote@
