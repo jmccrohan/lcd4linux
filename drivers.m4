@@ -32,10 +32,10 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
-  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D]
+  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,]
-  [                        LUIse, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, Pertelian, picoLCD, picoLCDGraphic,]
+  [                        LUIse, M50530, MatrixOrbital, MilfordInstruments, Noritake,]
+  [                        NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD, picoLCDGraphic,]
   [                        RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
   [                        ULA200, USBLCD, USBHUB, WincorNixdorf, X11],
   drivers=$withval,
@@ -80,6 +80,7 @@ for driver in $drivers; do
          NORITAKE="yes"
          NULL="yes"
          PERTELIAN="yes"
+         PHANDERSON="yes"
          PICOLCD="yes"
 	 PICOLCDGRAPHIC="yes"
          PNG="yes"
@@ -165,6 +166,9 @@ for driver in $drivers; do
          ;;
       Pertelian)
          PERTELIAN=$val
+         ;;
+      PHAnderson)
+         PHANDERSON=$val
          ;;
       picoLCD)
          PICOLCD=$val
@@ -448,7 +452,12 @@ if test "$PERTELIAN" = "yes"; then
    AC_DEFINE(WITH_PERTELIAN,1,[Pertelian driver])
 fi
 
-
+if test "$PHANDERSON" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_PHAnderson.o"
+   AC_DEFINE(WITH_PHANDERSON,1,[PHAnderson driver])
+fi
 
 if test "$PICOLCD" = "yes"; then
    if test "$has_usb" = "true"; then

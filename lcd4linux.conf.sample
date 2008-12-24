@@ -332,6 +332,15 @@ Display SimpleLCD {
     Size '20x2'
 }
 
+Display PHAnderson {
+    Driver 'PHAnderson'
+    Port '/dev/tts/0'
+    Speed 19200
+    Size '24x2'
+    Blackligth 100
+    Bootscreen '123456789012345678901234ABCDEFGHIJKLMNOPQRSTUVWX'                                         
+}
+
 Display BA63 {
     Driver   'WincorNixdorf'
     Model    'BA63'
