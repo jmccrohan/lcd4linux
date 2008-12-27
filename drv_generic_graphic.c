@@ -177,7 +177,7 @@ static void drv_generic_graphic_blit(const int row, const int col, const int hei
 
 static RGBA drv_generic_graphic_blend(const int row, const int col)
 {
-    int l;
+    int l, o;
     RGBA p;
     RGBA ret;
 
@@ -185,9 +185,29 @@ static RGBA drv_generic_graphic_blend(const int row, const int col)
     ret.G = BL_COL.G;
     ret.B = BL_COL.B;
     ret.A = 0xff;
-    for (l = LAYERS - 1; l >= 0; l--) {
+
+    /* find first opaque layer */
+    /* layers below are fully covered */
+    o = LAYERS - 1;
+    for (l = 0; l < LAYERS; l++) {
 	p = drv_generic_graphic_FB[l][row * LCOLS + col];
-	if (p.A > 0) {
+	if (p.A == 255) {
+	    o = l;
+	    break;
+	}
+    }
+
+    for (l = o; l >= 0; l--) {
+	p = drv_generic_graphic_FB[l][row * LCOLS + col];
+	switch (p.A) {
+	case 0:
+	    break;
+	case 255:
+	    ret.R = p.R;
+	    ret.G = p.G;
+	    ret.B = p.B;
+	    break;
+	default:
 	    ret.R = (p.R * p.A + ret.R * (255 - p.A)) / 255;
 	    ret.G = (p.G * p.A + ret.G * (255 - p.A)) / 255;
 	    ret.B = (p.B * p.A + ret.B * (255 - p.A)) / 255;
