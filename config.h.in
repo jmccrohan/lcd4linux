@@ -12,6 +12,9 @@
 /* Define to 1 if you have the <asm/io.h> header file. */
 #undef HAVE_ASM_IO_H
 
+/* Define to 1 if you have the <asm/types.h> header file. */
+#undef HAVE_ASM_TYPES_H
+
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -55,6 +58,9 @@
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
 
+/* Define to 1 if you have the <linux/errno.h> header file. */
+#undef HAVE_LINUX_ERRNO_H
+
 /* Define to 1 if you have the <linux/hd44780.h> header file. */
 #undef HAVE_LINUX_HD44780_H
 
@@ -69,6 +75,9 @@
 
 /* Define to 1 if you have the <linux/ppdev.h> header file. */
 #undef HAVE_LINUX_PPDEV_H
+
+/* Define to 1 if you have the <linux/wireless.h> header file. */
+#undef HAVE_LINUX_WIRELESS_H
 
 /* Define to 1 if you have the <luise.h> header file. */
 #undef HAVE_LUISE_H

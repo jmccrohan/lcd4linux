@@ -193,48 +193,76 @@ for plugin in $plugins; do
 done
 
 AC_MSG_RESULT([done])
+
+# Advanced Power Management
 if test "$PLUGIN_APM" = "yes"; then
-   PLUGINS="$PLUGINS plugin_apm.o"
-   AC_DEFINE(PLUGIN_APM,1,[apm plugin])
+   AC_CHECK_HEADERS(asm/types.h, [has_asm_types="true"], [has_asm_types="false"])
+   if test "$has_asm_types" = "true"; then
+      PLUGINS="$PLUGINS plugin_apm.o"
+      AC_DEFINE(PLUGIN_APM,1,[apm plugin])
+   else
+      AC_MSG_WARN(asm/types.h header not found: apm plugin disabled)
+   fi
 fi
+
 if test "$PLUGIN_BUTTON_EXEC" = "yes"; then
    PLUGINS="$PLUGINS plugin_button_exec.o"
    AC_DEFINE(PLUGIN_BUTTON_EXEC,1,[button_exec plugin])
 fi
+
 if test "$PLUGIN_ASTERISK" = "yes"; then
    PLUGINS="$PLUGINS plugin_asterisk.o"
    AC_DEFINE(PLUGIN_ASTERISK,1,[asterisk plugin])
 fi
+
+# /proc/cpuinfo
 if test "$PLUGIN_CPUINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_cpuinfo.o"
    AC_DEFINE(PLUGIN_CPUINFO,1,[cpuinfo plugin])
 fi
+
+# /proc/diskstat
 if test "$PLUGIN_DISKSTATS" = "yes"; then
    PLUGINS="$PLUGINS plugin_diskstats.o"
    AC_DEFINE(PLUGIN_DISKSTATS,1,[diskstats plugin])
 fi
+
+# Digital Video Broadcasting
 if test "$PLUGIN_DVB" = "yes"; then
-   AC_CHECK_HEADERS(linux/dvb/frontend.h, [has_dvb_header="true"], [has_dvb_header="false"])
-   if test "$has_dvb_header" = "true"; then
-      PLUGINS="$PLUGINS plugin_dvb.o"
-      AC_DEFINE(PLUGIN_DVB,1,[dvb plugin])
+   AC_CHECK_HEADERS(asm/types.h, [has_asm_types="true"], [has_asm_types="false"])
+   if test "$has_asm_types" = "true"; then
+       AC_CHECK_HEADERS(linux/dvb/frontend.h, [has_dvb_header="true"], [has_dvb_header="false"])
+       if test "$has_dvb_header" = "true"; then
+          PLUGINS="$PLUGINS plugin_dvb.o"
+          AC_DEFINE(PLUGIN_DVB,1,[dvb plugin])
+       else
+          PLUGINS="$PLUGINS plugin_dvb.o"
+          AC_MSG_WARN(linux/dvb/frontend.h header not found: using ioctl)
+       fi
    else
-      PLUGINS="$PLUGINS plugin_dvb.o"
-      AC_MSG_WARN(linux/dvb/frontend.h header not found: using ioctl)
-   fi   
+       AC_MSG_WARN(asm/types.h header not found: dvb plugin disabled)
+   fi
 fi
+
+# start external commands (exec)
 if test "$PLUGIN_EXEC" = "yes"; then
    PLUGINS="$PLUGINS plugin_exec.o"
    AC_DEFINE(PLUGIN_EXEC,1,[exec plugin])
 fi
+
+# file
 if test "$PLUGIN_FILE" = "yes"; then
    PLUGINS="$PLUGINS plugin_file.o"
    AC_DEFINE(PLUGIN_FILE,1,[file plugin])
 fi
+
+# FIFO
 if test "$PLUGIN_FIFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_fifo.o"
    AC_DEFINE(PLUGIN_FIFO,1,[fifo plugin])
 fi
+
+# GPS
 if test "$PLUGIN_GPS" = "yes"; then
    AC_CHECK_HEADERS(nmeap.h, [has_nmeap_header="true"], [has_nmeap_header="false"])
    if test "$has_nmeap_header" = "true"; then	
@@ -250,14 +278,20 @@ if test "$PLUGIN_GPS" = "yes"; then
       AC_MSG_WARN(nmeap.h header not found: gps plugin disabled)
    fi 
 fi
+
+# hddtemp
 if test "$PLUGIN_HDDTEMP" = "yes"; then
    PLUGINS="$PLUGINS plugin_hddtemp.o"
    AC_DEFINE(PLUGIN_HDDTEMP,1,[hddtemp plugin])
 fi
+
+# I2C
 if test "$PLUGIN_I2C_SENSORS" = "yes"; then
    PLUGINS="$PLUGINS plugin_i2c_sensors.o"
    AC_DEFINE(PLUGIN_I2C_SENSORS,1,[i2c sensors plugin])
 fi
+
+# IConv
 if test "$PLUGIN_ICONV" = "yes"; then
    AM_ICONV
    if test "$am_cv_func_iconv" = "yes"; then 
@@ -268,10 +302,19 @@ if test "$PLUGIN_ICONV" = "yes"; then
       AC_MSG_WARN(iconv not found: iconv plugin disabled)
    fi
 fi
+
+# ISDN monitor
 if test "$PLUGIN_IMON" = "yes"; then
-   PLUGINS="$PLUGINS plugin_imon.o"
-   AC_DEFINE(PLUGIN_IMON,1,[imon plugin])
+   AC_CHECK_HEADERS(linux/errno.h, [has_linux_errno="true"], [has_linux_errno="false"])
+   if test "$has_linux_errno" = "true"; then
+       PLUGINS="$PLUGINS plugin_imon.o"
+       AC_DEFINE(PLUGIN_IMON,1,[imon plugin])
+   else
+       AC_MSG_WARN(linux/errno.h header not found: imon plugin disabled)
+   fi
 fi
+
+# ISDN
 if test "$PLUGIN_ISDN" = "yes"; then
    AC_CHECK_HEADERS(linux/isdn.h, [has_isdn_header="true"], [has_isdn_header="false"])
    if test "$has_dvb_header" = "false"; then
@@ -280,18 +323,26 @@ if test "$PLUGIN_ISDN" = "yes"; then
    PLUGINS="$PLUGINS plugin_isdn.o"
    AC_DEFINE(PLUGIN_ISDN,1,[ISDN plugin])
 fi
+
+# Karlsruher Verkehrsverbund
 if test "$PLUGIN_KVV" = "yes"; then
    PLUGINS="$PLUGINS plugin_kvv.o"
    AC_DEFINE(PLUGIN_KVV,1,[kvv plugin])
 fi
+
+# load average
 if test "$PLUGIN_LOADAVG" = "yes"; then
    PLUGINS="$PLUGINS plugin_loadavg.o"
    AC_DEFINE(PLUGIN_LOADAVG,1,[loadavg plugin])
 fi
+
+# meminfo
 if test "$PLUGIN_MEMINFO" = "yes"; then
    PLUGINS="$PLUGINS plugin_meminfo.o"
    AC_DEFINE(PLUGIN_MEMINFO,1,[meminfo plugin])
 fi
+
+# MPD
 if test "$PLUGIN_MPD" = "yes"; then   
    if test -f "libmpdclient.h"
    then      
@@ -303,6 +354,8 @@ if test "$PLUGIN_MPD" = "yes"; then
       AC_MSG_WARN(and copy those 2 files in the lcd4linux directory.)
    fi
 fi
+
+# MySQL
 if test "$PLUGIN_MYSQL" = "yes"; then
    AC_CHECK_HEADERS(mysql/mysql.h, [has_mysql_header="true"], [has_mysql_header="false"])
    if test "$has_mysql_header" = "true"; then	
@@ -318,14 +371,20 @@ if test "$PLUGIN_MYSQL" = "yes"; then
       AC_MSG_WARN(mysql/mysql.h header not found: mysql plugin disabled)
    fi 
 fi
+
+# network device
 if test "$PLUGIN_NETDEV" = "yes"; then
    PLUGINS="$PLUGINS plugin_netdev.o"
    AC_DEFINE(PLUGIN_NETDEV,1,[netdev plugin])
 fi
+
+# POP3
 if test "$PLUGIN_POP3" = "yes"; then
    PLUGINS="$PLUGINS plugin_pop3.o"
    AC_DEFINE(PLUGIN_POP3,1,[POP3 plugin])
 fi
+
+# PPP
 if test "$PLUGIN_PPP" = "yes"; then
    AC_CHECK_HEADERS(net/if_ppp.h, [has_ppp_header="true"], [has_ppp_header="false"])
    if test "$has_ppp_header" = "true"; then
@@ -335,10 +394,14 @@ if test "$PLUGIN_PPP" = "yes"; then
       AC_MSG_WARN(net/if_ppp.h header not found: ppp plugin disabled)
    fi 
 fi
+
+# /proc/stat
 if test "$PLUGIN_PROC_STAT" = "yes"; then
    PLUGINS="$PLUGINS plugin_proc_stat.o"
    AC_DEFINE(PLUGIN_PROC_STAT,1,[proc_stat plugin])
 fi
+
+# python
 if test "$PLUGIN_PYTHON" = "yes"; then
    if test "$with_python" != "yes"; then
       AC_MSG_WARN(python support not enabled: python plugin disabled (use --with-python to enable))
@@ -353,34 +416,59 @@ if test "$PLUGIN_PYTHON" = "yes"; then
       fi 
    fi 
 fi
+
+# sample
 if test "$PLUGIN_SAMPLE" = "yes"; then
    PLUGINS="$PLUGINS plugin_sample.o"
    AC_DEFINE(PLUGIN_SAMPLE,1,[sample plugin])
 fi
+
+# SETI
 if test "$PLUGIN_SETI" = "yes"; then
    PLUGINS="$PLUGINS plugin_seti.o"
    AC_DEFINE(PLUGIN_SETI,1,[seti plugin])
 fi
+
+# statfs()
 if test "$PLUGIN_STATFS" = "yes"; then
-   PLUGINS="$PLUGINS plugin_statfs.o"
-   AC_DEFINE(PLUGIN_STATFS,1,[statfs plugin])
+   AC_CHECK_HEADERS(sys/vfs.h, [has_vfs_header="true"], [has_vfs_header="false"])
+   if test "$has_vfs_header" = "true"; then
+       PLUGINS="$PLUGINS plugin_statfs.o"
+       AC_DEFINE(PLUGIN_STATFS,1,[statfs plugin])
+   else
+      AC_MSG_WARN(sys/vfs.h header not found: statfs plugin disabled)
+   fi 
 fi
+
+# uname
 if test "$PLUGIN_UNAME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uname.o"
    AC_DEFINE(PLUGIN_UNAME,1,[uname plugin])
 fi
+
+# uptime
 if test "$PLUGIN_UPTIME" = "yes"; then
    PLUGINS="$PLUGINS plugin_uptime.o"
    AC_DEFINE(PLUGIN_UPTIME,1,[uptime plugin])
 fi
+
 if test "$PLUGIN_W1RETAP" = "yes"; then
    PLUGINS="$PLUGINS plugin_w1retap.o"
    AC_DEFINE(PLUGIN_W1RETAP,1,[w1retap plugin])
 fi
+
+# WLAN
 if test "$PLUGIN_WIRELESS" = "yes"; then
-   PLUGINS="$PLUGINS plugin_wireless.o"
-   AC_DEFINE(PLUGIN_WIRELESS,1,[wireless plugin])
+   AC_CHECK_HEADERS(linux/wireless.h, [has_wireless_header="true"], [has_wireless_header="false"])
+   if test "$has_wireless_header" = "true"; then
+       PLUGINS="$PLUGINS plugin_wireless.o"
+       AC_DEFINE(PLUGIN_WIRELESS,1,[wireless plugin])
+   else
+      AC_MSG_WARN(linux/wireless.h header not found: wireless plugin disabled)
+   fi 
 fi
+
+# XMMS
 if test "$PLUGIN_XMMS" = "yes"; then
    PLUGINS="$PLUGINS plugin_xmms.o"
    AC_DEFINE(PLUGIN_XMMS,1,[xmms plugin])
