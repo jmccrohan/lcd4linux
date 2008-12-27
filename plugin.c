@@ -44,6 +44,115 @@
 #include "plugin.h"
 
 
+char *Plugins[] = {
+    "cfg",
+    "math",
+    "string",
+    "test",
+    "time",
+#ifdef PLUGIN_APM
+    "apm",
+#endif
+#ifdef PLUGIN_ASTERISK
+    "asterisk",
+#endif
+#ifdef PLUGIN_BUTTON_EXEC
+    "button_exec",
+#endif
+#ifdef PLUGIN_CPUINFO
+    "cpuinfo",
+#endif
+#ifdef PLUGIN_DISKSTATS
+    "diskstats",
+#endif
+#ifdef PLUGIN_DVB
+    "dvb",
+#endif
+#ifdef PLUGIN_EXEC
+    "exec",
+#endif
+#ifdef PLUGIN_FIFO
+    "fifo",
+#endif
+#ifdef PLUGIN_FILE
+    "file",
+#endif
+#ifdef PLUGIN_GPS
+    "gps",
+#endif
+#ifdef PLUGIN_HDDTEMP
+    "hddtemp",
+#endif
+#ifdef PLUGIN_I2C_SENSORS
+    "i2c_sensors",
+#endif
+#ifdef PLUGIN_ICONV
+    "iconv",
+#endif
+#ifdef PLUGIN_IMON
+    "imon",
+#endif
+#ifdef PLUGIN_ISDN
+    "isdn",
+#endif
+#ifdef PLUGIN_KVV
+    "kvv",
+#endif
+#ifdef PLUGIN_LOADAVG
+    "loadavg",
+#endif
+#ifdef PLUGIN_MEMINFO
+    "meminfo",
+#endif
+#ifdef PLUGIN_MPD
+    "mpd",
+#endif
+#ifdef PLUGIN_MYSQL
+    "mysql",
+#endif
+#ifdef PLUGIN_NETDEV
+    "netdev",
+#endif
+#ifdef PLUGIN_POP3
+    "pop3",
+#endif
+#ifdef PLUGIN_PPP
+    "ppp",
+#endif
+#ifdef PLUGIN_PROC_STAT
+    "proc_stat",
+#endif
+#ifdef PLUGIN_PYTHON
+    "python",
+#endif
+#ifdef PLUGIN_SAMPLE
+    "sample",
+#endif
+#ifdef PLUGIN_SETI
+    "seti",
+#endif
+#ifdef PLUGIN_STATFS
+    "statfs",
+#endif
+#ifdef PLUGIN_UNAME
+    "uname",
+#endif
+#ifdef PLUGIN_UPTIME
+    "uptime",
+#endif
+#ifdef PLUGIN_W1RETAP
+    "w1retap",
+#endif
+#ifdef PLUGIN_WIRELESS
+    "wireless",
+#endif
+#ifdef PLUGIN_XMMS
+    "xmms",
+#endif
+    NULL,
+};
+
+
 /* Prototypes */
 int plugin_init_cfg(void);
 void plugin_exit_cfg(void);
@@ -60,6 +169,8 @@ int plugin_init_apm(void);
 void plugin_exit_apm(void);
 int plugin_init_asterisk(void);
 void plugin_exit_asterisk(void);
+int plugin_init_button_exec(void);
+void plugin_exit_button_exec(void);
 int plugin_init_cpuinfo(void);
 void plugin_exit_cpuinfo(void);
 int plugin_init_diskstats(void);
@@ -106,8 +217,6 @@ int plugin_init_python(void);
 void plugin_exit_python(void);
 int plugin_init_sample(void);
 void plugin_exit_sample(void);
-int plugin_init_button_exec(void);
-void plugin_exit_button_exec(void);
 int plugin_init_seti(void);
 void plugin_exit_seti(void);
 int plugin_init_statfs(void);
@@ -124,6 +233,22 @@ int plugin_init_xmms(void);
 void plugin_exit_xmms(void);
 
 
+int plugin_list(void)
+{
+    int i;
+
+    printf("available plugins:\n  ");
+
+    for (i = 0; Plugins[i]; i++) {
+	printf("%s", Plugins[i]);
+	if (Plugins[i + 1])
+	    printf(", ");
+    }
+    printf("\n");
+    return 0;
+}
+
+
 int plugin_init(void)
 {
     plugin_init_cfg();
@@ -137,6 +262,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_ASTERISK
     plugin_init_asterisk();
+#endif
+#ifdef PLUGIN_BUTTON_EXEC
+    plugin_init_button_exec();
 #endif
 #ifdef PLUGIN_CPUINFO
     plugin_init_cpuinfo();
@@ -186,7 +314,6 @@ int plugin_init(void)
 #ifdef PLUGIN_MPD
     plugin_init_mpd();
 #endif
-
 #ifdef PLUGIN_MYSQL
     plugin_init_mysql();
 #endif
@@ -207,9 +334,6 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_SAMPLE
     plugin_init_sample();
-#endif
-#ifdef PLUGIN_BUTTON_EXEC
-    plugin_init_button_exec();
 #endif
 #ifdef PLUGIN_SETI
     plugin_init_seti();
@@ -244,6 +368,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_ASTERISK
     plugin_exit_asterisk();
+#endif
+#ifdef PLUGIN_BUTTON_EXEC
+    plugin_exit_button_exec();
 #endif
 #ifdef PLUGIN_CPUINFO
     plugin_exit_cpuinfo();
@@ -310,9 +437,6 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_SAMPLE
     plugin_exit_sample();
-#endif
-#ifdef PLUGIN_BUTTON_EXEC
-    plugin_exit_button_exec();
 #endif
 #ifdef PLUGIN_SETI
     plugin_exit_seti();

@@ -16,9 +16,23 @@ for driver in BeckmannEgle BWCT CrystalFontz Curses Cwlinux D4D EA232graphic G15
     make -s -j 2
     
     if [ -x lcd4linux ]; then
-	echo "Success: $driver" >>smoketest.log
+	echo "Success: drv_$driver" >>smoketest.log
     else
-	echo "FAILED:  $driver" >>smoketest.log
+	echo "FAILED:  drv_$driver" >>smoketest.log
+    fi
+    
+done
+
+for plugin in apm asterisk button_exec cpuinfo diskstats dvb exec fifo file hddtemp i2c_sensors iconv imon isdn kvv loadavg meminfo mpd mysql netdev pop3 ppp proc_stat python sample seti statfs uname uptime w1retap wireless xmms; do
+
+    make distclean
+    ./configure --with-drivers=NULL --with-plugins=$plugin
+    make -s -j 2
+    
+    if [ -x lcd4linux ]; then
+	echo "Success: plugin_$plugin" >>smoketest.log
+    else
+	echo "FAILED:  plugin_$plugin" >>smoketest.log
     fi
     
 done

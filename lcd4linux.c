@@ -244,6 +244,8 @@ int main(int argc, char *argv[])
 	    printf("%s\n", release);
 	    printf("%s\n", copyright);
 	    drv_list();
+	    printf("\n");
+	    plugin_list();
 	    exit(0);
 	case 'o':
 	    output = optarg;
