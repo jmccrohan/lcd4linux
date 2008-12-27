@@ -148,26 +148,30 @@ static int drv_X11_brightness(int brightness)
 	brightness = 0;
     if (brightness > 255)
 	brightness = 255;
-    Brightness = brightness;
-    dim = Brightness / 255.0;
-    col.R *= dim;
-    col.G *= dim;
-    col.B *= dim;
 
-    debug("%s: set backlight to %d%%, original backlight color: 0x%02x%02x%02x%02x, dimmed: 0x%02x%02x%02x%02x",
-	  Name, (int) (dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
-    for (i = 0; i < DCOLS * DROWS; i++) {
-	drv_X11_FB[i] = col;
+    if (Brightness != brightness) {
+
+	Brightness = brightness;
+	dim = Brightness / 255.0;
+	col.R *= dim;
+	col.G *= dim;
+	col.B *= dim;
+
+	debug("%s: set backlight to %d%%, original backlight color: 0x%02x%02x%02x%02x, dimmed: 0x%02x%02x%02x%02x",
+	      Name, (int) (dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
+	for (i = 0; i < DCOLS * DROWS; i++) {
+	    drv_X11_FB[i] = col;
+	}
+
+	drv_X11_color(col);
+
+	XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
+	XSetWindowBackground(dp, w, xc.pixel);
+	XClearWindow(dp, w);
+
+	/* redraw every LCD pixel */
+	drv_X11_blit(0, 0, LROWS, LCOLS);
     }
-
-    drv_X11_color(col);
-
-    XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
-    XSetWindowBackground(dp, w, xc.pixel);
-    XClearWindow(dp, w);
-
-    /* redraw every LCD pixel */
-    drv_X11_blit(0, 0, LROWS, LCOLS);
 
     return Brightness;
 }
