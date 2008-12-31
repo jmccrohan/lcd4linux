@@ -81,8 +81,9 @@ static int open_net(void)
 
 static void my_exists(RESULT * result, RESULT * arg1)
 {
+    static int errcount = 0;
     struct ifreq ifreq;
-    double value = 1.0;
+    double value = 1.0;		// netdev exists
 
     if (socknr < 0) {
 	/* no open socket */
@@ -97,7 +98,11 @@ static void my_exists(RESULT * result, RESULT * arg1)
 	    /* device does not exists */
 	    value = 0.0;
 	} else {
-	    error("%s: ioctl(FLAGS) failed: %s", "plugin_netinfo", strerror(errno));
+	    errcount++;
+	    if (1 == errcount % 1000) {
+		error("%s: ioctl(FLAGS %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+		error("  (skip next 1000 errors)");
+	    }
 	    return;
 	}
     }
@@ -110,6 +115,7 @@ static void my_exists(RESULT * result, RESULT * arg1)
 /* get MAC address (hardware address) of network device */
 static void my_hwaddr(RESULT * result, RESULT * arg1)
 {
+    static int errcount = 0;
     struct ifreq ifreq;
     unsigned char *hw;
     char value[18];
@@ -122,7 +128,12 @@ static void my_hwaddr(RESULT * result, RESULT * arg1)
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
     if (ioctl(socknr, SIOCGIFHWADDR, &ifreq) < 0) {
-	error("%s: ioctl(IFHWADDR) failed: %s", "plugin_netinfo", strerror(errno));
+	errcount++;
+	if (1 == errcount % 1000) {
+	    error("%s: ioctl(IFHWADDR %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+	    error("  (skip next 1000 errors)");
+	}
+	SetResult(&result, R_STRING, "");
 	return;
     }
     hw = (unsigned char *) ifreq.ifr_hwaddr.sa_data;
@@ -136,6 +147,7 @@ static void my_hwaddr(RESULT * result, RESULT * arg1)
 /* get ip address of network device */
 static void my_ipaddr(RESULT * result, RESULT * arg1)
 {
+    static int errcount = 0;
     struct ifreq ifreq;
     struct sockaddr_in *sin;
     char value[16];
@@ -148,7 +160,12 @@ static void my_ipaddr(RESULT * result, RESULT * arg1)
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
     if (ioctl(socknr, SIOCGIFADDR, &ifreq) < 0) {
-	error("%s: ioctl(IFADDR) failed: %s", "plugin_netinfo", strerror(errno));
+	errcount++;
+	if (1 == errcount % 1000) {
+	    error("%s: ioctl(IFADDR %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+	    error("  (skip next 1000 errors)");
+	}
+	SetResult(&result, R_STRING, "");
 	return;
     }
     sin = (struct sockaddr_in *) &ifreq.ifr_addr;
@@ -161,6 +178,7 @@ static void my_ipaddr(RESULT * result, RESULT * arg1)
 /* get ip netmask of network device */
 static void my_netmask(RESULT * result, RESULT * arg1)
 {
+    static int errcount = 0;
     struct ifreq ifreq;
     struct sockaddr_in *sin;
     char value[16];
@@ -173,7 +191,12 @@ static void my_netmask(RESULT * result, RESULT * arg1)
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
     if (ioctl(socknr, SIOCGIFNETMASK, &ifreq) < 0) {
-	error("%s: ioctl(IFNETMASK) failed: %s", "plugin_netinfo", strerror(errno));
+	errcount++;
+	if (1 == errcount % 1000) {
+	    error("%s: ioctl(IFNETMASK %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+	    error("  (skip next 1000 errors)");
+	}
+	SetResult(&result, R_STRING, "");
 	return;
     }
     sin = (struct sockaddr_in *) &ifreq.ifr_netmask;
@@ -186,6 +209,7 @@ static void my_netmask(RESULT * result, RESULT * arg1)
 /* get ip broadcast address of network device */
 static void my_bcaddr(RESULT * result, RESULT * arg1)
 {
+    static int errcount = 0;
     struct ifreq ifreq;
     struct sockaddr_in *sin;
     char value[16];
@@ -198,7 +222,12 @@ static void my_bcaddr(RESULT * result, RESULT * arg1)
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
     if (ioctl(socknr, SIOCGIFBRDADDR, &ifreq) < 0) {
-	error("%s: ioctl(IFBRDADDR) failed: %s", "plugin_netinfo", strerror(errno));
+	errcount++;
+	if (1 == errcount % 1000) {
+	    error("%s: ioctl(IFBRDADDR %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+	    error("  (skip next 1000 errors)");
+	}
+	SetResult(&result, R_STRING, "");
 	return;
     }
     sin = (struct sockaddr_in *) &ifreq.ifr_broadaddr;
