@@ -5,7 +5,7 @@
  * LCD4Linux
  *
  * Copyright (C) 1999, 2000, 2001, 2002, 2003 Michael Reinelt <michael@reinelt.co.at>
- * Copyright (C) 2004, 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -60,7 +60,7 @@
 #define PIDFILE "/var/run/lcd4linux.pid"
 
 static char *release = "LCD4Linux " VERSION "-" SVN_VERSION;
-static char *copyright = "Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
+static char *copyright = "Copyright (C) 2005, 2006, 2007, 2008 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>";
 static char **my_argv;
 extern char *output;
 
