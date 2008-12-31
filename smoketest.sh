@@ -23,7 +23,7 @@ for driver in BeckmannEgle BWCT CrystalFontz Curses Cwlinux D4D EA232graphic G15
     
 done
 
-for plugin in apm asterisk button_exec cpuinfo diskstats dvb exec fifo file hddtemp i2c_sensors iconv imon isdn kvv loadavg meminfo mpd mysql netdev pop3 ppp proc_stat python sample seti statfs uname uptime w1retap wireless xmms; do
+for plugin in apm asterisk button_exec cpuinfo diskstats dvb exec fifo file hddtemp i2c_sensors iconv imon isdn kvv loadavg meminfo mpd mysql netdev netinfo pop3 ppp proc_stat python sample seti statfs uname uptime w1retap wireless xmms; do
 
     make distclean
     ./configure --with-drivers=NULL --with-plugins=$plugin
