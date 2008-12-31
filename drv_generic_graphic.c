@@ -668,7 +668,7 @@ int drv_generic_graphic_clear(void)
 
     for (l = 0; l < LAYERS; l++)
 	for (i = 0; i < LCOLS * LROWS; i++)
-	    drv_generic_graphic_FB[l][i] = NO_COL;
+	    drv_generic_graphic_FB[l][i] = BG_COL;
 
     drv_generic_graphic_blit(0, 0, LROWS, LCOLS);
 
