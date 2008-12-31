@@ -35,6 +35,8 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/types.h>		/* umask() */
+#include <sys/stat.h>		/* umask() */
 
 #include "svn_version.h"
 #include "cfg.h"
