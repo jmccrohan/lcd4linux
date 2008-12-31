@@ -66,10 +66,10 @@ static int open_net(void)
     if (socknr == -3)
 	return -1;
     if (socknr == -2) {
-	socknr = socket(PF_INET, SOCK_STREAM, 0);
+	socknr = socket(PF_INET, SOCK_DGRAM, 0);
     }
     if (socknr == -1) {
-	error("%s: socket(PF_INET, SOCK_STREAM, 0) failed: %s", "plugin_netinfo", strerror(errno));
+	error("%s: socket(PF_INET, SOCK_DGRAM, 0) failed: %s", "plugin_netinfo", strerror(errno));
 	error("  deactivate plugin netinfo");
 	socknr = -3;
 	return -1;
@@ -81,33 +81,49 @@ static int open_net(void)
 
 static void my_exists(RESULT * result, RESULT * arg1)
 {
-    static int errcount = 0;
-    struct ifreq ifreq;
-    double value = 1.0;		// netdev exists
+    char buf[10240];
+    struct ifconf ifcnf;
+    struct ifreq *ifreq;
+    int len;
+    double value = 0.0;		// netdev doesn't exists
+    char devname[80];
 
     if (socknr < 0) {
 	/* no open socket */
-	value = 0.0;
 	SetResult(&result, R_NUMBER, &value);
 	return;
     }
 
-    strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
-    if (ioctl(socknr, SIOCGIFFLAGS, &ifreq) < 0) {
-	if (errno == ENODEV) {
-	    /* device does not exists */
-	    value = 0.0;
-	} else {
-	    errcount++;
-	    if (1 == errcount % 1000) {
-		error("%s: ioctl(FLAGS %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
-		error("  (skip next 1000 errors)");
-	    }
-	    return;
-	}
+    ifcnf.ifc_len = sizeof(buf);
+    ifcnf.ifc_buf = buf;
+    if (ioctl(socknr, SIOCGIFCONF, &ifcnf) < 0) {
+	/* error getting list of devices */
+	error("%s: ioctl(IFCONF) for %s failed: %s", "plugin_netinfo", R2S(arg1), strerror(errno));
+	SetResult(&result, R_NUMBER, &value);
+	return;
+    }
+    if (0 == ifcnf.ifc_len) {
+	/* no interfaces found */
+	SetResult(&result, R_NUMBER, &value);
+	return;
     }
 
-    /* device exists */
+    ifreq = (struct ifreq *) buf;
+    len = sizeof(struct ifreq);
+    strncpy(devname, R2S(arg1), sizeof(devname));
+
+    while (ifreq && *((char *) ifreq) && ((char *) ifreq) < buf + ifcnf.ifc_len) {
+	if (*((char *) ifreq) && strncmp(ifreq->ifr_name, devname, sizeof(devname)) == 0) {
+	    /* found */
+	    value = 1.0;
+	    SetResult(&result, R_NUMBER, &value);
+	    return;
+	}
+
+	(*(char **) &ifreq) += len;
+    }
+
+    /* device doesn't exists */
     SetResult(&result, R_NUMBER, &value);
 }
 
