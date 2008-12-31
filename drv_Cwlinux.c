@@ -83,8 +83,10 @@ typedef struct {
 /* Fixme: number of gpo's should be verified */
 
 static MODEL Models[] = {
+    /* type, name, rows, cols, xres/char, yres/char, gpo's, gpi's, definable chars, protocol */
     {0x01, "CW1602", 2, 16, 5, 7, 2, 2, 8, 1},
     {0x02, "CW12232", 4, 20, 6, 8, 2, 2, 16, 2},
+    {0x03, "CW12832", 4, 21, 6, 8, 2, 2, 16, 2},
     {0xff, "Unknown", -1, -1, -1, -1, -1, -1, -1, -1}
 };
 
@@ -173,7 +175,7 @@ static void drv_CW1602_defchar(const int ascii, const unsigned char *buffer)
 static void drv_CW12232_defchar(const int ascii, const unsigned char *buffer)
 {
     int i, j;
-    char cmd[10] = "\376Nn123456\375";
+    char cmd[10] = "\376Nn123456\375";	/* 0xfe 'N' [1..16] (6 Bytes Data) 0xfd */
 
     cmd[2] = (char) ascii;
 
@@ -319,7 +321,7 @@ static int drv_CW_start(const char *section)
     if (drv_generic_serial_open(section, Name, 0) < 0)
 	return -1;
 
-    /* read firmware version */
+    /* read firmware version: 0xfe '1' 0xfd */
     drv_generic_serial_write("\3761\375", 3);
     usleep(100000);
     if (drv_generic_serial_read(buffer, 2) != 2) {
@@ -328,7 +330,7 @@ static int drv_CW_start(const char *section)
 	info("Cwlinux Firmware V%d.%d", (int) buffer[0], (int) buffer[1]);
     }
 
-    /* read model mumber */
+    /* read model mumber: 0xfe 0x30 0xfd */
     drv_generic_serial_write("\3760\375", 3);
     usleep(100000);
     if (drv_generic_serial_read(buffer, 2) != 2) {
