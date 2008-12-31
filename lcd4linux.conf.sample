@@ -477,6 +477,7 @@ Display XWindow {
     Pixel  '4+1'
     Gap    '-1x-1'
     Border 20
+    Buttons 2
 #   Foreground '#000000'
 #   Background '#80d000'
 #   Halfground '#70c000'
