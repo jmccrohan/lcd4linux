@@ -180,6 +180,19 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     /* check if widget type matches */
     if (Class->type != type) {
 	error("widget '%s': class '%s' not applicable", name, class);
+	switch (Class->type) {
+	case WIDGET_TYPE_RC:
+	    error("  Widgetclass %s is placed by Row/Column", class);
+	    break;
+	case WIDGET_TYPE_XY:
+	    error("  Widgetclass %s is placed by X/Y", class);
+	    break;
+	case WIDGET_TYPE_GPO:
+	case WIDGET_TYPE_TIMER:
+	case WIDGET_TYPE_KEYPAD:
+	default:
+	    error("  Widgetclass %s has unknown type %d", class, Class->type);
+	}
 	free(class);
 	return -1;
     }
@@ -200,7 +213,7 @@ int widget_add(const char *name, const int type, const int layer, const int row,
 
     /* another sanity check */
     if (nWidgets >= MAX_WIDGETS) {
-	error("internal error: widget buffer full! Tried to allocate %d widgets (max: %s)", nWidgets, MAX_WIDGETS);
+	error("internal error: widget buffer full! Tried to allocate %d widgets (max: %d)", nWidgets, MAX_WIDGETS);
 	return -1;
     }
 
@@ -227,8 +240,10 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     Widget->row = row;
     Widget->col = col;
 
-    info(" widget '%s': Class '%s', Parent '%s', Layer %d, Row %d, Col %d",
-	 name, (NULL == Class) ? "<none>" : Class->name, (NULL == Parent) ? "<root>" : Parent->name, layer, row, col);
+    info(" widget '%s': Class '%s', Parent '%s', Layer %d, %s %d, %s %d",
+	 name, (NULL == Class) ? "<none>" : Class->name,
+	 (NULL == Parent) ? "<root>" : Parent->name,
+	 layer, (WIDGET_TYPE_XY == Class->type) ? "Y" : "Row", row, (WIDGET_TYPE_XY == Class->type) ? "X" : "Col", col);
 
     if (Class->init != NULL) {
 	Class->init(Widget);
