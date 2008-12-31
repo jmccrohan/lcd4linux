@@ -132,14 +132,18 @@ static char *strip(char *s, const int strip_comments)
 	if (*p == '"')
 	    do
 		p++;
-	    while (*p && *p != '\n' && *p != '"');
+	    while (*p && *p != '\n' && *p != '\r' && *p != '"');
 	if (*p == '\'')
 	    do
 		p++;
-	    while (*p && *p != '\n' && *p != '\'');
+	    while (*p && *p != '\n' && *p != '\r' && *p != '\'');
 	if (*p == '\n' || (strip_comments && *p == '#' && (p == s || *(p - 1) != '\\'))) {
 	    *p = '\0';
 	    break;
+	}
+	if (*p == '\r' && *(p + 1) == '\n') {
+	    /* replace <CR> from DOS <CR><LF> with blank */
+	    *p = ' ';
 	}
     }
 
