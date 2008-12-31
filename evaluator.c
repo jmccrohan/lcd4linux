@@ -972,10 +972,6 @@ static int EvalTree(NODE * Root)
     char *s1, *s2;
     RESULT *param[10];
 
-    for (i = 0; i < Root->Children; i++) {
-	EvalTree(Root->Child[i]);
-    }
-
     switch (Root->Token) {
 
     case T_NUMBER:
@@ -991,9 +987,12 @@ static int EvalTree(NODE * Root)
 	DelResult(Root->Result);
 	/* prepare parameter list */
 	argc = Root->Children;
-	if (argc > 10)
+	if (argc > 10) {
+	    error("evaluator: more than 10 children (operands) not supported!");
 	    argc = 10;
+	}
 	for (i = 0; i < argc; i++) {
+	    EvalTree(Root->Child[i]);
 	    param[i] = Root->Child[i]->Result;
 	}
 	if (Root->Function->argc < 0) {
@@ -1010,13 +1009,16 @@ static int EvalTree(NODE * Root)
 	switch (Root->Operator) {
 
 	case O_LST:		/* expression list: result is last expression */
-	    i = Root->Children - 1;
+	    for (i = 0; i < Root->Children; i++) {
+		EvalTree(Root->Child[i]);
+	    }
 	    type = Root->Child[i]->Result->type;
 	    number = Root->Child[i]->Result->number;
 	    string = Root->Child[i]->Result->string;
 	    break;
 
 	case O_SET:		/* variable assignment */
+	    EvalTree(Root->Child[0]);
 	    CopyResult(&Root->Variable->value, Root->Child[0]->Result);
 	    type = Root->Child[0]->Result->type;
 	    number = Root->Child[0]->Result->number;
@@ -1024,7 +1026,9 @@ static int EvalTree(NODE * Root)
 	    break;
 
 	case O_CND:		/* conditional expression */
+	    EvalTree(Root->Child[0]);
 	    i = 1 + (R2N(Root->Child[0]->Result) == 0.0);
+	    EvalTree(Root->Child[i]);
 	    type = Root->Child[i]->Result->type;
 	    number = Root->Child[i]->Result->number;
 	    string = Root->Child[i]->Result->string;
@@ -1032,61 +1036,92 @@ static int EvalTree(NODE * Root)
 
 	case O_OR:		/* logical OR */
 	    type = R_NUMBER;
-	    number = ((R2N(Root->Child[0]->Result) != 0.0) || (R2N(Root->Child[1]->Result) != 0.0));
+	    EvalTree(Root->Child[0]);
+	    if (R2N(Root->Child[0]->Result) == 0.0) {
+		EvalTree(Root->Child[1]);
+		number = (R2N(Root->Child[1]->Result) != 0.0);
+	    } else {
+		number = 1.0;
+	    }
 	    break;
 
 	case O_AND:		/* logical AND */
 	    type = R_NUMBER;
-	    number = ((R2N(Root->Child[0]->Result) != 0.0) && (R2N(Root->Child[1]->Result) != 0.0));
+	    EvalTree(Root->Child[0]);
+	    if (R2N(Root->Child[0]->Result) != 0.0) {
+		EvalTree(Root->Child[1]);
+		number = (R2N(Root->Child[1]->Result) != 0.0);
+	    } else {
+		number = 0.0;
+	    }
 	    break;
 
 	case O_EQ:		/* numeric equal */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) == R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_NE:		/* numeric not equal */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) != R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_LT:		/* numeric less than */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) < R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_LE:		/* numeric less equal */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) <= R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_GT:		/* numeric greater than */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) > R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_GE:		/* numeric greater equal */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) >= R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_ADD:		/* addition */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = R2N(Root->Child[0]->Result) + R2N(Root->Child[1]->Result);
 	    break;
 
 	case O_SUB:		/* subtraction */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = R2N(Root->Child[0]->Result) - R2N(Root->Child[1]->Result);
 	    break;
 
 	case O_SGN:		/* sign */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
 	    number = -R2N(Root->Child[0]->Result);
 	    break;
 
 	case O_CAT:		/* string concatenation */
 	    type = R_STRING;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    s1 = R2S(Root->Child[0]->Result);
 	    s2 = R2S(Root->Child[1]->Result);
 	    string = malloc(strlen(s1) + strlen(s2) + 1);
@@ -1097,11 +1132,15 @@ static int EvalTree(NODE * Root)
 
 	case O_MUL:		/* multiplication */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = R2N(Root->Child[0]->Result) * R2N(Root->Child[1]->Result);
 	    break;
 
 	case O_DIV:		/* division */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    dummy = R2N(Root->Child[1]->Result);
 	    if (dummy == 0) {
 		error("Evaluator: warning: division by zero");
@@ -1113,6 +1152,8 @@ static int EvalTree(NODE * Root)
 
 	case O_MOD:		/* modulo */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    dummy = R2N(Root->Child[1]->Result);
 	    if (dummy == 0) {
 		error("Evaluator: warning: division by zero");
@@ -1124,11 +1165,14 @@ static int EvalTree(NODE * Root)
 
 	case O_POW:		/* x^y */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
 	    number = pow(R2N(Root->Child[0]->Result), R2N(Root->Child[1]->Result));
 	    break;
 
 	case O_NOT:		/* logical NOT */
 	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
 	    number = (R2N(Root->Child[0]->Result) == 0.0);
 	    break;
 
