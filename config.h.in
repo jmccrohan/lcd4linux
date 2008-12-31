@@ -347,6 +347,9 @@
 /* netdev plugin */
 #undef PLUGIN_NETDEV
 
+/* netinfo plugin */
+#undef PLUGIN_NETINFO
+
 /* POP3 plugin */
 #undef PLUGIN_POP3
 

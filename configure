@@ -1351,6 +1351,8 @@ Optional Packages:
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
+                          plugins may be excluded with 'all,!<plugin>',
+                          (try 'all,\!<plugin>' if your shell complains...)
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -4445,7 +4447,7 @@ echo "${ECHO_T}Please note that some screen refreshs may fail" >&6; }
 echo $ECHO_N "checking for ncurses version... $ECHO_C" >&6; }
 	ncurses_version=unknown
 cat > conftest.$ac_ext <<EOF
-#line 4448 "configure"
+#line 4450 "configure"
 #include "confdefs.h"
 #ifdef RENAMED_NCURSES
 #include <curses.h>
@@ -8525,6 +8527,23 @@ if test "$LIBFTDI" = "yes"; then
    DRVLIBS="$DRVLIBS -lftdi"
 fi
 
+if test "$DRIVERS" = ""; then
+   { { echo "$as_me:$LINENO: error: You should include at least one driver..." >&5
+echo "$as_me: error: You should include at least one driver..." >&2;}
+   { (exit 1); exit 1; }; }
+else
+   { echo "$as_me:$LINENO: result: -----------------------------------------
+including drivers:
+  $DRIVERS
+-----------------------------------------
+   " >&5
+echo "${ECHO_T}-----------------------------------------
+including drivers:
+  $DRIVERS
+-----------------------------------------
+   " >&6; }
+fi
+
 
 
 
@@ -8561,8 +8580,14 @@ for plugin in $plugins; do
 
    case "$plugin" in
       list)
-         { echo "$as_me:$LINENO: result: TO BE DONE..." >&5
-echo "${ECHO_T}TO BE DONE..." >&6; }
+         { echo "$as_me:$LINENO: result: available plugins:
+             apm,cpuinfo,diskstats,dvb,exec,file,gps,i2c_sensors,iconv,imon,isdn,kvv,
+             loadavg,meminfo,mpd,mysql,netdev,netinfo,pop3,ppp,proc_stat,sample,seti,
+             statfs,uname,uptime,wireless,xmms" >&5
+echo "${ECHO_T}available plugins:
+             apm,cpuinfo,diskstats,dvb,exec,file,gps,i2c_sensors,iconv,imon,isdn,kvv,
+             loadavg,meminfo,mpd,mysql,netdev,netinfo,pop3,ppp,proc_stat,sample,seti,
+             statfs,uname,uptime,wireless,xmms" >&6; }
          { { echo "$as_me:$LINENO: error: run ./configure --with-plugins=..." >&5
 echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
    { (exit 1); exit 1; }; }
@@ -8589,6 +8614,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_MPD="yes"
          PLUGIN_MYSQL="yes"
          PLUGIN_NETDEV="yes"
+         PLUGIN_NETINFO="yes"
          PLUGIN_POP3="yes"
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
@@ -8664,6 +8690,9 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          ;;
       netdev)
          PLUGIN_NETDEV=$val
+         ;;
+      netinfo)
+         PLUGIN_NETINFO=$val
          ;;
       pop3)
          PLUGIN_POP3=$val
@@ -11204,12 +11233,22 @@ echo "$as_me: WARNING: mysql/mysql.h header not found: mysql plugin disabled" >&
    fi
 fi
 
-# network device
+# /proc/net/dev
 if test "$PLUGIN_NETDEV" = "yes"; then
    PLUGINS="$PLUGINS plugin_netdev.o"
 
 cat >>confdefs.h <<\_ACEOF
 #define PLUGIN_NETDEV 1
+_ACEOF
+
+fi
+
+# configuration of network devices
+if test "$PLUGIN_NETINFO" = "yes"; then
+   PLUGINS="$PLUGINS plugin_netinfo.o"
+
+cat >>confdefs.h <<\_ACEOF
+#define PLUGIN_NETINFO 1
 _ACEOF
 
 fi
@@ -11805,8 +11844,17 @@ if test "$PLUGINS" = ""; then
    { { echo "$as_me:$LINENO: error: You should include at least one plugin..." >&5
 echo "$as_me: error: You should include at least one plugin..." >&2;}
    { (exit 1); exit 1; }; }
-#else
-#   AC_MSG_ERROR($PLUGINS)
+else
+   { echo "$as_me:$LINENO: result: -----------------------------------------
+including plugins:
+  $PLUGINS
+-----------------------------------------
+   " >&5
+echo "${ECHO_T}-----------------------------------------
+including plugins:
+  $PLUGINS
+-----------------------------------------
+   " >&6; }
 fi
 
 

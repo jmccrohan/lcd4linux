@@ -28,7 +28,9 @@ AC_ARG_WITH(
   plugins, 
   [  --with-plugins=<list>   choose which plugins to compile.]
   [                        type --with-plugins=list for a list]	
-  [                        of avaible plugins],
+  [                        of avaible plugins]
+  [                        plugins may be excluded with 'all,!<plugin>',]	
+  [                        (try 'all,\!<plugin>' if your shell complains...)],
   plugins=$withval, 
   plugins=all
 )
@@ -490,8 +492,13 @@ fi
 
 if test "$PLUGINS" = ""; then
    AC_MSG_ERROR([You should include at least one plugin...])
-#else
-#   AC_MSG_ERROR($PLUGINS)
+else
+   AC_MSG_RESULT(
+[-----------------------------------------]
+[including plugins:]
+[  $PLUGINS]
+[-----------------------------------------]
+   )
 fi
    
 AC_SUBST(PLUGINS)
