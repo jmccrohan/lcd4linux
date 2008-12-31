@@ -33,6 +33,7 @@
  */
 
 #include "config.h"
+#include "debug.h"		// verbose_level
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -66,6 +67,8 @@ static char Name[] = "serdisplib";
 static serdisp_CONN_t *sdcd;
 static serdisp_t *dd;
 
+int NUMCOLS = 1;
+
 
 /****************************************/
 /***  hardware dependant functions    ***/
@@ -74,10 +77,12 @@ static serdisp_t *dd;
 static void drv_SD_blit(const int row, const int col, const int height, const int width)
 {
     int r, c;
+    RGBA p;
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    RGBA p = drv_generic_graphic_rgb(r, c);
+	    p = drv_generic_graphic_rgb(r, c);
+	    // printf("blit (%d,%d) A%d.R%d.G%d.B%d\n", c, r, p.A, p.R, p.G, p.B);
 	    serdisp_setcolour(dd, c, r, serdisp_pack2ARGB(0xff, p.R, p.G, p.B));
 	}
     }
@@ -183,7 +188,8 @@ static int drv_SD_start(const char *section)
 
     DROWS = serdisp_getheight(dd);
     DCOLS = serdisp_getwidth(dd);
-    info("%s: display size %dx%d", Name, DCOLS, DROWS);
+    NUMCOLS = serdisp_getcolours(dd);
+    info("%s: display size %dx%d, %d colors", Name, DCOLS, DROWS, NUMCOLS);
 
     XRES = -1;
     YRES = -1;
@@ -274,7 +280,24 @@ static void plugin_rotate(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_SD_list(void)
 {
-    printf("%s", "any");
+    serdisp_display_t displaydesc;
+
+    if (verbose_level > 0) {
+	printf("  Supported displays:\n");
+	displaydesc.dispname = "";
+	printf("    display name     alias names           description\n");
+	printf("    ---------------  --------------------  -----------------------------------\n");
+	while (serdisp_nextdisplaydescription(&displaydesc)) {
+	    printf("    %-15s  %-20s  %-35s\n", displaydesc.dispname, displaydesc.aliasnames, displaydesc.description);
+	}
+    } else {
+	displaydesc.dispname = "";
+	while (serdisp_nextdisplaydescription(&displaydesc)) {
+	    printf("%s ", displaydesc.dispname);
+	}
+	printf("\n     (use -vl to see detailed list of serdisplib)");
+    }
+
     return 0;
 }
 
