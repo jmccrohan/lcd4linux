@@ -113,6 +113,9 @@ char *Plugins[] = {
 #ifdef PLUGIN_NETDEV
     "netdev",
 #endif
+#ifdef PLUGIN_NETINFO
+    "netinfo",
+#endif
 #ifdef PLUGIN_POP3
     "pop3",
 #endif
@@ -207,6 +210,8 @@ int plugin_init_mysql(void);
 void plugin_exit_mysql(void);
 int plugin_init_netdev(void);
 void plugin_exit_netdev(void);
+int plugin_init_netinfo(void);
+void plugin_exit_netinfo(void);
 int plugin_init_pop3(void);
 void plugin_exit_pop3(void);
 int plugin_init_ppp(void);
@@ -320,6 +325,9 @@ int plugin_init(void)
 #ifdef PLUGIN_NETDEV
     plugin_init_netdev();
 #endif
+#ifdef PLUGIN_NETINFO
+    plugin_init_netinfo();
+#endif
 #ifdef PLUGIN_POP3
     plugin_init_pop3();
 #endif
@@ -422,6 +430,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_NETDEV
     plugin_exit_netdev();
+#endif
+#ifdef PLUGIN_NETINFO
+    plugin_exit_netinfo();
 #endif
 #ifdef PLUGIN_POP3
     plugin_exit_pop3();

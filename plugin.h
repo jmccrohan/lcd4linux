@@ -30,6 +30,7 @@
 #ifndef _PLUGIN_H_
 #define _PLUGIN_H_
 
+int plugin_list(void);
 int plugin_init(void);
 void plugin_exit(void);
 #endif

@@ -49,7 +49,11 @@ for plugin in $plugins; do
 	
    case "$plugin" in
       list)
-         AC_MSG_RESULT([TO BE DONE...])
+         AC_MSG_RESULT(
+            [available plugins:]
+            [ apm,cpuinfo,diskstats,dvb,exec,file,gps,i2c_sensors,iconv,imon,isdn,kvv,]
+            [ loadavg,meminfo,mpd,mysql,netdev,netinfo,pop3,ppp,proc_stat,sample,seti,]
+            [ statfs,uname,uptime,wireless,xmms])
          AC_MSG_ERROR([run ./configure --with-plugins=...])
          ;;
       all)
@@ -74,6 +78,7 @@ for plugin in $plugins; do
          PLUGIN_MPD="yes"
          PLUGIN_MYSQL="yes"
          PLUGIN_NETDEV="yes"
+         PLUGIN_NETINFO="yes"
          PLUGIN_POP3="yes"
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
@@ -149,6 +154,9 @@ for plugin in $plugins; do
          ;;
       netdev)
          PLUGIN_NETDEV=$val
+         ;;
+      netinfo)
+         PLUGIN_NETINFO=$val
          ;;
       pop3)
          PLUGIN_POP3=$val
@@ -372,10 +380,16 @@ if test "$PLUGIN_MYSQL" = "yes"; then
    fi 
 fi
 
-# network device
+# /proc/net/dev
 if test "$PLUGIN_NETDEV" = "yes"; then
    PLUGINS="$PLUGINS plugin_netdev.o"
    AC_DEFINE(PLUGIN_NETDEV,1,[netdev plugin])
+fi
+
+# configuration of network devices
+if test "$PLUGIN_NETINFO" = "yes"; then
+   PLUGINS="$PLUGINS plugin_netinfo.o"
+   AC_DEFINE(PLUGIN_NETINFO,1,[netinfo plugin])
 fi
 
 # POP3
