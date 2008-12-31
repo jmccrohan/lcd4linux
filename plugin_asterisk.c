@@ -66,7 +66,7 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 {
     FILE *infile;
     int skipline = 0;		// Skip the first in the file, it throws off the detection
-    char line[100], *SipLoc, Channel[25], Location[25], State[9], Application[25], EndPoint[8], Ret[50], inp;
+    char line[100], *SipLoc, Channel[25], Location[25], State[9], Application[25], EndPoint[8], Ret[50];
     int i = 0, ChannelInt = 0, ZapLine = 0;
     struct Line Lines[32];	// Setup 32 lines, ZAP 1-32 (memory is cheap)
 
@@ -85,6 +85,12 @@ static void zapstatus(RESULT * result, RESULT * arg1)
     system("asterisk -rx \"show channels\" > /tmp/asterisk.state");	// Crappy CLI way to do it
 
     infile = fopen("/tmp/asterisk.state", "r");
+
+    for (i = 0; i < 100; i++) {
+	line[i] = ' ';
+    }
+    line[99] = '\0';
+
     while (fgets(line, 100, infile) != NULL) {
 	if (strstr(line, "Zap") != NULL) {
 	    for (i = 0; i < strlen(line); i++) {
@@ -105,7 +111,6 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 	    memcpy(EndPoint, Application + 13, 7);
 	    EndPoint[7] = '\0';
 
-
 	    if (strstr(Application, "Bridged Call") != NULL) {
 		// Subtract 48 from the character value to get the int
 		// value. Subtract one more because arrays start at 0.
@@ -120,10 +125,8 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 		} else {
 		    EndPoint[0] = '\0';
 		}
-
 		ChannelInt = (int) (Channel[4]) - 49;
 		strcpy(Lines[ChannelInt].Channel, Channel);
-		strcpy(Lines[ChannelInt].EndPoint, EndPoint);
 		Lines[ChannelInt].active = 1;
 	    }
 	} else {
@@ -149,7 +152,12 @@ static void zapstatus(RESULT * result, RESULT * arg1)
     fclose(infile);
 
     ZapLine -= 1;
-    if (Lines[ZapLine].active == 1) {
+    if (ZapLine < 0 || ZapLine > 31) {
+	memset(Ret, ' ', 50);
+	Ret[0] = '\0';
+	strcat(Ret, "Invalid ZAP #");
+	SetResult(&result, R_STRING, &Ret);
+    } else if (Lines[ZapLine].active == 1) {
 	memset(Ret, ' ', 50);
 	Ret[0] = '\0';
 	strcat(Ret, Lines[ZapLine].Channel);
@@ -163,7 +171,6 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 	strcat(Ret, ": inactive");
 	SetResult(&result, R_STRING, &Ret);
     }
-
     return;
 }
 
