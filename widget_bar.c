@@ -156,7 +156,8 @@ int widget_bar_init(WIDGET * Self)
 	Bar->direction = DIR_SOUTH;
 	break;
     default:
-	error("widget %s has unknown direction '%s', using 'East'", Self->name, c);
+	error("widget %s has unknown direction '%s'; known directions: 'E', 'W', 'N', 'S'; using 'E(ast)'", Self->name,
+	      c);
 	Bar->direction = DIR_EAST;
     }
     free(c);
@@ -167,11 +168,16 @@ int widget_bar_init(WIDGET * Self)
     case 'H':
 	Bar->style = STYLE_HOLLOW;
 	if (!(Bar->direction & (DIR_EAST | DIR_WEST))) {
-	    error("widget %s with style \"hollow\" not implemented", Self->name);
+	    error("widget %s with style \"hollow\" not implemented for other directions than E(ast) or W(est)",
+		  Self->name);
 	    Bar->style = 0;
 	}
 	break;
+    case '0':
+	Bar->style = 0;
+	break;
     default:
+	error("widget %s has unknown style '%s'; known styles: '0' or 'H'; using '0'", Self->name, c);
 	Bar->style = 0;
     }
     free(c);

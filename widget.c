@@ -200,7 +200,7 @@ int widget_add(const char *name, const int type, const int layer, const int row,
 
     /* another sanity check */
     if (nWidgets >= MAX_WIDGETS) {
-	error("internal error: widget buffer full!");
+	error("internal error: widget buffer full! Tried to allocate %d widgets (max: %s)", nWidgets, MAX_WIDGETS);
 	return -1;
     }
 
@@ -226,6 +226,9 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     Widget->layer = layer;
     Widget->row = row;
     Widget->col = col;
+
+    info(" widget '%s': Class '%s', Parent '%s', Layer %d, Row %d, Col %d",
+	 name, (NULL == Class) ? "<none>" : Class->name, (NULL == Parent) ? "<root>" : Parent->name, layer, row, col);
 
     if (Class->init != NULL) {
 	Class->init(Widget);
