@@ -71,26 +71,38 @@ void widget_bar_update(void *Self)
 
     /* minimum: if expression is empty, do auto-scaling */
     if (property_valid(&Bar->expr_min)) {
-	property_eval(&Bar->expr_min);
+	if (0 != property_eval(&Bar->expr_min)) {
+	    info("widget bar %s: Property min changed to %G", W->name, P2N(&Bar->expr_min));
+	}
 	min = P2N(&Bar->expr_min);
     } else {
 	min = Bar->min;
-	if (val1 < min)
+	if (val1 < min) {
 	    min = val1;
-	if (val2 < min)
+	    info("widget bar %s: new min value %G", W->name, min);
+	}
+	if (val2 < min) {
 	    min = val2;
+	    info("widget bar %s: new min value %G", W->name, min);
+	}
     }
 
     /* maximum: if expression is empty, do auto-scaling */
     if (property_valid(&Bar->expr_max)) {
-	property_eval(&Bar->expr_max);
+	if (0 != property_eval(&Bar->expr_max)) {
+	    info("widget bar %s: Property max changed to %G", W->name, P2N(&Bar->expr_max));
+	}
 	max = P2N(&Bar->expr_max);
     } else {
 	max = Bar->max;
-	if (val1 > max)
+	if (val1 > max) {
 	    max = val1;
-	if (val2 > max)
+	    info("widget bar %s: new max value %G", W->name, max);
+	}
+	if (val2 > max) {
 	    max = val2;
+	    info("widget bar %s: new max value %G", W->name, max);
+	}
     }
 
     /* calculate bar values */
