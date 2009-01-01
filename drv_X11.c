@@ -204,7 +204,6 @@ static int drv_X11_keypad(const int num)
 	error("%s: unknown keypad value %d", Name, num);
     }
 
-    debug("%s: key %c (0x%x) pressed", Name, num, num);
     return val;
 }
 
@@ -300,29 +299,35 @@ static void drv_X11_timer( __attribute__ ((unused))
 
     if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0)
 	return;
+
     switch (ev.type) {
+
     case Expose:
 	drv_X11_expose(ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height);
 	break;
+
     case ButtonPress:
 	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
 	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
 	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
+	    debug("button %d pressed", btn);
 	    drv_X11_color(BG_COL);
 	    XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
 			   btnheight - 2 - 1);
 	    drv_generic_keypad_press(btn);
 	}
 	break;
+
     case ButtonRelease:
 	if (ev.xbutton.x >= xoffset && ev.xbutton.x <= xoffset + btnwidth
 	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
+	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
+	    debug("button %d released", btn);
 	    XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
 		       1 /* true */ );
-	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
-	    info("%s: Button %d released", Name, btn);
 	}
 	break;
+
     default:
 	debug("%s: unknown XEvent %d", Name, ev.type);
     }
