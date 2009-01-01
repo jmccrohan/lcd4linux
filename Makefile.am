@@ -100,7 +100,7 @@ drv_serdisplib.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
 drv_Trefon.c                  \
-drv_ULA200.c                  \
+drv_ula200.c                  \
 drv_USBHUB.c                  \
 drv_USBLCD.c                  \
 drv_WincorNixdorf.c           \
@@ -133,6 +133,7 @@ plugin_meminfo.c              \
 plugin_mpd.c		      \
 plugin_mysql.c                \
 plugin_netdev.c               \
+plugin_netinfo.c              \
 plugin_pop3.c                 \
 plugin_ppp.c                  \
 plugin_proc_stat.c            \
