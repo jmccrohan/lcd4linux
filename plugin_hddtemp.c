@@ -255,7 +255,7 @@ static void hddtemp_call(RESULT * result, int argc, RESULT * argv[])
 	host = R2S(argv[0]);
 	search = R2S(argv[1]);
     default:
-	if (argv > 3) {
+	if (argc > 3) {
 	    error("hddtemp(): too many parameters");
 	}
 	host = R2S(argv[0]);
