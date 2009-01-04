@@ -64,6 +64,8 @@ static HASH DVB;
 
 static int get_dvb_stats(void)
 {
+    static int ioc_disable = 0;
+
     int age;
     int fd;
     unsigned short snr, sig;
@@ -82,24 +84,40 @@ static int get_dvb_stats(void)
 	return -1;
     }
 
-    if (ioctl(fd, FE_READ_SIGNAL_STRENGTH, &sig) != 0) {
+    sig = 0;
+    if ((ioc_disable & 0x01) == 0 && ioctl(fd, FE_READ_SIGNAL_STRENGTH, &sig) != 0) {
 	error("ioctl(FE_READ_SIGNAL_STRENGTH) failed: %s", strerror(errno));
-	sig = 0;
+	if (errno == ENOSYS) {
+	  ioc_disable |= 0x01;
+	  error("ioctl(FE_READ_SIGNAL_STRENGTH) disabled.");
+	}
     }
 
-    if (ioctl(fd, FE_READ_SNR, &snr) != 0) {
+    snr = 0;
+    if ((ioc_disable & 0x02) == 0 && ioctl(fd, FE_READ_SNR, &snr) != 0) {
 	error("ioctl(FE_READ_SNR) failed: %s", strerror(errno));
-	snr = 0;
+	if (errno == ENOSYS) {
+	  ioc_disable |= 0x02;
+	  error("ioctl(FE_READ_SNR) disabled.");
+	}
     }
 
-    if (ioctl(fd, FE_READ_BER, &ber) != 0) {
+    ber = 0;
+    if ((ioc_disable & 0x04) == 0 && ioctl(fd, FE_READ_BER, &ber) != 0) {
 	error("ioctl(FE_READ_BER) failed: %s", strerror(errno));
-	ber = 0;
+	if (errno == ENOSYS) {
+	  ioc_disable |= 0x04;
+	  error("ioctl(FE_READ_BER) disabled.");
+	}
     }
 
-    if (ioctl(fd, FE_READ_UNCORRECTED_BLOCKS, &ucb) != 0) {
+    ucb = 0;
+    if ((ioc_disable & 0x08) == 0 && ioctl(fd, FE_READ_UNCORRECTED_BLOCKS, &ucb) != 0) {
 	error("ioctl(FE_READ_UNCORRECTED_BLOCKS) failed: %s", strerror(errno));
-	ucb = 0;
+	if (errno == ENOSYS) {
+	  ioc_disable |= 0x08;
+	  error("ioctl(FE_READ_UNCORRECTED_BLOCKS) disabled.");
+	}
     }
 
     close(fd);
