@@ -118,12 +118,18 @@ typedef enum {
     O_COL,			/* colon in a?b:c */
     O_OR,			/* logical OR */
     O_AND,			/* logical AND */
-    O_EQ,			/* equal */
-    O_NE,			/* not equal */
-    O_LT,			/* less than */
-    O_LE,			/* less or equal */
-    O_GT,			/* greater than */
-    O_GE,			/* greater or equal */
+    O_NEQ,			/* numeric equal */
+    O_NNE,			/* numeric not equal */
+    O_NLT,			/* numeric less than */
+    O_NLE,			/* numeric less or equal */
+    O_NGT,			/* numeric greater than */
+    O_NGE,			/* numeric greater or equal */
+    O_SEQ,			/* string equal */
+    O_SNE,			/* string not equal */
+    O_SLT,			/* string less than */
+    O_SLE,			/* string less or equal */
+    O_SGT,			/* string greater than */
+    O_SGE,			/* string greater or equal */
     O_ADD,			/* addition */
     O_SUB,			/* subtraction */
     O_SGN,			/* sign '-' */
@@ -167,17 +173,17 @@ typedef struct _NODE {
 
 
 
-/* operators */
+/* non-alphanumeric operators */
 /* IMPORTANT! list must be sorted by length! */
-static PATTERN Pattern[] = {
+static PATTERN Pattern1[] = {
     {";", 1, O_LST},		/* expression lists */
     {"=", 1, O_SET},		/* variable assignements */
     {"?", 1, O_CND},		/* conditional a?b:c */
     {":", 1, O_COL},		/* colon a?b:c */
     {"|", 1, O_OR},		/* logical OR */
     {"&", 1, O_AND},		/* logical AND */
-    {"<", 1, O_LT},		/* less than */
-    {">", 1, O_GT},		/* greater than */
+    {"<", 1, O_NLT},		/* numeric less than */
+    {">", 1, O_NGT},		/* numeric greater than */
     {"+", 1, O_ADD},		/* addition */
     {"-", 1, O_SUB},		/* subtraction or sign */
     {".", 1, O_CAT},		/* string concatenation */
@@ -189,10 +195,21 @@ static PATTERN Pattern[] = {
     {"(", 1, O_BRO},		/* open brace */
     {",", 1, O_COM},		/* comma (argument seperator) */
     {")", 1, O_BRC},		/* closing brace */
-    {"==", 2, O_EQ},		/* equal */
-    {"!=", 2, O_NE},		/* not equal */
-    {"<=", 2, O_LE},		/* less or equal */
-    {">=", 2, O_GE}		/* greater or equal */
+    {"==", 2, O_NEQ},		/* numeric equal */
+    {"!=", 2, O_NNE},		/* numeric not equal */
+    {"<=", 2, O_NLE},		/* numeric less or equal */
+    {">=", 2, O_NGE}		/* numeric greater or equal */
+};
+
+/* alphanumeric operators */
+/* IMPORTANT! list must be sorted by length! */
+static PATTERN Pattern2[] = {
+    {"eq", 2, O_SEQ},		/* string equal */
+    {"ne", 2, O_SNE},		/* string not equal */
+    {"lt", 2, O_SLT},		/* string less than */
+    {"le", 2, O_SLE},		/* string less or equal */
+    {"gt", 2, O_SGT},		/* string greater than */
+    {"ge", 2, O_SGE}		/* string greater or equal */
 };
 
 
@@ -545,6 +562,7 @@ static void Parse(void)
 
     /* names */
     if (is_alpha(*ExprPtr)) {
+	int i;
 	char *start = ExprPtr;
 	while (is_alnum(*ExprPtr))
 	    ExprPtr++;
@@ -555,6 +573,16 @@ static void Parse(void)
 	}
 	Word = strndup(start, ExprPtr - start);
 	Token = T_NAME;
+
+	/* check for alphanumeric operators */
+	for (i = sizeof(Pattern2) / sizeof(Pattern2[0]) - 1; i >= 0; i--) {
+	    if (strcmp(Word, Pattern2[i].pattern) == 0) {
+		Token = T_OPERATOR;
+		Operator = Pattern2[i].op;
+		break;
+	    }
+	}
+
     }
 
     /* numbers */
@@ -582,15 +610,15 @@ static void Parse(void)
 	    ExprPtr++;
     }
 
-    /* operators */
+    /* non-alpha operators */
     else {
 	int i;
-	for (i = sizeof(Pattern) / sizeof(Pattern[0]) - 1; i >= 0; i--) {
-	    int len = Pattern[i].len;
-	    if (strncmp(ExprPtr, Pattern[i].pattern, Pattern[i].len) == 0) {
+	for (i = sizeof(Pattern1) / sizeof(Pattern1[0]) - 1; i >= 0; i--) {
+	    int len = Pattern1[i].len;
+	    if (strncmp(ExprPtr, Pattern1[i].pattern, Pattern1[i].len) == 0) {
 		Word = strndup(ExprPtr, len);
 		Token = T_OPERATOR;
-		Operator = Pattern[i].op;
+		Operator = Pattern1[i].op;
 		ExprPtr += len;
 		break;
 	    }
@@ -842,7 +870,8 @@ static NODE *Level07(void)
 
     Root = Level08();
 
-    while (Token == T_OPERATOR && (Operator == O_GT || Operator == O_GE || Operator == O_LT || Operator == O_LE)) {
+    while (Token == T_OPERATOR && (Operator == O_NGT || Operator == O_NGE || Operator == O_NLT || Operator == O_NLE ||
+				   Operator == O_SGT || Operator == O_SGE || Operator == O_SLT || Operator == O_SLE)) {
 	Root = NewNode(Root);
 	Parse();
 	LinkNode(Root, Level08());
@@ -859,7 +888,7 @@ static NODE *Level06(void)
 
     Root = Level07();
 
-    while (Token == T_OPERATOR && (Operator == O_EQ || Operator == O_NE)) {
+    while (Token == T_OPERATOR && (Operator == O_NEQ || Operator == O_NNE || Operator == O_SEQ || Operator == O_SNE)) {
 	Root = NewNode(Root);
 	Parse();
 	LinkNode(Root, Level07());
@@ -1066,46 +1095,88 @@ static int EvalTree(NODE * Root)
 	    }
 	    break;
 
-	case O_EQ:		/* numeric equal */
+	case O_NEQ:		/* numeric equal */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) == R2N(Root->Child[1]->Result));
 	    break;
 
-	case O_NE:		/* numeric not equal */
+	case O_NNE:		/* numeric not equal */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) != R2N(Root->Child[1]->Result));
 	    break;
 
-	case O_LT:		/* numeric less than */
+	case O_NLT:		/* numeric less than */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) < R2N(Root->Child[1]->Result));
 	    break;
 
-	case O_LE:		/* numeric less equal */
+	case O_NLE:		/* numeric less equal */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) <= R2N(Root->Child[1]->Result));
 	    break;
 
-	case O_GT:		/* numeric greater than */
+	case O_NGT:		/* numeric greater than */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) > R2N(Root->Child[1]->Result));
 	    break;
 
-	case O_GE:		/* numeric greater equal */
+	case O_NGE:		/* numeric greater equal */
 	    type = R_NUMBER;
 	    EvalTree(Root->Child[0]);
 	    EvalTree(Root->Child[1]);
 	    number = (R2N(Root->Child[0]->Result) >= R2N(Root->Child[1]->Result));
+	    break;
+
+	case O_SEQ:		/* string equal */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) == 0);
+	    break;
+
+	case O_SNE:		/* string not equal */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) != 0);
+	    break;
+
+	case O_SLT:		/* string less than */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) < 0);
+	    break;
+
+	case O_SLE:		/* string less equal */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) <= 0);
+	    break;
+
+	case O_SGT:		/* string greater than */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) > 0);
+	    break;
+
+	case O_SGE:		/* string greater equal */
+	    type = R_NUMBER;
+	    EvalTree(Root->Child[0]);
+	    EvalTree(Root->Child[1]);
+	    number = (strcmp(R2S(Root->Child[0]->Result), R2S(Root->Child[1]->Result)) >= 0);
 	    break;
 
 	case O_ADD:		/* addition */
