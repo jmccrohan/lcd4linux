@@ -207,7 +207,8 @@ static int drv_pL_backlight(int backlight)
 
 #define _USBLCD_MAX_DATA_LEN          24
 #define IN_REPORT_KEY_STATE           0x11
-static int drv_pL_gpi(__attribute__ ((unused)) int num)
+static int drv_pL_gpi( __attribute__ ((unused))
+		      int num)
 {
     int ret;
     unsigned char read_packet[_USBLCD_MAX_DATA_LEN];
