@@ -93,7 +93,7 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 
     while (fgets(line, 100, infile) != NULL) {
 	if (strstr(line, "Zap") != NULL) {
-	    for (i = 0; i < strlen(line); i++) {
+	    for (i = 0; i < (int) strlen(line); i++) {
 		if (i < 20) {
 		    Channel[i] = line[i];
 		} else if (i < 42) {
@@ -132,10 +132,10 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 	} else {
 	    if (strlen(line) > 54 && skipline > 1) {
 		for (i = 55; i < 88; i++) {
-		    if (i < 40) {
+		    if (i < 80) {
 			Channel[i - 55] = line[i];
 		    } else {
-			EndPoint[i - 40] = line[i];
+			EndPoint[i - 80] = line[i];
 		    }
 		}
 		strncpy(Channel, rtrim(Channel, ' '), 5);
