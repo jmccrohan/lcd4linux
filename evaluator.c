@@ -100,16 +100,6 @@ typedef enum {
     T_FUNCTION
 } TOKEN;
 
-static char *tokenNames[] = {
-    "undef",
-    "Name",
-    "Number",
-    "String",
-    "Operator",
-    "Variable",
-    "Function"
-};
-
 typedef enum {
     O_UNDEF,			/* undefined */
     O_LST,			/* expression lists */
