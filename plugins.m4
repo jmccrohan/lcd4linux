@@ -125,7 +125,7 @@ for plugin in $plugins; do
          PLUGIN_GPS=$val
          ;;
       hddtemp)
-         PLUGIN_HDDTEMP=$hddtemp
+         PLUGIN_HDDTEMP=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val

@@ -8659,7 +8659,7 @@ echo "$as_me: error: run ./configure --with-plugins=..." >&2;}
          PLUGIN_GPS=$val
          ;;
       hddtemp)
-         PLUGIN_HDDTEMP=$hddtemp
+         PLUGIN_HDDTEMP=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
