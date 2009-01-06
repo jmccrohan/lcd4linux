@@ -642,100 +642,17 @@ static int kvv_fork(void)
     return 0;
 }
 
-static void kvv_line(RESULT * result, RESULT * arg1)
+static void kvv_start(void)
 {
-    int index = (int) R2N(arg1);
-
-    if (kvv_fork() != 0) {
-	SetResult(&result, R_STRING, "");
-	return;
-    }
-
-    mutex_lock(mutex);
-
-    if (index < shm->entries) {
-	SetResult(&result, R_STRING, shm->entry[index].line);
-    } else
-	SetResult(&result, R_STRING, "");
-
-    mutex_unlock(mutex);
-}
-
-static void kvv_station(RESULT * result, RESULT * arg1)
-{
-    int index = (int) R2N(arg1);
-
-    if (kvv_fork() != 0) {
-	SetResult(&result, R_STRING, "");
-	return;
-    }
-
-    mutex_lock(mutex);
-
-    if (shm->error && index == 0)
-	SetResult(&result, R_STRING, "Server Err");
-    else {
-	if (index < shm->entries)
-	    SetResult(&result, R_STRING, shm->entry[index].station);
-	else
-	    SetResult(&result, R_STRING, "");
-    }
-
-    mutex_unlock(mutex);
-}
-
-static void kvv_time(RESULT * result, RESULT * arg1)
-{
-    int index = (int) R2N(arg1);
-    double value = -1.0;
-
-    if (kvv_fork() != 0) {
-	SetResult(&result, R_STRING, "");
-	return;
-    }
-
-    mutex_lock(mutex);
-
-    if (index < shm->entries)
-	value = shm->entry[index].time;
-
-    SetResult(&result, R_NUMBER, &value);
-
-    mutex_unlock(mutex);
-}
-
-static void kvv_time_str(RESULT * result, RESULT * arg1)
-{
-    int index = (int) R2N(arg1);
-
-    if (kvv_fork() != 0) {
-	SetResult(&result, R_STRING, "");
-	return;
-    }
-
-    mutex_lock(mutex);
-
-    if (index < shm->entries) {
-	char str[8];
-	sprintf(str, "%d", shm->entry[index].time);
-	SetResult(&result, R_STRING, str);
-    } else
-	SetResult(&result, R_STRING, "");
-
-    mutex_unlock(mutex);
-}
-
-/* plugin initialization */
-int plugin_init_kvv(void)
-{
+    static int started = 0;
     int val;
     char *p;
 
-    /* register all our cool functions */
-    AddFunction("kvv::line", 1, kvv_line);
-    AddFunction("kvv::station", 1, kvv_station);
-    AddFunction("kvv::time", 1, kvv_time);
-    AddFunction("kvv::time_str", 1, kvv_time_str);
+
+    if (started)
+	return;
+
+    started = 1;
 
     /* parse parameter */
     if ((p = cfg_get(SECTION, "StationID", DEFAULT_STATION_ID)) != NULL) {
@@ -771,6 +688,107 @@ int plugin_init_kvv(void)
 	info("[KVV] Default abbreviation setting: %s", abbreviate ? "on" : "off");
     }
 
+}
+
+static void kvv_line(RESULT * result, RESULT * arg1)
+{
+    int index = (int) R2N(arg1);
+
+    kvv_start();
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    mutex_lock(mutex);
+
+    if (index < shm->entries) {
+	SetResult(&result, R_STRING, shm->entry[index].line);
+    } else
+	SetResult(&result, R_STRING, "");
+
+    mutex_unlock(mutex);
+}
+
+static void kvv_station(RESULT * result, RESULT * arg1)
+{
+    int index = (int) R2N(arg1);
+
+    kvv_start();
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    mutex_lock(mutex);
+
+    if (shm->error && index == 0)
+	SetResult(&result, R_STRING, "Server Err");
+    else {
+	if (index < shm->entries)
+	    SetResult(&result, R_STRING, shm->entry[index].station);
+	else
+	    SetResult(&result, R_STRING, "");
+    }
+
+    mutex_unlock(mutex);
+}
+
+static void kvv_time(RESULT * result, RESULT * arg1)
+{
+    int index = (int) R2N(arg1);
+    double value = -1.0;
+
+    kvv_start();
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    mutex_lock(mutex);
+
+    if (index < shm->entries)
+	value = shm->entry[index].time;
+
+    SetResult(&result, R_NUMBER, &value);
+
+    mutex_unlock(mutex);
+}
+
+static void kvv_time_str(RESULT * result, RESULT * arg1)
+{
+    int index = (int) R2N(arg1);
+
+    kvv_start();
+
+    if (kvv_fork() != 0) {
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    mutex_lock(mutex);
+
+    if (index < shm->entries) {
+	char str[8];
+	sprintf(str, "%d", shm->entry[index].time);
+	SetResult(&result, R_STRING, str);
+    } else
+	SetResult(&result, R_STRING, "");
+
+    mutex_unlock(mutex);
+}
+
+/* plugin initialization */
+int plugin_init_kvv(void)
+{
+    /* register all our cool functions */
+    AddFunction("kvv::line", 1, kvv_line);
+    AddFunction("kvv::station", 1, kvv_station);
+    AddFunction("kvv::time", 1, kvv_time);
+    AddFunction("kvv::time_str", 1, kvv_time_str);
     return 0;
 }
 
