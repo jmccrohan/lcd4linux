@@ -155,9 +155,9 @@ static void startFifo(void)
 
     if (started)
 	return;
-    
+
     started = 1;
-    
+
     configure_fifo();
     fd.path = fifopath;
     fd.input = -1;
