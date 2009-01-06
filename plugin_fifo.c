@@ -149,11 +149,37 @@ static int openFifo()
 }
 
 
+static void startFifo(void)
+{
+    static int started = 0;
+
+    if (started)
+	return;
+    
+    started = 1;
+    
+    configure_fifo();
+    fd.path = fifopath;
+    fd.input = -1;
+    fd.created = 0;
+    openFifo();
+
+    /* ignore broken pipe */
+    signal(SIGPIPE, SIG_IGN);
+
+    memset(msg, 0, FIFO_BUFFER_SIZE);
+
+}
+
+
 static void fiforead(RESULT * result)
 {
     char buf[FIFO_BUFFER_SIZE];
     unsigned int i;
     int bytes = 1;
+
+    startFifo();
+
     memset(buf, 0, FIFO_BUFFER_SIZE);
     strcat(buf, "ERROR");
 
@@ -184,18 +210,6 @@ static void fiforead(RESULT * result)
 /* plugin initialization */
 int plugin_init_fifo(void)
 {
-    configure_fifo();
-    fd.path = fifopath;
-    fd.input = -1;
-    fd.created = 0;
-    if (openFifo() < 0) {
-	return -1;
-    }
-
-    /* ignore broken pipe */
-    signal(SIGPIPE, SIG_IGN);
-
-    memset(msg, 0, FIFO_BUFFER_SIZE);
     AddFunction("fifo::read", 0, fiforead);
     return 0;
 }
@@ -203,7 +217,6 @@ int plugin_init_fifo(void)
 
 void plugin_exit_fifo(void)
 {
-
     /* close filedescriptors */
     closeFifo();
 }
