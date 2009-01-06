@@ -270,8 +270,6 @@ static void hddtemp_call(RESULT * result, int argc, RESULT * argv[])
 
 int plugin_init_hddtemp(void)
 {
-    info("Adding hddtemp functions!");
-
     AddFunction("hddtemp", -1, hddtemp_call);
 
     return 0;
