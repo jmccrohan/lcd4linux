@@ -89,8 +89,7 @@ toasty 53 degC.
 /* these should always be included */
 #include "debug.h"
 #include "plugin.h"
-#include "cfg.h"
-#include "thread.h"
+
 
 
 static int socket_open(const char *name, int port)
@@ -130,147 +129,149 @@ static int socket_open(const char *name, int port)
 }
 
 
-// replaces all null chars in a buffer with a given character.
-static void replace_nulls(char *buf, size_t len, char repl)
-{
-    char *end = buf + len;
-
-    while (buf < end) {
-	if (*buf == '\0') {
-	    *buf = repl;
-	}
-
-	buf += 1;
-    }
-}
-
-
-static size_t hddtemp_read(int socket, char *buf, size_t bufsiz)
+static size_t hddtemp_read(int socket, char *buffer, size_t size)
 {
     size_t count = 0;
     ssize_t len;
 
-    while (count < bufsiz) {
-	len = read(socket, buf + count, bufsiz - count);
+    while (count < size) {
+	len = read(socket, buffer + count, size - count);
 	if (len > 0) {
-	    replace_nulls(buf + count, len, '@');
 	    count += len;
 	} else if (len < 0) {
-	    // an error!
-	    error("[hddtemp] Couldn't read: %s", strerror(errno));
+	    error("[hddtemp] couldn't read from socket: %s", strerror(errno));
 	    return -1;
 	} else {
-	    // remote socket has closed
-	    break;
+	    break;		/* remote socket has closed */
 	}
     }
 
     // null-terminate the string
-    if (count < bufsiz) {
-	buf[count] = '\0';
+    if (count < size) {
+	buffer[count] = '\0';
     } else {
-	buf[bufsiz - 1] = '\0';
+	buffer[size - 1] = '\0';
     }
 
     return count;
 }
 
 
-static int hddtemp_connect(const char *host, int port, char *buf, size_t bufsiz)
+static int hddtemp_connect(const char *host, int port, char *buffer, size_t size)
 {
-    int sock, ret;
+    int socket, ret;
 
-    sock = socket_open(host, port);
-    if (sock < 0) {
+    socket = socket_open(host, port);
+    if (socket < 0) {
 	error("[hddtemp] Error accessing %s:%d: %s", host, port, strerror(errno));
 	return -1;
     }
 
-    ret = hddtemp_read(sock, buf, bufsiz);
-    close(sock);
+    ret = hddtemp_read(socket, buffer, size);
+    close(socket);
 
     return ret;
 }
 
 
-static char *hddtemp_fetch(char *buf, size_t bufsiz, const char *host, int port, const char *arg)
+/* split a value into columns and return the nth column */
+/* WARNING: does return a pointer to a static string!! */
+static char *split(const char *value, const int column)
 {
-    char *line, *end;
+    static char buffer[256];
+    const char *p, *q, *v;
+    size_t l;
+    int c;
 
-    // fetch a buffer of all hddtemps
-    if (!hddtemp_connect(host, port, buf, bufsiz)) {
+    c = 0;
+    p = value;
+    q = NULL;
+    for (v = value; v && *v; v++) {
+	if (*v == '|') {
+	    if (c == column) {
+		q = v;
+		break;
+	    } else {
+		p = v + 1;
+	    }
+	    c++;
+	}
+    }
+
+    if (c < column)
+	return NULL;
+
+    l = q ? (size_t) (q - p) : strlen(p);
+    if (l >= sizeof(buffer))
+	l = sizeof(buffer) - 1;
+    strncpy(buffer, p, l);
+
+    buffer[l] = '\0';
+    return buffer;
+}
+
+static char *hddtemp_fetch(const char *host, int port, const char *device)
+{
+    char buffer[4096];
+    char *key;
+    int i;
+
+    /* fetch a buffer of all hddtemps */
+    if (!hddtemp_connect(host, port, buffer, sizeof(buffer))) {
 	return "err";
     }
-    // find the line containing the user's specification
-    line = strstr(buf, arg);
-    if (!line) {
-	return "--";
-    }
-    // back up to the beginning of the line
-    while (line > buf && line[-1] != '\n') {
-	line--;
+
+    i = 1;
+    while (1) {
+	key = split(buffer, i);
+	if (key == NULL)
+	    break;
+	if (strcmp(device, key) == 0) {
+	    return split(buffer, i + 2);
+	}
+	i += 5;
     }
 
-    // quick sanity check -- each line begins with the separator
-    if (*line != '|') {
-	return "fmt1";
-    }
-    // |device|identifier|temp|units|
-    // skip 3 bars to find the start of the temperature
-    line = strchr(line + 1, '|');
-    if (line && line[0])
-	line = strchr(line + 1, '|');
-    if (!line || !line[0]) {
-	return "fmt2";
-    }
-    // set the next bar to '\0' to null-terminate temp
-    line += 1;
-    end = strchr(line, '|');
-    if (!end) {
-	return "fmt3";
-    }
-    *end = '\0';
-
-    return line;
+    return "n/a";
 }
 
 
-#ifndef TEST
-
-static void hddtemp_call(RESULT * result, int argc, RESULT * argv[])
+static void my_hddtemp(RESULT * result, int argc, RESULT * argv[])
 {
-    char buf[4096];
-    const char *search = "";
-    const char *host = "localhost";
+    char *device = "";
     int port = 7634;
-    char *out;
+    char *host = "localhost";
+    char *value;
 
     switch (argc) {
     case 0:
 	break;
     case 1:
-	search = R2S(argv[0]);
+	device = R2S(argv[0]);
 	break;
     case 2:
 	host = R2S(argv[0]);
-	search = R2S(argv[1]);
-    default:
-	if (argc > 3) {
-	    error("hddtemp(): too many parameters");
-	}
+	device = R2S(argv[1]);
+	break;
+    case 3:
 	host = R2S(argv[0]);
 	port = (int) R2N(argv[1]);
-	search = R2S(argv[2]);
+	device = R2S(argv[2]);
+	break;
+    default:
+	error("hddtemp(): too many parameters");
+	SetResult(&result, R_STRING, "");
+	return;
     }
 
-    out = hddtemp_fetch(buf, sizeof(buf), host, port, search);
-    SetResult(&result, R_STRING, out);
+    value = hddtemp_fetch(host, port, device);
+    SetResult(&result, R_STRING, value);
 }
 
 
 int plugin_init_hddtemp(void)
 {
-    AddFunction("hddtemp", -1, hddtemp_call);
+    AddFunction("hddtemp", -1, my_hddtemp);
 
     return 0;
 }
@@ -279,32 +280,3 @@ int plugin_init_hddtemp(void)
 void plugin_exit_hddtemp(void)
 {
 }
-#endif
-
-
-
-#ifdef TEST
-// Add this to your makefile to make the test_hddtemp app:
-// test_hddtemp: plugin_hddtemp.c
-//      gcc -Wall -Werror -g -DTEST plugin_hddtemp.c -o $@
-
-#include <stdarg.h>
-
-void message(const int level, const char *format, ...)
-{
-    va_list ap;
-
-    va_start(ap, format);
-    vprintf(format, ap);
-    putchar('\n');
-    va_end(ap);
-}
-
-int main(int argc, char **argv)
-{
-    char buf[4096];
-    char *out = hddtemp_fetch(buf, sizeof(buf), argv[1] ? argv[1] : "/dev/hda");
-    printf("OUTPUT: %s\n", out);
-    return 0;
-}
-#endif
