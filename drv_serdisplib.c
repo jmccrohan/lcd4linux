@@ -283,7 +283,8 @@ int drv_SD_list(void)
     serdisp_display_t displaydesc;
 
     if (verbose_level > 0) {
-	printf("  Supported displays:\n");
+	printf("  version %i.%i, supported displays:\n",
+	       SERDISP_VERSION_GET_MAJOR(SERDISP_VERSION_CODE), SERDISP_VERSION_GET_MINOR(SERDISP_VERSION_CODE));
 	displaydesc.dispname = "";
 	printf("    display name     alias names           description\n");
 	printf("    ---------------  --------------------  -----------------------------------\n");
