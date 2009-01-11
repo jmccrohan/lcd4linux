@@ -101,7 +101,7 @@ static void closeFifo()
 	fd.input = -1;
     }
     if (fd.created && (stat(fd.path, &st) == 0))
-	removeFifo(fd);
+	removeFifo();
 }
 
 static int makeFifo()
@@ -122,7 +122,7 @@ static int checkFifo()
 	if (errno == ENOENT) {
 
 	    /* Path doesn't exist */
-	    return makeFifo(fd);
+	    return makeFifo();
 	}
 	error("Failed to stat FIFO \"%s\": %s\n", fd.path, strerror(errno));
 	return -1;
