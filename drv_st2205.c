@@ -75,8 +75,10 @@ static int drv_st2205_open(const char *section)
     }
 
     h = st2205_open(dev);
-    if (h == NULL)
+    if (h == NULL) {
+	error("st2205: cannot open st2205 device %s", dev);
 	return -1;
+    }
 
     return 0;
 }
