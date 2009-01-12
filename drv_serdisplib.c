@@ -186,6 +186,15 @@ static int drv_SD_start(const char *section)
 	return -1;
     }
 
+    /* print supported options by display */
+    info("%s: options supported by display %s:", Name, model);
+    serdisp_options_t optiondesc;
+    optiondesc.name = "";	/* start the iteration with assigning an empty string before the first call */
+    while (serdisp_nextoptiondescription(dd, &optiondesc)) {
+	info("  %s", optiondesc.name);
+    }
+
+
     DROWS = serdisp_getheight(dd);
     DCOLS = serdisp_getwidth(dd);
     NUMCOLS = serdisp_getcolours(dd);
@@ -281,16 +290,21 @@ static void plugin_rotate(RESULT * result, RESULT * arg1)
 int drv_SD_list(void)
 {
     serdisp_display_t displaydesc;
+    long version;
 
     if (verbose_level > 0) {
-	printf("  version %i.%i, supported displays:\n",
-	       SERDISP_VERSION_GET_MAJOR(SERDISP_VERSION_CODE), SERDISP_VERSION_GET_MINOR(SERDISP_VERSION_CODE));
+	version = serdisp_getversioncode();
+	printf("  linked version %i.%i (compiled with header %i.%i), supported displays:\n",
+	       SERDISP_VERSION_GET_MAJOR(version), SERDISP_VERSION_GET_MINOR(version),
+	       SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
+
 	displaydesc.dispname = "";
 	printf("    display name     alias names           description\n");
 	printf("    ---------------  --------------------  -----------------------------------\n");
 	while (serdisp_nextdisplaydescription(&displaydesc)) {
 	    printf("    %-15s  %-20s  %-35s\n", displaydesc.dispname, displaydesc.aliasnames, displaydesc.description);
 	}
+
     } else {
 	displaydesc.dispname = "";
 	while (serdisp_nextdisplaydescription(&displaydesc)) {

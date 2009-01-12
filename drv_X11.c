@@ -494,7 +494,7 @@ static void plugin_brightness(RESULT * result, const int argc, RESULT * argv[])
 /* list models */
 int drv_X11_list(void)
 {
-    printf("any");
+    printf("any X11 server");
     return 0;
 }
 
