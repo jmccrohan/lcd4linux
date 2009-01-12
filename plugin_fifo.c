@@ -82,7 +82,7 @@ static void configure_fifo(void)
 }
 
 
-static void removeFifo()
+static void removeFifo(void)
 {
     debug("Removing FIFO \"%s\"\n", fd.path);
     if (unlink(fd.path) < 0) {
@@ -93,7 +93,7 @@ static void removeFifo()
 }
 
 
-static void closeFifo()
+static void closeFifo(void)
 {
     struct stat st;
     if (fd.input >= 0) {
@@ -104,7 +104,7 @@ static void closeFifo()
 	removeFifo();
 }
 
-static int makeFifo()
+static int makeFifo(void)
 {
     if (mkfifo(fd.path, 0666) < 0) {
 	error("Couldn't create FIFO \"%s\": %s\n", fd.path, strerror(errno));
@@ -115,7 +115,7 @@ static int makeFifo()
 }
 
 
-static int checkFifo()
+static int checkFifo(void)
 {
     struct stat st;
     if (stat(fd.path, &st) < 0) {
@@ -135,7 +135,7 @@ static int checkFifo()
 }
 
 
-static int openFifo()
+static int openFifo(void)
 {
     if (checkFifo() < 0)
 	return -1;
