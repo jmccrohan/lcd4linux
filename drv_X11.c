@@ -4,7 +4,7 @@
  * new style X11 Driver for LCD4Linux 
  *
  * Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
- * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004, 2008 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * based on the old XWindow.c which is
  * Copyright (C) 2000 Herbert Rosmanith <herp@wildsau.idv.uni-linz.ac.at>
@@ -77,7 +77,10 @@ static int btnheight = 0;
 
 static int dimx, dimy;		/* total window dimension in pixel */
 
-static RGBA *drv_X11_FB = NULL;
+static RGBA *drv_X11_FB = NULL;	/* framebuffer */
+
+static RGBA BP_COL = {.R = 0xff,.G = 0xff,.B = 0xff,.A = 0x00 };	/* pixel background color */
+static RGBA BR_COL = {.R = 0xff,.G = 0xff,.B = 0xff,.A = 0x00 };	/* border color */
 
 static Display *dp;
 static int sc, dd;
@@ -93,11 +96,11 @@ static Pixmap pm;
 /***  hardware dependant functions    ***/
 /****************************************/
 
-static void drv_X11_color(RGBA c)
+static void drv_X11_color(RGBA c, int brightness)
 {
-    xc.red = 255 * c.R;
-    xc.green = 255 * c.G;
-    xc.blue = 255 * c.B;
+    xc.red = brightness * c.R;
+    xc.green = brightness * c.G;
+    xc.blue = brightness * c.B;
     xc.flags = DoRed | DoGreen | DoBlue;
     if (XAllocColor(dp, cm, &xc) == False) {
 	error("%s: XAllocColor(%02x%02x%02x) failed!", Name, c.R, c.G, c.B);
@@ -120,7 +123,7 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 	    RGBA p1 = drv_X11_FB[r * DCOLS + c];
 	    RGBA p2 = drv_generic_graphic_rgb(r, c);
 	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
-		drv_X11_color(p2);
+		drv_X11_color(p2, 255);	/* Fixme: this call is so slow... */
 		XFillRectangle(dp, w, gc, x, y, pixel, pixel);
 		drv_X11_FB[r * DCOLS + c] = p2;
 		dirty = 1;
@@ -135,10 +138,7 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 
 static int drv_X11_brightness(int brightness)
 {
-    static unsigned char Brightness = 0;
-    RGBA col = BL_COL;
-    int i;
-    float dim;
+    static int Brightness = 255;
 
     /* -1 is used to query the current brightness */
     if (brightness == -1)
@@ -151,26 +151,28 @@ static int drv_X11_brightness(int brightness)
 
     if (Brightness != brightness) {
 
-	Brightness = brightness;
-	dim = Brightness / 255.0;
-	col.R *= dim;
-	col.G *= dim;
-	col.B *= dim;
+	int i;
+	float dim = brightness / 255.0;
 
-	debug("%s: set backlight to %d%%, original backlight color: 0x%02x%02x%02x%02x, dimmed: 0x%02x%02x%02x%02x",
-	      Name, (int) (dim * 100), BL_COL.R, BL_COL.G, BL_COL.B, BL_COL.A, col.R, col.G, col.B, col.A);
-	for (i = 0; i < DCOLS * DROWS; i++) {
-	    drv_X11_FB[i] = col;
-	}
+	debug("%s: set brightness to %d%%", Name, (int) (dim * 100));
 
-	drv_X11_color(col);
+	BL_COL.R = BP_COL.R * dim;
+	BL_COL.G = BP_COL.G * dim;
+	BL_COL.B = BP_COL.B * dim;
 
-	XFillRectangle(dp, pm, gc, 0, 0, dimx + 2 * border + btnwidth, dimy + 2 * border);
+	/* set new background */
+	drv_X11_color(BR_COL, brightness);
 	XSetWindowBackground(dp, w, xc.pixel);
 	XClearWindow(dp, w);
 
 	/* redraw every LCD pixel */
+	for (i = 0; i < DCOLS * DROWS; i++) {
+	    drv_X11_FB[i] = NO_COL;
+	}
 	drv_X11_blit(0, 0, LROWS, LCOLS);
+
+	/* remember new brightness */
+	Brightness = brightness;
     }
 
     return Brightness;
@@ -241,7 +243,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    int xc = border + (c / XRES) * cgap + c * (pixel + pgap);
 	    if (xc < x0 || xc > x1)
 		continue;
-	    drv_X11_color(drv_generic_graphic_rgb(r, c));
+	    drv_X11_color(drv_generic_graphic_rgb(r, c), 255);
 	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
@@ -250,9 +252,9 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     if (x1 >= xoffset) {
 	xfs = XQueryFont(dp, XGContextFromGC(DefaultGC(dp, 0)));
 	if (drv_X11_brightness(-1) > 127) {
-	    drv_X11_color(FG_COL);
+	    drv_X11_color(FG_COL, 255);
 	} else {
-	    drv_X11_color(BG_COL);
+	    drv_X11_color(BG_COL, 255);
 	}
 	for (r = 0; r < buttons; r++) {
 	    yk = yoffset + r * (btnheight + pgap);
@@ -285,7 +287,6 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 			yk + btnheight / 2 + xfs->max_bounds.ascent / 2, s, strlen(s));
 	}
     }
-    //XSync(dp, False);
 }
 
 
@@ -311,7 +312,7 @@ static void drv_X11_timer( __attribute__ ((unused))
 	    && ev.xbutton.y >= yoffset && ev.xbutton.y <= yoffset + buttons * btnheight + (buttons - 1) * pgap) {
 	    btn = (ev.xbutton.y - yoffset) / (btnheight + pgap) + 1;	/* btn 0 is unused */
 	    debug("button %d pressed", btn);
-	    drv_X11_color(BG_COL);
+	    drv_X11_color(BG_COL, 255);
 	    XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
 			   btnheight - 2 - 1);
 	    drv_generic_keypad_press(btn);
@@ -379,12 +380,26 @@ static int drv_X11_start(const char *section)
     if (cfg_number(section, "border", 0, 0, -1, &border) < 0)
 	return -1;
 
-    /* we need the basecolor for the brightness early */
+    /* special case for the X11 driver: 
+     * the border color may be different from the backlight color
+     * the backlicht color is the color of an inactive pixel
+     * the border color is the color of the border and gaps between pixels
+     * for the brightness pugin we need a copy of BL_COL, we call it BP_COL
+     */
     s = cfg_get(section, "basecolor", "000000ff");
-    if (color2RGBA(s, &BL_COL) < 0) {
+    if (color2RGBA(s, &BP_COL) < 0) {
 	error("%s: ignoring illegal color '%s'", Name, s);
     }
     free(s);
+    BL_COL = BP_COL;
+
+    BR_COL = BP_COL;
+    if ((s = cfg_get(section, "bordercolor", NULL)) != NULL) {
+	if (color2RGBA(s, &BR_COL) < 0) {
+	    error("%s: ignoring illegal color '%s'", Name, s);
+	}
+	free(s);
+    }
 
     /* virtual keyboard: number of buttons (0..6) */
     if (cfg_number(section, "buttons", 0, 0, 6, &buttons) < 0)
@@ -397,7 +412,7 @@ static int drv_X11_start(const char *section)
     }
 
     for (i = 0; i < DCOLS * DROWS; i++) {
-	drv_X11_FB[i] = BL_COL;
+	drv_X11_FB[i] = NO_COL;
     }
 
     if ((dp = XOpenDisplay(NULL)) == NULL) {
@@ -431,9 +446,7 @@ static int drv_X11_start(const char *section)
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
 
-    drv_X11_color(BL_COL);
-
-    XFillRectangle(dp, pm, gc, 0, 0, sh.min_width, sh.min_height);
+    drv_X11_color(BR_COL, 255);
     XSetWindowBackground(dp, w, xc.pixel);
     XClearWindow(dp, w);
 
@@ -517,6 +530,7 @@ int drv_X11_init(const char *section, const int quiet)
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
+    BL_COL = BP_COL;
 
     /* initialize generic key pad driver */
     if ((ret = drv_generic_keypad_init(section, Name)) != 0)

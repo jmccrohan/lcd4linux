@@ -123,7 +123,7 @@ static void drv_generic_graphic_resizeFB(int rows, int cols)
 	/* allocate and initialize new Layout FB */
 	newFB = malloc(cols * rows * sizeof(*newFB));
 	for (i = 0; i < rows * cols; i++)
-	    newFB[i] = (l == 0) ? BG_COL : NO_COL;
+	    newFB[i] = NO_COL;
 
 	/* transfer contents */
 	if (drv_generic_graphic_FB[l] != NULL) {
@@ -184,7 +184,7 @@ static RGBA drv_generic_graphic_blend(const int row, const int col)
     ret.R = BL_COL.R;
     ret.G = BL_COL.G;
     ret.B = BL_COL.B;
-    ret.A = 0xff;
+    ret.A = 0x00;
 
     /* find first opaque layer */
     /* layers below are fully covered */
@@ -206,11 +206,13 @@ static RGBA drv_generic_graphic_blend(const int row, const int col)
 	    ret.R = p.R;
 	    ret.G = p.G;
 	    ret.B = p.B;
+	    ret.A = 0xff;
 	    break;
 	default:
 	    ret.R = (p.R * p.A + ret.R * (255 - p.A)) / 255;
 	    ret.G = (p.G * p.A + ret.G * (255 - p.A)) / 255;
 	    ret.B = (p.B * p.A + ret.B * (255 - p.A)) / 255;
+	    ret.A = 0xff;
 	}
     }
     if (INVERTED) {
@@ -581,7 +583,7 @@ int drv_generic_graphic_image_draw(WIDGET * W)
 
 int drv_generic_graphic_init(const char *section, const char *driver)
 {
-    int l;
+    int i, l;
     char *color;
     WIDGET_CLASS wc;
 
@@ -655,8 +657,10 @@ int drv_generic_graphic_init(const char *section, const char *driver)
     widget_register(&wc);
 #endif
 
-    /* clear framebuffer */
-    drv_generic_graphic_clear();
+    /* clear framebuffer but do not blit to display */
+    for (l = 0; l < LAYERS; l++)
+	for (i = 0; i < LCOLS * LROWS; i++)
+	    drv_generic_graphic_FB[l][i] = NO_COL;
 
     return 0;
 }
@@ -668,7 +672,7 @@ int drv_generic_graphic_clear(void)
 
     for (l = 0; l < LAYERS; l++)
 	for (i = 0; i < LCOLS * LROWS; i++)
-	    drv_generic_graphic_FB[l][i] = BG_COL;
+	    drv_generic_graphic_FB[l][i] = NO_COL;
 
     drv_generic_graphic_blit(0, 0, LROWS, LCOLS);
 
