@@ -492,13 +492,6 @@ fi
 
 if test "$PLUGINS" = ""; then
    AC_MSG_ERROR([You should include at least one plugin...])
-else
-   AC_MSG_RESULT(
-[-----------------------------------------]
-[including plugins:]
-[  $PLUGINS]
-[-----------------------------------------]
-   )
 fi
    
 AC_SUBST(PLUGINS)

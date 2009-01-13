@@ -8531,17 +8531,6 @@ if test "$DRIVERS" = ""; then
    { { echo "$as_me:$LINENO: error: You should include at least one driver..." >&5
 echo "$as_me: error: You should include at least one driver..." >&2;}
    { (exit 1); exit 1; }; }
-else
-   { echo "$as_me:$LINENO: result: -----------------------------------------
-including drivers:
-  $DRIVERS
------------------------------------------
-   " >&5
-echo "${ECHO_T}-----------------------------------------
-including drivers:
-  $DRIVERS
------------------------------------------
-   " >&6; }
 fi
 
 
@@ -11844,17 +11833,6 @@ if test "$PLUGINS" = ""; then
    { { echo "$as_me:$LINENO: error: You should include at least one plugin..." >&5
 echo "$as_me: error: You should include at least one plugin..." >&2;}
    { (exit 1); exit 1; }; }
-else
-   { echo "$as_me:$LINENO: result: -----------------------------------------
-including plugins:
-  $PLUGINS
------------------------------------------
-   " >&5
-echo "${ECHO_T}-----------------------------------------
-including plugins:
-  $PLUGINS
------------------------------------------
-   " >&6; }
 fi
 
 
@@ -16317,3 +16295,20 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
+
+{ echo "$as_me:$LINENO: result: -----------------------------------------
+including drivers:
+  $DRIVERS
+-----------------------------------------
+including plugins:
+  $PLUGINS
+-----------------------------------------
+" >&5
+echo "${ECHO_T}-----------------------------------------
+including drivers:
+  $DRIVERS
+-----------------------------------------
+including plugins:
+  $PLUGINS
+-----------------------------------------
+" >&6; }

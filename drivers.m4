@@ -699,13 +699,6 @@ fi
 
 if test "$DRIVERS" = ""; then
    AC_MSG_ERROR([You should include at least one driver...])
-else
-   AC_MSG_RESULT(
-[-----------------------------------------]
-[including drivers:]
-[  $DRIVERS]
-[-----------------------------------------]
-   )
 fi
    
 AC_SUBST(DRIVERS)

@@ -144,3 +144,13 @@ AC_CHECK_FUNCS([dup2 floor gethostbyname gettimeofday memmove memset pow putenv 
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
+
+AC_MSG_RESULT(
+[-----------------------------------------]
+[including drivers:]
+[  $DRIVERS]
+[-----------------------------------------]
+[including plugins:]
+[  $PLUGINS]
+[-----------------------------------------]
+)
