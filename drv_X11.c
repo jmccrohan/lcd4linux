@@ -123,7 +123,7 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 	    RGBA p1 = drv_X11_FB[r * DCOLS + c];
 	    RGBA p2 = drv_generic_graphic_rgb(r, c);
 	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
-		//drv_X11_color(p2, 255);	/* Fixme: this call is so slow... */
+		//drv_X11_color(p2, 255);       /* Fixme: this call is so slow... */
 		//XFillRectangle(dp, w, gc, x, y, pixel, pixel);
 		XClearArea(dp, w, x, y, pixel, pixel, 1);
 		drv_X11_FB[r * DCOLS + c] = p2;
@@ -229,7 +229,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     XRectangle rect[DROWS * DCOLS];
     int nrect = 0;
     RGBA col;
-    RGBA lastCol = {0, 0, 0, 0};
+    RGBA lastCol = { 0, 0, 0, 0 };
     int hasLastCol = 0;
 
     x0 = x - pixel;
@@ -246,26 +246,26 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    if (xc < x0 || xc > x1)
 		continue;
 	    col = drv_generic_graphic_rgb(r, c);
-            if (hasLastCol) {
-                /* if the color of this pixel is different to the last pixels draw the old ones */
-                if (col.R != lastCol.R || col.G != lastCol.G || col.B != lastCol.B) {
-                    drv_X11_color(lastCol, 255);
-                    XFillRectangles(dp, w, gc, rect, nrect);
-                    nrect = 0;
-                    lastCol = col;
-                }
-                rect[nrect].x = xc;
-                rect[nrect].y = yc;
-                rect[nrect].width = pixel;
-                rect[nrect].height = pixel;
-                nrect++;
-            } else {
-                /* 1st shot: no old color */
-                drv_X11_color(col, 255);
-                XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
-                lastCol = col;
-                hasLastCol = 1;
-            }
+	    if (hasLastCol) {
+		/* if the color of this pixel is different to the last pixels draw the old ones */
+		if (col.R != lastCol.R || col.G != lastCol.G || col.B != lastCol.B) {
+		    drv_X11_color(lastCol, 255);
+		    XFillRectangles(dp, w, gc, rect, nrect);
+		    nrect = 0;
+		    lastCol = col;
+		}
+		rect[nrect].x = xc;
+		rect[nrect].y = yc;
+		rect[nrect].width = pixel;
+		rect[nrect].height = pixel;
+		nrect++;
+	    } else {
+		/* 1st shot: no old color */
+		drv_X11_color(col, 255);
+		XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
+		lastCol = col;
+		hasLastCol = 1;
+	    }
 	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
@@ -330,27 +330,27 @@ static void drv_X11_timer( __attribute__ ((unused))
     switch (ev.type) {
 
     case Expose:
-        /* collect all expose events in eventqueue */
-        exp.x = ev.xexpose.x;
-        exp.y = ev.xexpose.y;
-        exp.width = ev.xexpose.width;
-        exp.height = ev.xexpose.height;
-        while (XCheckWindowEvent(dp, w, ExposureMask, &ev)) {
-            if (ev.xexpose.x < exp.x) {
-                exp.width += exp.x - ev.xexpose.x;
-                exp.x -= exp.x - ev.xexpose.x;
-            }
-            if (ev.xexpose.y < exp.y) {
-                exp.height += exp.y - ev.xexpose.y;
-                exp.y -= exp.y - ev.xexpose.y;
-            }
-            if (ev.xexpose.x + ev.xexpose.width > exp.x + exp.width) {
-                exp.width += ev.xexpose.x + ev.xexpose.width - (exp.x + exp.width);
-            }
-            if (ev.xexpose.y + ev.xexpose.height > exp.y + exp.height) {
-                exp.height += ev.xexpose.y + ev.xexpose.height - (exp.y + exp.height);
-            }
-        }
+	/* collect all expose events in eventqueue */
+	exp.x = ev.xexpose.x;
+	exp.y = ev.xexpose.y;
+	exp.width = ev.xexpose.width;
+	exp.height = ev.xexpose.height;
+	while (XCheckWindowEvent(dp, w, ExposureMask, &ev)) {
+	    if (ev.xexpose.x < exp.x) {
+		exp.width += exp.x - ev.xexpose.x;
+		exp.x -= exp.x - ev.xexpose.x;
+	    }
+	    if (ev.xexpose.y < exp.y) {
+		exp.height += exp.y - ev.xexpose.y;
+		exp.y -= exp.y - ev.xexpose.y;
+	    }
+	    if (ev.xexpose.x + ev.xexpose.width > exp.x + exp.width) {
+		exp.width += ev.xexpose.x + ev.xexpose.width - (exp.x + exp.width);
+	    }
+	    if (ev.xexpose.y + ev.xexpose.height > exp.y + exp.height) {
+		exp.height += ev.xexpose.y + ev.xexpose.height - (exp.y + exp.height);
+	    }
+	}
 	drv_X11_expose(exp.x, exp.y, exp.width, exp.height);
 	break;
 
@@ -592,7 +592,7 @@ int drv_X11_init(const char *section, const int quiet)
 	char buffer[40];
 	qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
 	if (drv_generic_graphic_greet(buffer, NULL)) {
-            drv_X11_expose(0, 0, dimx + 2 * border, dimy + 2 * border);
+	    drv_X11_expose(0, 0, dimx + 2 * border, dimy + 2 * border);
 	    sleep(3);
 	    drv_generic_graphic_clear();
 	}
