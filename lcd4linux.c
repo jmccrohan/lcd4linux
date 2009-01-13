@@ -246,9 +246,11 @@ int main(int argc, char *argv[])
 	case 'l':
 	    printf("%s\n", release);
 	    printf("%s\n", copyright);
+	    printf("\n");
 	    drv_list();
 	    printf("\n");
 	    plugin_list();
+	    printf("\n");
 	    exit(0);
 	case 'o':
 	    output = optarg;

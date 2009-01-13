@@ -215,6 +215,10 @@ DRIVER *Driver[] = {
 static DRIVER *Drv = NULL;
 
 
+/* maybe we need this */
+extern int drv_SD_list_verbose(void);
+
+
 int drv_list(void)
 {
     int i;
@@ -227,6 +231,12 @@ int drv_list(void)
 	    Driver[i]->list();
     }
     printf("\n");
+
+#ifdef WITH_SERDISPLIB
+    printf("\n");
+    drv_SD_list_verbose();
+#endif
+
     return 0;
 }
 

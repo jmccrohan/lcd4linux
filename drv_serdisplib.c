@@ -290,27 +290,32 @@ static void plugin_rotate(RESULT * result, RESULT * arg1)
 int drv_SD_list(void)
 {
     serdisp_display_t displaydesc;
+
+    displaydesc.dispname = "";
+    while (serdisp_nextdisplaydescription(&displaydesc)) {
+	printf("%s ", displaydesc.dispname);
+    }
+
+    return 0;
+}
+
+
+/* verbosely list models (special case for serdisplib) */
+int drv_SD_list_verbose(void)
+{
+    serdisp_display_t displaydesc;
     long version;
 
-    if (verbose_level > 0) {
-	version = serdisp_getversioncode();
-	printf("  linked version %i.%i (compiled with header %i.%i), supported displays:\n",
-	       SERDISP_VERSION_GET_MAJOR(version), SERDISP_VERSION_GET_MINOR(version),
-	       SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR);
+    version = serdisp_getversioncode();
+    printf("%s: header version %d.%d, library version %d.%d, available sub-drivers:\n\n", Name,
+	   SERDISP_VERSION_MAJOR, SERDISP_VERSION_MINOR,
+	   SERDISP_VERSION_GET_MAJOR(version), SERDISP_VERSION_GET_MINOR(version));
 
-	displaydesc.dispname = "";
-	printf("    display name     alias names           description\n");
-	printf("    ---------------  --------------------  -----------------------------------\n");
-	while (serdisp_nextdisplaydescription(&displaydesc)) {
-	    printf("    %-15s  %-20s  %-35s\n", displaydesc.dispname, displaydesc.aliasnames, displaydesc.description);
-	}
-
-    } else {
-	displaydesc.dispname = "";
-	while (serdisp_nextdisplaydescription(&displaydesc)) {
-	    printf("%s ", displaydesc.dispname);
-	}
-	printf("\n     (use -vl to see detailed list of serdisplib)");
+    printf("display name        alias names           description\n");
+    printf("------------------  --------------------  -----------------------------------\n");
+    displaydesc.dispname = "";
+    while (serdisp_nextdisplaydescription(&displaydesc)) {
+	printf("   %-15s  %-20s  %-35s\n", displaydesc.dispname, displaydesc.aliasnames, displaydesc.description);
     }
 
     return 0;
