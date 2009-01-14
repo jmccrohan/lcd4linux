@@ -56,6 +56,7 @@
 
 #define G15_VENDOR 0x046d
 #define G15_DEVICE 0xc222
+#define M1730_DEVICE 0xc251
 
 #if 0
 #define DEBUG(x) debug("%s(): %s", __FUNCTION__, x);
@@ -314,19 +315,24 @@ static int drv_G15_open()
     for (bus = usb_get_busses(); bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
 	    if ((g15_lcd = usb_open(dev))) {
-		if ((dev->descriptor.idVendor == G15_VENDOR) && (dev->descriptor.idProduct == G15_DEVICE)) {
-
-		    /* detach from the kernel if we need to */
-		    int retval = usb_get_driver_np(g15_lcd, 0, dname, 31);
-		    if (retval == 0 && strcmp(dname, "usbhid") == 0) {
-			usb_detach_kernel_driver_np(g15_lcd, 0);
+		if (dev->descriptor.idVendor == G15_VENDOR) {
+		    switch (dev->descriptor.idProduct) {
+		    case G15_DEVICE:
+		    case M1730_DEVICE:
+			{
+			    /* detach from the kernel if we need to */
+			    int retval = usb_get_driver_np(g15_lcd, 0, dname, 31);
+			    if (retval == 0 && strcmp(dname, "usbhid") == 0) {
+				usb_detach_kernel_driver_np(g15_lcd, 0);
+			    }
+			    usb_set_configuration(g15_lcd, 1);
+			    usleep(100);
+			    usb_claim_interface(g15_lcd, 0);
+			    return 0;
+			}
+		    default:
+			usb_close(g15_lcd);
 		    }
-		    usb_set_configuration(g15_lcd, 1);
-		    usleep(100);
-		    usb_claim_interface(g15_lcd, 0);
-		    return 0;
-		} else {
-		    usb_close(g15_lcd);
 		}
 	    }
 	}
