@@ -123,8 +123,6 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 	    RGBA p1 = drv_X11_FB[r * DCOLS + c];
 	    RGBA p2 = drv_generic_graphic_rgb(r, c);
 	    if (p1.R != p2.R || p1.G != p2.G || p1.B != p2.B) {
-		//drv_X11_color(p2, 255);       /* Fixme: this call is so slow... */
-		//XFillRectangle(dp, w, gc, x, y, pixel, pixel);
 		XClearArea(dp, w, x, y, pixel, pixel, 1);
 		drv_X11_FB[r * DCOLS + c] = p2;
 	    }
@@ -562,6 +560,7 @@ int drv_X11_list(void)
 /* initialize driver & display */
 int drv_X11_init(const char *section, const int quiet)
 {
+    RGBA bl_col;
     int ret;
 
     info("%s: %s", Name, "$Rev$");
@@ -575,9 +574,11 @@ int drv_X11_init(const char *section, const int quiet)
     drv_generic_keypad_real_press = drv_X11_keypad;
 
     /* initialize generic graphic driver */
+    /* save BL_COL which may already be dimmed */
+    bl_col = BL_COL;
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
-    BL_COL = BP_COL;
+    BL_COL = bl_col;
 
     /* initialize generic key pad driver */
     if ((ret = drv_generic_keypad_init(section, Name)) != 0)
