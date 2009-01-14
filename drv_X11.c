@@ -77,6 +77,7 @@ static int btnwidth = 0;
 static int btnheight = 0;
 
 static int dimx, dimy;		/* total window dimension in pixel */
+static Atom wmDeleteMessage;
 
 static RGBA *drv_X11_FB = NULL;	/* framebuffer */
 
@@ -146,7 +147,6 @@ static int drv_X11_brightness(int brightness)
 
     if (Brightness != brightness) {
 
-	int i;
 	float dim = brightness / 255.0;
 
 	debug("%s: set brightness to %d%%", Name, (int) (dim * 100));
@@ -158,12 +158,8 @@ static int drv_X11_brightness(int brightness)
 	/* set new background */
 	drv_X11_color(BR_COL, brightness);
 	XSetWindowBackground(dp, w, xc.pixel);
-	XClearWindow(dp, w);
 
 	/* redraw every LCD pixel */
-	for (i = 0; i < DCOLS * DROWS; i++) {
-	    drv_X11_FB[i] = NO_COL;
-	}
 	drv_X11_blit(0, 0, LROWS, LCOLS);
 
 	/* remember new brightness */
@@ -264,7 +260,6 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 		lastCol = col;
 		hasLastCol = 1;
 	    }
-	    XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 	}
     }
     /* draw the last block of rectangles */
@@ -373,6 +368,15 @@ static void drv_X11_timer( __attribute__ ((unused))
 		       1 /* true */ );
 	}
 	break;
+
+    case ClientMessage:
+        if ((Atom)(ev.xclient.data.l[0]) == wmDeleteMessage) {
+            info("%s: Window closed by WindowManager, quit.", Name);
+            exit(0);
+        } else {
+            debug("%s: Got client message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
+                  ev.xclient.data.l[1], ev.xclient.data.l[2], ev.xclient.data.l[3], ev.xclient.data.l[4]);
+        }
 
     default:
 	debug("%s: unknown XEvent %d", Name, ev.type);
@@ -485,11 +489,21 @@ static int drv_X11_start(const char *section)
     sh.min_height = sh.max_height = dimy + 2 * border;
     sh.flags = PPosition | PSize | PMinSize | PMaxSize;
 
+    if (sh.min_width > DisplayWidth(dp, sc) || sh.min_height > DisplayHeight(dp, sc)) {
+        error("%s: Warning: X11-Window with dimensions (%d,%d) is greater than display (%d,%d)!",
+              Name, sh.min_width, sh.min_height, DisplayWidth(dp, sc), DisplayHeight(dp, sc));
+        if (sh.min_width > 32767 || sh.min_height > 32676) {
+            /* XProtocol data size exceeded */
+            exit(1);
+        }
+    }
     w = XCreateWindow(dp, rw, 0, 0, sh.min_width, sh.min_height, 0, 0, InputOutput, vi, CWEventMask, &wa);
 
     pm = XCreatePixmap(dp, w, dimx, dimy, dd);
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
+    wmDeleteMessage = XInternAtom(dp, "WM_DELETE_WINDOW", False);
+    /* XSetWMProtocols(dp, w, &wmDeleteMessage, 1); *to be tested* */
 
     drv_X11_color(BR_COL, 255);
     XSetWindowBackground(dp, w, xc.pixel);
