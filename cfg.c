@@ -5,7 +5,7 @@
  * config file stuff
  *
  * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
- * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004, 2009 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -47,6 +47,9 @@
  *   returns a list of all keys in the specified section
  *   This list was allocated be cfg_list() and must be 
  *   freed by the caller!
+ *
+ * cfg_rename (section, old, new)
+ *   changes the key of a existing entry
  *
  * cfg_get_raw (section, key, defval) 
  *   return the a value for a given key in a given section 
@@ -311,6 +314,58 @@ char *cfg_list(const char *section)
 
     free(key);
     return list;
+}
+
+
+int cfg_rename(const char *section, const char *old, const char *new)
+{
+    char *buffer;
+    ENTRY *old_entry, *new_entry;
+
+    /* prepare old section.key */
+    buffer = malloc(strlen(section) + strlen(old) + 2);
+    *buffer = '\0';
+    if (section != NULL && *section != '\0') {
+	strcpy(buffer, section);
+	strcat(buffer, ".");
+    }
+    strcat(buffer, old);
+
+    /* lookup old entry */
+    old_entry = bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
+    free(buffer);
+
+    if (old_entry == NULL) {
+	error("internal error: cfg_rename(%s, %s, %s) failed: entry not found!", section, old, new);
+	return -1;
+    }
+
+    /* prepare new section.key */
+    buffer = malloc(strlen(section) + strlen(new) + 2);
+    *buffer = '\0';
+    if (section != NULL && *section != '\0') {
+	strcpy(buffer, section);
+	strcat(buffer, ".");
+    }
+    strcat(buffer, new);
+
+    /* lookup new entry */
+    new_entry = bsearch(buffer, Config, nConfig, sizeof(ENTRY), c_lookup);
+
+    if (new_entry != NULL) {
+	info("cfg_rename(%s, %s, %s) failed: entry already exists!", section, old, new);
+	free(buffer);
+	return -1;
+    }
+
+    /* replace key */
+    free(old_entry->key);
+    old_entry->key = buffer;
+
+    /* sort table again */
+    qsort(Config, nConfig, sizeof(ENTRY), c_sort);
+
+    return 0;
 }
 
 

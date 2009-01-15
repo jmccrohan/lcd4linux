@@ -4,7 +4,7 @@
  * config file stuff
  *
  * Copyright (C) 1999, 2000 Michael Reinelt <michael@reinelt.co.at>
- * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
+ * Copyright (C) 2004, 2009 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
  *
@@ -31,6 +31,7 @@ int cfg_init(const char *file);
 char *cfg_source(void);
 int cfg_cmd(const char *arg);
 char *cfg_list(const char *section);
+int cfg_rename(const char *section, const char *old, const char *new);
 char *cfg_get_raw(const char *section, const char *key, const char *defval);
 char *cfg_get(const char *section, const char *key, const char *defval);
 int cfg_number(const char *section, const char *key, const int defval, const int min, const int max, int *value);
