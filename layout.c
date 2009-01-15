@@ -49,6 +49,55 @@
 #endif
 
 
+/* rename old-style widgets without layer */
+static int layout_migrate(const char *section)
+{
+    char *list, *old, *new;
+    int row, col;
+
+    /* get a list of all keys in this section */
+    list = cfg_list(section);
+
+    /* map to lower char for scanf() */
+    for (old = list; *old != '\0'; old++)
+	*old = tolower(*old);
+
+    old = list;
+    while (old != NULL) {
+
+	char *p;
+	int i, n;
+
+	/* list is delimited by | */
+	while (*old == '|')
+	    old++;
+	if ((p = strchr(old, '|')) != NULL)
+	    *p = '\0';
+
+	/* row/col widgets w/o layer */
+	i = sscanf(old, "row%d.col%d%n", &row, &col, &n);
+	if (i == 2 && old[n] == '\0') {
+
+	    /* prepare new key */
+	    /* strlen("Layer:1.")=8 */
+	    new = malloc(strlen(old) + 9);
+	    strcpy(new, "Layer:1.");
+	    strcat(new, old);
+
+	    debug("%s: migrating '%s' to '%s'", section, old, new);
+	    if (cfg_rename(section, old, new) < 0) {
+		error("WARNING: %s: both keys '%s' and '%s' may not exist!", section, old, new);
+	    }
+	}
+
+	/* next field */
+	old = p ? p + 1 : NULL;
+    }
+    free(list);
+    return 0;
+}
+
+
 int layout_init(const char *layout)
 {
     char *section;
@@ -63,6 +112,9 @@ int layout_init(const char *layout)
     section = malloc(strlen(layout) + 8);
     strcpy(section, "Layout:");
     strcat(section, layout);
+
+    /* mirate layout to common format */
+    layout_migrate(section);
 
     /* get a list of all keys in this section */
     list = cfg_list(section);
@@ -109,17 +161,6 @@ int layout_init(const char *layout)
 		}
 		free(widget);
 	    }
-	}
-
-	/* row/col widgets w/o layer */
-	i = sscanf(l, "row%d.col%d%n", &row, &col, &n);
-	if (i == 2 && l[n] == '\0') {
-	    widget = cfg_get(section, l, NULL);
-	    if (widget != NULL && *widget != '\0') {
-		/* default is layer 1 if outside layer section */
-		widget_add(widget, WIDGET_TYPE_RC, 1, row - 1, col - 1);
-	    }
-	    free(widget);
 	}
 
 	/* GPO widgets */
