@@ -46,6 +46,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <signal.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -108,7 +109,6 @@ static void drv_X11_color(RGBA c, int brightness)
 	error("%s: XAllocColor(%02x%02x%02x) failed!", Name, c.R, c.G, c.B);
     }
     XSetForeground(dp, gc, xc.pixel);
-    XSetBackground(dp, gc, xc.pixel);
 
 }
 
@@ -160,7 +160,7 @@ static int drv_X11_brightness(int brightness)
 	XSetWindowBackground(dp, w, xc.pixel);
 
 	/* redraw every LCD pixel */
-	drv_X11_blit(0, 0, LROWS, LCOLS);
+	drv_X11_blit(0, 0, DROWS, DCOLS);
 
 	/* remember new brightness */
 	Brightness = brightness;
@@ -225,6 +225,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
     RGBA col;
     RGBA lastCol = { 0, 0, 0, 0 };
     int hasLastCol = 0;
+    int brightness = drv_X11_brightness(-1);
 
     x0 = x - pixel;
     x1 = x + pixel + width;
@@ -243,7 +244,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	    if (hasLastCol) {
 		/* if the color of this pixel is different to the last pixels draw the old ones */
 		if (col.R != lastCol.R || col.G != lastCol.G || col.B != lastCol.B) {
-		    drv_X11_color(lastCol, 255);
+		    drv_X11_color(lastCol, brightness);
 		    XFillRectangles(dp, w, gc, rect, nrect);
 		    nrect = 0;
 		    lastCol = col;
@@ -255,7 +256,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 		nrect++;
 	    } else {
 		/* 1st shot: no old color */
-		drv_X11_color(col, 255);
+		drv_X11_color(col, brightness);
 		XFillRectangle(dp, w, gc, xc, yc, pixel, pixel);
 		lastCol = col;
 		hasLastCol = 1;
@@ -263,7 +264,7 @@ static void drv_X11_expose(const int x, const int y, const int width, const int 
 	}
     }
     /* draw the last block of rectangles */
-    drv_X11_color(lastCol, 255);
+    drv_X11_color(lastCol, brightness);
     XFillRectangles(dp, w, gc, rect, nrect);
 
     /* Keypad on the right side */
@@ -317,7 +318,9 @@ static void drv_X11_timer( __attribute__ ((unused))
     int yoffset = border + (DROWS / YRES) * rgap;
     static int btn = 0;
 
-    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0)
+    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0
+        /* there is no ClientMessageMask, so this will be checked separately */
+        && XCheckTypedWindowEvent(dp, w, ClientMessage, &ev) == 0)
 	return;
 
     switch (ev.type) {
@@ -372,9 +375,12 @@ static void drv_X11_timer( __attribute__ ((unused))
     case ClientMessage:
 	if ((Atom) (ev.xclient.data.l[0]) == wmDeleteMessage) {
 	    info("%s: Window closed by WindowManager, quit.", Name);
-	    exit(0);
+            if (raise(SIGTERM) != 0) {
+                error("%s: Error raising SIGTERM: exit!", Name);
+                exit(1);
+            }
 	} else {
-	    debug("%s: Got client message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
+	    debug("%s: Got XClient message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
 		  ev.xclient.data.l[1], ev.xclient.data.l[2], ev.xclient.data.l[3], ev.xclient.data.l[4]);
 	}
 
@@ -503,7 +509,7 @@ static int drv_X11_start(const char *section)
 
     XSetWMProperties(dp, w, NULL, NULL, NULL, 0, &sh, NULL, NULL);
     wmDeleteMessage = XInternAtom(dp, "WM_DELETE_WINDOW", False);
-    /* XSetWMProtocols(dp, w, &wmDeleteMessage, 1); *to be tested* */
+    XSetWMProtocols(dp, w, &wmDeleteMessage, 1);
 
     drv_X11_color(BR_COL, 255);
     XSetWindowBackground(dp, w, xc.pixel);
