@@ -370,13 +370,13 @@ static void drv_X11_timer( __attribute__ ((unused))
 	break;
 
     case ClientMessage:
-        if ((Atom)(ev.xclient.data.l[0]) == wmDeleteMessage) {
-            info("%s: Window closed by WindowManager, quit.", Name);
-            exit(0);
-        } else {
-            debug("%s: Got client message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
-                  ev.xclient.data.l[1], ev.xclient.data.l[2], ev.xclient.data.l[3], ev.xclient.data.l[4]);
-        }
+	if ((Atom) (ev.xclient.data.l[0]) == wmDeleteMessage) {
+	    info("%s: Window closed by WindowManager, quit.", Name);
+	    exit(0);
+	} else {
+	    debug("%s: Got client message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
+		  ev.xclient.data.l[1], ev.xclient.data.l[2], ev.xclient.data.l[3], ev.xclient.data.l[4]);
+	}
 
     default:
 	debug("%s: unknown XEvent %d", Name, ev.type);
@@ -490,12 +490,12 @@ static int drv_X11_start(const char *section)
     sh.flags = PPosition | PSize | PMinSize | PMaxSize;
 
     if (sh.min_width > DisplayWidth(dp, sc) || sh.min_height > DisplayHeight(dp, sc)) {
-        error("%s: Warning: X11-Window with dimensions (%d,%d) is greater than display (%d,%d)!",
-              Name, sh.min_width, sh.min_height, DisplayWidth(dp, sc), DisplayHeight(dp, sc));
-        if (sh.min_width > 32767 || sh.min_height > 32676) {
-            /* XProtocol data size exceeded */
-            exit(1);
-        }
+	error("%s: Warning: X11-Window with dimensions (%d,%d) is greater than display (%d,%d)!",
+	      Name, sh.min_width, sh.min_height, DisplayWidth(dp, sc), DisplayHeight(dp, sc));
+	if (sh.min_width > 32767 || sh.min_height > 32676) {
+	    /* XProtocol data size exceeded */
+	    exit(1);
+	}
     }
     w = XCreateWindow(dp, rw, 0, 0, sh.min_width, sh.min_height, 0, 0, InputOutput, vi, CWEventMask, &wa);
 
