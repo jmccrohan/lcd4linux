@@ -673,6 +673,26 @@ static int cfg_read(const char *file)
 }
 
 
+static void cfg_dump(void)
+{
+    int i, len;
+
+    /* find longest key for pretty output */
+    len = 1;
+    for (i = 0; i < nConfig; i++) {
+	int l = strlen(Config[i].key);
+	if (l > len)
+	    len = l;
+    }
+
+    info("Dump of %s:", Config_File);
+    for (i = 0; i < nConfig; i++) {
+	info("  %-*s %s", len, Config[i].key, Config[i].val);
+    }
+    info("");
+}
+
+
 int cfg_init(const char *file)
 {
     if (cfg_check_source(file) == -1) {
@@ -684,7 +704,11 @@ int cfg_init(const char *file)
 
     if (Config_File)
 	free(Config_File);
+
     Config_File = strdup(file);
+
+    if (verbose_level > 1)
+	cfg_dump();
 
     return 0;
 }
