@@ -81,7 +81,7 @@ static void usage(void)
     printf("\n");
     printf("options:\n");
     printf("  -h               help\n");
-    printf("  -l               list available display drivers\n");
+    printf("  -l               list available display drivers and plugins\n");
     printf("  -c <key>=<value> overwrite entries from the config-file\n");
     printf("  -i               enter interactive mode (after display initialisation)\n");
     printf("  -ii              enter interactive mode (before display initialisation)\n");
@@ -206,6 +206,7 @@ int main(int argc, char *argv[])
     int c;
     int quiet = 0;
     int interactive = 0;
+    int list_mode = 0;
     int pid;
 
     /* save arguments for restart */
@@ -244,14 +245,8 @@ int main(int argc, char *argv[])
 	    interactive++;
 	    break;
 	case 'l':
-	    printf("%s\n", release);
-	    printf("%s\n", copyright);
-	    printf("\n");
-	    drv_list();
-	    printf("\n");
-	    plugin_list();
-	    printf("\n");
-	    exit(0);
+	    list_mode++;
+	    break;
 	case 'o':
 	    output = optarg;
 	    break;
@@ -279,7 +274,18 @@ int main(int argc, char *argv[])
 	running_foreground = 1;
     }
 
-    info("Version " VERSION "-" SVN_VERSION " starting");
+    if (list_mode > 0) {
+	printf("%s\n", release);
+	printf("%s\n", copyright);
+	printf("\n");
+	drv_list();
+	printf("\n");
+	plugin_list();
+	printf("\n");
+	exit(0);
+    }
+
+    info("%s starting", release);
     if (!running_foreground && (my_argv[0] == NULL || my_argv[0][0] != '/')) {
 	info("invoked without full path; restart may not work!");
     }
