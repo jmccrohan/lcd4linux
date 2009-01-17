@@ -91,7 +91,6 @@ static Window w, rw;
 static Visual *vi;
 static GC gc;
 static Colormap cm;
-static XColor xc;
 static Pixmap pm;
 
 
@@ -99,17 +98,37 @@ static Pixmap pm;
 /***  hardware dependant functions    ***/
 /****************************************/
 
-static void drv_X11_color(RGBA c, int brightness)
+static XColor drv_X11_color(RGBA c, int brightness)
 {
+    static XColor col[64];
+    static unsigned char alloced[64] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+    XColor xc;
+    int key;
+
     xc.red = brightness * c.R;
     xc.green = brightness * c.G;
     xc.blue = brightness * c.B;
-    xc.flags = DoRed | DoGreen | DoBlue;
-    if (XAllocColor(dp, cm, &xc) == False) {
-	error("%s: XAllocColor(%02x%02x%02x) failed!", Name, c.R, c.G, c.B);
+    /* 16bits per color, compressed to 6 bits (2 each color) */
+    key = (xc.red & 0xc000) >> 10 | (xc.green & 0xc000) >> 12 | (xc.blue & 0xc000) >> 14;
+    /* todo: support more than 64 colors: check if allocated color is exactly the requested */
+    if (alloced[key]) {
+	xc = col[key];
+    } else {
+	xc.flags = DoRed | DoGreen | DoBlue;
+	if (XAllocColor(dp, cm, &xc) == False) {
+	    error("%s: XAllocColor(%02x%02x%02x) failed!", Name, c.R, c.G, c.B);
+	}
+	col[key] = xc;
+	alloced[key] = 1;
     }
+
     XSetForeground(dp, gc, xc.pixel);
 
+    return (xc);
 }
 
 
@@ -135,6 +154,7 @@ static void drv_X11_blit(const int row, const int col, const int height, const i
 static int drv_X11_brightness(int brightness)
 {
     static int Brightness = 255;
+    int i;
 
     /* -1 is used to query the current brightness */
     if (brightness == -1)
@@ -156,11 +176,14 @@ static int drv_X11_brightness(int brightness)
 	BL_COL.B = BP_COL.B * dim;
 
 	/* set new background */
-	drv_X11_color(BR_COL, brightness);
-	XSetWindowBackground(dp, w, xc.pixel);
+	XSetWindowBackground(dp, w, drv_X11_color(BR_COL, brightness).pixel);
 
 	/* redraw every LCD pixel */
-	drv_X11_blit(0, 0, DROWS, DCOLS);
+	XClearWindow(dp, w);
+	for (i = 0; i < DROWS * DCOLS; i++) {
+	    drv_X11_FB[i] = NO_COL;
+	}
+	drv_X11_blit(0, 0, LROWS, LCOLS);
 
 	/* remember new brightness */
 	Brightness = brightness;
@@ -319,8 +342,8 @@ static void drv_X11_timer( __attribute__ ((unused))
     static int btn = 0;
 
     if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0
-        /* there is no ClientMessageMask, so this will be checked separately */
-        && XCheckTypedWindowEvent(dp, w, ClientMessage, &ev) == 0)
+	/* there is no ClientMessageMask, so this will be checked separately */
+	&& XCheckTypedWindowEvent(dp, w, ClientMessage, &ev) == 0)
 	return;
 
     switch (ev.type) {
@@ -375,10 +398,10 @@ static void drv_X11_timer( __attribute__ ((unused))
     case ClientMessage:
 	if ((Atom) (ev.xclient.data.l[0]) == wmDeleteMessage) {
 	    info("%s: Window closed by WindowManager, quit.", Name);
-            if (raise(SIGTERM) != 0) {
-                error("%s: Error raising SIGTERM: exit!", Name);
-                exit(1);
-            }
+	    if (raise(SIGTERM) != 0) {
+		error("%s: Error raising SIGTERM: exit!", Name);
+		exit(1);
+	    }
 	} else {
 	    debug("%s: Got XClient message 0x%lx %lx %lx %lx %lx", Name, ev.xclient.data.l[0],
 		  ev.xclient.data.l[1], ev.xclient.data.l[2], ev.xclient.data.l[3], ev.xclient.data.l[4]);
@@ -511,8 +534,7 @@ static int drv_X11_start(const char *section)
     wmDeleteMessage = XInternAtom(dp, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(dp, w, &wmDeleteMessage, 1);
 
-    drv_X11_color(BR_COL, 255);
-    XSetWindowBackground(dp, w, xc.pixel);
+    XSetWindowBackground(dp, w, drv_X11_color(BR_COL, 255).pixel);
     XClearWindow(dp, w);
 
     /* set brightness (after first background painting) */
