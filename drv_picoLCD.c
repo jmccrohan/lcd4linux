@@ -381,7 +381,7 @@ static void plugin_gpo(RESULT * result, RESULT * argv[])
 /* list models */
 int drv_pL_list(void)
 {
-    printf("generic");
+    printf("picoLCD 20x2 Text LCD");
     return 0;
 }
 

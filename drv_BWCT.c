@@ -297,7 +297,7 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_BW_list(void)
 {
-    printf("generic");
+    printf("BWCT USB to HD44780 interface");
     return 0;
 }
 

@@ -297,7 +297,7 @@ static int drv_IRLCD_start(const char *section)
 /* list models */
 int drv_IRLCD_list(void)
 {
-    printf("generic");
+    printf("USBtiny LCD controller");
     return 0;
 }
 

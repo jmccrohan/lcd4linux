@@ -313,7 +313,7 @@ static void plugin_bootscreen(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_PHAnderson_list(void)
 {
-    printf("generic");
+    printf("PHAnderson serial-to-HD44780 adapter");
     return 0;
 }
 

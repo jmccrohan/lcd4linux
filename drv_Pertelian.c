@@ -226,7 +226,7 @@ static void plugin_backlight(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_Pertelian_list(void)
 {
-    printf("generic");
+    printf("Pertelian X2040 displays");
     return 0;
 }
 

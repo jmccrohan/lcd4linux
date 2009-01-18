@@ -670,7 +670,7 @@ static void plugin_backlight(RESULT * result, RESULT * arg1)
  */
 int drv_ula200_list(void)
 {
-    printf("generic");
+    printf("ULA200");
     return 0;
 }
 

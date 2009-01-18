@@ -569,7 +569,7 @@ static void plugin_brightness(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_L2U_list(void)
 {
-    printf("generic");
+    printf("USB2LCD display interface");
     return 0;
 }
 

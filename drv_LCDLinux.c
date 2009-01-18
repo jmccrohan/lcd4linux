@@ -259,7 +259,7 @@ static int drv_LL_start(const char *section, const int quiet)
 /* list models */
 int drv_LL_list(void)
 {
-    printf("generic");
+    printf("LCD-Linux HD44780 kernel driver");
     return 0;
 }
 

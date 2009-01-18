@@ -507,7 +507,7 @@ static int drv_G15_start(const char *section)
 /* list models */
 int drv_G15_list(void)
 {
-    printf("generic");
+    printf("Logitech G-15 / Dell M1730");
     return 0;
 }
 

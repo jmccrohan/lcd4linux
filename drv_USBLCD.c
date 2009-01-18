@@ -388,7 +388,7 @@ static int drv_UL_start(const char *section, const int quiet)
 /* list models */
 int drv_UL_list(void)
 {
-    printf("generic");
+    printf("USBLCD");
     return 0;
 }
 

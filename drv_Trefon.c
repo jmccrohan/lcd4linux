@@ -312,7 +312,7 @@ static void plugin_backlight(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_TF_list(void)
 {
-    printf("generic");
+    printf("TREFON USB LCD");
     return 0;
 }
 

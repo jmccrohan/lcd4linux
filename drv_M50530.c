@@ -95,7 +95,7 @@ typedef struct {
 } MODEL;
 
 static MODEL Models[] = {
-    {0x01, "generic"},
+    {0x01, "M50530"},
     {0xff, "Unknown"}
 };
 

@@ -252,6 +252,7 @@ static int drv_LEDMatrix_start(const char *section)
 /* list models */
 int drv_LEDMatrix_list(void)
 {
+    printf("LEDMATRIX by Till Harbaum");
     return 0;
 }
 

@@ -186,7 +186,7 @@ static int drv_LT_start(const char *section, const int quiet)
 /* list models */
 int drv_LT_list(void)
 {
-    printf("generic");
+    printf("LCDTerm serial-to-HD44780 adapter board");
     return 0;
 }
 

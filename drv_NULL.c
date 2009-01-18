@@ -117,7 +117,7 @@ static int drv_NULL_start(const char *section)
 /* list models */
 int drv_NULL_list(void)
 {
-    printf("generic");
+    printf("NULL driver for testing purposes");
     return 0;
 }
 

@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * new style driver for USBLCD displays
+ * driver for USBHUB
  *
  * Copyright (C) 2006 Ernst Bachmann <e.bachmann@xebec.de>
  * Copyright (C) 2004,2006 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -257,7 +257,7 @@ static int drv_UH_start(const char *section, const __attribute__ ((unused))
 /* list models */
 int drv_UH_list(void)
 {
-    printf("generic");
+    printf("USBHUB");
     return 0;
 }
 

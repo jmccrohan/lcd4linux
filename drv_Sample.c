@@ -408,7 +408,7 @@ static void plugin_contrast(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_Sample_list(void)
 {
-    printf("generic");
+    printf("Sample driver");
     return 0;
 }
 

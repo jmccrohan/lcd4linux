@@ -276,7 +276,7 @@ static int drv_Curs_keypad(const int num)
 /* list models */
 int drv_Curs_list(void)
 {
-    printf("any");
+    printf("pure ncurses based text driver");
     return 0;
 }
 
