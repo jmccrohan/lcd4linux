@@ -171,10 +171,6 @@ static int drv_X11_brightness(int brightness)
 
 	debug("%s: set brightness to %d%%", Name, (int) (dim * 100));
 
-	BL_COL.R = BP_COL.R * dim;
-	BL_COL.G = BP_COL.G * dim;
-	BL_COL.B = BP_COL.B * dim;
-
 	/* set new background */
 	XSetWindowBackground(dp, w, drv_X11_color(BR_COL, brightness).pixel);
 
@@ -460,7 +456,7 @@ static int drv_X11_start(const char *section)
 
     /* special case for the X11 driver: 
      * the border color may be different from the backlight color
-     * the backlicht color is the color of an inactive pixel
+     * the backlight color is the color of an inactive pixel
      * the border color is the color of the border and gaps between pixels
      * for the brightness pugin we need a copy of BL_COL, we call it BP_COL
      */
