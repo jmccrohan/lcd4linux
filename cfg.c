@@ -689,7 +689,7 @@ static void cfg_dump(void)
     for (i = 0; i < nConfig; i++) {
 	info("  %-*s %s", len, Config[i].key, Config[i].val);
     }
-    info("");
+    info(" ");
 }
 
 
