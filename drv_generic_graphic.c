@@ -476,16 +476,16 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
     case DIR_EAST:
 	for (y = 0; y < YRES; y++) {
 	    int val = y < YRES / 2 ? val1 : val2;
-	    RGBA bcol = y < YRES / 2 ? bar[0] : bar[1];
+	    RGBA bc = y < YRES / 2 ? bar[0] : bar[1];
 
 	    for (x = 0; x < max; x++) {
 		if (x < val)
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : bcol;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : bc;
 		else
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bcol : bg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bc : bg;
 
 		if (style) {
-		    drv_generic_graphic_FB[layer][(row) * LCOLS + col + x] = fg;
+		    drv_generic_graphic_FB[layer][(row + 0) * LCOLS + col + x] = fg;
 		    drv_generic_graphic_FB[layer][(row + YRES - 1) * LCOLS + col + x] = fg;
 		}
 	    }
@@ -504,11 +504,20 @@ int drv_generic_graphic_bar_draw(WIDGET * W)
     case DIR_SOUTH:
 	for (x = 0; x < XRES; x++) {
 	    int val = x < XRES / 2 ? val1 : val2;
+	    RGBA bc = x < XRES / 2 ? bar[0] : bar[1];
 	    for (y = 0; y < max; y++) {
 		if (y < val)
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : fg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bg : bc;
 		else
-		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? fg : bg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + x] = rev ? bc : bg;
+		if (style) {
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + 0] = fg;
+		    drv_generic_graphic_FB[layer][(row + y) * LCOLS + col + XRES - 1] = fg;
+		}
+	    }
+	    if (style) {
+		drv_generic_graphic_FB[layer][(row + 0) * LCOLS + col + x] = fg;
+		drv_generic_graphic_FB[layer][(row + max - 1) * LCOLS + col + x] = fg;
 	    }
 	}
 	break;

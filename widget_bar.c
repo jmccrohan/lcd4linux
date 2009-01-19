@@ -176,11 +176,6 @@ int widget_bar_init(WIDGET * Self)
     switch (toupper(*c)) {
     case 'H':
 	Bar->style = STYLE_HOLLOW;
-	if (!(Bar->direction & (DIR_EAST | DIR_WEST))) {
-	    error("widget %s with style \"hollow\" not implemented for other directions than E(ast) or W(est)",
-		  Self->name);
-	    Bar->style = 0;
-	}
 	break;
     case '0':
 	Bar->style = 0;
