@@ -54,12 +54,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
+#include <math.h>
 
 #include <sys/ioctl.h>
 #include <net/if_arp.h>
 #include <linux/if.h>
 #include <linux/wireless.h>
-#include <math.h>
 
 #include "debug.h"
 #include "plugin.h"
@@ -119,11 +120,19 @@ int do_ioctl(const int sock,	/* Socket to the kernel */
 	     const int request,	/* WE ID */
 	     struct iwreq *pwrq)
 {				/* Fixed part of the request */
+    int ret;
+
     /* Set device name */
     strncpy(pwrq->ifr_name, ifname, IFNAMSIZ);
 
     /* Do the request */
-    return (ioctl(sock, request, pwrq));
+    ret = ioctl(sock, request, pwrq);
+    if (ret < 0) {
+	debug("ioctl(0x%04x) failed: %d '%s'", request, errno, strerror(errno));
+    }
+
+    return ret;
+
 }
 
 int get_range_info(const int sock, const char *ifname, struct iw_range *range)
@@ -455,7 +464,7 @@ static int get_stats(const char *dev, const char *key)
     }
 
     req.u.data.pointer = (caddr_t) & stats;
-    req.u.data.length = 0;
+    req.u.data.length = sizeof(stats);
     req.u.data.flags = 1;	/* Clear updated flag */
 
     if (do_ioctl(sock, dev, SIOCGIWSTATS, &req) < 0) {
