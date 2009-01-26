@@ -591,13 +591,65 @@ static void Parse(void)
 
     /* strings */
     else if (*ExprPtr == '\'') {
-	char *start = ++ExprPtr;
-	while (*ExprPtr != '\0' && *ExprPtr != '\'')
-	    ExprPtr++;
-	Word = strndup(start, ExprPtr - start);
+	size_t length = 0;
+	size_t size = CHUNK_SIZE;
+	Word = malloc(size);
+	ExprPtr++;
+	while (*ExprPtr != '\0' && *ExprPtr != '\'') {
+	    if (*ExprPtr == '\\') {
+		switch (*(ExprPtr + 1)) {
+		case '\\':
+		case '\'':
+		    Word[length++] = *(ExprPtr + 1);
+		    ExprPtr += 2;
+		    break;
+		case 'a':
+		    Word[length++] = '\a';
+		    ExprPtr += 2;
+		    break;
+		case 'b':
+		    Word[length++] = '\b';
+		    ExprPtr += 2;
+		    break;
+		case 't':
+		    Word[length++] = '\t';
+		    ExprPtr += 2;
+		    break;
+		case 'n':
+		    Word[length++] = '\n';
+		    ExprPtr += 2;
+		    break;
+		case 'v':
+		    Word[length++] = '\v';
+		    ExprPtr += 2;
+		    break;
+		case 'f':
+		    Word[length++] = '\f';
+		    ExprPtr += 2;
+		    break;
+		case 'r':
+		    Word[length++] = '\r';
+		    ExprPtr += 2;
+		    break;
+		default:
+		    error("Evaluator: unknown escape sequence '\\%c' in <%s>", *(ExprPtr + 1), Expression);
+		    Word[length++] = *ExprPtr++;
+		}
+	    } else {
+		Word[length++] = *ExprPtr++;
+	    }
+	    if (length >= size) {
+		size += CHUNK_SIZE;
+		Word = realloc(Word, size);
+	    }
+	}
+	Word[length] = '\0';
 	Token = T_STRING;
-	if (*ExprPtr == '\'')
+	if (*ExprPtr == '\'') {
 	    ExprPtr++;
+	} else {
+	    error("Evaluator: unterminated string in <%s>", Expression);
+	}
     }
 
     /* non-alpha operators */
