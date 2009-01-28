@@ -180,7 +180,7 @@ static void plugin_backlight(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_st2205_list(void)
 {
-    printf("generic");
+    printf("generic hacked photo frame");
     return 0;
 }
 
