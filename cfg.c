@@ -157,41 +157,6 @@ static char *strip(char *s, const int strip_comments)
 }
 
 
-/* unquote a string */
-static char *dequote(char *string)
-{
-    int quote = 0;
-    char *s = string;
-    char *p = string;
-
-    do {
-	if (*s == '\'') {
-	    quote = !quote;
-	    *p++ = *s;
-	} else if (quote && *s == '\\') {
-	    s++;
-	    if (*s >= '0' && *s <= '7') {
-		int n;
-		unsigned int c = 0;
-		sscanf(s, "%3o%n", &c, &n);
-		if (c == 0 || c > 255) {
-		    error("WARNING: illegal '\\' in <%s>", string);
-		} else {
-		    *p++ = c;
-		    s += n - 1;
-		}
-	    } else {
-		*p++ = *s;
-	    }
-	} else {
-	    *p++ = *s;
-	}
-    } while (*s++);
-
-    return string;
-}
-
-
 /* which if a string contains only valid chars */
 /* i.e. start with a char and contains chars and nums */
 static int validchars(const char *string, const int numstart)
@@ -240,14 +205,14 @@ static void cfg_add(const char *section, const char *key, const char *val, const
 	free(buffer);
 	if (entry->val)
 	    free(entry->val);
-	entry->val = dequote(strdup(val));
+	entry->val = strdup(val);
 	return;
     }
 
     nConfig++;
     Config = realloc(Config, nConfig * sizeof(ENTRY));
     Config[nConfig - 1].key = buffer;
-    Config[nConfig - 1].val = dequote(strdup(val));
+    Config[nConfig - 1].val = strdup(val);
     Config[nConfig - 1].lock = lock;
 
     qsort(Config, nConfig, sizeof(ENTRY), c_sort);
