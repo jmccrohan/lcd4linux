@@ -631,6 +631,21 @@ static void Parse(void)
 		    Word[length++] = '\r';
 		    ExprPtr += 2;
 		    break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		    if (*(ExprPtr + 2) >= '0' && *(ExprPtr + 2) <= '7' &&
+			*(ExprPtr + 3) >= '0' && *(ExprPtr + 3) <= '7') {
+			Word[length++] =
+			    (*(ExprPtr + 1) - '0') * 64 + (*(ExprPtr + 2) - '0') * 8 + (*(ExprPtr + 3) - '0');
+			ExprPtr += 4;
+		    } else {
+			error("Evaluator: illegal octal sequence '\\%c%c%c' in <%s>",
+			      *(ExprPtr + 1), *(ExprPtr + 2), *(ExprPtr + 3), Expression);
+			Word[length++] = *ExprPtr++;
+		    }
+		    break;
 		default:
 		    error("Evaluator: unknown escape sequence '\\%c' in <%s>", *(ExprPtr + 1), Expression);
 		    Word[length++] = *ExprPtr++;
