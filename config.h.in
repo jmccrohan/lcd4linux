@@ -488,6 +488,9 @@
 /* MatrixOrbital driver */
 #undef WITH_MATRIXORBITAL
 
+/* MatrixOrbitalGX driver */
+#undef WITH_MATRIXORBITALGX
+
 /* Milford Instruments driver */
 #undef WITH_MILINST
 

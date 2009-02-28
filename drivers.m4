@@ -67,7 +67,7 @@ for driver in $drivers; do
          D4D="yes"
          EA232graphic="yes"
          G15="yes"
-         GLCD2USB="yes"
+         GLCD2USB="no"
          HD44780="yes"
 	 IRLCD="yes"
          LCD2USB="yes"
@@ -78,6 +78,7 @@ for driver in $drivers; do
          LUISE="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
+         MATRIXORBITALGX="yes"
          MILINST="yes"
          NORITAKE="yes"
          NULL="yes"
@@ -159,6 +160,9 @@ for driver in $drivers; do
          ;;
       MatrixOrbital)
          MATRIXORBITAL=$val
+         ;;
+      MatrixOrbitalGX)
+         MATRIXORBITALGX=$val
          ;;
       MilfordInstruments)
          MILINST=$val
@@ -437,6 +441,18 @@ if test "$MATRIXORBITAL" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MatrixOrbital.o"
    AC_DEFINE(WITH_MATRIXORBITAL,1,[MatrixOrbital driver])
+fi
+
+if test "$MATRIXORBITALGX" = "yes"; then
+    if test "$has_usb" = "true"; then
+        GRAPHIC="yes"
+        SERIAL="yes"
+        LIBUSB="yes"
+        DRIVERS="$DRIVERS drv_MatrixOrbitalGX.o"
+        AC_DEFINE(WITH_MATRIXORBITALGX,1,[MatrixOrbitalGX driver])
+    else
+        AC_MSG_WARN(usb.h not found: MatrixOrbitalGX driver disabled)
+    fi
 fi
 
 if test "$MILINST" = "yes"; then
