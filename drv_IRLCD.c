@@ -124,8 +124,8 @@ static int drv_IRLCD_open(char *bus_id, char *device_id)
 			info("%s: found IRLCD interface on bus %s device %s", Name, bus->dirname, dev->filename);
 			lcd = usb_open(dev);
 			if (usb_claim_interface(lcd, 0) < 0) {
-			    error("%s: usb_claim_interface() failed!", Name);
-			    return -1;
+			    info("%s: WRNING! usb_claim_interface() failed!", Name);
+			    # try to proceed anyway...
 			}
 			return 0;
 		    }
