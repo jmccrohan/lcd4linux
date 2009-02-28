@@ -1,0 +1,142 @@
+Display picoLCD {
+    Driver   'picoLCDGraphic'
+    Size     '256x64'
+    Contrast  230
+    Backlight 1
+    Inverted   1
+    Icons     1
+}
+
+
+Variables {
+   n 0
+   nkey 0
+   page 0
+   title 0
+   rss1 'http://slashdot.org/slashdot.rdf'
+   rss2 'http://www.engadget.com/rss.xml'
+   rss 'http://www.linuxsecurity.com/static-content/debian.rss'
+   tick 500
+   tack 100
+   minute 60000
+}
+
+Widget TimerW {
+    class 'Timer'
+    expression n=LCD::GPI(1);nkey=n
+    active 1
+    update 100
+}
+                        
+
+# export PYTHONPATH which should point to the scripts usually /etc/picoLCDGraphic/Scripts
+
+Widget RSSFeedInfo {
+    class 'Text'
+    #expression title=1+page;param='!'.title;python::exec('rsstimer', 'getfeed', rss.param)
+    expression rss.' page:'.page
+    width 42
+    align 'L'
+    style 'bold'
+    #update minute
+    update 500
+}
+
+Widget RSSFeedTitle1 {
+    class 'Text'
+    expression title=1+page;param='!'.title;python::exec('rsstimer', 'getfeed', rss.param)
+    width 42
+    prefix '>'
+    align 'L'
+    #update minute
+    update 500
+}
+
+
+
+Widget RSSFeedTitle2 {
+    class 'Text'
+    expression title=2+page;param='!'.title;python::exec('rsstimer', 'getfeed', rss.param)
+    width 42
+    prefix '>'
+    align 'L'
+    #update minute
+    update 500
+}
+
+
+Widget RSSFeedTitle3 {
+    class 'Text'
+    expression title=3+page;param='!'.title;python::exec('rsstimer', 'getfeed', rss.param)
+    width 42
+    prefix '>'
+    align 'L'
+    #update minute
+    update 500
+}
+
+Widget RSSFeedTitle4 {
+    class 'Text'
+    expression title=4+page;param='!'.title;python::exec('rsstimer', 'getfeed', rss.param)
+    width 42
+    prefix '>'
+    align 'L'
+    #update minute
+    update 500
+}
+
+
+Widget GPO_kback {
+   class 'GPO'
+   expression rss=nkey==1?rss1:rss
+   update 100
+}
+
+Widget GPO_khome {
+   class 'GPO'
+   expression rss=nkey==2?rss2:rss
+   update 100
+}
+
+
+Widget GPO_kup {
+   class 'GPO'
+   expression page=nkey==5?page-1:page#;nkey==5?1:0
+   update 100
+}
+         
+  Widget GPO_kdown {
+  class 'GPO'
+  expression page=nkey==7?page+1:page#;nkey==7?1:0
+  update 100
+}
+                  
+
+Layout picoLCD {
+    Row1 {
+	Col1 'RSSFeedInfo'
+    }
+    Row2 {
+	Col1 'RSSFeedTitle1'
+    }
+    Row4 {
+	Col1 'RSSFeedTitle2'
+    }
+    Row6 {
+	Col1 'RSSFeedTitle3'
+    }
+    Row8 {
+	Col1 'RSSFeedTitle4'
+    }
+    
+    Timer1 'TimerW'
+    
+    GPO1       'GPO_kback'
+    GPO2       'GPO_khome'
+    GPO3       'GPO_kup'
+    GPO4       'GPO_kdown'
+       
+}
+
+Display 'picoLCD'
+Layout  'picoLCD'

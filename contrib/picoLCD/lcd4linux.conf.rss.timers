@@ -1,0 +1,127 @@
+Display picoLCD {
+    Driver   'picoLCDGraphic'
+    Size     '256x64'
+    Contrast  230
+    Backlight 1
+    Inverted   1
+    Icons     1
+}
+
+
+Variables {
+   n 0
+   nkey 0
+   page 0
+   t 0
+   p ' '
+   r1 ' '
+   r2 ' '
+   r3 ' '
+   r4 ' '
+   rss 'http://slashdot.org/slashdot.rdf'
+ 
+   tick 500
+   tack 100
+   minute 60000
+   #rssRefresh minute
+   rssRefresh 1000
+}
+
+Widget TimerW {
+    class 'Timer'
+    expression n=LCD::GPI(1);nkey=n!=0?n:nkey
+    active 1
+    update 100
+}
+
+Widget TimerRSS {
+    class 'Timer'
+    expression t=1+page;p='!'.t;r1=python::exec('rss', 'pf', rss.p);t=2+page;p='!'.t;r2=python::exec('rss', 'pf', rss.p);t=3+page;p='!'.t;r3=python::exec('rss', 'pf', rss.p);t=4+page;p='!'.t;r4=python::exec('rss', 'pf', rss.p);rssRefresh=1000
+    active 1
+    update rssRefresh
+}
+                        
+
+# export PYTHONPATH which should point to the scripts usually /etc/picoLCDGraphic/Scripts
+Widget RSSFeedTitle1 {
+    class 'Text'
+    #expression title=1+page;param='!'.title;python::exec('rss', 'parsefeed', slashdotRSS.param)
+    expression r1
+    width 42
+    prefix '- '
+    align 'L'
+    #update minute
+    update 300
+}
+
+
+
+Widget RSSFeedTitle2 {
+    class 'Text'
+    expression r2
+    width 42
+    prefix '- '
+    align 'L'
+    #update minute
+    update 300
+}
+
+
+Widget RSSFeedTitle3 {
+    class 'Text'
+    expression r3
+    width 42
+    prefix '- '
+    align 'L'
+    #update minute
+    update 300
+}
+
+Widget RSSFeedTitle4 {
+    class 'Text'
+    expression r4
+    width 42
+    prefix '- '
+    align 'L'
+    #update minute
+    update 300
+}
+
+
+Widget GPO_kup {
+   class 'GPO'
+   expression page=nkey==5?0:page;nkey==5?1:0#;rssRefresh=nkey==5?100:rssRefresh
+   update 100
+}
+         
+  Widget GPO_kdown {
+  class 'GPO'
+  expression page=nkey==7?4:page;nkey==7?1:0#;rssRefresh=nkey==7?100:rssRefresh
+  update 100
+}
+                  
+
+Layout picoLCD {
+    Row1 {
+	Col1 'RSSFeedTitle1'
+    }
+    Row3 {
+	Col1 'RSSFeedTitle2'
+    }
+    Row5 {
+	Col1 'RSSFeedTitle3'
+    }
+    Row7 {
+	Col1 'RSSFeedTitle4'
+    }
+    
+    Timer1 'TimerW'
+    Timer2 'TimerRSS'
+    
+    GPO2       'GPO_kup'
+    GPO3       'GPO_kdown'
+       
+}
+
+Display 'picoLCD'
+Layout  'picoLCD'

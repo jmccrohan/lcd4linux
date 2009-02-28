@@ -1,0 +1,91 @@
+Display picoLCD {
+    Driver   'picoLCDGraphic'
+    Size     '256x64'
+    Contrast  230
+    Backlight 1
+    Inverted   1
+    Icons     1
+}
+
+
+Variables {
+   n 0
+   nkey 0
+   currentImage 'http://192.168.12.113/mrtg/127.0.0.1_2-month.png'
+   mrtgDayImageURL 'http://192.168.12.113/mrtg/127.0.0.1_2-day.png'
+   mrtgWeekImageURL 'http://192.168.12.113/mrtg/127.0.0.1_2-week.png'
+   #currentFile '/tmp/127.0.0.1_2-day.png'
+   currentFile ' '
+   tick 500
+   tack 100
+   minute 60000
+}
+
+Widget TimerW {
+    class 'Timer'
+    expression n=LCD::GPI(1);nkey=n!=0?n:nkey
+    active 1
+    update 100
+}
+                        
+
+# export PYTHONPATH which should point to the scripts usually /etc/picoLCDGraphic/Scripts
+Widget MRTGMinute {
+    class 'Text'
+    expression currentFile=python::exec('mrtg', 'saveimage', currentImage)
+    width 42
+    #update minute
+    update 100
+}
+
+Widget test {
+    class 'Text'
+    expression currentFile
+    width 42
+    #update minute
+    update 100
+}
+
+# Python script will save the filename as taken from the URL above in the /etc/picoLCDGraphic/Images path
+# Modify mrtg.py to save in another path and also change file tag below
+Widget BandwidthImage {
+    class 'Image'
+    file currentFile
+    visible 1
+    inverted 0
+    reload 1
+    #update minute
+    update 100
+    #update tick
+}
+
+Widget GPO_kup {
+   class 'GPO'
+   expression currentImage=nkey==5?mrtgDayImageURL:currentImage;nkey==5?1:0
+   update 300
+}
+         
+  Widget GPO_kdown {
+  class 'GPO'
+  expression currentImage=nkey==7?mrtgWeekImageURL:currentImage;nkey==7?1:0
+  update 300
+}
+                  
+
+Layout picoLCD {
+    Row1 {
+	Col1 'MRTGMinute'
+    }
+    
+    Layer 1 {
+        X0.Y0 'BandwidthImage'
+    }
+    
+    Timer1 'TimerW'
+    GPO2       'GPO_kup'
+    GPO3       'GPO_kdown'
+       
+}
+
+Display 'picoLCD'
+Layout  'picoLCD'
