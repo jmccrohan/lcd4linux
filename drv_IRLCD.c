@@ -125,7 +125,7 @@ static int drv_IRLCD_open(char *bus_id, char *device_id)
 			lcd = usb_open(dev);
 			if (usb_claim_interface(lcd, 0) < 0) {
 			    info("%s: WRNING! usb_claim_interface() failed!", Name);
-			    # try to proceed anyway...
+			    /* try to proceed anyway... */
 			}
 			return 0;
 		    }
