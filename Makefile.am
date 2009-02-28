@@ -75,6 +75,7 @@ drv_Cwlinux.c                 \
 drv_D4D.c                     \
 drv_EA232graphic.c            \
 drv_G15.c                     \
+drv_GLCD2USB.c                \
 drv_HD44780.c                 \
 drv_Image.c                   \
 drv_IRLCD.c                   \

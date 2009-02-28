@@ -55,6 +55,7 @@ extern DRIVER drv_Cwlinux;
 extern DRIVER drv_D4D;
 extern DRIVER drv_EA232graphic;
 extern DRIVER drv_G15;
+extern DRIVER drv_GLCD2USB;
 extern DRIVER drv_HD44780;
 extern DRIVER drv_Image;
 extern DRIVER drv_IRLCD;
@@ -116,6 +117,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_G15
     &drv_G15,
+#endif
+#ifdef WITH_GLCD2USB
+    &drv_GLCD2USB,
 #endif
 #ifdef WITH_HD44780
     &drv_HD44780,

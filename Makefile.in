@@ -274,6 +274,7 @@ drv_Cwlinux.c                 \
 drv_D4D.c                     \
 drv_EA232graphic.c            \
 drv_G15.c                     \
+drv_GLCD2USB.c                \
 drv_HD44780.c                 \
 drv_Image.c                   \
 drv_IRLCD.c                   \
@@ -463,6 +464,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_D4D.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_EA232graphic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_G15.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_GLCD2USB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_HD44780.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_IRLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Image.Po@am__quote@

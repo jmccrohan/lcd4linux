@@ -55,6 +55,9 @@ Display LCD2USB {
     Icons 1
 }
 
+Display GLCD2USB {
+    Driver 'GLCD2USB'
+}
 
 Display LCD2041 {
     Driver 'MatrixOrbital'
@@ -1237,15 +1240,16 @@ Layout Debug {
 #Display 'LPH7508-serdisplib'
 #Display 'LPH7508'
 #Display 'ctinclud'
-Display 'picoLCD'
+#Display 'picoLCD'
+Display 'GLCD2USB'
 
 #Layout 'Default'
-#Layout 'TestLayer'
+Layout 'TestLayer'
 #Layout 'TestImage'
 #Layout 'L8x2'
 #Layout 'L16x1'
 #Layout 'L16x2'
-Layout 'L20x2'
+#Layout 'L20x2'
 #Layout 'L40x2'
 #Layout 'Test'
 #Layout 'Test2'

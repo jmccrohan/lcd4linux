@@ -1343,11 +1343,12 @@ Optional Packages:
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
                           BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,
-                          G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,
-                          LUIse, M50530, MatrixOrbital, MilfordInstruments, Noritake,
-                          NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD, picoLCDGraphic,
-                          RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,
-                          ULA200, USBLCD, USBHUB, WincorNixdorf, X11
+                          G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,
+                          LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,
+                          Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,
+                          picoLCDGraphic, RouterBoard, Sample, serdisplib, SimpleLCD,
+                          st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, WincorNixdorf
+                          X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -4447,7 +4448,7 @@ echo "${ECHO_T}Please note that some screen refreshs may fail" >&6; }
 echo $ECHO_N "checking for ncurses version... $ECHO_C" >&6; }
 	ncurses_version=unknown
 cat > conftest.$ac_ext <<EOF
-#line 4450 "configure"
+#line 4451 "configure"
 #include "confdefs.h"
 #ifdef RENAMED_NCURSES
 #include <curses.h>
@@ -7694,6 +7695,7 @@ for driver in $drivers; do
          D4D="yes"
          EA232graphic="yes"
          G15="yes"
+         GLCD2USB="yes"
          HD44780="yes"
 	 IRLCD="yes"
          LCD2USB="yes"
@@ -7749,6 +7751,9 @@ for driver in $drivers; do
          ;;
       G15)
          G15=$val
+         ;;
+      GLCD2USB)
+         GLCD2USB=$val
          ;;
       HD44780)
          HD44780=$val
@@ -7984,6 +7989,23 @@ _ACEOF
    else
       { echo "$as_me:$LINENO: WARNING: usb.h not found: G15 driver disabled" >&5
 echo "$as_me: WARNING: usb.h not found: G15 driver disabled" >&2;}
+   fi
+fi
+
+if test "$GLCD2USB" = "yes"; then
+   if test "$has_usb" = "true"; then
+      GRAPHIC="yes"
+      KEYPAD="yes"
+      DRIVERS="$DRIVERS drv_GLCD2USB.o"
+      LIBUSB="yes"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_GLCD2USB 1
+_ACEOF
+
+   else
+      { echo "$as_me:$LINENO: WARNING: usb.h not found: GLCD2USB driver disabled" >&5
+echo "$as_me: WARNING: usb.h not found: GLCD2USB driver disabled" >&2;}
    fi
 fi
 

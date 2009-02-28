@@ -33,11 +33,12 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
-  [                        G15, HD44780, IRLCD, LCD2USB LCDLinux, LCDTerm, LPH7508,]
-  [                        LUIse, M50530, MatrixOrbital, MilfordInstruments, Noritake,]
-  [                        NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD, picoLCDGraphic,]
-  [                        RouterBoard, Sample, serdisplib, SimpleLCD, st2205, T6963, Trefon,]
-  [                        ULA200, USBLCD, USBHUB, WincorNixdorf, X11],
+  [                        G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,]
+  [                        LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,]
+  [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,]
+  [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, SimpleLCD,]
+  [                        st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, WincorNixdorf]
+  [                        X11],
   drivers=$withval,
   drivers=all
 )
@@ -66,6 +67,7 @@ for driver in $drivers; do
          D4D="yes"
          EA232graphic="yes"
          G15="yes"
+         GLCD2USB="yes"
          HD44780="yes"
 	 IRLCD="yes"
          LCD2USB="yes"
@@ -121,6 +123,9 @@ for driver in $drivers; do
          ;;
       G15)
          G15=$val
+         ;;
+      GLCD2USB)
+         GLCD2USB=$val
          ;;
       HD44780)
          HD44780=$val
@@ -318,6 +323,18 @@ if test "$G15" = "yes"; then
       AC_DEFINE(WITH_G15,1,[G-15 driver])
    else
       AC_MSG_WARN(usb.h not found: G15 driver disabled)
+   fi
+fi
+
+if test "$GLCD2USB" = "yes"; then
+   if test "$has_usb" = "true"; then
+      GRAPHIC="yes"
+      KEYPAD="yes"
+      DRIVERS="$DRIVERS drv_GLCD2USB.o"
+      LIBUSB="yes"
+      AC_DEFINE(WITH_GLCD2USB,1,[GLCD2USB driver])
+   else
+      AC_MSG_WARN(usb.h not found: GLCD2USB driver disabled)
    fi
 fi
 

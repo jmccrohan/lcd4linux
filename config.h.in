@@ -449,6 +449,9 @@
 /* GD library */
 #undef WITH_GD
 
+/* GLCD2USB driver */
+#undef WITH_GLCD2USB
+
 /* HD44780 driver */
 #undef WITH_HD44780
 
