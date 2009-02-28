@@ -87,7 +87,7 @@ static unsigned char *MOGX_framebuffer;
 
 /* used to display white text on blue background or inverse */
 static unsigned char invert = 0x00;
-static unsigned char backlight_RGB=0;
+static unsigned char backlight_RGB = 0;
 
 static usb_dev_handle *lcd_dev;
 
@@ -133,14 +133,14 @@ static int drv_MOGX_open(void)
 
     for (bus = busses; bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
-	    if ((dev->descriptor.idVendor == MatrixOrbitalGX_VENDOR) && 
+	    if ((dev->descriptor.idVendor == MatrixOrbitalGX_VENDOR) &&
 		((dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_1) ||
-		(dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_2) ||
-		(dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_3))) {
+		 (dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_2) ||
+		 (dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_3))) {
 
 		/* At the moment, I have information for only this LCD */
 		if (dev->descriptor.idProduct == MatrixOrbitalGX_DEVICE_2)
-		    backlight_RGB=0;
+		    backlight_RGB = 0;
 
 		info("%s: found Matrix Orbital GX Series LCD on bus %s device %s", Name, bus->dirname, dev->filename);
 
@@ -178,24 +178,24 @@ static int drv_MOGX_open(void)
 	}
     }
     error("%s: could not find a Matrix Orbital GX Series LCD", Name);
-    return -1;  
+    return -1;
 }
 
 static void drv_MOGX_send(const unsigned char *data, const unsigned int size)
 {
     int ret;
-    
+
     //unsigned char rcv_buffer[64] = "";
 
-    ret = usb_bulk_write(lcd_dev, BULK_OUT_ENDPOINT, (char*) data, size, 1000);
-    
+    ret = usb_bulk_write(lcd_dev, BULK_OUT_ENDPOINT, (char *) data, size, 1000);
+
     //info("%s written %d bytes\n", __FUNCTION__, ret);
 
     //ret = usb_bulk_read(lcd_dev, BULK_IN_ENDPOINT, (char *) rcv_buffer,64,1000);
 
     //printf("\nReply : ");
     //for (i=0;i<ret;i++)
-	//printf("%3x",rcv_buffer[i]);
+    //printf("%3x",rcv_buffer[i]);
 }
 
 static int drv_MOGX_close(void)
@@ -210,20 +210,20 @@ static int drv_MOGX_close(void)
 /* Send framebuffer to lcd */
 static void drv_MOGX_update_lcd()
 {
-    unsigned char cmd[3852] = {0x38,0x46,0x42,0x46,0x50,0x00,0x00,0x07,0x80,0xff,0xff};
+    unsigned char cmd[3852] = { 0x38, 0x46, 0x42, 0x46, 0x50, 0x00, 0x00, 0x07, 0x80, 0xff, 0xff };
     /*
-    index	: index of pixel_byte in cmd[]
-    bit		: pixel of each pixel_byte
-    x		: index of pixel in framebuffer
-    pixel_byte	: each 8 pixel in framebuffer = 1 byte
-    */
-    int index, bit, x=0;
-    unsigned int cmd_length=0;
+       index    : index of pixel_byte in cmd[]
+       bit              : pixel of each pixel_byte
+       x                : index of pixel in framebuffer
+       pixel_byte       : each 8 pixel in framebuffer = 1 byte
+     */
+    int index, bit, x = 0;
+    unsigned int cmd_length = 0;
     unsigned char pixel_byte;
 
     //info("In %s\n", __FUNCTION__);
 
-    for (index = 0; index < ( SCREEN_SIZE / 8 ); index++) {
+    for (index = 0; index < (SCREEN_SIZE / 8); index++) {
 	pixel_byte = 0x00;
 	for (bit = 7; bit >= 0; bit--) {
 	    if (MOGX_framebuffer[x] ^ invert)
@@ -232,30 +232,28 @@ static void drv_MOGX_update_lcd()
 		pixel_byte &= ~(1 << bit);
 	    x++;
 	}
-    
+
 	if (pixel_byte == 0xc0) {
 	    cmd[11 + cmd_length] = 0xdb;
 	    cmd_length++;
 	    cmd[11 + cmd_length] = 0xdc;
 	    cmd_length++;
-	}
-	else if (pixel_byte == 0xdb) {
+	} else if (pixel_byte == 0xdb) {
 	    cmd[11 + cmd_length] = 0xdb;
 	    cmd_length++;
 	    cmd[11 + cmd_length] = 0xdd;
 	    cmd_length++;
-	}
-	else {
+	} else {
 	    cmd[11 + cmd_length] = pixel_byte;
 	    cmd_length++;
 	}
     }
     /* finish command */
-    cmd[11+cmd_length] = 0xc0;
-    
+    cmd[11 + cmd_length] = 0xc0;
+
     //info("In %s - %s \n", __FUNCTION__, cmd_img);
     /* send command which includes framebuffer */
-    drv_MOGX_send(cmd, cmd_length+12);
+    drv_MOGX_send(cmd, cmd_length + 12);
 }
 
 static void drv_MOGX_blit(const int row, const int col, const int height, const int width)
@@ -302,7 +300,7 @@ static int drv_MOGX_contrast(int contrast)
 /* backlight function used in plugin */
 static int drv_MOGX_backlight(int backlight)
 {
-    unsigned char cmd[13] = {0x18,0x4c,0x43,0x53,0x48,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0xc0};
+    unsigned char cmd[13] = { 0x18, 0x4c, 0x43, 0x53, 0x48, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0xc0 };
 
     if (backlight < 0)
 	backlight = 0;
@@ -319,10 +317,10 @@ static int drv_MOGX_backlight(int backlight)
 static int drv_MOGX_backlightRGB(int backlight_R, int backlight_G, int backlight_B)
 {
     /*
-	TODO :	Function should be tested for three color LCD
-    */
+       TODO :   Function should be tested for three color LCD
+     */
     //unsigned char cmd1[11] = {0x18,0x4c,0x43,0x53,0x42,0x00,0x00,0x00,0x01,0xff,0xc0};
-    unsigned char cmd2[13] = {0x18,0x4c,0x43,0x53,0x48,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0xc0};
+    unsigned char cmd2[13] = { 0x18, 0x4c, 0x43, 0x53, 0x48, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0xc0 };
 
     if (backlight_R < 0)
 	backlight_R = 0;
@@ -353,7 +351,7 @@ static int drv_MOGX_backlightRGB(int backlight_R, int backlight_G, int backlight
 static int drv_MOGX_start(const char *section, const int quiet)
 {
     char *s;
-    int value1,value2,value3;
+    int value1, value2, value3;
 
     /* read display size from config */
     s = cfg_get(section, "Size", NULL);
@@ -392,7 +390,7 @@ static int drv_MOGX_start(const char *section, const int quiet)
 	if (value1 > 0) {
 	    info("%s: Display is inverted", Name);
 	    invert = 0x01;
-	}	
+	}
 
     /* open communication with the display */
     if (drv_MOGX_open() < 0) {
@@ -417,18 +415,16 @@ static int drv_MOGX_start(const char *section, const int quiet)
 	info("%s: Setting contrast to %d", Name, value1);
 	drv_MOGX_contrast(value1);
     }
-*/  
+*/
     /* if lcd has three color backlight call the backlightRGB function */
     if (backlight_RGB) {
 	if ((cfg_number(section, "Backlight_R", 0, 0, 255, &value1) > 0) &&
 	    (cfg_number(section, "Backlight_G", 0, 0, 255, &value2) > 0) &&
-	    (cfg_number(section, "Backlight_B", 0, 0, 255, &value3) > 0))
-	{
-	    info("%s: Setting backlight to %d,%d,%d (RGB)", Name, value1,value2,value3);
-	    drv_MOGX_backlightRGB(value1,value2,value3);
+	    (cfg_number(section, "Backlight_B", 0, 0, 255, &value3) > 0)) {
+	    info("%s: Setting backlight to %d,%d,%d (RGB)", Name, value1, value2, value3);
+	    drv_MOGX_backlightRGB(value1, value2, value3);
 	}
-    }
-    else {
+    } else {
 	if ((cfg_number(section, "Backlight", 0, 0, 255, &value1) > 0)) {
 	    info("%s: Setting backlight to %d", Name, value1);
 	    drv_MOGX_backlight(value1);
@@ -437,7 +433,7 @@ static int drv_MOGX_start(const char *section, const int quiet)
 
     //info("In %s\n", __FUNCTION__);
 
-    return 0;    
+    return 0;
 }
 
 
@@ -469,7 +465,7 @@ static void plugin_backlightRGB(RESULT * result, RESULT * arg1, RESULT * arg2, R
 {
     double backlight;
 
-    backlight = drv_MOGX_backlightRGB(R2N(arg1),R2N(arg2),R2N(arg3));
+    backlight = drv_MOGX_backlightRGB(R2N(arg1), R2N(arg2), R2N(arg3));
     SetResult(&result, R_NUMBER, &backlight);
 }
 
@@ -525,9 +521,9 @@ int drv_MOGX_init(const char *section, const int quiet)
     }
 
     /* register plugins */
-    /*	TODO :	I am not sure for contrast function (command) 
-		Don't try to adjust contrast until contrast function is checked and fixed
-    */
+    /*  TODO :  I am not sure for contrast function (command) 
+       Don't try to adjust contrast until contrast function is checked and fixed
+     */
     //AddFunction("LCD::contrast", 1, plugin_contrast);
     if (backlight_RGB)
 	AddFunction("LCD::backlightRGB", 3, plugin_backlightRGB);
@@ -554,10 +550,10 @@ int drv_MOGX_quit(const int quiet)
 
     /* say goodbye... */
     /*
-    if (!quiet) {
-	drv_generic_graphic_greet("goodbye!", NULL);
-    }
-    */
+       if (!quiet) {
+       drv_generic_graphic_greet("goodbye!", NULL);
+       }
+     */
 
     drv_generic_graphic_quit();
 
@@ -566,7 +562,7 @@ int drv_MOGX_quit(const int quiet)
 
     if (MOGX_framebuffer) {
 	free(MOGX_framebuffer);
-    }    
+    }
 
     return (0);
 }
