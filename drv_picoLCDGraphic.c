@@ -6,7 +6,7 @@
  * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
- * Copyright (C) 2008 Nicu Pavel, Mini-Box.com <npavel@mini-box.com>
+ * Copyright (C) 2009 Nicu Pavel, Mini-Box.com <npavel@mini-box.com>
  *
  * This file is part of LCD4Linux.
  *
@@ -98,7 +98,8 @@ static char *Buffer;
 static char *BufPtr;
 
 static usb_dev_handle *lcd;
-
+//extern int usb_debug;
+int usb_debug;
 
 
 /****************************************/
@@ -119,7 +120,7 @@ static int drv_pLG_open(void)
 
     info("%s: scanning for picoLCD 256x64...", Name);
 
-    usb_set_debug(0);
+    usb_debug = 0;
 
     usb_init();
     usb_find_busses();
@@ -167,6 +168,11 @@ static int drv_pLG_open(void)
     }
     error("%s: could not find a picoLCD", Name);
     return -1;
+}
+
+static int drv_pLG_read(unsigned char *data, int size)
+{
+    return usb_interrupt_read(lcd, USB_ENDPOINT_IN + 1, (char *) data, size, 1000);
 }
 
 
@@ -388,6 +394,22 @@ static int drv_pLG_backlight(int backlight)
     return backlight;
 }
 
+#define _USBLCD_MAX_DATA_LEN          24
+#define IN_REPORT_KEY_STATE           0x11
+static int drv_pLG_gpi( __attribute__ ((unused))
+		       int num)
+{
+    int ret;
+    unsigned char read_packet[_USBLCD_MAX_DATA_LEN];
+    ret = drv_pLG_read(read_packet, _USBLCD_MAX_DATA_LEN);
+    if ((ret > 0) && (read_packet[0] == IN_REPORT_KEY_STATE)) {
+	debug("picoLCD: pressed key= 0x%02x\n", read_packet[1]);
+	return read_packet[1];
+    }
+    return 0;
+}
+
+
 static int drv_pLG_gpo(int num, int val)
 {
     unsigned char cmd[2] = { 0x81 };	/* set GPO */
@@ -409,7 +431,7 @@ static int drv_pLG_gpo(int num, int val)
 	gpo &= ~(1 << num);
 
     cmd[1] = gpo;
-    //drv_pLG_send(cmd, 2);
+    drv_pLG_send(cmd, 2);
 
     return val;
 }
@@ -549,9 +571,12 @@ int drv_pLG_init(const char *section, const int quiet)
     XRES = 6;			/* pixel width of one char  */
     YRES = 8;			/* pixel height of one char  */
     GPOS = 8;
-
+    GPIS = 1;
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_pLG_blit;
+    drv_generic_gpio_real_set = drv_pLG_gpo;
+    drv_generic_gpio_real_get = drv_pLG_gpi;
+
 
     /* start display */
     if ((ret = drv_pLG_start(section, quiet)) != 0)
