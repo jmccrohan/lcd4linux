@@ -7695,7 +7695,7 @@ for driver in $drivers; do
          D4D="yes"
          EA232graphic="yes"
          G15="yes"
-         GLCD2USB="no"
+         GLCD2USB="yes"
          HD44780="yes"
 	 IRLCD="yes"
          LCD2USB="yes"

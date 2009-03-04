@@ -1,6 +1,5 @@
 /* $Id$
  * $URL$
- * $URL$
  *
  * LCD4Linux
  *

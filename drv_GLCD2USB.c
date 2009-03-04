@@ -61,8 +61,21 @@
 #include "drv_generic_graphic.h"
 #include "drv_generic_keypad.h"
 
-#define usbDevice   usb_dev_handle	/* use libusb's device structure */
-#include "usbcalls.h"
+/* Numeric constants for 'reportType' parameters */
+#define USB_HID_REPORT_TYPE_INPUT   1
+#define USB_HID_REPORT_TYPE_OUTPUT  2
+#define USB_HID_REPORT_TYPE_FEATURE 3
+
+/* These are the error codes which can be returned by functions of this
+ * module.
+ */
+#define USB_ERROR_NONE      0
+#define USB_ERROR_ACCESS    1
+#define USB_ERROR_NOTFOUND  2
+#define USB_ERROR_BUSY      16
+#define USB_ERROR_IO        5
+
+/* ------------------------------------------------------------------------ */
 
 #include "glcd2usb.h"
 
@@ -71,7 +84,7 @@
 #define USBRQ_HID_GET_REPORT    0x01
 #define USBRQ_HID_SET_REPORT    0x09
 
-usbDevice_t *dev = NULL;
+usb_dev_handle *dev = NULL;
 
 /* USB message buffer */
 static union {
@@ -82,9 +95,9 @@ static union {
 /* ------------------------------------------------------------------------- */
 
 
-#define IDENT_VENDOR_NUM        0x0403
+#define IDENT_VENDOR_NUM        0x1c40
 #define IDENT_VENDOR_STRING     "www.harbaum.org/till/glcd2usb"
-#define IDENT_PRODUCT_NUM       0xc634
+#define IDENT_PRODUCT_NUM       0x0525
 #define IDENT_PRODUCT_STRING    "GLCD2USB"
 
 static char Name[] = IDENT_PRODUCT_STRING;
@@ -130,7 +143,7 @@ static int usbGetString(usb_dev_handle * dev, int index, char *buf, int buflen)
 
 /* ------------------------------------------------------------------------- */
 
-int usbOpenDevice(usbDevice_t ** device, int vendor, char *vendorName, int product, char *productName)
+int usbOpenDevice(usb_dev_handle ** device, int vendor, char *vendorName, int product, char *productName)
 {
     struct usb_bus *bus;
     struct usb_device *dev;
@@ -217,7 +230,7 @@ int usbOpenDevice(usbDevice_t ** device, int vendor, char *vendorName, int produ
 
 /* ------------------------------------------------------------------------- */
 
-void usbCloseDevice(usbDevice_t * device)
+void usbCloseDevice(usb_dev_handle * device)
 {
     if (device != NULL)
 	usb_close(device);
@@ -225,7 +238,7 @@ void usbCloseDevice(usbDevice_t * device)
 
 /* ------------------------------------------------------------------------- */
 
-int usbSetReport(usbDevice_t * device, int reportType, unsigned char *buffer, int len)
+int usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int len)
 {
     int bytesSent;
 
@@ -256,7 +269,7 @@ int usbSetReport(usbDevice_t * device, int reportType, unsigned char *buffer, in
 
 /* ------------------------------------------------------------------------- */
 
-int usbGetReport(usbDevice_t * device, int reportType, int reportNumber, unsigned char *buffer, int *len)
+int usbGetReport(usb_dev_handle * device, int reportType, int reportNumber, unsigned char *buffer, int *len)
 {
     *len = usb_control_msg(device, USB_TYPE_CLASS | USB_RECIP_INTERFACE |
 			   USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT,
@@ -480,7 +493,7 @@ int drv_GLCD2USB_list(void)
 static int drv_GLCD2USB_keypad(const int num)
 {
     int val = 0;
-#if 0
+#if 0				// keypad support not yet implemented
     /* check for key press event */
     if (num & 0x80)
 	val = WIDGET_KEY_PRESSED;
