@@ -462,6 +462,7 @@ int drv_MO_init(const char *section, const int quiet)
 {
     WIDGET_CLASS wc;
     int ret;
+    int asc255bug;
 
     info("%s: %s", Name, "$Rev$");
 
@@ -496,8 +497,13 @@ int drv_MO_init(const char *section, const int quiet)
 	return ret;
 
     /* add fixed chars to the bar driver */
+    /* most displays have a full block on ascii 255, but some have kind of  */
+    /* an 'inverted P'. If you specify 'asc255bug 1 in the config, this */
+    /* char will not be used, but rendered by the bar driver */
+    cfg_number(section, "asc255bug", 0, 0, 1, &asc255bug);
     drv_generic_text_bar_add_segment(0, 0, 255, 32);	/* ASCII  32 = blank */
-    drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
+    if (!asc255bug)
+	drv_generic_text_bar_add_segment(255, 255, 255, 255);	/* ASCII 255 = block */
 
     /* initialize generic GPIO driver */
     if ((ret = drv_generic_gpio_init(section, Name)) != 0)
