@@ -50,6 +50,7 @@
 
 #include "debug.h"
 #include "cfg.h"
+#include "timer.h"
 #include "qprintf.h"
 #include "plugin.h"
 #include "widget.h"
@@ -99,6 +100,10 @@ static union {
 #define IDENT_VENDOR_STRING     "www.harbaum.org/till/glcd2usb"
 #define IDENT_PRODUCT_NUM       0x0525
 #define IDENT_PRODUCT_STRING    "GLCD2USB"
+
+/* early versions used the ftdi vendor id */
+#define IDENT_VENDOR_NUM_OLD    0x0403
+#define IDENT_PRODUCT_NUM_OLD   0xc634
 
 static char Name[] = IDENT_PRODUCT_STRING;
 
@@ -392,6 +397,32 @@ static void drv_GLCD2USB_blit(const int row, const int col, const int height, co
     }
 }
 
+static void drv_GLCD2USB_timer(void __attribute__ ((unused)) * notused)
+{
+    /* request button state */
+    static unsigned int last_but = 0;
+    int err = 0, len = 2;
+
+    if((err = usbGetReport(dev, USB_HID_REPORT_TYPE_FEATURE, 
+			   GLCD2USB_RID_GET_BUTTONS, buffer.bytes, &len)) != 0){
+        fprintf(stderr, "Error getting button state: %s\n", usbErrorMessage(err));
+        return;
+    }
+
+    int i;
+
+    /* check if button state changed */
+    if (buffer.bytes[1] ^ last_but) {
+
+	/* send single keypad events for all changed buttons */
+	for (i = 0; i < 4; i++)
+	    if ((buffer.bytes[1] & (1 << i)) ^ (last_but & (1 << i)))
+	        drv_generic_keypad_press(((buffer.bytes[1] & (1 << i)) ? 0x80 : 0) | i);
+    }
+
+    last_but = buffer.bytes[1];
+}
+
 static int drv_GLCD2USB_start(const char *section)
 {
     char *s;
@@ -406,8 +437,11 @@ static int drv_GLCD2USB_start(const char *section)
 
     if ((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM, IDENT_VENDOR_STRING,
 			     IDENT_PRODUCT_NUM, IDENT_PRODUCT_STRING)) != 0) {
+      if ((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM_OLD, IDENT_VENDOR_STRING,
+			       IDENT_PRODUCT_NUM_OLD, IDENT_PRODUCT_STRING)) != 0) {
 	error("%s: opening GLCD2USB device: %s", Name, usbErrorMessage(err));
 	return -1;
+      }
     }
 
     info("%s: Found device", Name);
@@ -456,6 +490,10 @@ static int drv_GLCD2USB_start(const char *section)
 	return -1;
     }
 
+    /* regularly request key state. can be quite slow since the device */
+    /* buffers button presses internally */
+    timer_add(drv_GLCD2USB_timer, NULL, 100, 0);
+
     return 0;
 }
 
@@ -492,21 +530,20 @@ int drv_GLCD2USB_list(void)
 
 static int drv_GLCD2USB_keypad(const int num)
 {
-    int val = 0;
-#if 0				// keypad support not yet implemented
+  const int keys[] = 
+    { WIDGET_KEY_LEFT, WIDGET_KEY_RIGHT, 
+      WIDGET_KEY_CONFIRM, WIDGET_KEY_CANCEL 
+    };
+
+    int val;
+
     /* check for key press event */
     if (num & 0x80)
 	val = WIDGET_KEY_PRESSED;
     else
 	val = WIDGET_KEY_RELEASED;
 
-    if ((num & 0x7f) == 0)
-	val += WIDGET_KEY_UP;
-
-    if ((num & 0x7f) == 1)
-	val += WIDGET_KEY_DOWN;
-#endif
-    return val;
+    return val | keys[num & 0x7f];
 }
 
 /* initialize driver & display */
