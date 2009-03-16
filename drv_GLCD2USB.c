@@ -541,7 +541,7 @@ static int drv_GLCD2USB_keypad(const int num)
     else
 	val = WIDGET_KEY_RELEASED;
 
-    return val | keys[num & 0x7f];
+    return val | keys[num & 0x03];
 }
 
 /* initialize driver & display */
