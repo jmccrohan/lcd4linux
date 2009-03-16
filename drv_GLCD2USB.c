@@ -403,10 +403,9 @@ static void drv_GLCD2USB_timer(void __attribute__ ((unused)) * notused)
     static unsigned int last_but = 0;
     int err = 0, len = 2;
 
-    if((err = usbGetReport(dev, USB_HID_REPORT_TYPE_FEATURE, 
-			   GLCD2USB_RID_GET_BUTTONS, buffer.bytes, &len)) != 0){
-        fprintf(stderr, "Error getting button state: %s\n", usbErrorMessage(err));
-        return;
+    if ((err = usbGetReport(dev, USB_HID_REPORT_TYPE_FEATURE, GLCD2USB_RID_GET_BUTTONS, buffer.bytes, &len)) != 0) {
+	fprintf(stderr, "Error getting button state: %s\n", usbErrorMessage(err));
+	return;
     }
 
     int i;
@@ -417,7 +416,7 @@ static void drv_GLCD2USB_timer(void __attribute__ ((unused)) * notused)
 	/* send single keypad events for all changed buttons */
 	for (i = 0; i < 4; i++)
 	    if ((buffer.bytes[1] & (1 << i)) ^ (last_but & (1 << i)))
-	        drv_generic_keypad_press(((buffer.bytes[1] & (1 << i)) ? 0x80 : 0) | i);
+		drv_generic_keypad_press(((buffer.bytes[1] & (1 << i)) ? 0x80 : 0) | i);
     }
 
     last_but = buffer.bytes[1];
@@ -437,11 +436,11 @@ static int drv_GLCD2USB_start(const char *section)
 
     if ((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM, IDENT_VENDOR_STRING,
 			     IDENT_PRODUCT_NUM, IDENT_PRODUCT_STRING)) != 0) {
-      if ((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM_OLD, IDENT_VENDOR_STRING,
-			       IDENT_PRODUCT_NUM_OLD, IDENT_PRODUCT_STRING)) != 0) {
-	error("%s: opening GLCD2USB device: %s", Name, usbErrorMessage(err));
-	return -1;
-      }
+	if ((err = usbOpenDevice(&dev, IDENT_VENDOR_NUM_OLD, IDENT_VENDOR_STRING,
+				 IDENT_PRODUCT_NUM_OLD, IDENT_PRODUCT_STRING)) != 0) {
+	    error("%s: opening GLCD2USB device: %s", Name, usbErrorMessage(err));
+	    return -1;
+	}
     }
 
     info("%s: Found device", Name);
@@ -530,9 +529,8 @@ int drv_GLCD2USB_list(void)
 
 static int drv_GLCD2USB_keypad(const int num)
 {
-  const int keys[] = 
-    { WIDGET_KEY_LEFT, WIDGET_KEY_RIGHT, 
-      WIDGET_KEY_CONFIRM, WIDGET_KEY_CANCEL 
+    const int keys[] = { WIDGET_KEY_LEFT, WIDGET_KEY_RIGHT,
+	WIDGET_KEY_CONFIRM, WIDGET_KEY_CANCEL
     };
 
     int val;
