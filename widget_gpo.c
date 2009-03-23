@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_GPO
@@ -96,6 +96,9 @@ int widget_gpo_init(WIDGET * Self)
 
     free(section);
     Self->data = GPO;
+    /* no display dimension */
+    Self->x2 = NOCOORD;
+    Self->y2 = NOCOORD;
 
     /* fire it the first time */
     widget_gpo_update(Self);

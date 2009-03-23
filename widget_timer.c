@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Timer
@@ -98,6 +98,8 @@ int widget_timer_init(WIDGET * Self)
 
     free(section);
     Self->data = Timer;
+    Self->x2 = NOCOORD;
+    Self->y2 = NOCOORD;
 
     /* just do it! */
     widget_timer_update(Self);

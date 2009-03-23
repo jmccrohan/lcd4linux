@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Bar
@@ -154,15 +154,23 @@ int widget_bar_init(WIDGET * Self)
     switch (toupper(*c)) {
     case 'E':
 	Bar->direction = DIR_EAST;
+	Self->x2 = Self->col + Bar->length - 1;
+	Self->y2 = Self->row;
 	break;
     case 'W':
 	Bar->direction = DIR_WEST;
+	Self->x2 = Self->col + Bar->length - 1;
+	Self->y2 = Self->row;
 	break;
     case 'N':
 	Bar->direction = DIR_NORTH;
+	Self->x2 = Self->col;
+	Self->y2 = Self->row + Bar->length - 1;
 	break;
     case 'S':
 	Bar->direction = DIR_SOUTH;
+	Self->x2 = Self->col;
+	Self->y2 = Self->row + Bar->length - 1;
 	break;
     default:
 	error("widget %s has unknown direction '%s'; known directions: 'E', 'W', 'N', 'S'; using 'E(ast)'", Self->name,

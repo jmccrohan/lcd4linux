@@ -56,6 +56,8 @@ typedef struct WIDGET {
     int row;
     int col;
     void *data;
+    int x2;			/* x of opposite corner, -1 for no display widget */
+    int y2;			/* y of opposite corner, -1 for no display widget */
 } WIDGET;
 
 
@@ -68,8 +70,15 @@ typedef struct WIDGET {
 
 int widget_register(WIDGET_CLASS * widget);
 void widget_unregister(void);
+int intersect(WIDGET * w1, WIDGET * w2);
 int widget_add(const char *name, const int type, const int layer, const int row, const int col);
 WIDGET *widget_find(int type, void *needle);
 int widget_color(const char *section, const char *name, const char *key, RGBA * C);
+
+#undef MIN
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#undef MAX
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define NOCOORD (-1)
 
 #endif

@@ -5,7 +5,7 @@
  *
  * Copyright (C) 2003, 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
- * Copyright (C) 2008 Michael Vogt <michu@neophob.com> 
+ * Copyright (C) 2008 Michael Vogt <michu@neophob.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Text
- *   a simple text widget which 
+ *   a simple text widget which
  *   must be supported by all displays
  *
  */
@@ -352,6 +352,8 @@ int widget_text_init(WIDGET * Self)
 
     free(section);
     Self->data = Text;
+    Self->x2 = Self->col + Text->width;
+    Self->y2 = Self->row;
 
     /* add update timer, use one-shot if 'update' is zero */
     timer_add(widget_text_update, Self, Text->update, Text->update == 0);

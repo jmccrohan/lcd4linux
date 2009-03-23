@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Icon
@@ -146,6 +146,8 @@ int widget_icon_init(WIDGET * Self)
 
 	free(section);
 	Self->data = Icon;
+	Self->x2 = Self->col + 1;
+	Self->y2 = Self->row + 1;
 
 	/* as the speed is evaluatod on every call, we use 'one-shot'-timers.  */
 	/* The timer will be reactivated on every call to widget_icon_update().  */

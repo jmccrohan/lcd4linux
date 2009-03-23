@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * int widget_junk(void)
@@ -126,6 +126,32 @@ int widget_color(const char *section, const char *name, const char *key, RGBA * 
     }
     free(color);
     return 1;
+}
+
+int intersect(WIDGET * w1, WIDGET * w2)
+{
+    int x1w1, y1w1, x2w1, y2w1;	/* 1st rectangle */
+    int x1w2, y1w2, x2w2, y2w2;	/* 2nd rectangle */
+
+    if (w1->x2 == NOCOORD || w1->y2 == NOCOORD || w2->x2 == NOCOORD || w2->y2 == NOCOORD) {
+	/* w1 or w2 is no display widget: no intersection */
+	return 0;
+    }
+    x1w1 = MIN(w1->col, w1->x2);
+    x2w1 = MAX(w1->col, w1->x2);
+    y1w1 = MIN(w1->row, w1->y2);
+    y2w1 = MAX(w1->row, w1->y2);
+    x1w2 = MIN(w2->col, w2->x2);
+    x2w2 = MAX(w2->col, w2->x2);
+    y1w2 = MIN(w2->row, w2->y2);
+    y2w2 = MAX(w2->row, w2->y2);
+
+    if (x1w2 < x2w1 && x2w2 > x1w1 && y1w2 < y2w1 && y2w2 > y1w1) {
+	/* true: Intersection */
+	return 1;
+    } else {
+	return 0;
+    }
 }
 
 int widget_add(const char *name, const int type, const int layer, const int row, const int col)
@@ -240,13 +266,24 @@ int widget_add(const char *name, const int type, const int layer, const int row,
     Widget->row = row;
     Widget->col = col;
 
-    info(" widget '%s': Class '%s', Parent '%s', Layer %d, %s %d, %s %d",
-	 name, (NULL == Class) ? "<none>" : Class->name,
-	 (NULL == Parent) ? "<root>" : Parent->name,
-	 layer, (WIDGET_TYPE_XY == Class->type) ? "Y" : "Row", row, (WIDGET_TYPE_XY == Class->type) ? "X" : "Col", col);
-
     if (Class->init != NULL) {
 	Class->init(Widget);
+    }
+
+    info(" widget '%s': Class '%s', Parent '%s', Layer %d, %s %d, %s %d (to %d,%d)",
+	 name, (NULL == Class) ? "<none>" : Class->name,
+	 (NULL == Parent) ? "<root>" : Parent->name,
+	 layer, (WIDGET_TYPE_XY == Class->type) ? "Y" : "Row", row, (WIDGET_TYPE_XY == Class->type) ? "X" : "Col", col,
+	 Widget->y2, Widget->x2);
+
+    /* sanity check: look for overlapping widgets */
+    for (i = 0; i < nWidgets - 1; i++) {
+	if (Widgets[i].layer == layer) {
+	    if (intersect(&(Widgets[i]), Widget)) {
+		info("WARNING widget %s(%i,%i) intersects with %s(%i,%i) on layer %d",
+		     Widgets[i].name, Widgets[i].row, Widgets[i].col, name, row, col, layer);
+	    }
+	}
     }
 
     return 0;

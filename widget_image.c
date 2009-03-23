@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Image
@@ -237,6 +237,8 @@ int widget_image_init(WIDGET * Self)
 
 	free(section);
 	Self->data = Image;
+	Self->x2 = Self->col + Image->width;
+	Self->y2 = Self->row + Image->height;
 
     } else {
 

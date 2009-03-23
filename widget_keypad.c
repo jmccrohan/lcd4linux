@@ -22,7 +22,7 @@
  *
  */
 
-/* 
+/*
  * exported functions:
  *
  * WIDGET_CLASS Widget_Keypad
@@ -103,6 +103,8 @@ int widget_keypad_init(WIDGET * Self)
 
     free(section);
     Self->data = keypad;
+    Self->x2 = NOCOORD;
+    Self->y2 = NOCOORD;
 
     return 0;
 }
