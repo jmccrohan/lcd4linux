@@ -71,7 +71,6 @@ static int yres = 200;
 static int BPP = 4;
 
 static int clientCount = 0;
-static int oldClientCount = 0;
 
 static void clientgone(rfbClientPtr cl)
 {
@@ -88,11 +87,9 @@ static enum rfbNewClientAction newclient(rfbClientPtr cl)
     return RFB_CLIENT_ACCEPT;
 }
 
+/* handle mouse action */
 static void doptr(int buttonMask, int x, int y, rfbClientPtr cl)
 {
-    //printf("doptr\n");
-//    ClientData* cd=cl->clientData;
-
     if (x >= 0 && y >= 0 && x < xres && y < yres) {
 	if (buttonMask) {
 	    printf("btn:%d, x:%d, y:%d\n", buttonMask, x, y);
@@ -145,13 +142,11 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 static void drv_vnc_blit(const int row, const int col, const int height, const int width)
 {
     if (rfbIsActive(server)) {
-	//todo blit only if client are connected...
 
-//      if (clientCount > 0) {
 	drv_vnc_blit_it(row, col, height, width, (unsigned char *) server->frameBuffer);
-	rfbMarkRectAsModified(server, 0, 0, xres, yres);
-//      }
-	oldClientCount = clientCount;
+        if (clientCount > 0) {
+	    rfbMarkRectAsModified(server, 0, 0, xres, yres);
+        }
 	rfbProcessEvents(server, server->deferUpdateTime * 1000);
     }
 }
