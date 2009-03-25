@@ -144,9 +144,9 @@ static void drv_vnc_blit(const int row, const int col, const int height, const i
     if (rfbIsActive(server)) {
 
 	drv_vnc_blit_it(row, col, height, width, (unsigned char *) server->frameBuffer);
-        if (clientCount > 0) {
+	if (clientCount > 0) {
 	    rfbMarkRectAsModified(server, 0, 0, xres, yres);
-        }
+	}
 	rfbProcessEvents(server, server->deferUpdateTime * 1000);
     }
 }
