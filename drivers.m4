@@ -649,7 +649,7 @@ if test "$VNC" = "yes"; then
    if test "$has_vncserverlib" = "true"; then
       GRAPHIC="yes"
       DRIVERS="$DRIVERS drv_vnc.o"
-      DRVLIBS="$DRVLIBS -L/usr/local/lib -lvncserver -lnsl -lpthread -lz /usr/lib/libjpeg.la"
+      DRVLIBS="$DRVLIBS -L/usr/local/lib -lvncserver -lnsl -lz -ljpeg"
       AC_DEFINE(WITH_VNC,1,[vnc driver])
    else
       AC_MSG_WARN(libvncserver not found: vnc driver disabled)

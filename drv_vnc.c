@@ -42,7 +42,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <rfb/rfb.h> 
+#include <rfb/rfb.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -57,10 +57,11 @@
 
 #include "drv_generic_graphic.h"
 
-
+//todo: fps limiter
+//      key widget
 
 /* 15 frames per second (if we can) */
-#define PICTURE_TIMEOUT (1.0/15.0) 
+#define PICTURE_TIMEOUT (1.0/15.0)
 
 static char Name[] = "VNC";
 
@@ -69,17 +70,49 @@ static int xres = 320;
 static int yres = 200;
 static int BPP = 4;
 
+static int clientCount = 0;
+static int oldClientCount = 0;
+
+static void clientgone(rfbClientPtr cl)
+{
+    if (clientCount > 0)
+	clientCount--;
+    debug("%d clients connected\n", clientCount);
+}
+
+static enum rfbNewClientAction newclient(rfbClientPtr cl)
+{
+    cl->clientGoneHook = clientgone;
+    clientCount++;
+    debug("%d clients connected\n", clientCount);
+    return RFB_CLIENT_ACCEPT;
+}
+
+static void doptr(int buttonMask, int x, int y, rfbClientPtr cl)
+{
+    //printf("doptr\n");
+//    ClientData* cd=cl->clientData;
+
+    if (x >= 0 && y >= 0 && x < xres && y < yres) {
+	if (buttonMask) {
+	    printf("btn:%d, x:%d, y:%d\n", buttonMask, x, y);
+	}
+    }
+
+    rfbDefaultPtrAddEvent(buttonMask, x, y, cl);
+}
+
 
 static int drv_vnc_open(const char *Section)
 {
     if (cfg_number(Section, "xres", 320, 32, 2048, &xres) < 1) {
-        info("[DRV_VNC] no '%s.xres' entry from %s using default %d", Section, cfg_source(), xres);
-    }                    
+	info("[DRV_VNC] no '%s.xres' entry from %s using default %d", Section, cfg_source(), xres);
+    }
     if (cfg_number(Section, "yres", 200, 32, 2048, &yres) < 1) {
-        info("[DRV_VNC] no '%s.yres' entry from %s using default %d", Section, cfg_source(), yres);
+	info("[DRV_VNC] no '%s.yres' entry from %s using default %d", Section, cfg_source(), yres);
     }
     if (cfg_number(Section, "bpp", 4, 1, 4, &BPP) < 1) {
-        info("[DRV_VNC] no '%s.bpp' entry from %s using default %d", Section, cfg_source(), BPP);
+	info("[DRV_VNC] no '%s.bpp' entry from %s using default %d", Section, cfg_source(), BPP);
     }
     return 0;
 }
@@ -92,11 +125,11 @@ static int drv_vnc_close(void)
     return 0;
 }
 
-static void drv_vnc_blit_it(const int row, const int col, const int height, const int width, unsigned char* buffer)
+static void drv_vnc_blit_it(const int row, const int col, const int height, const int width, unsigned char *buffer)
 {
     int r, c, ofs;
     RGBA p;
-    
+
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
 	    p = drv_generic_graphic_rgb(r, c);
@@ -104,7 +137,7 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 	    buffer[ofs++] = p.R;
 	    buffer[ofs++] = p.G;
 	    buffer[ofs++] = p.B;
-	    buffer[ofs  ] = 255;
+	    buffer[ofs] = 255;
 	}
     }
 }
@@ -112,30 +145,15 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 static void drv_vnc_blit(const int row, const int col, const int height, const int width)
 {
     if (rfbIsActive(server)) {
-    //todo blit only if client are connected...
-	drv_vnc_blit_it(row, col, height, width, (unsigned char *)server->frameBuffer);
-        rfbMarkRectAsModified(server, 0, 0, xres, yres);
-        rfbProcessEvents(server, server->deferUpdateTime*1000);
+	//todo blit only if client are connected...
+
+//      if (clientCount > 0) {
+	drv_vnc_blit_it(row, col, height, width, (unsigned char *) server->frameBuffer);
+	rfbMarkRectAsModified(server, 0, 0, xres, yres);
+//      }
+	oldClientCount = clientCount;
+	rfbProcessEvents(server, server->deferUpdateTime * 1000);
     }
-}
-
-static void doptr(int buttonMask,int x,int y,rfbClientPtr cl)
-{
-    //printf("doptr\n");
-//    ClientData* cd=cl->clientData;
-    
-    if(x>=0 && y>=0 && x<xres && y<yres) {
-	if(buttonMask) {
-		printf("btn:%d, x:%d, y:%d\n", buttonMask, x, y);
-	}
-    }    
-    
-    rfbDefaultPtrAddEvent(buttonMask,x,y,cl);
-}
-
-static void dokey(rfbBool down,rfbKeySym key,rfbClientPtr cl)
-{
-    printf("dokey\n");
 }
 
 /* start graphic display */
@@ -168,16 +186,17 @@ static int drv_vnc_start(const char *section)
     }
 
     /* you surely want to allocate a framebuffer or something... */
-    server=rfbGetScreen(0, NULL, xres, yres, 8, 3, BPP);
+    server = rfbGetScreen(0, NULL, xres, yres, 8, 3, BPP);
     server->desktopName = "LCD4Linux VNC Driver";
-    server->frameBuffer=(char*)malloc(xres*yres*BPP);
-    server->alwaysShared=(1==1);
+    server->frameBuffer = (char *) malloc(xres * yres * BPP);
+    server->alwaysShared = (1 == 1);
     server->ptrAddEvent = doptr;
 //    server->kbdAddEvent = dokey;
-    
+    server->newClientHook = newclient;
+
     /* Initialize the server */
     rfbInitServer(server);
-                
+
     /* set width/height */
     DROWS = yres;
     DCOLS = xres;
