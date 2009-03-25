@@ -37,8 +37,8 @@ AC_ARG_WITH(
   [                        LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,]
   [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, SimpleLCD,]
-  [                        st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, WincorNixdorf]
-  [                        X11],
+  [                        st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, VNC,]
+  [                        WincorNixdorf, X11],
   drivers=$withval,
   drivers=all
 )
@@ -98,6 +98,7 @@ for driver in $drivers; do
          ULA200="yes"
 	 USBHUB="yes"
          USBLCD="yes"
+         VNC="yes"
 	 WINCORNIXDORF="yes"
          X11="yes"
          ;;
@@ -221,6 +222,9 @@ for driver in $drivers; do
          ;;
       USBLCD)
          USBLCD=$val
+         ;;
+      VNC)
+         VNC=$val
          ;;
       WincorNixdorf)
          WINCORNIXDORF=$val
@@ -639,6 +643,17 @@ if test "$USBLCD" = "yes"; then
       LIBUSB="yes"
    fi
    AC_DEFINE(WITH_USBLCD,1,[USBLCD driver])
+fi
+
+if test "$VNC" = "yes"; then
+   if test "$has_vncserverlib" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_vnc.o"
+      DRVLIBS="$DRVLIBS -L/usr/local/lib -lvncserver -lnsl -lpthread -lz /usr/lib/libjpeg.la"
+      AC_DEFINE(WITH_VNC,1,[vnc driver])
+   else
+      AC_MSG_WARN(libvncserver not found: vnc driver disabled)
+   fi
 fi
 
 if test "$WINCORNIXDORF" = "yes"; then

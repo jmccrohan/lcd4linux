@@ -105,6 +105,7 @@ drv_Trefon.c                  \
 drv_ula200.c                  \
 drv_USBHUB.c                  \
 drv_USBLCD.c                  \
+drv_vnc.c                     \
 drv_WincorNixdorf.c           \
 drv_X11.c                     \
                               \

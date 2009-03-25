@@ -118,6 +118,9 @@
 /* Define to 1 if you have the `regcomp' function. */
 #undef HAVE_REGCOMP
 
+/* Define to 1 if you have the <rfb/rfb.h> header file. */
+#undef HAVE_RFB_RFB_H
+
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
@@ -553,6 +556,9 @@
 
 /* USBLCD driver */
 #undef WITH_USBLCD
+
+/* vnc driver */
+#undef WITH_VNC
 
 /* WincorNixdorf driver */
 #undef WITH_WINCORNIXDORF

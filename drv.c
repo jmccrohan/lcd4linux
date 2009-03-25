@@ -84,6 +84,7 @@ extern DRIVER drv_Trefon;
 extern DRIVER drv_ula200;
 extern DRIVER drv_USBHUB;
 extern DRIVER drv_USBLCD;
+extern DRIVER drv_vnc;
 extern DRIVER drv_WincorNixdorf;
 extern DRIVER drv_X11;
 
@@ -204,6 +205,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_USBLCD
     &drv_USBLCD,
+#endif
+#ifdef WITH_VNC
+    &drv_vnc,
 #endif
 #ifdef WITH_WINCORNIXDORF
     &drv_WincorNixdorf,
