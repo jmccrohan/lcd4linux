@@ -504,6 +504,15 @@ Display Image {
     Basecolor  '80d000'
 }
 
+Display VNC {
+    Driver 'VNC'
+    Font   '6x8'
+    xres   '320'
+    yres   '140'
+    bpp    '4'
+    maxclients '1'
+}
+
 #Plugin KVV {
 #    StationID '12_701'
 #    Refresh 30
@@ -1241,6 +1250,7 @@ Layout Debug {
 #Display 'LPH7508'
 #Display 'ctinclud'
 #Display 'picoLCD'
+#Display 'VNC'
 Display 'GLCD2USB'
 
 #Layout 'Default'

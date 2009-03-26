@@ -77,7 +77,7 @@ static void clientgone(rfbClientPtr cl)
 {
     if (clientCount > 0)
 	clientCount--;
-    debug("%d clients connected\n", clientCount);
+    debug("%d clients connecten", clientCount);
 }
 
 static enum rfbNewClientAction newclient(rfbClientPtr cl)
@@ -85,10 +85,10 @@ static enum rfbNewClientAction newclient(rfbClientPtr cl)
     if (clientCount < max_clients) {
 	clientCount++;
 	cl->clientGoneHook = clientgone;
-	debug("%d clients connected\n", clientCount);
+	debug("%d clients connected", clientCount);
 	return RFB_CLIENT_ACCEPT;
     } else {
-	info("client refused due max. client connections (%d)\n", clientCount);
+	info("client refused due max. client connections (%d)", clientCount);
 	return RFB_CLIENT_REFUSE;
     }
 }
@@ -109,7 +109,7 @@ static void doptr(int buttonMask, int x, int y, rfbClientPtr cl)
 static int drv_vnc_open(const char *Section)
 {
     if (cfg_number(Section, "xres", 320, 32, 2048, &xres) < 1) {
-	info("[DRV_VNC] no '%s.xres' entry frXom %s using default %d", Section, cfg_source(), xres);
+	info("[DRV_VNC] no '%s.xres' entry from %s using default %d", Section, cfg_source(), xres);
     }
     if (cfg_number(Section, "yres", 200, 32, 2048, &yres) < 1) {
 	info("[DRV_VNC] no '%s.yres' entry from %s using default %d", Section, cfg_source(), yres);

@@ -485,12 +485,12 @@ static int cfg_check_source(const char *file)
 	error("security error: owner and/or group of '%s' don't match", file);
 	error = -1;
     }
-#if ! defined(__CYGWIN__)    
+#if ! defined(__CYGWIN__)
     if (stbuf.st_mode & S_IRWXG || stbuf.st_mode & S_IRWXO) {
 	error("security error: group or other have access to '%s'", file);
 	error = -1;
     }
-#endif    
+#endif
     return error;
 }
 
