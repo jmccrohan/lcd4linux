@@ -69,6 +69,7 @@ static rfbScreenInfoPtr server;
 static int xres = 320;
 static int yres = 200;
 static int BPP = 4;
+static int max_clients = 2;
 
 static int clientCount = 0;
 
@@ -81,10 +82,15 @@ static void clientgone(rfbClientPtr cl)
 
 static enum rfbNewClientAction newclient(rfbClientPtr cl)
 {
-    cl->clientGoneHook = clientgone;
-    clientCount++;
-    debug("%d clients connected\n", clientCount);
-    return RFB_CLIENT_ACCEPT;
+    if (clientCount < max_clients) {
+	clientCount++;
+	cl->clientGoneHook = clientgone;
+	debug("%d clients connected\n", clientCount);
+	return RFB_CLIENT_ACCEPT;
+    } else {
+	info("client refused due max. client connections (%d)\n", clientCount);
+	return RFB_CLIENT_REFUSE;
+    }
 }
 
 /* handle mouse action */
@@ -103,13 +109,16 @@ static void doptr(int buttonMask, int x, int y, rfbClientPtr cl)
 static int drv_vnc_open(const char *Section)
 {
     if (cfg_number(Section, "xres", 320, 32, 2048, &xres) < 1) {
-	info("[DRV_VNC] no '%s.xres' entry from %s using default %d", Section, cfg_source(), xres);
+	info("[DRV_VNC] no '%s.xres' entry frXom %s using default %d", Section, cfg_source(), xres);
     }
     if (cfg_number(Section, "yres", 200, 32, 2048, &yres) < 1) {
 	info("[DRV_VNC] no '%s.yres' entry from %s using default %d", Section, cfg_source(), yres);
     }
     if (cfg_number(Section, "bpp", 4, 1, 4, &BPP) < 1) {
 	info("[DRV_VNC] no '%s.bpp' entry from %s using default %d", Section, cfg_source(), BPP);
+    }
+    if (cfg_number(Section, "maxclients", 2, 1, 64, &max_clients) < 1) {
+	info("[DRV_VNC] no '%s.maxclients' entry from %s using default %d", Section, cfg_source(), max_clients);
     }
     return 0;
 }
@@ -141,9 +150,10 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 
 static void drv_vnc_blit(const int row, const int col, const int height, const int width)
 {
-    if (rfbIsActive(server)) {
 
+    if (rfbIsActive(server)) {
 	drv_vnc_blit_it(row, col, height, width, (unsigned char *) server->frameBuffer);
+
 	if (clientCount > 0) {
 	    rfbMarkRectAsModified(server, 0, 0, xres, yres);
 	}
@@ -186,7 +196,6 @@ static int drv_vnc_start(const char *section)
     server->frameBuffer = (char *) malloc(xres * yres * BPP);
     server->alwaysShared = (1 == 1);
     server->ptrAddEvent = doptr;
-//    server->kbdAddEvent = dokey;
     server->newClientHook = newclient;
 
     /* Initialize the server */
