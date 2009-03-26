@@ -30,6 +30,25 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
+#ifdef CYGWIN
+
+#ifndef HAVE_UNION_SEMUN
+union semun
+{
+    int    val;
+    struct semid_ds *buf;
+    unsigned short *array;
+};
+#endif
+
+#ifndef SHM_R
+    #define SHM_R 0400
+#endif
+#ifndef SHM_W
+    #define SHM_W 0660
+#endif
+
+#endif
 
 extern int thread_argc;
 extern char **thread_argv;
