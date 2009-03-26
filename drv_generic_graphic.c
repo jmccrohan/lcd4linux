@@ -252,7 +252,7 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
     while (*txt != '\0') {
 	unsigned char *chr;
 
-	if (strcasestr(style, "bold") != NULL) {
+	if (strstr(style, "bold") != NULL) {
 	    chr = Font_6x8_bold[(int) *(unsigned char *) txt];
 	} else {
 	    chr = Font_6x8[(int) *(unsigned char *) txt];
