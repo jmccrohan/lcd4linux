@@ -53,9 +53,10 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
-
 #include "drv_generic_graphic.h"
+#include "drv_generic_keypad.h"
 
 //todo: fps limiter
 //      key widget
@@ -65,14 +66,17 @@
 
 static char Name[] = "VNC";
 
-static rfbScreenInfoPtr server;
-static int xres = 320;
+static rfbScreenInfoPtr server; /* vnc device */
+static int xres = 320;		/* screen settings */
 static int yres = 200;
 static int BPP = 4;
-static int max_clients = 2;
+static int max_clients = 2;	/* max connected clients */
+static int buttons = 2;		/* number of keypad buttons */
 
-static int clientCount = 0;
+static int clientCount = 0;	/* currently connected clients */
 
+
+/* called if a vnc client disconnects */
 static void clientgone(rfbClientPtr cl)
 {
     if (clientCount > 0)
@@ -80,7 +84,8 @@ static void clientgone(rfbClientPtr cl)
     debug("%d clients connecten", clientCount);
 }
 
-static enum rfbNewClientAction newclient(rfbClientPtr cl)
+/* called if a vnc client connect */
+static enum rfbNewClientAction hook_newclient(rfbClientPtr cl)
 {
     if (clientCount < max_clients) {
 	clientCount++;
@@ -94,18 +99,50 @@ static enum rfbNewClientAction newclient(rfbClientPtr cl)
 }
 
 /* handle mouse action */
-static void doptr(int buttonMask, int x, int y, rfbClientPtr cl)
+static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 {
     if (x >= 0 && y >= 0 && x < xres && y < yres) {
 	if (buttonMask) {
-	    printf("btn:%d, x:%d, y:%d\n", buttonMask, x, y);
+		debug("button %d pressed", buttonMask);
+		drv_generic_keypad_press(buttonMask);
 	}
     }
 
     rfbDefaultPtrAddEvent(buttonMask, x, y, cl);
 }
 
+static int drv_vnc_keypad(const int num)
+{
+    int val = WIDGET_KEY_PRESSED;
 
+    switch (num) {
+    case 1:
+	val += WIDGET_KEY_UP;
+	break;
+    case 2:
+	val += WIDGET_KEY_DOWN;
+	break;
+    case 3:
+	val += WIDGET_KEY_LEFT;
+	break;
+    case 4:
+	val += WIDGET_KEY_RIGHT;
+	break;
+    case 5:
+	val += WIDGET_KEY_CONFIRM;
+	break;
+    case 6:
+	val += WIDGET_KEY_CANCEL;
+	break;
+    default:
+	error("%s: unknown keypad value %d", Name, num);
+    }
+debug("num %d, val %d", num, val);
+
+    return val;
+}
+
+/* init the driver, read config */
 static int drv_vnc_open(const char *Section)
 {
     if (cfg_number(Section, "xres", 320, 32, 2048, &xres) < 1) {
@@ -123,7 +160,7 @@ static int drv_vnc_open(const char *Section)
     return 0;
 }
 
-
+/* shutdown driver, release allocated stuff */
 static int drv_vnc_close(void)
 {
     rfbShutdownServer(server, TRUE);
@@ -131,6 +168,7 @@ static int drv_vnc_close(void)
     return 0;
 }
 
+/* actual blitting method */
 static void drv_vnc_blit_it(const int row, const int col, const int height, const int width, unsigned char *buffer)
 {
     int r, c, ofs;
@@ -195,8 +233,8 @@ static int drv_vnc_start(const char *section)
     server->desktopName = "LCD4Linux VNC Driver";
     server->frameBuffer = (char *) malloc(xres * yres * BPP);
     server->alwaysShared = (1 == 1);
-    server->ptrAddEvent = doptr;
-    server->newClientHook = newclient;
+    server->ptrAddEvent = hook_mouseaction;
+    server->newClientHook = hook_newclient;
 
     /* Initialize the server */
     rfbInitServer(server);
@@ -239,6 +277,7 @@ int drv_vnc_init(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_vnc_blit;
+    drv_generic_keypad_real_press = drv_vnc_keypad;
 
     /* start display */
     if ((ret = drv_vnc_start(section)) != 0)
@@ -246,6 +285,10 @@ int drv_vnc_init(const char *section, const int quiet)
 
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
+	return ret;
+
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
 
     if (!quiet) {
@@ -275,6 +318,7 @@ int drv_vnc_quit(const int quiet)
     }
 
     drv_generic_graphic_quit();
+    drv_generic_keypad_quit();
 
     debug("closing connection");
     drv_vnc_close();
