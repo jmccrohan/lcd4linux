@@ -30,7 +30,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#ifdef CYGWIN
+#ifdef __CYGWIN__
 
 #ifndef HAVE_UNION_SEMUN
 union semun
