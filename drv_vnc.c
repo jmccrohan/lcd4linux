@@ -76,6 +76,8 @@ static int max_clients = 2;	/* max connected clients */
 static int osd_showtime = 2000;	/* time to display the osd in ms */
 static int buttons = 2;		/* number of keypad buttons */
 static int buttonsize = 50;	/* size of keypad buttons */
+static int keypadxofs = 0;
+static int keypadyofs = 0;
 
 static rfbScreenInfoPtr server;	/* vnc device */
 static struct timeval osd_timestamp;
@@ -85,56 +87,62 @@ static int mouse_x = 0;
 static int mouse_y = 0;
 
 /* draws a simple rect, used to display keypad */
-void draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
+int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
 {
-    int ofs, i;
-    unsigned char colr = col;
+    int ofs, i, ret;
+    unsigned char colr, colg;
+    colr = colg = col;
+    ret = 0;
 
     if (mouse_x > x && mouse_x < (x + size))
 	if (mouse_y > y && mouse_y < (y + size))
+	{
 	    colr = 128;
+	    colg = 255;
+	    ret = 1;
+	}
 
     for (i = x; i < x + size; i++) {
 	ofs = (i + xres * y) * BPP;
 	buffer[ofs++] = colr;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colg;
 	buffer[ofs++] = col;
 
 	ofs = (i + xres * (y + size)) * BPP;
 	buffer[ofs++] = colr;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colg;
 	buffer[ofs++] = col;
     }
 
     for (i = y; i <= y + size; i++) {
 	ofs = (i * xres + x) * BPP;
 	buffer[ofs++] = colr;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colg;
 	buffer[ofs++] = col;
 
 	ofs = (i * xres + x + size) * BPP;
 	buffer[ofs++] = colr;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colg;
 	buffer[ofs++] = col;
     }
-
+    return ret;
 }
 
 void display_keypad()
 {
     int i, rectx, recty;
-    int kp_xpos = 20;
-    int kp_ypos = 80;
     int gap = 10;
+    int ret;
     for (i = 0; i < buttons; i++) {
-	rectx = kp_xpos + (i * (buttonsize + gap));
-	recty = kp_ypos /*+ (i*(buttonsize+gap)) */ ;
-	draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
+	rectx = keypadxofs + (i * (buttonsize + gap));
+	recty = keypadyofs /*+ (i*(buttonsize+gap)) */ ;
+	ret = draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
 
-	if (mouse_x > rectx && mouse_x < (rectx + buttonsize))
-	    if (mouse_y > recty && mouse_y < (recty + buttonsize))
-		debug("mouse in keypad nr %d", i);
-
+	if (ret==1)
+	{
+	    drv_generic_keypad_press(i+1);
+	    //debug("mouse in keypad nr %d", i);
+	}
     }
 }
 
@@ -164,21 +172,15 @@ static enum rfbNewClientAction hook_newclient(rfbClientPtr cl)
 static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 {
     if (x >= 0 && y >= 0 && x < xres && y < yres) {
-
 	/* we check only, if the left mousebutton is pressed */
 	if (buttonMask == 1) {
 	    gettimeofday(&osd_timestamp, NULL);
-	    debug("button %d pressed", buttonMask);
+	    mouse_x = x;
+	    mouse_y = y;
 
 	    if (show_keypad_osd == 0) {
 		/* no osd until yet, activate osd keypad ... */
 		show_keypad_osd = 1;
-	    } else {
-		/* TODO: handle button stuff... */
-		mouse_x = x;
-		mouse_y = y;
-		debug("mouse: %d,%d", x, y);
-		drv_generic_keypad_press(2);
 	    }
 	}
     }
@@ -212,7 +214,6 @@ static int drv_vnc_keypad(const int num)
     default:
 	error("%s: unknown keypad value %d", Name, num);
     }
-    debug("num %d, val %d", num, val);
 
     return val;
 }
@@ -241,7 +242,12 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "buttonsize", 50, 8, 256, &buttonsize) < 1) {
 	info("[DRV_VNC] no '%s.buttonsize' entry from %s using default %d", Section, cfg_source(), buttonsize);
     }
-
+    if (cfg_number(Section, "keypadxofs", 0, 0, 4096, &keypadxofs) < 1) {
+	info("[DRV_VNC] no '%s.keypadxofs' entry from %s using default %d", Section, cfg_source(), keypadxofs);
+    }
+    if (cfg_number(Section, "keypadyofs", 0, 0, 4096, &keypadyofs) < 1) {
+	info("[DRV_VNC] no '%s.keypadyofs' entry from %s using default %d", Section, cfg_source(), keypadyofs);
+    }
 
     return 0;
 }
@@ -296,7 +302,7 @@ static void drv_vnc_blit(const int row, const int col, const int height, const i
 	if (clientCount > 0) {
 	    rfbMarkRectAsModified(server, 0, 0, xres, yres);
 	}
-	rfbProcessEvents(server, server->deferUpdateTime * 1000);
+	rfbProcessEvents(server, server->deferUpdateTime * 500);
     }
 }
 
