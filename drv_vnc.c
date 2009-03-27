@@ -44,6 +44,9 @@
 
 #include <rfb/rfb.h>
 
+/* struct timeval */
+#include <sys/time.h>
+
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
@@ -66,15 +69,50 @@
 
 static char Name[] = "VNC";
 
-static rfbScreenInfoPtr server; /* vnc device */
+static rfbScreenInfoPtr server;	/* vnc device */
 static int xres = 320;		/* screen settings */
 static int yres = 200;
 static int BPP = 4;
 static int max_clients = 2;	/* max connected clients */
 static int buttons = 2;		/* number of keypad buttons */
 
+static int show_keypad_osd = 0;	/* is the osd active? */
+static int osd_showtime = 2000;	/* time to display the osd in ms */
+static struct timeval osd_timestamp;
+
 static int clientCount = 0;	/* currently connected clients */
 
+/* draws a simple rect, used to display keypad */
+void draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
+{
+    int ofs, i;
+//    unsigned char col = 0;
+
+    for (i = x; i < x + size; i++) {
+	ofs = (i + xres * y) * BPP;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+
+	ofs = (i + xres * (y + size)) * BPP;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+    }
+
+    for (i = y; i <= y + size; i++) {
+	ofs = (i * xres + x) * BPP;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+
+	ofs = (i * xres + x + size) * BPP;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+	buffer[ofs++] = col;
+    }
+
+}
 
 /* called if a vnc client disconnects */
 static void clientgone(rfbClientPtr cl)
@@ -102,9 +140,17 @@ static enum rfbNewClientAction hook_newclient(rfbClientPtr cl)
 static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 {
     if (x >= 0 && y >= 0 && x < xres && y < yres) {
-	if (buttonMask) {
-		debug("button %d pressed", buttonMask);
-		drv_generic_keypad_press(buttonMask);
+
+	/* we check only, if the left mousebutton is pressed */
+	if (buttonMask == 1) {
+	    debug("button %d pressed", buttonMask);
+
+	    if (show_keypad_osd == 0) {
+		/* no osd until yet, activate osd keypad ... */
+		show_keypad_osd = 1;
+		gettimeofday(&osd_timestamp, NULL);
+	    }
+	    drv_generic_keypad_press(buttonMask);
 	}
     }
 
@@ -137,7 +183,7 @@ static int drv_vnc_keypad(const int num)
     default:
 	error("%s: unknown keypad value %d", Name, num);
     }
-debug("num %d, val %d", num, val);
+    debug("num %d, val %d", num, val);
 
     return val;
 }
@@ -157,6 +203,11 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "maxclients", 2, 1, 64, &max_clients) < 1) {
 	info("[DRV_VNC] no '%s.maxclients' entry from %s using default %d", Section, cfg_source(), max_clients);
     }
+    if (cfg_number(Section, "osd_showtime", 2000, 500, 60000, &osd_showtime) < 1) {
+	info("[DRV_VNC] no '%s.osd_showtime' entry from %s using default %d", Section, cfg_source(), osd_showtime);
+    }
+
+
     return 0;
 }
 
@@ -166,6 +217,15 @@ static int drv_vnc_close(void)
     rfbShutdownServer(server, TRUE);
     free(server->frameBuffer);
     return 0;
+}
+
+
+static void display_keypad()
+{
+    draw_rect(30, 30, 50, 255, server->frameBuffer);
+    draw_rect(40, 40, 20, 0, server->frameBuffer);
+
+    //rfbDrawString(server, &default8x16Font,10, yres-16, line, 0x01);
 }
 
 /* actual blitting method */
@@ -182,6 +242,20 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 	    buffer[ofs++] = p.G;
 	    buffer[ofs++] = p.B;
 	    buffer[ofs] = 255;
+	}
+    }
+
+    /* display osd keypad */
+    if (show_keypad_osd == 1) {
+	display_keypad();
+
+	/* check if the osd should be disabled after the waittime */
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	int timedelta = (now.tv_sec - osd_timestamp.tv_sec) * 1000 + (now.tv_usec - osd_timestamp.tv_usec) / 1000;
+
+	if (timedelta > osd_showtime) {
+	    show_keypad_osd = 0;
 	}
     }
 }
