@@ -33,19 +33,18 @@
 #ifdef __CYGWIN__
 
 #ifndef HAVE_UNION_SEMUN
-union semun
-{
-    int    val;
+union semun {
+    int val;
     struct semid_ds *buf;
     unsigned short *array;
 };
 #endif
 
 #ifndef SHM_R
-    #define SHM_R 0400
+#define SHM_R 0400
 #endif
 #ifndef SHM_W
-    #define SHM_W 0660
+#define SHM_W 0660
 #endif
 
 #endif

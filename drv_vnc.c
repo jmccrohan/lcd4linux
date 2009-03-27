@@ -69,49 +69,73 @@
 
 static char Name[] = "VNC";
 
-static rfbScreenInfoPtr server;	/* vnc device */
 static int xres = 320;		/* screen settings */
 static int yres = 200;
 static int BPP = 4;
 static int max_clients = 2;	/* max connected clients */
-static int buttons = 2;		/* number of keypad buttons */
-
-static int show_keypad_osd = 0;	/* is the osd active? */
 static int osd_showtime = 2000;	/* time to display the osd in ms */
-static struct timeval osd_timestamp;
+static int buttons = 2;		/* number of keypad buttons */
+static int buttonsize = 50;	/* size of keypad buttons */
 
+static rfbScreenInfoPtr server;	/* vnc device */
+static struct timeval osd_timestamp;
+static int show_keypad_osd = 0;	/* is the osd active? */
 static int clientCount = 0;	/* currently connected clients */
+static int mouse_x = 0;
+static int mouse_y = 0;
 
 /* draws a simple rect, used to display keypad */
 void draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
 {
     int ofs, i;
-//    unsigned char col = 0;
+    unsigned char colr = col;
+
+    if (mouse_x > x && mouse_x < (x + size))
+	if (mouse_y > y && mouse_y < (y + size))
+	    colr = 128;
 
     for (i = x; i < x + size; i++) {
 	ofs = (i + xres * y) * BPP;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colr;
 	buffer[ofs++] = col;
 	buffer[ofs++] = col;
 
 	ofs = (i + xres * (y + size)) * BPP;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colr;
 	buffer[ofs++] = col;
 	buffer[ofs++] = col;
     }
 
     for (i = y; i <= y + size; i++) {
 	ofs = (i * xres + x) * BPP;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colr;
 	buffer[ofs++] = col;
 	buffer[ofs++] = col;
 
 	ofs = (i * xres + x + size) * BPP;
-	buffer[ofs++] = col;
+	buffer[ofs++] = colr;
 	buffer[ofs++] = col;
 	buffer[ofs++] = col;
     }
 
+}
+
+void display_keypad()
+{
+    int i, rectx, recty;
+    int kp_xpos = 20;
+    int kp_ypos = 80;
+    int gap = 10;
+    for (i = 0; i < buttons; i++) {
+	rectx = kp_xpos + (i * (buttonsize + gap));
+	recty = kp_ypos /*+ (i*(buttonsize+gap)) */ ;
+	draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
+
+	if (mouse_x > rectx && mouse_x < (rectx + buttonsize))
+	    if (mouse_y > recty && mouse_y < (recty + buttonsize))
+		debug("mouse in keypad nr %d", i);
+
+    }
 }
 
 /* called if a vnc client disconnects */
@@ -143,14 +167,19 @@ static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 
 	/* we check only, if the left mousebutton is pressed */
 	if (buttonMask == 1) {
+	    gettimeofday(&osd_timestamp, NULL);
 	    debug("button %d pressed", buttonMask);
 
 	    if (show_keypad_osd == 0) {
 		/* no osd until yet, activate osd keypad ... */
 		show_keypad_osd = 1;
-		gettimeofday(&osd_timestamp, NULL);
+	    } else {
+		/* TODO: handle button stuff... */
+		mouse_x = x;
+		mouse_y = y;
+		debug("mouse: %d,%d", x, y);
+		drv_generic_keypad_press(2);
 	    }
-	    drv_generic_keypad_press(buttonMask);
 	}
     }
 
@@ -206,6 +235,12 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "osd_showtime", 2000, 500, 60000, &osd_showtime) < 1) {
 	info("[DRV_VNC] no '%s.osd_showtime' entry from %s using default %d", Section, cfg_source(), osd_showtime);
     }
+    if (cfg_number(Section, "buttons", 2, 0, 6, &buttons) < 1) {
+	info("[DRV_VNC] no '%s.buttons' entry from %s using default %d", Section, cfg_source(), buttons);
+    }
+    if (cfg_number(Section, "buttonsize", 50, 8, 256, &buttonsize) < 1) {
+	info("[DRV_VNC] no '%s.buttonsize' entry from %s using default %d", Section, cfg_source(), buttonsize);
+    }
 
 
     return 0;
@@ -219,14 +254,6 @@ static int drv_vnc_close(void)
     return 0;
 }
 
-
-static void display_keypad()
-{
-    draw_rect(30, 30, 50, 255, server->frameBuffer);
-    draw_rect(40, 40, 20, 0, server->frameBuffer);
-
-    //rfbDrawString(server, &default8x16Font,10, yres-16, line, 0x01);
-}
 
 /* actual blitting method */
 static void drv_vnc_blit_it(const int row, const int col, const int height, const int width, unsigned char *buffer)
