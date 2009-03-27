@@ -505,12 +505,17 @@ Display Image {
 }
 
 Display VNC {
-    Driver 'VNC'
-    Font   '6x8'
-    xres   '320'
-    yres   '140'
-    bpp    '4'
-    maxclients '1'
+    Driver     'VNC'
+    Font       '6x8'
+    Port       '5900'
+    Xres       '320'
+    Yres       '140'
+    Bpp        '4'
+    Maxclients '2'
+    Buttons    '4'
+    Keypadxofs '40'
+    Keypadyofs '70'
+
 }
 
 #Plugin KVV {

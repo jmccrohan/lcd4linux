@@ -78,6 +78,7 @@ static int buttons = 2;		/* number of keypad buttons */
 static int buttonsize = 50;	/* size of keypad buttons */
 static int keypadxofs = 0;
 static int keypadyofs = 0;
+static int port = 5900;
 
 static rfbScreenInfoPtr server;	/* vnc device */
 static struct timeval osd_timestamp;
@@ -95,8 +96,7 @@ int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
     ret = 0;
 
     if (mouse_x > x && mouse_x < (x + size))
-	if (mouse_y > y && mouse_y < (y + size))
-	{
+	if (mouse_y > y && mouse_y < (y + size)) {
 	    colr = 128;
 	    colg = 255;
 	    ret = 1;
@@ -138,9 +138,8 @@ void display_keypad()
 	recty = keypadyofs /*+ (i*(buttonsize+gap)) */ ;
 	ret = draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
 
-	if (ret==1)
-	{
-	    drv_generic_keypad_press(i+1);
+	if (ret == 1) {
+	    drv_generic_keypad_press(i + 1);
 	    //debug("mouse in keypad nr %d", i);
 	}
     }
@@ -221,32 +220,35 @@ static int drv_vnc_keypad(const int num)
 /* init the driver, read config */
 static int drv_vnc_open(const char *Section)
 {
-    if (cfg_number(Section, "xres", 320, 32, 2048, &xres) < 1) {
-	info("[DRV_VNC] no '%s.xres' entry from %s using default %d", Section, cfg_source(), xres);
+    if (cfg_number(Section, "Xres", 320, 32, 2048, &xres) < 1) {
+	info("[DRV_VNC] no '%s.Xres' entry from %s using default %d", Section, cfg_source(), xres);
     }
-    if (cfg_number(Section, "yres", 200, 32, 2048, &yres) < 1) {
-	info("[DRV_VNC] no '%s.yres' entry from %s using default %d", Section, cfg_source(), yres);
+    if (cfg_number(Section, "Yres", 200, 32, 2048, &yres) < 1) {
+	info("[DRV_VNC] no '%s.Yres' entry from %s using default %d", Section, cfg_source(), yres);
     }
-    if (cfg_number(Section, "bpp", 4, 1, 4, &BPP) < 1) {
-	info("[DRV_VNC] no '%s.bpp' entry from %s using default %d", Section, cfg_source(), BPP);
+    if (cfg_number(Section, "Bpp", 4, 1, 4, &BPP) < 1) {
+	info("[DRV_VNC] no '%s.Bpp' entry from %s using default %d", Section, cfg_source(), BPP);
     }
-    if (cfg_number(Section, "maxclients", 2, 1, 64, &max_clients) < 1) {
-	info("[DRV_VNC] no '%s.maxclients' entry from %s using default %d", Section, cfg_source(), max_clients);
+    if (cfg_number(Section, "Maxclients", 2, 1, 64, &max_clients) < 1) {
+	info("[DRV_VNC] no '%s.Maxclients' entry from %s using default %d", Section, cfg_source(), max_clients);
     }
-    if (cfg_number(Section, "osd_showtime", 2000, 500, 60000, &osd_showtime) < 1) {
-	info("[DRV_VNC] no '%s.osd_showtime' entry from %s using default %d", Section, cfg_source(), osd_showtime);
+    if (cfg_number(Section, "Osd_showtime", 2000, 500, 60000, &osd_showtime) < 1) {
+	info("[DRV_VNC] no '%s.Osd_showtime' entry from %s using default %d", Section, cfg_source(), osd_showtime);
     }
-    if (cfg_number(Section, "buttons", 2, 0, 6, &buttons) < 1) {
-	info("[DRV_VNC] no '%s.buttons' entry from %s using default %d", Section, cfg_source(), buttons);
+    if (cfg_number(Section, "Buttons", 2, 0, 6, &buttons) < 1) {
+	info("[DRV_VNC] no '%s.Buttons' entry from %s using default %d", Section, cfg_source(), buttons);
     }
-    if (cfg_number(Section, "buttonsize", 50, 8, 256, &buttonsize) < 1) {
-	info("[DRV_VNC] no '%s.buttonsize' entry from %s using default %d", Section, cfg_source(), buttonsize);
+    if (cfg_number(Section, "Buttonsize", 50, 8, 256, &buttonsize) < 1) {
+	info("[DRV_VNC] no '%s.Buttonsize' entry from %s using default %d", Section, cfg_source(), buttonsize);
     }
-    if (cfg_number(Section, "keypadxofs", 0, 0, 4096, &keypadxofs) < 1) {
-	info("[DRV_VNC] no '%s.keypadxofs' entry from %s using default %d", Section, cfg_source(), keypadxofs);
+    if (cfg_number(Section, "Keypadxofs", 0, 0, 4096, &keypadxofs) < 1) {
+	info("[DRV_VNC] no '%s.Keypadxofs' entry from %s using default %d", Section, cfg_source(), keypadxofs);
     }
-    if (cfg_number(Section, "keypadyofs", 0, 0, 4096, &keypadyofs) < 1) {
-	info("[DRV_VNC] no '%s.keypadyofs' entry from %s using default %d", Section, cfg_source(), keypadyofs);
+    if (cfg_number(Section, "Keypadyofs", 0, 0, 4096, &keypadyofs) < 1) {
+	info("[DRV_VNC] no '%s.Keypadyofs' entry from %s using default %d", Section, cfg_source(), keypadyofs);
+    }
+    if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
+	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);
     }
 
     return 0;
@@ -340,6 +342,7 @@ static int drv_vnc_start(const char *section)
     server->desktopName = "LCD4Linux VNC Driver";
     server->frameBuffer = (char *) malloc(xres * yres * BPP);
     server->alwaysShared = (1 == 1);
+    server->port = port;
     server->ptrAddEvent = hook_mouseaction;
     server->newClientHook = hook_newclient;
 
