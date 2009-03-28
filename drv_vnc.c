@@ -62,10 +62,7 @@
 #include "drv_generic_keypad.h"
 
 //todo: fps limiter
-//      key widget
-
-/* 15 frames per second (if we can) */
-#define PICTURE_TIMEOUT (1.0/15.0)
+//      key widget text
 
 #define NO_MOUSE_BUTTON_PRESSED 0
 #define LEFT_MOUSE_BUTTON_PRESSED 1
@@ -83,6 +80,9 @@ static int keypadxofs = 0;
 static int keypadyofs = 0;
 static int keypadgap = 0;
 static int port = 5900;
+static unsigned char framer = 0;
+static unsigned char frameg = 0;
+static unsigned char frameb = 0;
 
 static rfbScreenInfoPtr server;	/* vnc device */
 static struct timeval osd_timestamp;
@@ -94,7 +94,7 @@ static int mouse_stat_old = 0;
 static int process_event = 0;
 
 /* draws a simple rect, used to display keypad */
-int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
+int draw_rect(int x, int y, int size, unsigned char col, char *buffer)
 {
     int ofs, ofs2, i, ret;
     unsigned char colr, colg;
@@ -104,8 +104,9 @@ int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
     /* check if mouse is in current rect */
     if (mouse_x > x && mouse_x < (x + size))
 	if (mouse_y > y && mouse_y < (y + size)) {
-	    colr = 128;
-	    colg = 255;
+	    colr = framer;
+	    colg = frameg;
+	    col = frameb;
 	    ret = 1;
 	}
 
@@ -191,6 +192,8 @@ static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 	/* show osd display if mouse is pressed */
 	if (buttonMask == 1) {
 	    gettimeofday(&osd_timestamp, NULL);
+	    mouse_x = x;
+	    mouse_y = y;
 	    if (show_keypad_osd == 0) {
 		/* no osd until yet, activate osd keypad ... */
 		show_keypad_osd = 1;
@@ -236,6 +239,7 @@ static int drv_vnc_keypad(const int num)
 /* init the driver, read config */
 static int drv_vnc_open(const char *Section)
 {
+    int keypadcol;
     if (cfg_number(Section, "Xres", 320, 32, 2048, &xres) < 1) {
 	info("[DRV_VNC] no '%s.Xres' entry from %s using default %d", Section, cfg_source(), xres);
     }
@@ -266,6 +270,15 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "Keypadgap", 10, 0, 2048, &keypadgap) < 1) {
 	info("[DRV_VNC] no '%s.Keypadgap' entry from %s using default %d", Section, cfg_source(), keypadgap);
     }
+    if (cfg_number(Section, "Keypadcol", 255, 0, 0xffffff, &keypadcol) < 1) {
+	info("[DRV_VNC] no '%s.Keypadcol' entry from %s using default red", Section, cfg_source());
+	framer = 255;
+    } else {
+	framer = keypadcol & 0xff;
+	frameg = (keypadcol & 0xff00) >> 8;
+	frameb = (keypadcol & 0xff0000) >> 16;
+    }
+
     if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
 	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);
     }
