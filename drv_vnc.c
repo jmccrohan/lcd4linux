@@ -67,6 +67,9 @@
 /* 15 frames per second (if we can) */
 #define PICTURE_TIMEOUT (1.0/15.0)
 
+#define NO_MOUSE_BUTTON_PRESSED 0
+#define LEFT_MOUSE_BUTTON_PRESSED 1
+
 static char Name[] = "VNC";
 
 static int xres = 320;		/* screen settings */
@@ -78,6 +81,7 @@ static int buttons = 2;		/* number of keypad buttons */
 static int buttonsize = 50;	/* size of keypad buttons */
 static int keypadxofs = 0;
 static int keypadyofs = 0;
+static int keypadgap = 0;
 static int port = 5900;
 
 static rfbScreenInfoPtr server;	/* vnc device */
@@ -86,15 +90,18 @@ static int show_keypad_osd = 0;	/* is the osd active? */
 static int clientCount = 0;	/* currently connected clients */
 static int mouse_x = 0;
 static int mouse_y = 0;
+static int mouse_stat_old = 0;
+static int process_event = 0;
 
 /* draws a simple rect, used to display keypad */
 int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
 {
-    int ofs, i, ret;
+    int ofs, ofs2, i, ret;
     unsigned char colr, colg;
     colr = colg = col;
     ret = 0;
 
+    /* check if mouse is in current rect */
     if (mouse_x > x && mouse_x < (x + size))
 	if (mouse_y > y && mouse_y < (y + size)) {
 	    colr = 128;
@@ -102,27 +109,25 @@ int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
 	    ret = 1;
 	}
 
+    ofs2 = size * xres * BPP;
     for (i = x; i < x + size; i++) {
 	ofs = (i + xres * y) * BPP;
+	buffer[ofs + ofs2] = colr;
 	buffer[ofs++] = colr;
+	buffer[ofs + ofs2] = colg;
 	buffer[ofs++] = colg;
-	buffer[ofs++] = col;
-
-	ofs = (i + xres * (y + size)) * BPP;
-	buffer[ofs++] = colr;
-	buffer[ofs++] = colg;
+	buffer[ofs + ofs2] = col;
 	buffer[ofs++] = col;
     }
 
+    ofs2 = size * BPP;
     for (i = y; i <= y + size; i++) {
 	ofs = (i * xres + x) * BPP;
+	buffer[ofs + ofs2] = colr;
 	buffer[ofs++] = colr;
+	buffer[ofs + ofs2] = colg;
 	buffer[ofs++] = colg;
-	buffer[ofs++] = col;
-
-	ofs = (i * xres + x + size) * BPP;
-	buffer[ofs++] = colr;
-	buffer[ofs++] = colg;
+	buffer[ofs + ofs2] = col;
 	buffer[ofs++] = col;
     }
     return ret;
@@ -131,26 +136,27 @@ int draw_rect(int x, int y, int size, unsigned char col, unsigned char *buffer)
 void display_keypad()
 {
     int i, rectx, recty;
-    int gap = 10;
-    int ret;
+    int active;
     for (i = 0; i < buttons; i++) {
-	rectx = keypadxofs + (i * (buttonsize + gap));
+	rectx = keypadxofs + (i * (buttonsize + keypadgap));
 	recty = keypadyofs /*+ (i*(buttonsize+gap)) */ ;
-	ret = draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
+	active = draw_rect(rectx, recty, buttonsize, 0, server->frameBuffer);
 
-	if (ret == 1) {
+	/* if the lmb button is pressed and we didnt processed the event yet - do it now */
+	if (active == 1 && process_event == 1) {
 	    drv_generic_keypad_press(i + 1);
 	    //debug("mouse in keypad nr %d", i);
+	    process_event = 0;
 	}
     }
 }
 
 /* called if a vnc client disconnects */
-static void clientgone(rfbClientPtr cl)
+static void clientgone( __attribute__ ((unused)) rfbClientPtr cl)
 {
     if (clientCount > 0)
 	clientCount--;
-    debug("%d clients connecten", clientCount);
+    debug("%d clients connected", clientCount);
 }
 
 /* called if a vnc client connect */
@@ -171,19 +177,29 @@ static enum rfbNewClientAction hook_newclient(rfbClientPtr cl)
 static void hook_mouseaction(int buttonMask, int x, int y, rfbClientPtr cl)
 {
     if (x >= 0 && y >= 0 && x < xres && y < yres) {
-	/* we check only, if the left mousebutton is pressed */
-	if (buttonMask == 1) {
+	process_event = 0;
+
+	/* process ONLY if mouse button is released. */
+	if (buttonMask == NO_MOUSE_BUTTON_PRESSED && mouse_stat_old == LEFT_MOUSE_BUTTON_PRESSED) {
 	    gettimeofday(&osd_timestamp, NULL);
+	    process_event = 1;
 	    mouse_x = x;
 	    mouse_y = y;
+	}
+	//debug("btnMask: %d, old state: %d, processevent: %d", buttonMask, mouse_stat_old, process_event);
 
+	/* show osd display if mouse is pressed */
+	if (buttonMask == 1) {
+	    gettimeofday(&osd_timestamp, NULL);
 	    if (show_keypad_osd == 0) {
 		/* no osd until yet, activate osd keypad ... */
 		show_keypad_osd = 1;
 	    }
 	}
+
     }
 
+    mouse_stat_old = buttonMask;
     rfbDefaultPtrAddEvent(buttonMask, x, y, cl);
 }
 
@@ -246,6 +262,9 @@ static int drv_vnc_open(const char *Section)
     }
     if (cfg_number(Section, "Keypadyofs", 0, 0, 4096, &keypadyofs) < 1) {
 	info("[DRV_VNC] no '%s.Keypadyofs' entry from %s using default %d", Section, cfg_source(), keypadyofs);
+    }
+    if (cfg_number(Section, "Keypadgap", 10, 0, 2048, &keypadgap) < 1) {
+	info("[DRV_VNC] no '%s.Keypadgap' entry from %s using default %d", Section, cfg_source(), keypadgap);
     }
     if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
 	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);

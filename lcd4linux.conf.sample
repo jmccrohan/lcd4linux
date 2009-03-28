@@ -515,6 +515,7 @@ Display VNC {
     Buttons      '4'
     Keypadxofs   '40'
     Keypadyofs   '70'
+    Keypadygap   '10'
     Osd_showtime '2000'
 }
 
