@@ -61,11 +61,11 @@
 #include "drv_generic_graphic.h"
 #include "drv_generic_keypad.h"
 
-//todo: fps limiter
-//      key widget text
+//todo:  key widget text
 
 #define NO_MOUSE_BUTTON_PRESSED 0
 #define LEFT_MOUSE_BUTTON_PRESSED 1
+#define SLEEP_STEPS 1000
 
 static char Name[] = "VNC";
 
@@ -92,7 +92,10 @@ static int mouse_x = 0;
 static int mouse_y = 0;
 static int mouse_stat_old = 0;
 static int process_event = 0;
+static long frames = 0;
 static char *password;
+static struct timeval startDriver;
+static int maxfps = -1;
 
 /* draws a simple rect, used to display keypad */
 int draw_rect(int x, int y, int size, unsigned char col, char *buffer)
@@ -282,6 +285,9 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
 	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);
     }
+    if (cfg_number(Section, "Maxfps", -1, -1, 512, &maxfps) < 1) {
+	info("[DRV_VNC] no '%s.Maxfps' entry from %s using default %d", Section, cfg_source(), maxfps);
+    }
     password = cfg_get(Section, "Password", NULL);
     if (password != NULL) {
 	info("[DRV_VNC] password enabled");
@@ -302,6 +308,7 @@ static int drv_vnc_close(void)
 /* actual blitting method */
 static void drv_vnc_blit_it(const int row, const int col, const int height, const int width, unsigned char *buffer)
 {
+    static int sleep = 0;
     int r, c, ofs;
     RGBA p;
 
@@ -329,7 +336,27 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 	    show_keypad_osd = 0;
 	}
     }
+    frames++;
+    if ((frames % 10) == 0 && maxfps > 0) {
+	struct timeval blittime;
+	gettimeofday(&blittime, NULL);
+	int time_since_start =
+	    (blittime.tv_sec - startDriver.tv_sec) * 1000 + (blittime.tv_usec - startDriver.tv_usec) / 1000;
+	int fps = (int) (1000 * frames / time_since_start);
+	//info("time :%d, frames: %d, fps: %d, sleep: %d", time_since_start, frames, fps, sleep);
+
+	if (fps > maxfps) {
+	    sleep += SLEEP_STEPS;
+	}
+
+	if (fps < maxfps && sleep > SLEEP_STEPS) {
+	    sleep -= SLEEP_STEPS;
+	}
+    }
+    usleep(sleep);
+
 }
+
 
 static void drv_vnc_blit(const int row, const int col, const int height, const int width)
 {
@@ -396,6 +423,9 @@ static int drv_vnc_start(const char *section)
     /* set width/height */
     DROWS = yres;
     DCOLS = xres;
+
+    /* set timestamp */
+    gettimeofday(&startDriver, NULL);
 
     return 0;
 }

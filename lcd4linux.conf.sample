@@ -519,6 +519,7 @@ Display VNC {
     Keypadcol    '8745877'
     Osd_showtime '2000'
 #    Password     'password'
+    Maxfps       '25'
 }
 
 #Plugin KVV {
