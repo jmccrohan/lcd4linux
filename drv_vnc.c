@@ -349,7 +349,7 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 	    sleep += SLEEP_STEPS;
 	}
 
-	if (fps < maxfps && sleep > SLEEP_STEPS) {
+	if (fps < maxfps && sleep >= SLEEP_STEPS) {
 	    sleep -= SLEEP_STEPS;
 	}
     }
