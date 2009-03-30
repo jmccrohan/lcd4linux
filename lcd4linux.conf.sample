@@ -518,6 +518,7 @@ Display VNC {
     Keypadygap   '10'
     Keypadcol    '8745877'
     Osd_showtime '2000'
+#    Password     'password'
 }
 
 #Plugin KVV {

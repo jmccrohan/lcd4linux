@@ -92,6 +92,7 @@ static int mouse_x = 0;
 static int mouse_y = 0;
 static int mouse_stat_old = 0;
 static int process_event = 0;
+static char *password;
 
 /* draws a simple rect, used to display keypad */
 int draw_rect(int x, int y, int size, unsigned char col, char *buffer)
@@ -278,9 +279,12 @@ static int drv_vnc_open(const char *Section)
 	frameg = (keypadcol & 0xff00) >> 8;
 	frameb = (keypadcol & 0xff0000) >> 16;
     }
-
     if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
 	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);
+    }
+    password = cfg_get(Section, "Password", NULL);
+    if (password != NULL) {
+	info("[DRV_VNC] password enabled");
     }
 
     return 0;
@@ -378,6 +382,14 @@ static int drv_vnc_start(const char *section)
     server->ptrAddEvent = hook_mouseaction;
     server->newClientHook = hook_newclient;
 
+    if (password != NULL) {
+	char **passwds = malloc(sizeof(char **) * 2);
+	passwds[0] = password;
+	passwds[1] = 0;
+	server->authPasswdData = (void *) passwds;
+	server->passwordCheck = rfbCheckPasswordByList;
+    }
+
     /* Initialize the server */
     rfbInitServer(server);
 
@@ -461,6 +473,9 @@ int drv_vnc_quit(const int quiet)
 
     drv_generic_graphic_quit();
     drv_generic_keypad_quit();
+    if (password != NULL) {
+	free(password);
+    }
 
     debug("closing connection");
     drv_vnc_close();
