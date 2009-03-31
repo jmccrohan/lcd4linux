@@ -520,6 +520,8 @@ Display VNC {
     Osd_showtime '2000'
 #    Password     'password'
     Maxfps       '25'
+#    HttpDir	 '/path/to/classfiles'
+    HttpPort	 '5800'
 }
 
 #Plugin KVV {
