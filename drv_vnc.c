@@ -94,6 +94,7 @@ static int mouse_stat_old = 0;
 static int process_event = 0;
 static long frames = 0;
 static char *password;
+static char *javaClassFiles;
 static struct timeval startDriver;
 static int maxfps = -1;
 
@@ -292,7 +293,10 @@ static int drv_vnc_open(const char *Section)
     if (password != NULL) {
 	info("[DRV_VNC] password enabled");
     }
-
+    javaClassFiles = cfg_get(Section, "HttpDir", NULL);
+    if (javaClassFiles != NULL) {
+	info("[DRV_VNC] HTTP server enabled");
+    }
     return 0;
 }
 
@@ -416,7 +420,10 @@ static int drv_vnc_start(const char *section)
 	server->authPasswdData = (void *) passwds;
 	server->passwordCheck = rfbCheckPasswordByList;
     }
-
+    if (javaClassFiles != NULL) {
+	server->httpDir = javaClassFiles;
+	server->httpEnableProxyConnect = TRUE;
+    }
     /* Initialize the server */
     rfbInitServer(server);
 
@@ -505,6 +512,9 @@ int drv_vnc_quit(const int quiet)
     drv_generic_keypad_quit();
     if (password != NULL) {
 	free(password);
+    }
+    if (javaClassFiles != NULL) {
+	free(javaClassFiles);
     }
 
     debug("closing connection");
