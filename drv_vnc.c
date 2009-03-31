@@ -80,6 +80,7 @@ static int keypadxofs = 0;
 static int keypadyofs = 0;
 static int keypadgap = 0;
 static int port = 5900;
+static int httpPort = 5800;
 static unsigned char framer = 0;
 static unsigned char frameg = 0;
 static unsigned char frameb = 0;
@@ -286,6 +287,9 @@ static int drv_vnc_open(const char *Section)
     if (cfg_number(Section, "Port", 5900, 1, 65535, &port) < 1) {
 	info("[DRV_VNC] no '%s.Port' entry from %s using default %d", Section, cfg_source(), port);
     }
+    if (cfg_number(Section, "HttpPort", 5800, 1, 65535, &httpPort) < 1) {
+	info("[DRV_VNC] no '%s.HttpPort' entry from %s using default %d", Section, cfg_source(), httpPort);
+    }
     if (cfg_number(Section, "Maxfps", -1, -1, 512, &maxfps) < 1) {
 	info("[DRV_VNC] no '%s.Maxfps' entry from %s using default %d", Section, cfg_source(), maxfps);
     }
@@ -423,6 +427,7 @@ static int drv_vnc_start(const char *section)
     if (javaClassFiles != NULL) {
 	server->httpDir = javaClassFiles;
 	server->httpEnableProxyConnect = TRUE;
+	server->httpPort = httpPort;
     }
     /* Initialize the server */
     rfbInitServer(server);
