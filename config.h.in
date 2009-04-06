@@ -536,6 +536,9 @@
 /* serial bus driver */
 #undef WITH_SERIAL
 
+/* ShuttleVFD driver */
+#undef WITH_SHUTTLEVFD
+
 /* SimpleLCD driver */
 #undef WITH_SIMPLELCD
 

@@ -1346,9 +1346,9 @@ Optional Packages:
                           G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,
                           LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,
                           Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,
-                          picoLCDGraphic, RouterBoard, Sample, serdisplib, SimpleLCD,
-                          st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, VNC,
-                          WincorNixdorf, X11
+                          picoLCDGraphic, RouterBoard, Sample, serdisplib, ShuttleVFD,
+                          SimpleLCD, st2205, T6963, Trefon, ULA200, USBLCD, USBHUB,
+                          VNC, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -7869,6 +7869,7 @@ for driver in $drivers; do
          SAMPLE="yes"
          ST2205="yes"
 	 SERDISPLIB="yes"
+	 SHUTTLEVFD="yes"
          SIMPLELCD="yes"
          T6963="yes"
          Trefon="yes"
@@ -7963,7 +7964,6 @@ for driver in $drivers; do
       picoLCDGraphic)
          PICOLCDGRAPHIC=$val
          ;;
-
       PNG)
          PNG=$val
          ;;
@@ -7979,6 +7979,9 @@ for driver in $drivers; do
       serdisplib)
          SERDISPLIB=$val;
          ;;
+      ShuttleVFD)
+	 SHUTTLEVFD=$val
+	 ;;
       SimpleLCD)
          SIMPLELCD=$val
          ;;
@@ -8500,6 +8503,23 @@ _ACEOF
       { echo "$as_me:$LINENO: WARNING: serdisp.h not found: serdisplib driver disabled" >&5
 echo "$as_me: WARNING: serdisp.h not found: serdisplib driver disabled" >&2;}
    fi
+fi
+
+if test "$SHUTTLEVFD" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      GPIO="yes"
+      DRIVERS="$DRIVERS drv_ShuttleVFD.o"
+      LIBUSB="yes"
+
+cat >>confdefs.h <<\_ACEOF
+#define WITH_SHUTTLEVFD 1
+_ACEOF
+
+    else
+      { echo "$as_me:$LINENO: WARNING: usb.h not found: ShuttleVFD driver disabled" >&5
+echo "$as_me: WARNING: usb.h not found: ShuttleVFD driver disabled" >&2;}
+    fi
 fi
 
 if test "$SIMPLELCD" = "yes"; then

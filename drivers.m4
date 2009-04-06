@@ -203,7 +203,7 @@ for driver in $drivers; do
          SERDISPLIB=$val;
          ;;
       ShuttleVFD) 
-	 SHUTTLEVFD=$val 
+	 SHUTTLEVFD=$val
 	 ;;          
       SimpleLCD)
          SIMPLELCD=$val
@@ -580,12 +580,12 @@ if test "$SERDISPLIB" = "yes"; then
 fi
 
 if test "$SHUTTLEVFD" = "yes"; then 
-    if test "$has_usb" = "true"; then 
-    TEXT="yes" 
-    GPIO="yes" 
-    DRIVERS="$DRIVERS drv_ShuttleVFD.o" 
-    LIBUSB="yes" 
-    AC_DEFINE(WITH_SHUTTLEVFD,1,[ShuttleVFD driver]) 
+   if test "$has_usb" = "true"; then 
+      TEXT="yes" 
+      GPIO="yes" 
+      DRIVERS="$DRIVERS drv_ShuttleVFD.o" 
+      LIBUSB="yes" 
+      AC_DEFINE(WITH_SHUTTLEVFD,1,[ShuttleVFD driver]) 
     else 
       AC_MSG_WARN(usb.h not found: ShuttleVFD driver disabled) 
     fi 
