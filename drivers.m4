@@ -36,9 +36,9 @@ AC_ARG_WITH(
   [                        G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,]
   [                        LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,]
-  [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, SimpleLCD,]
-  [                        st2205, T6963, Trefon, ULA200, USBLCD, USBHUB, VNC,]
-  [                        WincorNixdorf, X11],
+  [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, ShuttleVFD,]
+  [                        SimpleLCD, st2205, T6963, Trefon, ULA200, USBLCD, USBHUB,]
+  [                        VNC, WincorNixdorf, X11],
   drivers=$withval,
   drivers=all
 )
@@ -92,6 +92,7 @@ for driver in $drivers; do
          SAMPLE="yes"
          ST2205="yes"
 	 SERDISPLIB="yes"
+	 SHUTTLEVFD="yes"
          SIMPLELCD="yes"
          T6963="yes"
          Trefon="yes"
@@ -186,7 +187,6 @@ for driver in $drivers; do
       picoLCDGraphic)
          PICOLCDGRAPHIC=$val
          ;;
-
       PNG)
          PNG=$val
          ;;
@@ -202,6 +202,9 @@ for driver in $drivers; do
       serdisplib)
          SERDISPLIB=$val;
          ;;
+      ShuttleVFD) 
+	 SHUTTLEVFD=$val 
+	 ;;          
       SimpleLCD)
          SIMPLELCD=$val
          ;;
@@ -575,6 +578,18 @@ if test "$SERDISPLIB" = "yes"; then
       AC_MSG_WARN(serdisp.h not found: serdisplib driver disabled)
    fi
 fi
+
+if test "$SHUTTLEVFD" = "yes"; then 
+    if test "$has_usb" = "true"; then 
+    TEXT="yes" 
+    GPIO="yes" 
+    DRIVERS="$DRIVERS drv_ShuttleVFD.o" 
+    LIBUSB="yes" 
+    AC_DEFINE(WITH_SHUTTLEVFD,1,[ShuttleVFD driver]) 
+    else 
+      AC_MSG_WARN(usb.h not found: ShuttleVFD driver disabled) 
+    fi 
+fi 
 
 if test "$SIMPLELCD" = "yes"; then
    TEXT="yes"

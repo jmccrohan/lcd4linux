@@ -99,6 +99,7 @@ drv_RouterBoard.c             \
 drv_Sample.c                  \
 drv_st2205.c                  \
 drv_serdisplib.c              \
+drv_ShuttleVFD.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
 drv_Trefon.c                  \
