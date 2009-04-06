@@ -127,9 +127,8 @@ static int drv_ShuttleVFD_open(void)
 
     for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
 	for (dev = bus->devices; dev != NULL; dev = dev->next) {
-		if (dev->descriptor.idVendor == vendor_id && (
-			(dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1) ||
-			(dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2))) {
+	    if (dev->descriptor.idVendor == vendor_id && ((dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1) ||
+							  (dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2))) {
 
 		unsigned int v = dev->descriptor.bcdDevice;
 
@@ -233,7 +232,7 @@ static void drv_ShuttleVFD_write(const int row, const int col, const char *data,
 
 static void drv_ShuttleVFD_defchar(const int ascii, const unsigned char *matrix)
 {
-    (void)matrix;
+    (void) matrix;
     debug("%s: not available (ascii=%d)", Name, ascii);
 }
 

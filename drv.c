@@ -187,8 +187,8 @@ DRIVER *Driver[] = {
     &drv_st2205,
 #endif
 #ifdef WITH_SHUTTLEVFD
-    &drv_ShuttleVFD, 
-#endif 
+    &drv_ShuttleVFD,
+#endif
 #ifdef WITH_SERDISPLIB
     &drv_serdisplib,
 #endif
