@@ -54,8 +54,8 @@ for plugin in $plugins; do
          AC_MSG_RESULT(
             [available plugins:]
             [ apm,cpuinfo,diskstats,dvb,exec,file,gps,i2c_sensors,iconv,imon,isdn,kvv,]
-            [ loadavg,meminfo,mpd,mysql,netdev,netinfo,pop3,ppp,proc_stat,sample,seti,]
-            [ statfs,uname,uptime,wireless,xmms])
+            [ loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,proc_stat,]
+            [ sample,seti,statfs,uname,uptime,wireless,xmms])
          AC_MSG_ERROR([run ./configure --with-plugins=...])
          ;;
       all)
@@ -78,6 +78,7 @@ for plugin in $plugins; do
          PLUGIN_LOADAVG="yes"
          PLUGIN_MEMINFO="yes"
          PLUGIN_MPD="yes"
+	 PLUGIN_MPRIS_DBUS="yes"
          PLUGIN_MYSQL="yes"
          PLUGIN_NETDEV="yes"
          PLUGIN_NETINFO="yes"
@@ -151,6 +152,9 @@ for plugin in $plugins; do
       mpd)
          PLUGIN_MPD=$val
 	 ;;
+      mpris_dbus)
+         PLUGIN_MPRIS_DBUS=$val
+         ;;	 
       mysql)
          PLUGIN_MYSQL=$val
          ;;
@@ -364,6 +368,24 @@ if test "$PLUGIN_MPD" = "yes"; then
       AC_MSG_WARN(and copy those 2 files in the lcd4linux directory.)
    fi
 fi
+
+# MPRIS D-Bus
+if test "$PLUGIN_MPRIS_DBUS" = "yes"; then
+   AC_CHECK_HEADERS(dbus/dbus.h, [has_dbus_header="true"], [has_dbus_header="false"])
+   if test "$has_dbus_header" = "true"; then
+      AC_CHECK_LIB(dbus-1, dbus_bus_get, [has_libdbus1_lib="true"], [has_libdbus1_lib="false"])
+      if test "$has_libdbus1_lib" = "true"; then
+	  PLUGINS="$PLUGINS plugin_mpris_dbus.o"
+	  PLUGINLIBS="$PLUGINLIBS -ldbus-1"
+	  AC_DEFINE(PLUGIN_MPRIS_DBUS,1,[mpris_dbus plugin])
+      else
+	  AC_MSG_WARN(libdbus-1 lib not found: mpris_dbus plugin disabled)
+      fi
+   else
+      AC_MSG_WARN(dbus/dbus.h header not found: mpris_dbus plugin disabled)
+   fi
+fi
+
 
 # MySQL
 if test "$PLUGIN_MYSQL" = "yes"; then

@@ -107,6 +107,9 @@ char *Plugins[] = {
 #ifdef PLUGIN_MPD
     "mpd",
 #endif
+#ifdef PLUGIN_MPRIS_DBUS
+    "mpris_dbus",
+#endif
 #ifdef PLUGIN_MYSQL
     "mysql",
 #endif
@@ -319,6 +322,9 @@ int plugin_init(void)
 #ifdef PLUGIN_MPD
     plugin_init_mpd();
 #endif
+#ifdef PLUGIN_MPRIS_DBUS
+    plugin_init_mpris_dbus();
+#endif
 #ifdef PLUGIN_MYSQL
     plugin_init_mysql();
 #endif
@@ -424,6 +430,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_MPD
     plugin_exit_mpd();
+#endif
+#ifdef PLUGIN_MPRIS_DBUS
+    plugin_exit_mpris_dbus();
 #endif
 #ifdef PLUGIN_MYSQL
     plugin_exit_mysql();
