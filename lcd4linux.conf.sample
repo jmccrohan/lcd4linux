@@ -740,6 +740,16 @@ Widget Uptime {
     update 1000
 }
 
+Widget mpris_TrackPosition_bar {
+    class 'Bar'
+    expression  mpris_dbus::method_PositionGet('org.kde.amarok')
+    length 40   
+    min 0
+    max 100
+    direction 'E'
+    style 'H'
+    update 200
+}
 
 # debugging widgets 
 
