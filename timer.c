@@ -53,6 +53,7 @@
 #include <dmalloc.h>
 #endif
 
+#define CLOCK_SKEW_DETECT_TIME_IN_S 1
 
 typedef struct TIMER {
     void (*callback) (void *data);
@@ -179,7 +180,7 @@ int timer_process(struct timespec *delay)
     delay->tv_nsec *= 1000;
 
     /* check if date changed*/
-    if ((delay->tv_sec) > 1) { 
+    if ((delay->tv_sec) > CLOCK_SKEW_DETECT_TIME_IN_S) { 
             delay->tv_sec = 0; 
             warn("Oops, clock skewed, update timestamp");
 	    gettimeofday(&now, NULL);
