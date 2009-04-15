@@ -350,8 +350,18 @@ static void drv_vnc_blit_it(const int row, const int col, const int height, cons
 	gettimeofday(&blittime, NULL);
 	int time_since_start =
 	    (blittime.tv_sec - startDriver.tv_sec) * 1000 + (blittime.tv_usec - startDriver.tv_usec) / 1000;
+
+	/* if time changed since start of lcd4linux */
+	if (time_since_start < 0) {
+	    gettimeofday(&startDriver, NULL);
+	    time_since_start =
+		(blittime.tv_sec - startDriver.tv_sec) * 1000 + (blittime.tv_usec - startDriver.tv_usec) / 1000;
+	    if (time_since_start == 0)
+		time_since_start = 1;
+	}
+	//info("time :%d, frames: %d, sleep: %d", time_since_start, frames, sleep);
+
 	int fps = (int) (1000 * frames / time_since_start);
-	//info("time :%d, frames: %d, fps: %d, sleep: %d", time_since_start, frames, fps, sleep);
 
 	if (fps > maxfps) {
 	    sleep += SLEEP_STEPS;
