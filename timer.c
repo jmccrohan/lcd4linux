@@ -179,14 +179,15 @@ int timer_process(struct timespec *delay)
     /* nanoseconds!! */
     delay->tv_nsec *= 1000;
 
-    /* check if date changed*/
-    if ((delay->tv_sec) > CLOCK_SKEW_DETECT_TIME_IN_S) { 
-            delay->tv_sec = 0; 
-            warn("Oops, clock skewed, update timestamp");
-	    gettimeofday(&now, NULL);
-            Timers[min].when = now;
+    /* check if date changed */
+    if ((delay->tv_sec) > CLOCK_SKEW_DETECT_TIME_IN_S) {
+	delay->tv_sec = 0;
+	delay->tv_nsec = 0;
+	warn("Oops, clock skewed, update timestamp");
+	gettimeofday(&now, NULL);
+	Timers[min].when = now;
     }
-    
+
     return 0;
 
 }
@@ -194,7 +195,6 @@ int timer_process(struct timespec *delay)
 
 void timer_exit(void)
 {
-
     nTimers = 0;
 
     if (Timers != NULL) {
