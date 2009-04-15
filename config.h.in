@@ -15,6 +15,9 @@
 /* Define to 1 if you have the <asm/types.h> header file. */
 #undef HAVE_ASM_TYPES_H
 
+/* Define to 1 if you have the <dbus/dbus.h> header file. */
+#undef HAVE_DBUS_DBUS_H
+
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -343,6 +346,9 @@
 
 /* mpd plugin */
 #undef PLUGIN_MPD
+
+/* mpris_dbus plugin */
+#undef PLUGIN_MPRIS_DBUS
 
 /* mysql plugin */
 #undef PLUGIN_MYSQL
