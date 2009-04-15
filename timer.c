@@ -178,6 +178,14 @@ int timer_process(struct timespec *delay)
     /* nanoseconds!! */
     delay->tv_nsec *= 1000;
 
+    /* check if date changed*/
+    if ((delay->tv_sec) > 1) { 
+            delay->tv_sec = 0; 
+            warn("Oops, clock skewed, update timestamp");
+	    gettimeofday(&now, NULL);
+            Timers[min].when = now;
+    }
+    
     return 0;
 
 }
