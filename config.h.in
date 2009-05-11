@@ -133,6 +133,9 @@
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 
+/* Define to 1 if you have the <sqlite3.h> header file. */
+#undef HAVE_SQLITE3_H
+
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
 
@@ -370,6 +373,9 @@
 
 /* python plugin */
 #undef PLUGIN_PYTHON
+
+/* qnaplog plugin */
+#undef PLUGIN_QNAPLOG
 
 /* sample plugin */
 #undef PLUGIN_SAMPLE
