@@ -86,6 +86,7 @@ for plugin in $plugins; do
          PLUGIN_PPP="yes"
          PLUGIN_PROC_STAT="yes"
          PLUGIN_PYTHON=$with_python
+         PLUGIN_QNAPLOG="yes"
          PLUGIN_SAMPLE="yes"
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
@@ -175,6 +176,9 @@ for plugin in $plugins; do
          ;;
       python)
          PLUGIN_PYTHON=$val
+         ;;
+      qnaplog)
+         PLUGIN_QNAPLOG=$val
          ;;
       sample)
          PLUGIN_SAMPLE=$val
@@ -452,6 +456,23 @@ if test "$PLUGIN_PYTHON" = "yes"; then
          PLUGINLIBS="$PLUGINLIBS $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS"
          AC_DEFINE(PLUGIN_PYTHON,1,[python plugin])
       fi 
+   fi 
+fi
+
+# Qnaplog
+if test "$PLUGIN_QNAPLOG" = "yes"; then
+   AC_CHECK_HEADERS(sqlite3.h, [has_sqlite3_header="true"], [has_sqlite3_header="false"])
+   if test "$has_sqlite3_header" = "true"; then	
+      AC_CHECK_LIB(sqlite3, sqlite3_initialize, [has_sqlite3_lib="true"], [has_sqlite3_lib="false"])
+      if test "$has_sqlite3_lib" = "true"; then
+        PLUGINS="$PLUGINS plugin_qnaplog.o"
+        PLUGINLIBS="$PLUGINLIBS -lsqlite3"
+        AC_DEFINE(PLUGIN_QNAPLOG,1,[qnaplog plugin])
+      else
+        AC_MSG_WARN(sqlite3 lib not found: qnaplog plugin disabled)
+      fi
+   else
+      AC_MSG_WARN(sqlite3.h header not found: qnaplog plugin disabled)
    fi 
 fi
 
