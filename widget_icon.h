@@ -33,6 +33,7 @@
 typedef struct WIDGET_ICON {
     PROPERTY speed;		/* update interval (msec) */
     PROPERTY visible;		/* icon visible? */
+    PROPERTY frame;		/* evaluated expression of frame number (optional) */
     int ascii;			/* ascii code of icon (depends on the driver) */
     int curmap;			/* current bitmap sequence */
     int prvmap;			/* previous bitmap sequence  */

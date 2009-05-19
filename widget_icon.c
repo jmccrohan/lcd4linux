@@ -101,11 +101,18 @@ void widget_icon_update(void *Self)
 	/* evaluate properties */
 	property_eval(&Icon->speed);
 	property_eval(&Icon->visible);
+	property_eval(&Icon->frame);
 
-	/* rotate icon bitmap */
-	Icon->curmap++;
-	if (Icon->curmap >= Icon->maxmap)
-	    Icon->curmap = 0;
+	int frame = P2N(&Icon->frame);
+	if ( (frame >= 0) && (frame <= Icon->maxmap) ) {
+	    /* select icon bitmap by evaluated frame number */
+	    Icon->curmap = frame;
+	} else {
+	    /* rotate icon bitmap */
+	    Icon->curmap++;
+	    if (Icon->curmap >= Icon->maxmap)
+	        Icon->curmap = 0;
+	}
     }
 
     /* finally, draw it! */
@@ -140,6 +147,7 @@ int widget_icon_init(WIDGET * Self)
 	/* load properties */
 	property_load(section, "speed", "100", &Icon->speed);
 	property_load(section, "visible", "1", &Icon->visible);
+	property_load(section, "frame", "-1", &Icon->frame);
 
 	/* read bitmap */
 	widget_icon_read_bitmap(section, Icon);
