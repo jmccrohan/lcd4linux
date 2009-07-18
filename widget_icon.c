@@ -104,14 +104,14 @@ void widget_icon_update(void *Self)
 	property_eval(&Icon->frame);
 
 	int frame = P2N(&Icon->frame);
-	if ( (frame >= 0) && (frame <= Icon->maxmap) ) {
+	if ((frame >= 0) && (frame <= Icon->maxmap)) {
 	    /* select icon bitmap by evaluated frame number */
 	    Icon->curmap = frame;
 	} else {
 	    /* rotate icon bitmap */
 	    Icon->curmap++;
 	    if (Icon->curmap >= Icon->maxmap)
-	        Icon->curmap = 0;
+		Icon->curmap = 0;
 	}
     }
 

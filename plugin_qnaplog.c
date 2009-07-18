@@ -100,14 +100,15 @@ char event_user[30];
 char event_desc[255];
 
 #define MAX_IDS_TYPE	3
-char *IDS_TYPE[MAX_IDS_TYPE] =
-{	"Information", "Warning", "Error"};
+char *IDS_TYPE[MAX_IDS_TYPE] = { "Information", "Warning", "Error" };
+
 #define MAX_IDS_SERV	8
-char *IDS_SERV[MAX_IDS_SERV] =
-{	"S0","Samba","S2","HTTP","S4","S5","S6","SSH"};
+char *IDS_SERV[MAX_IDS_SERV] = { "S0", "Samba", "S2", "HTTP", "S4", "S5", "S6", "SSH" };
+
 #define MAX_IDS_ACTION	16
 char *IDS_ACTION[MAX_IDS_ACTION] =
-{	"C0","Delete","Read","Write","C4","C5","C6","C7","C8","Login fail","Login ok","Logout","C12","C13","C14","Add"};
+    { "C0", "Delete", "Read", "Write", "C4", "C5", "C6", "C7", "C8", "Login fail", "Login ok", "Logout", "C12", "C13",
+"C14", "Add" };
 
 static char Section[] = "Plugin:QnapLog";
 
@@ -117,36 +118,32 @@ static char Section[] = "Plugin:QnapLog";
  */
 static int configureConn(void)
 {
-	static int configured = 0;
-	char *s;
-	int rc;
+    static int configured = 0;
+    char *s;
+    int rc;
 
-	if (configured != 0)
+    if (configured != 0)
 	return configured;
 
-	s = cfg_get(Section, "databaseConn", "");
-	if (*s == '\0')
-	{
-		info("[QnapLog] empty '%s.database' entry in %s, assuming none", Section, cfg_source());
-		strcpy(dbNameConn, "/etc/logs/conn.log");
-	}
-	else
-	{
-		snprintf(dbNameConn, sizeof(dbNameConn), "%s", s);
-	}
-	free(s);
+    s = cfg_get(Section, "databaseConn", "");
+    if (*s == '\0') {
+	info("[QnapLog] empty '%s.database' entry in %s, assuming none", Section, cfg_source());
+	strcpy(dbNameConn, "/etc/logs/conn.log");
+    } else {
+	snprintf(dbNameConn, sizeof(dbNameConn), "%s", s);
+    }
+    free(s);
 
-	rc = sqlite3_open(dbNameConn, &connexConn);
-	if (rc)
-	{
-		error("[QnapLog] connection error: %s", sqlite3_errmsg(connexConn));
-		configured = -1;
-		sqlite3_close(connexConn);
-		return configured;
-	}
-
-	configured = 1;
+    rc = sqlite3_open(dbNameConn, &connexConn);
+    if (rc) {
+	error("[QnapLog] connection error: %s", sqlite3_errmsg(connexConn));
+	configured = -1;
+	sqlite3_close(connexConn);
 	return configured;
+    }
+
+    configured = 1;
+    return configured;
 }
 
 
@@ -155,36 +152,32 @@ static int configureConn(void)
  */
 static int configureEvent(void)
 {
-	static int configured = 0;
-	char *s;
-	int rc;
+    static int configured = 0;
+    char *s;
+    int rc;
 
-	if (configured != 0)
+    if (configured != 0)
 	return configured;
 
-	s = cfg_get(Section, "databaseEvent", "");
-	if (*s == '\0')
-	{
-		info("[QnapLog] empty '%s.database' entry in %s, assuming none", Section, cfg_source());
-		strcpy(dbNameEvent, "/etc/logs/event.log");
-	}
-	else
-	{
-		snprintf(dbNameEvent, sizeof(dbNameEvent), "%s", s);
-	}
-	free(s);
+    s = cfg_get(Section, "databaseEvent", "");
+    if (*s == '\0') {
+	info("[QnapLog] empty '%s.database' entry in %s, assuming none", Section, cfg_source());
+	strcpy(dbNameEvent, "/etc/logs/event.log");
+    } else {
+	snprintf(dbNameEvent, sizeof(dbNameEvent), "%s", s);
+    }
+    free(s);
 
-	rc = sqlite3_open(dbNameEvent, &connexEvent);
-	if (rc)
-	{
-		error("[QnapLog] connection error: %s", sqlite3_errmsg(connexEvent));
-		configured = -1;
-		sqlite3_close(connexEvent);
-		return configured;
-	}
-
-	configured = 1;
+    rc = sqlite3_open(dbNameEvent, &connexEvent);
+    if (rc) {
+	error("[QnapLog] connection error: %s", sqlite3_errmsg(connexEvent));
+	configured = -1;
+	sqlite3_close(connexEvent);
 	return configured;
+    }
+
+    configured = 1;
+    return configured;
 }
 
 
@@ -193,65 +186,45 @@ static int configureEvent(void)
  */
 static int callbackConn(void *NotUsed, int argc, char **argv, char **azColName)
 {
-	int i;
-	int c;
+    int i;
+    int c;
 
-	for (i = 0; i < argc; i++)
-	{
-		if (strcmp(azColName[i], "conn_id") == 0)
-		{
-			snprintf(conn_id, sizeof(conn_id), "%s", argv[i] ? argv[i] : "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_type") == 0)
-		{
-			c = atoi( argv[i] );
-			if( c < MAX_IDS_TYPE )
-				snprintf(conn_type, sizeof(conn_type), "%s", IDS_TYPE[c]);
-		}
-		else if (strcmp(azColName[i], "conn_date") == 0)
-		{
-			snprintf(conn_date, sizeof(conn_date), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_time") == 0)
-		{
-			snprintf(conn_time, sizeof(conn_time), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_user") == 0)
-		{
-			snprintf(conn_user, sizeof(conn_user), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_ip") == 0)
-		{
-			snprintf(conn_ip, sizeof(conn_ip), "%s", argv[i] ? argv[i] : "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_comp") == 0)
-		{
-			snprintf(conn_comp, sizeof(conn_comp), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_res") == 0)
-		{
-			snprintf(conn_res, sizeof(conn_res), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "conn_serv") == 0)
-		{
-			c = atoi( argv[i] );
-			if( c < MAX_IDS_SERV )
-				snprintf(conn_serv, sizeof(conn_serv), "%s", IDS_SERV[c]);
-		}
-		else if (strcmp(azColName[i], "conn_action") == 0)
-		{
-			c = atoi( argv[i] );
-			if( c < MAX_IDS_ACTION )
-				snprintf(conn_action, sizeof(conn_action), "%s", IDS_ACTION[c]);
-		}
+    for (i = 0; i < argc; i++) {
+	if (strcmp(azColName[i], "conn_id") == 0) {
+	    snprintf(conn_id, sizeof(conn_id), "%s", argv[i] ? argv[i] : "NULL");
+	} else if (strcmp(azColName[i], "conn_type") == 0) {
+	    c = atoi(argv[i]);
+	    if (c < MAX_IDS_TYPE)
+		snprintf(conn_type, sizeof(conn_type), "%s", IDS_TYPE[c]);
+	} else if (strcmp(azColName[i], "conn_date") == 0) {
+	    snprintf(conn_date, sizeof(conn_date), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "conn_time") == 0) {
+	    snprintf(conn_time, sizeof(conn_time), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "conn_user") == 0) {
+	    snprintf(conn_user, sizeof(conn_user), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "conn_ip") == 0) {
+	    snprintf(conn_ip, sizeof(conn_ip), "%s", argv[i] ? argv[i] : "NULL");
+	} else if (strcmp(azColName[i], "conn_comp") == 0) {
+	    snprintf(conn_comp, sizeof(conn_comp), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "conn_res") == 0) {
+	    snprintf(conn_res, sizeof(conn_res), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "conn_serv") == 0) {
+	    c = atoi(argv[i]);
+	    if (c < MAX_IDS_SERV)
+		snprintf(conn_serv, sizeof(conn_serv), "%s", IDS_SERV[c]);
+	} else if (strcmp(azColName[i], "conn_action") == 0) {
+	    c = atoi(argv[i]);
+	    if (c < MAX_IDS_ACTION)
+		snprintf(conn_action, sizeof(conn_action), "%s", IDS_ACTION[c]);
 	}
+    }
 
-	return 0;
+    return 0;
 }
 
 
@@ -260,232 +233,170 @@ static int callbackConn(void *NotUsed, int argc, char **argv, char **azColName)
  */
 static int callbackEvent(void *NotUsed, int argc, char **argv, char **azColName)
 {
-	int i;
-	int c;
+    int i;
+    int c;
 
-	for (i = 0; i < argc; i++)
-	{
-		if (strcmp(azColName[i], "event_id") == 0)
-		{
-			snprintf(event_id, sizeof(event_id), "%s", argv[i] ? argv[i] : "NULL");
-		}
-		else if (strcmp(azColName[i], "event_type") == 0)
-		{
-			c = *argv[i] & 0x0F;
-			if( c < MAX_IDS_TYPE )
-			snprintf(event_type, sizeof(event_type), "%s", IDS_TYPE[c]);
-		}
-		else if (strcmp(azColName[i], "event_date") == 0)
-		{
-			snprintf(event_date, sizeof(event_date), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "event_time") == 0)
-		{
-			snprintf(event_time, sizeof(event_time), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "event_user") == 0)
-		{
-			snprintf(event_user, sizeof(event_user), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "event_ip") == 0)
-		{
-			snprintf(event_ip, sizeof(event_ip), "%s", argv[i] ? argv[i] : "NULL");
-		}
-		else if (strcmp(azColName[i], "event_comp") == 0)
-		{
-			snprintf(event_comp, sizeof(event_comp), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
-		else if (strcmp(azColName[i], "event_desc") == 0)
-		{
-			snprintf(event_desc, sizeof(event_desc), "%s", argv[i] ? argv[i]
-					: "NULL");
-		}
+    for (i = 0; i < argc; i++) {
+	if (strcmp(azColName[i], "event_id") == 0) {
+	    snprintf(event_id, sizeof(event_id), "%s", argv[i] ? argv[i] : "NULL");
+	} else if (strcmp(azColName[i], "event_type") == 0) {
+	    c = *argv[i] & 0x0F;
+	    if (c < MAX_IDS_TYPE)
+		snprintf(event_type, sizeof(event_type), "%s", IDS_TYPE[c]);
+	} else if (strcmp(azColName[i], "event_date") == 0) {
+	    snprintf(event_date, sizeof(event_date), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "event_time") == 0) {
+	    snprintf(event_time, sizeof(event_time), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "event_user") == 0) {
+	    snprintf(event_user, sizeof(event_user), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "event_ip") == 0) {
+	    snprintf(event_ip, sizeof(event_ip), "%s", argv[i] ? argv[i] : "NULL");
+	} else if (strcmp(azColName[i], "event_comp") == 0) {
+	    snprintf(event_comp, sizeof(event_comp), "%s", argv[i] ? argv[i]
+		     : "NULL");
+	} else if (strcmp(azColName[i], "event_desc") == 0) {
+	    snprintf(event_desc, sizeof(event_desc), "%s", argv[i] ? argv[i]
+		     : "NULL");
 	}
+    }
 
-	return 0;
+    return 0;
 }
 
 
 /** request last of qnap connection
  *
  */
-static void my_conn(RESULT *result, RESULT *arg1)
+static void my_conn(RESULT * result, RESULT * arg1)
 {
-	char *key;
-	char *value;
-	char *zErrMsg = 0;
-	int rc;
-	struct stat attrib; // create a file attribute structure
-	time_t accesstime;
+    char *key;
+    char *value;
+    char *zErrMsg = 0;
+    int rc;
+    struct stat attrib;		// create a file attribute structure
+    time_t accesstime;
 
 
-	value = -1;
-	key = R2S(arg1);
+    value = -1;
+    key = R2S(arg1);
 
-	if (configureConn() >= 0)
-	{
-		stat(dbNameConn, &attrib); // get the attributes
-		accesstime = attrib.st_mtime; // Get the last modified time and put it into the time structure
+    if (configureConn() >= 0) {
+	stat(dbNameConn, &attrib);	// get the attributes
+	accesstime = attrib.st_mtime;	// Get the last modified time and put it into the time structure
 
-		if( accesstime > lastaccesstimeConn )
-		{
-			lastaccesstimeConn = accesstime;
-			rc = sqlite3_exec(connexConn, SQLSTATEMENT_CONN, callbackConn, 0, &zErrMsg);
-			if (rc != SQLITE_OK)
-			{
-				fprintf(stderr, "SQL error: %s\n", zErrMsg);
-				sqlite3_free(zErrMsg);
-			}
-		}
-
-		if (strcasecmp(key, "id") == 0)
-		{
-			value = conn_id;
-		}
-		else if (strcasecmp(key, "type") == 0)
-		{
-			value = conn_type;
-		}
-		else if (strcasecmp(key, "date") == 0)
-		{
-			value = conn_date;
-		}
-		else if (strcasecmp(key, "time") == 0)
-		{
-			value = conn_time;
-		}
-		else if (strcasecmp(key, "user") == 0)
-		{
-			value = conn_user;
-		}
-		else if (strcasecmp(key, "ip") == 0)
-		{
-			value = conn_ip;
-		}
-		else if (strncasecmp(key, "res", 3) == 0)
-		{
-			value = conn_res;
-		}
-		else if (strncasecmp(key, "serv", 4) == 0)
-		{
-			value = conn_serv;
-		}
-		else if (strncasecmp(key, "act", 3) == 0)
-		{
-			value = conn_action;
-		}
-		else if (strncasecmp(key, "comp", 4) == 0)
-		{
-			value = conn_comp;
-		}
+	if (accesstime > lastaccesstimeConn) {
+	    lastaccesstimeConn = accesstime;
+	    rc = sqlite3_exec(connexConn, SQLSTATEMENT_CONN, callbackConn, 0, &zErrMsg);
+	    if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	    }
 	}
 
-	/* store result */
-	SetResult(&result, R_STRING, value);
+	if (strcasecmp(key, "id") == 0) {
+	    value = conn_id;
+	} else if (strcasecmp(key, "type") == 0) {
+	    value = conn_type;
+	} else if (strcasecmp(key, "date") == 0) {
+	    value = conn_date;
+	} else if (strcasecmp(key, "time") == 0) {
+	    value = conn_time;
+	} else if (strcasecmp(key, "user") == 0) {
+	    value = conn_user;
+	} else if (strcasecmp(key, "ip") == 0) {
+	    value = conn_ip;
+	} else if (strncasecmp(key, "res", 3) == 0) {
+	    value = conn_res;
+	} else if (strncasecmp(key, "serv", 4) == 0) {
+	    value = conn_serv;
+	} else if (strncasecmp(key, "act", 3) == 0) {
+	    value = conn_action;
+	} else if (strncasecmp(key, "comp", 4) == 0) {
+	    value = conn_comp;
+	}
+    }
+
+    /* store result */
+    SetResult(&result, R_STRING, value);
 }
 
 /** request last qnap event
  *
  */
-static void my_event(RESULT *result, RESULT *arg1)
+static void my_event(RESULT * result, RESULT * arg1)
 {
-	char *key;
-	char *value;
-	char *zErrMsg = 0;
-	int rc;
-	struct stat attrib; // create a file attribute structure
-	time_t accesstime;
+    char *key;
+    char *value;
+    char *zErrMsg = 0;
+    int rc;
+    struct stat attrib;		// create a file attribute structure
+    time_t accesstime;
 
 
-	value = -1;
-	key = R2S(arg1);
+    value = -1;
+    key = R2S(arg1);
 
-	if (configureEvent() >= 0)
-	{
-		stat(dbNameEvent, &attrib); // get the attributes
-		accesstime = attrib.st_mtime; // Get the last modified time and put it into the time structure
+    if (configureEvent() >= 0) {
+	stat(dbNameEvent, &attrib);	// get the attributes
+	accesstime = attrib.st_mtime;	// Get the last modified time and put it into the time structure
 
-		if( accesstime > lastaccesstimeEvent )
-		{
-			lastaccesstimeEvent = accesstime;
-			rc = sqlite3_exec(connexEvent, SQLSTATEMENT_EVENT, callbackEvent, 0, &zErrMsg);
-			if (rc != SQLITE_OK)
-			{
-				fprintf(stderr, "SQL error: %s\n", zErrMsg);
-				sqlite3_free(zErrMsg);
-			}
-		}
-
-		if (strcasecmp(key, "id") == 0)
-		{
-			value = event_id;
-		}
-		else if (strncasecmp(key, "comp", 4) == 0)
-		{
-			value = event_comp;
-		}
-		else if (strcasecmp(key, "date") == 0)
-		{
-			value = event_date;
-		}
-		else if (strcasecmp(key, "ip") == 0)
-		{
-			value = event_ip;
-		}
-		else if (strcasecmp(key, "time") == 0)
-		{
-			value = event_time;
-		}
-		else if (strcasecmp(key, "type") == 0)
-		{
-			value = event_type;
-		}
-		else if (strcasecmp(key, "user") == 0)
-		{
-			value = event_user;
-		}
-		else if (strncasecmp(key, "desc", 4) == 0)
-		{
-			value = event_desc;
-		}
+	if (accesstime > lastaccesstimeEvent) {
+	    lastaccesstimeEvent = accesstime;
+	    rc = sqlite3_exec(connexEvent, SQLSTATEMENT_EVENT, callbackEvent, 0, &zErrMsg);
+	    if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	    }
 	}
 
-	/* store result */
-	SetResult(&result, R_STRING, value);
+	if (strcasecmp(key, "id") == 0) {
+	    value = event_id;
+	} else if (strncasecmp(key, "comp", 4) == 0) {
+	    value = event_comp;
+	} else if (strcasecmp(key, "date") == 0) {
+	    value = event_date;
+	} else if (strcasecmp(key, "ip") == 0) {
+	    value = event_ip;
+	} else if (strcasecmp(key, "time") == 0) {
+	    value = event_time;
+	} else if (strcasecmp(key, "type") == 0) {
+	    value = event_type;
+	} else if (strcasecmp(key, "user") == 0) {
+	    value = event_user;
+	} else if (strncasecmp(key, "desc", 4) == 0) {
+	    value = event_desc;
+	}
+    }
+
+    /* store result */
+    SetResult(&result, R_STRING, value);
 }
 
 /** status for conn or event connection
  *
  */
-static void my_status(RESULT * result, RESULT *arg1)
+static void my_status(RESULT * result, RESULT * arg1)
 {
-	const char *value = "";
-	const char *status = "Ok";
-	char *key;
+    const char *value = "";
+    const char *status = "Ok";
+    char *key;
 
 
-	key = R2S(arg1);
-	if( strcmp(key, "conn") == 0 )
-	{
-		if( configureConn() > 0 )
-		{
-			value = status;
-		}
+    key = R2S(arg1);
+    if (strcmp(key, "conn") == 0) {
+	if (configureConn() > 0) {
+	    value = status;
 	}
-	else
-	if( strcmp(key, "event") == 0 )
-	{
-		if( configureEvent() > 0 )
-		{
-			value = status;
-		}
+    } else if (strcmp(key, "event") == 0) {
+	if (configureEvent() > 0) {
+	    value = status;
 	}
+    }
 
-	SetResult(&result, R_STRING, value);
+    SetResult(&result, R_STRING, value);
 }
 
 #endif
@@ -494,22 +405,22 @@ static void my_status(RESULT * result, RESULT *arg1)
 int plugin_init_qnaplog(void)
 {
 #ifdef HAVE_SQLITE3_H
-	/* register all our cool functions */
-	/* the second parameter is the number of arguments */
-	/* -1 stands for variable argument list */
-	AddFunction("qnaplog::status", 1, my_status);
-	AddFunction("qnaplog::conn", 1, my_conn);
-	AddFunction("qnaplog::event", 1, my_event);
+    /* register all our cool functions */
+    /* the second parameter is the number of arguments */
+    /* -1 stands for variable argument list */
+    AddFunction("qnaplog::status", 1, my_status);
+    AddFunction("qnaplog::conn", 1, my_conn);
+    AddFunction("qnaplog::event", 1, my_event);
 #endif
-	return 0;
+    return 0;
 }
 
 void plugin_exit_qnaplog(void)
 {
 #ifdef HAVE_SQLITE3_H
-	/* free any allocated memory */
-	/* close filedescriptors */
-	sqlite3_close(connexConn);
-	sqlite3_close(connexEvent);
+    /* free any allocated memory */
+    /* close filedescriptors */
+    sqlite3_close(connexConn);
+    sqlite3_close(connexEvent);
 #endif
 }
