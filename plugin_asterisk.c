@@ -174,9 +174,125 @@ static void zapstatus(RESULT * result, RESULT * arg1)
     return;
 }
 
+static void corecalls(RESULT * result)
+{
+    FILE *infile;
+    char line[100];
+    int calls;
+
+    system("asterisk -rx 'core show channels' > /tmp/asterisk.calls");
+
+    infile = fopen("/tmp/asterisk.state", "r");
+    line[0] = '\0';
+    while (fgets(line, 100, infile) != NULL) {
+	if (strstr(line, "active calls") != NULL) {
+	    break;
+	}
+    }
+    fclose(infile);
+
+    if (line[0] != '\0') {
+	sscanf(line, "%d active calls", &calls);
+    } else {
+	calls = 0;
+    }
+
+    SetResult(&result, R_NUMBER, &calls);
+    return;
+}
+
+int sipinfo(int type)
+{
+    FILE *infile;
+    char line[100];
+    int peers, online;
+
+    system("asterisk -rx 'sip show peers' > /tmp/asterisk.sip");
+
+    infile = fopen("/tmp/asterisk.sip", "r");
+    line[0] = '\0';
+    while (fgets(line, 100, infile) != NULL) {
+    }				// Get the last line
+    fclose(infile);
+
+    if (line[0] != '\0') {
+	sscanf(line, "%d sip peers [Monitored: %d online,", &peers, &online);
+    } else {
+	peers = 0;
+	online = 0;
+    }
+
+    return (type == 1) ? peers : online;
+}
+
+static void sippeers(RESULT * result)
+{
+    int peers;
+    peers = sipinfo(1);
+    SetResult(&result, R_NUMBER, &peers);
+    return;
+}
+
+static void siponline(RESULT * result)
+{
+    int online;
+    online = sipinfo(2);
+    SetResult(&result, R_NUMBER, &online);
+    return;
+}
+
+static void uptime(RESULT * result)
+{
+    FILE *infile;
+    char line[100], *tok;
+    int fields[5], toknum = 0, num, s = 0;
+
+    fields[0] = fields[1] = fields[2] = fields[3] = fields[4] = 0;
+
+    system("asterisk -rx 'core show uptime' > /tmp/asterisk.uptime");
+
+    infile = fopen("/tmp/asterisk.uptime", "r");
+    line[0] = '\0';
+    while (fgets(line, 100, infile) != NULL) {
+	if (strstr(line, "System uptime") != NULL) {
+	    break;
+	}
+    }
+    fclose(infile);
+
+    if (line[0] != '\0') {
+	for (tok = strtok(line, " "); tok != NULL; tok = strtok(NULL, " ")) {
+	    toknum++;
+	    if (toknum == 3 || toknum == 5 || toknum == 7 || toknum == 9 || toknum == 11) {
+		sscanf(tok, "%d", &num);
+	    } else if (toknum == 4 || toknum == 6 || toknum == 8 || toknum == 10 || toknum == 12) {
+		if (strstr(tok, "weeks") != NULL || (strstr(tok, "week") != NULL)) {
+		    fields[4] = num;
+		} else if (strstr(tok, "days") != NULL || (strstr(tok, "day") != NULL)) {
+		    fields[3] = num;
+		} else if (strstr(tok, "hours") != NULL || (strstr(tok, "hour") != NULL)) {
+		    fields[2] = num;
+		} else if (strstr(tok, "minutes") != NULL || (strstr(tok, "minute") != NULL)) {
+		    fields[1] = num;
+		} else {
+		    fields[0] = num;
+		}
+	    }
+	}
+	s = (fields[4] * 604800) + (fields[3] * 86400) + (fields[2] * 3600) + (fields[1] * 60) + fields[0];
+    }
+
+    SetResult(&result, R_NUMBER, &s);
+    return;
+}
+
 int plugin_init_asterisk(void)
 {
     AddFunction("asterisk::zapstatus", 1, zapstatus);
+    AddFunction("asterisk::corecalls", 0, corecalls);
+    AddFunction("asterisk::sippeers", 0, sippeers);
+    AddFunction("asterisk::siponline", 0, siponline);
+    AddFunction("asterisk::uptime", 0, uptime);
     return 0;
 }
 
