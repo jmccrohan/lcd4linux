@@ -1108,6 +1108,7 @@ static int EvalTree(NODE * Root)
 	    for (i = 0; i < Root->Children; i++) {
 		EvalTree(Root->Child[i]);
 	    }
+	    i = Root->Children - 1;
 	    type = Root->Child[i]->Result->type;
 	    number = Root->Child[i]->Result->number;
 	    string = Root->Child[i]->Result->string;
