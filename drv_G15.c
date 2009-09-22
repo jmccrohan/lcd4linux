@@ -54,8 +54,13 @@
 #include "drv_generic_graphic.h"
 #include "thread.h"
 
+/* Logitech: VendorID 0x046d */
 #define G15_VENDOR 0x046d
+/* Logitech Keyboard G15: ProductID 0xc222, 0xc227 */
+/* Logitech Speaker Z10: ProductID 0x0a07 */
 #define G15_DEVICE 0xc222
+#define G15_DEVICE2 0xc227
+#define Z10_DEVICE 0x0a07
 #define M1730_DEVICE 0xc251
 
 #if 0
@@ -80,6 +85,8 @@ static int uinput_fd;
 static int kb_mutex;
 static int kb_thread_pid;
 static int kb_single_keypress = 0;
+
+static int usb_endpoint = 0;
 
 
 /****************************************/
@@ -302,37 +309,67 @@ static int drv_G15_open()
     struct usb_bus *bus;
     struct usb_device *dev;
     char dname[32] = { 0 };
+    int interf = -1;
+    int config = 1;
+    int retval;
 
     g15_lcd = NULL;
 
     info("%s: Scanning USB for G-15 keyboard...", Name);
 
     usb_init();
-    usb_set_debug(0);
-    usb_find_busses();
-    usb_find_devices();
+    usb_set_debug(0);		// 0: no, 1 error, 2 warn, 3 info
+    debug("%s: found %d USB busses", Name, usb_find_busses());
+    debug("%s: found %d USB devices", Name, usb_find_devices());
 
     for (bus = usb_get_busses(); bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
+	    debug("%s: open %s/%s/%s", Name, bus->dirname, dev->bus->dirname, dev->filename);
 	    if ((g15_lcd = usb_open(dev))) {
 		if (dev->descriptor.idVendor == G15_VENDOR) {
 		    switch (dev->descriptor.idProduct) {
 		    case G15_DEVICE:
+		    case G15_DEVICE2:
 		    case M1730_DEVICE:
 			{
-			    /* detach from the kernel if we need to */
-			    int retval = usb_get_driver_np(g15_lcd, 0, dname, 31);
-			    if (retval == 0 && strcmp(dname, "usbhid") == 0) {
-				usb_detach_kernel_driver_np(g15_lcd, 0);
-			    }
-			    usb_set_configuration(g15_lcd, 1);
-			    usleep(100);
-			    usb_claim_interface(g15_lcd, 0);
-			    return 0;
+				info("%s: Found Logitech G-15 Keyboard", Name);
+			    interf = 0;
+			    config = 1;
+			    usb_endpoint = 0x02;
+			    break;
+			}
+		    case Z10_DEVICE:
+			{
+				info("%s: Found Logitech Z-10 Speaker", Name);
+			    interf = 2;
+			    usb_endpoint = 0x03;
+			    break;
 			}
 		    default:
 			usb_close(g15_lcd);
 		    }
+
+		    if (interf >= 0) {
+			debug("%s: Vendor 0x%x Product 0x%x found",
+			     Name, dev->descriptor.idVendor, dev->descriptor.idProduct);
+			//if (dev->descriptor.bNumConfigurations > 1) {
+			/* detach from the kernel if we need to */
+			retval = usb_get_driver_np(g15_lcd, interf, dname, 31);
+			debug("%s: Ret %i from usb_get_driver_np(interf.%d), Drivername %s",
+			     Name, retval, interf, dname);
+			if (retval == 0 && strcmp(dname, "usbhid") == 0) {
+			    debug("%s: detaching...", Name);
+			    usb_detach_kernel_driver_np(g15_lcd, interf);
+			}
+			retval = usb_set_configuration(g15_lcd, config);
+			debug("%s: Ret %d from usb_set_configuration(%d)", Name, retval, config);
+			usleep(100);
+			//}
+			retval = usb_claim_interface(g15_lcd, interf);
+			debug("%s: Ret %i from usb_claim_interface(%d)", Name, retval, interf);
+			return 0;
+		    }
+
 		}
 	    }
 	}
@@ -356,6 +393,7 @@ static void drv_G15_update_img()
 {
     int i, j, k;
     unsigned char *output = malloc(160 * 43 * sizeof(unsigned char));
+    int retval;
 
     DEBUG("entered");
     if (!output)
@@ -379,7 +417,10 @@ static void drv_G15_update_img()
 
     DEBUG("output array prepared");
     mutex_lock(kb_mutex);
-    usb_interrupt_write(g15_lcd, 0x02, (char *) output, 992, 1000);
+    //retval = usb_interrupt_write(g15_lcd, 0x02, (char *) output, 992, 1000);  // G15
+    //retval = usb_interrupt_write(g15_lcd, 0x03, (char *) output, 992, 1000);  // Z10
+    retval = usb_interrupt_write(g15_lcd, usb_endpoint, (char *) output, 992, 1000);
+    //info("%s: Ret %i from usb_interrupt_write(endpoint 2)", Name, retval);
     mutex_unlock(kb_mutex);
     usleep(300);
 
