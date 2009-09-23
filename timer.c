@@ -183,7 +183,7 @@ int timer_process(struct timespec *delay)
     if ((delay->tv_sec) > CLOCK_SKEW_DETECT_TIME_IN_S) {
 	delay->tv_sec = 0;
 	delay->tv_nsec = 0;
-	warn("Oops, clock skewed, update timestamp");
+	info("Oops, clock skewed, update timestamp");
 	gettimeofday(&now, NULL);
 	Timers[min].when = now;
     }
