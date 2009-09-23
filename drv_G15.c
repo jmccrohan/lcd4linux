@@ -332,7 +332,7 @@ static int drv_G15_open()
 		    case G15_DEVICE2:
 		    case M1730_DEVICE:
 			{
-				info("%s: Found Logitech G-15 Keyboard", Name);
+			    info("%s: Found Logitech G-15 Keyboard", Name);
 			    interf = 0;
 			    config = 1;
 			    usb_endpoint = 0x02;
@@ -340,7 +340,7 @@ static int drv_G15_open()
 			}
 		    case Z10_DEVICE:
 			{
-				info("%s: Found Logitech Z-10 Speaker", Name);
+			    info("%s: Found Logitech Z-10 Speaker", Name);
 			    interf = 2;
 			    usb_endpoint = 0x03;
 			    break;
@@ -351,12 +351,12 @@ static int drv_G15_open()
 
 		    if (interf >= 0) {
 			debug("%s: Vendor 0x%x Product 0x%x found",
-			     Name, dev->descriptor.idVendor, dev->descriptor.idProduct);
+			      Name, dev->descriptor.idVendor, dev->descriptor.idProduct);
 			//if (dev->descriptor.bNumConfigurations > 1) {
 			/* detach from the kernel if we need to */
 			retval = usb_get_driver_np(g15_lcd, interf, dname, 31);
 			debug("%s: Ret %i from usb_get_driver_np(interf.%d), Drivername %s",
-			     Name, retval, interf, dname);
+			      Name, retval, interf, dname);
 			if (retval == 0 && strcmp(dname, "usbhid") == 0) {
 			    debug("%s: detaching...", Name);
 			    usb_detach_kernel_driver_np(g15_lcd, interf);
