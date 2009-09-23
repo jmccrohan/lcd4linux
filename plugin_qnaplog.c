@@ -108,7 +108,8 @@ char *IDS_SERV[MAX_IDS_SERV] = { "S0", "Samba", "S2", "HTTP", "S4", "S5", "S6", 
 #define MAX_IDS_ACTION	16
 char *IDS_ACTION[MAX_IDS_ACTION] =
     { "C0", "Delete", "Read", "Write", "C4", "C5", "C6", "C7", "C8", "Login fail", "Login ok", "Logout", "C12", "C13",
-"C14", "Add" };
+    "C14", "Add"
+};
 
 static char Section[] = "Plugin:QnapLog";
 
