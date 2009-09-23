@@ -348,7 +348,8 @@ static int drv_MOGX_backlightRGB(int backlight_R, int backlight_G, int backlight
 }
 
 /* start graphic display */
-static int drv_MOGX_start(const char *section, const int quiet)
+static int drv_MOGX_start(const char *section, const __attribute__ ((unused))
+			  int quiet)
 {
     char *s;
     int value1, value2, value3;
@@ -541,19 +542,13 @@ int drv_MOGX_init(const char *section, const int quiet)
 
 
 /* close driver & display */
-int drv_MOGX_quit(const int quiet)
+int drv_MOGX_quit(const __attribute__ ((unused))
+		  int quiet)
 {
     info("%s: shutting down.", Name);
 
     /* clear display */
     drv_MOGX_clear();
-
-    /* say goodbye... */
-    /*
-       if (!quiet) {
-       drv_generic_graphic_greet("goodbye!", NULL);
-       }
-     */
 
     drv_generic_graphic_quit();
 
