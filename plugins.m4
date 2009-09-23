@@ -361,11 +361,13 @@ if test "$PLUGIN_MEMINFO" = "yes"; then
 fi
 
 # MPD
-if test "$PLUGIN_MPD" = "yes"; then   
-   if test -f "libmpdclient.h"
-   then      
-	PLUGINS="$PLUGINS plugin_mpd.o libmpdclient.o"
-	AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])      
+if test "$PLUGIN_MPD" = "yes"; then
+   AC_CHECK_LIB(libmpd, [mpd_newConnection], [has_mpd_header="true"], [has_mpd_header="false"])
+   if test "$has_mpd_header" = "true"; then
+      PLUGINS="$PLUGINS plugin_mpd.o"
+      PLUGINLIBS="$PLUGINLIBS `pkg-config libmpd --libs`"
+      CPPFLAGS="$CPPFLAGS `pkg-config libmpd --cflags`"
+      AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])      
    else
       AC_MSG_WARN(libmpdclient.h header not found: mpd plugin disabled)
       AC_MSG_WARN(get libmpdclient.h from http://www.musicpd.org/libmpdclient.shtml)

@@ -11,8 +11,10 @@ PLUGINS=@PLUGINS@
 bin_PROGRAMS = lcd4linux
 
 # Fixme: -W should be renamed to -Wextra someday...
-AM_CFLAGS = -D_GNU_SOURCE -Wall -W -fno-strict-aliasing
+AM_CFLAGS = -D_GNU_SOURCE -Wall -Wextra -fno-strict-aliasing
 
+LIBTOOL=libtool
+ACLOCAL_AMFLAGS=-I m4
 # use this for lots of warnings
 #AM_CFLAGS = -D_GNU_SOURCE -std=c99 -m64 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
 
@@ -75,7 +77,7 @@ drv_Cwlinux.c                 \
 drv_D4D.c                     \
 drv_EA232graphic.c            \
 drv_G15.c                     \
-drv_GLCD2USB.c                \
+drv_GLCD2USB.c glcd2usb.h     \
 drv_HD44780.c                 \
 drv_Image.c                   \
 drv_IRLCD.c                   \
@@ -161,7 +163,7 @@ lcd4kde.conf                  \
 lcd4linux.kdelnk              \
 lcd4linux.xpm                 \
 lcd4linux.lsm                 \
-ac_python_devel.m4            \
+ax_python_devel.m4            \
 curses.m4                     \
 drivers.m4                    \
 plugins.m4                    \

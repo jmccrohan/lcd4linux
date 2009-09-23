@@ -94,9 +94,10 @@ AC_MSG_CHECKING(if python support is wanted)
 AC_ARG_WITH(python,
 [  --with-python           enable python support [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
+
 if test "$with_python" = "yes"; then
-  sinclude(ac_python_devel.m4)
-  AC_PYTHON_DEVEL
+    sinclude(ax_python_devel.m4)
+    AC_PYTHON_DEVEL
 fi
 
 # drivers
@@ -157,3 +158,6 @@ AC_MSG_RESULT(
 [  $PLUGINS]
 [-----------------------------------------]
 )
+
+AC_CONFIG_MACRO_DIR([m4])
+LT_INIT

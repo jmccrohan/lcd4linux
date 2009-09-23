@@ -90,7 +90,7 @@ TODO:
 #include <sys/time.h>
 
 /* source: http://www.musicpd.org/libmpdclient.shtml */
-#include "libmpdclient.h"
+#include "libmpd/libmpdclient.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
