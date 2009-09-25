@@ -45,6 +45,9 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 
+#include <unistd.h>
+#include <sys/types.h>
+
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
@@ -315,7 +318,7 @@ static int drv_G15_open()
 
     g15_lcd = NULL;
 
-    info("%s: Scanning USB for G-15 keyboard...", Name);
+    info("%s: Scanning USB for G-15 keyboard or Z-10 speaker ...", Name);
 
     usb_init();
     usb_set_debug(0);		// 0: no, 1 error, 2 warn, 3 info
@@ -332,7 +335,7 @@ static int drv_G15_open()
 		    case G15_DEVICE2:
 		    case M1730_DEVICE:
 			{
-			    info("%s: Found Logitech G-15 Keyboard", Name);
+			    info("%s: Found Logitech G-15 or Dell M1730 Keyboard", Name);
 			    interf = 0;
 			    config = 1;
 			    usb_endpoint = 0x02;
@@ -352,22 +355,44 @@ static int drv_G15_open()
 		    if (interf >= 0) {
 			debug("%s: Vendor 0x%x Product 0x%x found",
 			      Name, dev->descriptor.idVendor, dev->descriptor.idProduct);
-			//if (dev->descriptor.bNumConfigurations > 1) {
+
 			/* detach from the kernel if we need to */
 			retval = usb_get_driver_np(g15_lcd, interf, dname, 31);
 			debug("%s: Ret %i from usb_get_driver_np(interf.%d), Drivername %s",
 			      Name, retval, interf, dname);
+			switch (retval) {
+			case -EPERM:
+			    error("%s: Permission denied! eUID of this process is %i %s",
+				  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
+			    return -1;
+			    break;
+			case -ENODATA:
+			    error("%s: No data available! Device switched off?", Name);
+			    return -1;
+			    break;
+			}
 			if (retval == 0 && strcmp(dname, "usbhid") == 0) {
 			    debug("%s: detaching...", Name);
 			    usb_detach_kernel_driver_np(g15_lcd, interf);
 			}
+
 			retval = usb_set_configuration(g15_lcd, config);
 			debug("%s: Ret %d from usb_set_configuration(%d)", Name, retval, config);
+			switch (retval) {
+			case -EPERM:
+			    error("%s: Permission denied! eUID of this process is %i %s",
+				  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
+			    return -1;
+			    break;
+			case -EBUSY:
+			    error("%s: Device or resource busy! Device switched off?", Name);
+			    return -1;
+			    break;
+			}
 			usleep(100);
-			//}
 			retval = usb_claim_interface(g15_lcd, interf);
 			debug("%s: Ret %i from usb_claim_interface(%d)", Name, retval, interf);
-			return 0;
+			return retval;
 		    }
 
 		}
@@ -548,7 +573,7 @@ static int drv_G15_start(const char *section)
 /* list models */
 int drv_G15_list(void)
 {
-    printf("Logitech G-15 / Dell M1730");
+    printf("Logitech G-15 or Z-10 / Dell M1730");
     return 0;
 }
 

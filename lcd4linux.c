@@ -289,11 +289,15 @@ int main(int argc, char *argv[])
 	info("invoked without full path; restart may not work!");
     }
 
-    if (cfg_init(cfg) == -1)
+    if (cfg_init(cfg) == -1) {
+	error("Error reading configuration. Exit!");
 	exit(1);
+    }
 
-    if (plugin_init() == -1)
+    if (plugin_init() == -1) {
+	error("Error initializing plugins. Exit!");
 	exit(1);
+    }
 
     display = cfg_get(NULL, "Display", NULL);
     if (display == NULL || *display == '\0') {
@@ -344,6 +348,7 @@ int main(int argc, char *argv[])
 
     debug("initializing driver %s", driver);
     if (drv_init(section, driver, quiet) == -1) {
+	error("Error initializing driver %s: Exit!", driver);
 	pid_exit(pidfile);
 	exit(1);
     }
