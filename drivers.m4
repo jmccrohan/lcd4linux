@@ -34,7 +34,7 @@ AC_ARG_WITH(
   [                        possible drivers are:]
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,]
-  [                        LPH7508, LUIse, M50530, MatrixOrbital, MilfordInstruments,]
+  [                        LPH7508, LUIse, LW_ABP, M50530, MatrixOrbital, MilfordInstruments,]
   [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,]
   [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, ShuttleVFD,]
   [                        SimpleLCD, st2205, T6963, Trefon, ULA200, USBLCD, USBHUB,]
@@ -76,6 +76,7 @@ for driver in $drivers; do
          LEDMATRIX="yes"
 	 LPH7508="yes"
          LUISE="yes"
+         LW_ABP="yes"
          M50530="yes"
          MATRIXORBITAL="yes"
          MATRIXORBITALGX="yes"
@@ -156,6 +157,9 @@ for driver in $drivers; do
          ;;
       LUIse)
          LUISE=$val
+         ;;
+      LW_ABP)
+         LW_ABP=$val
          ;;
       M50530)
          M50530=$val
@@ -432,6 +436,13 @@ if test "$LUISE" = "yes"; then
    else
       AC_MSG_WARN(luise.h not found: LUIse driver disabled)
    fi
+fi
+
+if test "$LW_ABP" = "yes"; then
+   TEXT="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_LW_ABP.o"
+   AC_DEFINE(WITH_LW_ABP,1,[LW ABP driver])
 fi
 
 if test "$M50530" = "yes"; then

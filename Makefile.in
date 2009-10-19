@@ -311,6 +311,7 @@ drv_LCDTerm.c                 \
 drv_LEDMatrix.c               \
 drv_LPH7508.c                 \
 drv_LUIse.c                   \
+drv_LW_ABP.c                  \
 drv_M50530.c                  \
 drv_MatrixOrbital.c           \
 drv_MatrixOrbitalGX.c         \
@@ -527,6 +528,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LEDMatrix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LPH7508.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LUIse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_LW_ABP.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_M50530.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_MatrixOrbital.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_MatrixOrbitalGX.Po@am__quote@

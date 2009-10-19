@@ -87,6 +87,7 @@ drv_LCDTerm.c                 \
 drv_LEDMatrix.c               \
 drv_LPH7508.c                 \
 drv_LUIse.c                   \
+drv_LW_ABP.c                  \
 drv_M50530.c                  \
 drv_MatrixOrbital.c           \
 drv_MatrixOrbitalGX.c         \

@@ -59,6 +59,13 @@ Display GLCD2USB {
     Driver 'GLCD2USB'
 }
 
+Display ABP08-16x3 {
+    Driver  'LW_ABP'
+    Port '/dev/tts/0'
+    Speed 19200
+    Size    '16x3'
+}
+
 Display LCD2041 {
     Driver 'MatrixOrbital'
     Model 'LCD2041'

@@ -65,6 +65,7 @@ extern DRIVER drv_LCDTerm;
 extern DRIVER drv_LEDMatrix;
 extern DRIVER drv_LPH7508;
 extern DRIVER drv_LUIse;
+extern DRIVER drv_LW_ABP;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
 extern DRIVER drv_MilfordInstruments;
@@ -149,6 +150,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_LUISE
     &drv_LUIse,
+#endif
+#ifdef WITH_LW_ABP
+    &drv_LW_ABP,
 #endif
 #ifdef WITH_M50530
     &drv_M50530,

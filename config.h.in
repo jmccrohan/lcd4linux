@@ -510,6 +510,9 @@
 /* LUIse driver */
 #undef WITH_LUISE
 
+/* LW ABP driver */
+#undef WITH_LW_ABP
+
 /* M50530 driver */
 #undef WITH_M50530
 
