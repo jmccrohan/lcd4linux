@@ -1,1 +1,1 @@
-#define SVN_VERSION "1044"
+#define SVN_VERSION "1048"
