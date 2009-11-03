@@ -34,7 +34,7 @@
  * these functions must be implemented by the real driver:
  *
  * int (*drv_generic_gpio_real_set) (const int num, const int val);
- *   sets GPO num to val, returns the actal value
+ *   sets GPO num to val, returns the actual value
  *
  * int (*drv_generic_gpio_real_get) (const int num);
  *   reads GPI num

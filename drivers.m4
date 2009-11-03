@@ -35,7 +35,7 @@ AC_ARG_WITH(
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,]
   [                        LPH7508, LUIse, LW_ABP, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, picoLCD,]
+  [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, PICGraphic, picoLCD,]
   [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, ShuttleVFD,]
   [                        SimpleLCD, st2205, T6963, Trefon, ULA200, USBLCD, USBHUB,]
   [                        VNC, WincorNixdorf, X11],
@@ -85,6 +85,7 @@ for driver in $drivers; do
          NULL="yes"
          PERTELIAN="yes"
          PHANDERSON="yes"
+         PICGRAPHIC="yes"
          PICOLCD="yes"
 	 PICOLCDGRAPHIC="yes"
          PNG="yes"
@@ -184,6 +185,9 @@ for driver in $drivers; do
          ;;
       PHAnderson)
          PHANDERSON=$val
+         ;;
+      PICGraphic)
+         PICGRAPHIC=$val
          ;;
       picoLCD)
          PICOLCD=$val
@@ -508,6 +512,14 @@ if test "$PHANDERSON" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_PHAnderson.o"
    AC_DEFINE(WITH_PHANDERSON,1,[PHAnderson driver])
+fi
+
+if test "$PICGRAPHIC" = "yes"; then
+   GRAPHIC="yes"
+   GPIO="yes"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_PICGraphic.o"
+   AC_DEFINE(WITH_PICGRAPHIC,1,[PICGraphic driver])
 fi
 
 if test "$PICOLCD" = "yes"; then
