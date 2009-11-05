@@ -30,7 +30,7 @@
 
 #include "widget.h"
 
-extern int GPIS;		/* number of GPO's */
+extern int GPIS;		/* number of GPI's */
 extern int GPOS;		/* number of GPO's */
 
 /* these function must be implemented by the real driver */

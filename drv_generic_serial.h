@@ -25,7 +25,7 @@
  */
 
 
-#ifndef _DRV_GENERIC_SERIALH_
+#ifndef _DRV_GENERIC_SERIAL_H_
 #define _DRV_GENERIC_SERIAL_H_
 
 int drv_generic_serial_open(const char *section, const char *driver, const unsigned int flags);

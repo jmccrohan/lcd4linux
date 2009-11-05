@@ -92,10 +92,10 @@ typedef struct {
 
 static char *fbPG = 0, delayDone = 0;
 
-void drv_PICGraphic_1s(void *arg)
+void drv_PICGraphic_delay(void *arg)
 {
     delayDone = 1;
-    info("delay done");
+    debug("delay done");
 }
 
 
@@ -118,20 +118,19 @@ static int drv_PICGraphic_close(void)
     return drv_generic_serial_close();
 }
 
-static void convert2ASCII(char input, char * output)
+static void convert2ASCII(char input, char *output)
 {
-	unsigned char temp = input >> 4;
-	if(temp < 10)
-		output[0] = temp + '0';
-	else
-		output[0] = temp - 10 + 'a';
-	input &= 0xf;
-	if(input < 10)
-		output[1] = input + '0';
-	else
-		output[1] = input - 10 + 'a';
+    unsigned char temp = input >> 4;
+    if (temp < 10)
+	output[0] = temp + '0';
+    else
+	output[0] = temp - 10 + 'a';
+    input &= 0xf;
+    if (input < 10)
+	output[1] = input + '0';
+    else
+	output[1] = input - 10 + 'a';
 }
-
 
 static void drv_PICGraphic_send(const char *data, const unsigned int len)
 {
@@ -140,19 +139,46 @@ static void drv_PICGraphic_send(const char *data, const unsigned int len)
     hexDigits[2] = 0;
     drv_generic_serial_write(data, len);
     info("sending %d bytes: ", len);
-    for(i = 0; i < len; i++){ // min(10, len)
-    	convert2ASCII(data[i], hexDigits);
-    	info("0x%s (%c)", hexDigits, data[i]);
+    for (i = 0; i < min(10, len); i++) {	// min(10, len)
+	convert2ASCII(data[i], hexDigits);
+	debug("0x%s (%c)", hexDigits, data[i]);
     }
+}
+
+static int drv_PICGraphic_recv(char *dest, const unsigned int len, const char *expect)
+{
+    unsigned int bytes = 0;
+    int status;
+    while (bytes < len) {
+	status = drv_generic_serial_read((char *) dest + bytes, 1);
+	if (status == 1) {
+	    if (dest[bytes] != 0xa && dest[bytes] != 0xd) {
+		if (dest[bytes] != '@') {
+		    bytes += status;
+		}
+	    }
+	} else {
+	    info("error receiving response: %d", status);
+	    return status;
+	}
+	usleep(10000);
+    }
+    status = strncmp((const char *) dest, expect, len);
+    if (!status) {
+	return 0;
+    } else {
+	return 1;
+    }
+
 }
 
 static void drv_PICGraphic_blit(const int row, const int col, const int height, const int width)
 {
     /* update a rectangular portion of the display */
-    int r, c, index;
+    int r, c, index, status;
     unsigned char cmd[5];
 
-    info("blit from (%d,%d) to (%d,%d) out of (%d,%d)", row, col, row + height, col + width, DROWS, DCOLS);
+    debug("blit from (%d,%d) to (%d,%d) out of (%d,%d)", row, col, row + height, col + width, DROWS, DCOLS);
     if (!fbPG)
 	return;
     for (c = min(col, DCOLS - 1); c < min(col + width, DCOLS); c++) {
@@ -175,8 +201,8 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
     if (delayDone) {
 	delayDone = 0;
 	int row8, height8;
-	row8 = 8*(row/8);
-	height8 = 8*(height/8) + !!(height % 8);
+	row8 = 8 * (row / 8);
+	height8 = 8 * (height / 8) + !!(height % 8);
 	info("sending blit");
 	cmd[0] = 'b';
 	cmd[1] = row8;
@@ -184,8 +210,8 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
 	cmd[3] = height8;
 	cmd[4] = width;
 	drv_PICGraphic_send(cmd, 5);
-	for (r = min(row8, DROWS - 1); r < min(row8 + height8, DROWS); r+=8) {
-		drv_PICGraphic_send(fbPG+DCOLS * (r / 8) + col, width);
+	for (r = min(row8, DROWS - 1); r < min(row8 + height8, DROWS); r += 8) {
+	    drv_PICGraphic_send(fbPG + DCOLS * (r / 8) + col, width);
 	}
     }
 #else
@@ -194,8 +220,17 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
 	delayDone = 0;
 	info("sending frame");
 	cmd[0] = 'f';
-	drv_PICGraphic_send(cmd, 1);
+	drv_PICGraphic_send((char *) cmd, 1);
 	drv_PICGraphic_send(fbPG, DROWS * DCOLS / 8);
+	usleep(20000);
+	// wait for reception of confirmation code
+	status = drv_PICGraphic_recv(cmd, 2, "ff");
+	if (!status) {
+	    info("received ff from device");
+	} else {
+	    info("did not receive ff from device");
+	}
+
     }
 #endif
 }
@@ -257,8 +292,8 @@ static int drv_PICGraphic_contrast(int contrast)
 static int drv_PICGraphic_start2(const char *section)
 {
     char *s;
-    char cmd[1];
-    int contrast;
+    char cmd[2];
+    int contrast, status, bytes = 0, tick, tack;
 
     /* read display size from config */
     s = cfg_get(section, "Size", NULL);
@@ -300,8 +335,14 @@ static int drv_PICGraphic_start2(const char *section)
     }
 
     info("allocated framebuffer with size %d", DCOLS * DROWS / 8);
-
-    timer_add(drv_PICGraphic_1s, 0, 500, 0);	// 1s
+    if (cfg_number("Variables", "tick", 500, 100, 0, &tick) > 0 &&
+	cfg_number("Variables", "tack", 500, 100, 0, &tack) > 0) {
+	info("tick & tack read from config");
+	timer_add(drv_PICGraphic_delay, 0, min(tick, tack), 0);	// 
+    } else {
+	info("tick & tack not read from config");
+	timer_add(drv_PICGraphic_delay, 0, 80, 0);	// 
+    }
 
     /* open communication with the display */
     if (drv_PICGraphic_open(section) < 0) {
@@ -311,6 +352,15 @@ static int drv_PICGraphic_start2(const char *section)
     /* reset & initialize display */
     cmd[0] = 'i';
     drv_PICGraphic_send(cmd, 1);
+    usleep(10000);
+    // wait for reception of confirmation code
+    status = drv_PICGraphic_recv(cmd, 2, "fi");
+
+    if (!status) {
+	info("received fi from device");
+    } else {
+	info("did not receive fi from device");
+    }
 
     if (cfg_number(section, "Contrast", 8, 0, 15, &contrast) > 0) {
 	drv_PICGraphic_contrast(contrast);
