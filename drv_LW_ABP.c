@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 
 #include "debug.h"
@@ -66,10 +67,10 @@
 #include "drv_generic_i2c.h"
 #endif
 
-#define KEY_UP 1
-#define KEY_DOWN 2
-#define KEY_LEFT 3
-#define KEY_RIGHT 4
+#define KEY_UP 4
+#define KEY_DOWN 3
+#define KEY_LEFT 2
+#define KEY_RIGHT 1
 
 static char Name[] = "LW_ABP";
 
@@ -142,10 +143,10 @@ static int drv_LW_ABP_time(unsigned char force)
 
     if (force || (t > next_timesync)) {
 	/* do whatever is necessary to set clock on the display */
-	sprintf(command, "%s%u\r\n", cmd, t);
+	sprintf(command, "%s%lu\r\n", cmd, (unsigned long) t);
 	drv_LW_ABP_send(command, strlen(command));
 	next_timesync = t + TIMESYNC_INTERVAL;
-	info("%s: synced time to %u, next is %u\n", Name, t, next_timesync);
+	info("%s: synced time to %lu, next is %lu\n", Name, (unsigned long) t, (unsigned long) next_timesync);
 	return 1;
     }
 
@@ -176,16 +177,11 @@ static void drv_LW_ABP_write(const int row, const int col, const char *data, int
 
 }
 
-/* text mode displays only */
-static void drv_LW_ABP_defchar(const int ascii, const unsigned char *matrix)
-{
-}
-
 static unsigned char byte(int pos)
 {
     if (pos >= 0) {
 	pos += RingRPos;
-	if (pos >= sizeof(RingBuffer))
+	if ((unsigned) pos >= sizeof(RingBuffer))
 	    pos -= sizeof(RingBuffer);
     } else {
 	pos += RingWPos;
@@ -233,7 +229,7 @@ static int drv_LW_ABP_poll(void)
 	if (byte(0) != '[') {
 	    goto GARBAGE;
 	}
-	for (n = 0; (n < num) && (n < (sizeof(command) - 1)); n++) {
+	for (n = 0; (n < num) && ((unsigned) n < (sizeof(command) - 1)); n++) {
 	    command[n] = byte(n);
 	    if (command[n] == ']') {
 		n++;
@@ -348,7 +344,6 @@ static int drv_LW_ABP_start(const char *section)
     int rows = -1, cols = -1;
     char *s;
     char *background;
-    char cmd[1];
 
     s = cfg_get(section, "Size", NULL);
     if (s == NULL || *s == '\0') {
@@ -463,7 +458,6 @@ int drv_LW_ABP_init(const char *section, const int quiet)
 
     /* real worker functions */
     drv_generic_text_real_write = drv_LW_ABP_write;
-    drv_generic_text_real_defchar = drv_LW_ABP_defchar;
     drv_generic_keypad_real_press = drv_LW_ABP_keypad;
 
     /* regularly process display answers */
