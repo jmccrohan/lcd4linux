@@ -38,6 +38,7 @@ thread.c      thread.h        \
 udelay.c      udelay.h        \
 qprintf.c     qprintf.h       \
 rgb.c         rgb.h           \
+event.c       event.h         \
                               \
 widget.c      widget.h        \
 widget_text.c widget_text.h   \
@@ -124,6 +125,7 @@ plugin_apm.c                  \
 plugin_asterisk.c             \
 plugin_button_exec.c          \
 plugin_cpuinfo.c              \
+plugin_dbus.c                 \
 plugin_diskstats.c            \
 plugin_dvb.c                  \
 plugin_exec.c                 \

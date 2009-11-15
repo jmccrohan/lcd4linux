@@ -53,19 +53,21 @@ for plugin in $plugins; do
       list)
          AC_MSG_RESULT(
             [available plugins:]
-            [ apm,cpuinfo,diskstats,dvb,exec,file,gps,i2c_sensors,iconv,imon,isdn,kvv,]
-            [ loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,proc_stat,]
-            [ sample,seti,statfs,uname,uptime,wireless,xmms])
+            [ apm,cpuinfo,dbus,diskstats,dvb,exec,event,file,gps,i2c_sensors,iconv,imon,]
+            [ isdn,kvv,loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,]
+            [ proc_stat,sample,seti,statfs,uname,uptime,wireless,xmms])
          AC_MSG_ERROR([run ./configure --with-plugins=...])
          ;;
       all)
          PLUGIN_APM="yes"
-	 PLUGIN_ASTERISK="yes"
+       	 PLUGIN_ASTERISK="yes"
 	 PLUGIN_BUTTON_EXEC="yes"
          PLUGIN_CPUINFO="yes"
+         PLUGIN_DBUS="yes"
          PLUGIN_DISKSTATS="yes"
          PLUGIN_DVB="yes"
          PLUGIN_EXEC="yes"
+         PLUGIN_EVENT="yes"
          PLUGIN_FIFO="yes"
          PLUGIN_FILE="yes"
          PLUGIN_GPS="yes"
@@ -108,6 +110,9 @@ for plugin in $plugins; do
       cpuinfo)
          PLUGIN_CPUINFO=$val
          ;;
+      dbus)
+         PLUGIN_DBUS=$val
+         ;;
       diskstats)
          PLUGIN_DISKSTATS=$val
          ;;
@@ -116,6 +121,9 @@ for plugin in $plugins; do
          ;;
       exec)
          PLUGIN_EXEC=$val
+         ;;
+      event)
+         PLUGIN_EVENT=$val
          ;;
       fifo)
          PLUGIN_FIFO=$val
@@ -239,6 +247,19 @@ if test "$PLUGIN_CPUINFO" = "yes"; then
    AC_DEFINE(PLUGIN_CPUINFO,1,[cpuinfo plugin])
 fi
 
+#DBus
+if test "$PLUGIN_DBUS" = "yes"; then
+   PKG_CHECK_MODULES(DBUS, dbus-1)
+   if test "x$DBUS_LIBS" != "x"; then
+      PLUGINS="$PLUGINS plugin_dbus.o"
+      PLUGINLIBS="$PLUGINLIBS $DBUS_LIBS"
+      CPPFLAGS="$CPPFLAGS $DBUS_CFLAGS"
+      AC_DEFINE(PLUGIN_DBUS,1,[dbus plugin])
+   else
+      AC_MSG_WARN(dbus-1 not found check that PKG_CONFIG_PATH is set correctly: dbus plugin disabled)
+   fi
+fi
+
 # /proc/diskstat
 if test "$PLUGIN_DISKSTATS" = "yes"; then
    PLUGINS="$PLUGINS plugin_diskstats.o"
@@ -266,6 +287,12 @@ fi
 if test "$PLUGIN_EXEC" = "yes"; then
    PLUGINS="$PLUGINS plugin_exec.o"
    AC_DEFINE(PLUGIN_EXEC,1,[exec plugin])
+fi
+
+# event
+if test "$PLUGIN_EVENT" = "yes"; then
+   PLUGINS="$PLUGINS plugin_event.o"
+   AC_DEFINE(PLUGIN_EVENT,1,[event plugin])
 fi
 
 # file

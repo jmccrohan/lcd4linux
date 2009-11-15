@@ -62,6 +62,9 @@ char *Plugins[] = {
 #ifdef PLUGIN_CPUINFO
     "cpuinfo",
 #endif
+#ifdef PLUGIN_DBUS
+    "dbus",
+#endif
 #ifdef PLUGIN_DISKSTATS
     "diskstats",
 #endif
@@ -70,6 +73,9 @@ char *Plugins[] = {
 #endif
 #ifdef PLUGIN_EXEC
     "exec",
+#endif
+#ifdef PLUGIN_EVENT
+    "event",
 #endif
 #ifdef PLUGIN_FIFO
     "fifo",
@@ -179,12 +185,16 @@ int plugin_init_button_exec(void);
 void plugin_exit_button_exec(void);
 int plugin_init_cpuinfo(void);
 void plugin_exit_cpuinfo(void);
+int plugin_init_dbus(void);
+void plugin_exit_dbus(void);
 int plugin_init_diskstats(void);
 void plugin_exit_diskstats(void);
 int plugin_init_dvb(void);
 void plugin_exit_dvb(void);
 int plugin_init_exec(void);
 void plugin_exit_exec(void);
+int plugin_init_event(void);
+void plugin_exit_event(void);
 int plugin_init_fifo(void);
 void plugin_exit_fifo(void);
 int plugin_init_file(void);
@@ -277,6 +287,9 @@ int plugin_init(void)
 #ifdef PLUGIN_CPUINFO
     plugin_init_cpuinfo();
 #endif
+#ifdef PLUGIN_DBUS
+    plugin_init_dbus();
+#endif
 #ifdef PLUGIN_DISKSTATS
     plugin_init_diskstats();
 #endif
@@ -285,6 +298,9 @@ int plugin_init(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_init_exec();
+#endif
+#ifdef PLUGIN_EVENT
+    plugin_init_event();
 #endif
 #ifdef PLUGIN_FIFO
     plugin_init_fifo();
@@ -389,6 +405,9 @@ void plugin_exit(void)
 #ifdef PLUGIN_CPUINFO
     plugin_exit_cpuinfo();
 #endif
+#ifdef PLUGIN_DBUS
+    plugin_exit_dbus();
+#endif
 #ifdef PLUGIN_DISKSTATS
     plugin_exit_diskstats();
 #endif
@@ -397,6 +416,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_EXEC
     plugin_exit_exec();
+#endif
+#ifdef PLUGIN_EVENT
+    plugin_exit_event();
 #endif
 #ifdef PLUGIN_FIFO
     plugin_exit_fifo();

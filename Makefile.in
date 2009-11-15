@@ -65,12 +65,13 @@ am_lcd4linux_OBJECTS = lcd4linux.$(OBJEXT) cfg.$(OBJEXT) \
 	evaluator.$(OBJEXT) property.$(OBJEXT) hash.$(OBJEXT) \
 	layout.$(OBJEXT) pid.$(OBJEXT) timer.$(OBJEXT) \
 	thread.$(OBJEXT) udelay.$(OBJEXT) qprintf.$(OBJEXT) \
-	rgb.$(OBJEXT) widget.$(OBJEXT) widget_text.$(OBJEXT) \
-	widget_bar.$(OBJEXT) widget_icon.$(OBJEXT) \
-	widget_keypad.$(OBJEXT) widget_timer.$(OBJEXT) \
-	widget_gpo.$(OBJEXT) plugin.$(OBJEXT) plugin_cfg.$(OBJEXT) \
-	plugin_math.$(OBJEXT) plugin_string.$(OBJEXT) \
-	plugin_test.$(OBJEXT) plugin_time.$(OBJEXT)
+	rgb.$(OBJEXT) event.$(OBJEXT) widget.$(OBJEXT) \
+	widget_text.$(OBJEXT) widget_bar.$(OBJEXT) \
+	widget_icon.$(OBJEXT) widget_keypad.$(OBJEXT) \
+	widget_timer.$(OBJEXT) widget_gpo.$(OBJEXT) plugin.$(OBJEXT) \
+	plugin_cfg.$(OBJEXT) plugin_math.$(OBJEXT) \
+	plugin_string.$(OBJEXT) plugin_test.$(OBJEXT) \
+	plugin_time.$(OBJEXT)
 lcd4linux_OBJECTS = $(am_lcd4linux_OBJECTS)
 lcd4linux_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -118,6 +119,8 @@ CPPFLAGS = @CPPFLAGS@
 CURSES_INCLUDEDIR = @CURSES_INCLUDEDIR@
 CURSES_LIBS = @CURSES_LIBS@
 CYGPATH_W = @CYGPATH_W@
+DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_LIBS = @DBUS_LIBS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DRIVERS = @DRIVERS@
@@ -162,6 +165,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
 PLUGINLIBS = @PLUGINLIBS@
 PLUGINS = @PLUGINS@
 POW_LIB = @POW_LIB@
@@ -262,6 +266,7 @@ thread.c      thread.h        \
 udelay.c      udelay.h        \
 qprintf.c     qprintf.h       \
 rgb.c         rgb.h           \
+event.c                       \
                               \
 widget.c      widget.h        \
 widget_text.c widget_text.h   \
@@ -320,6 +325,7 @@ drv_Noritake.c                \
 drv_NULL.c                    \
 drv_Pertelian.c               \
 drv_PHAnderson.c              \
+drv_PICGraphic.c              \
 drv_picoLCD.c                 \
 drv_picoLCDGraphic.c          \
 drv_RouterBoard.c             \
@@ -347,6 +353,7 @@ plugin_apm.c                  \
 plugin_asterisk.c             \
 plugin_button_exec.c          \
 plugin_cpuinfo.c              \
+plugin_dbus.c                 \
 plugin_diskstats.c            \
 plugin_dvb.c                  \
 plugin_exec.c                 \
@@ -536,6 +543,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_NULL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Noritake.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_PHAnderson.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_PICGraphic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Pertelian.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_RouterBoard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Sample.Po@am__quote@
@@ -562,6 +570,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_ula200.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_vnc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/evaluator.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/layout.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lcd4linux.Po@am__quote@
@@ -572,6 +581,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_button_exec.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_cfg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_cpuinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_dbus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_diskstats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_dvb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_exec.Po@am__quote@

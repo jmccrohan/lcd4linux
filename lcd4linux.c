@@ -48,7 +48,7 @@
 #include "layout.h"
 #include "plugin.h"
 #include "thread.h"
-
+#include "event.h"
 #include "widget.h"
 #include "widget_timer.h"
 
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 	struct timespec delay;
 	if (timer_process(&delay) < 0)
 	    break;
-	nanosleep(&delay, NULL);
+	event_process(&delay);
     }
 
     debug("leaving main loop");

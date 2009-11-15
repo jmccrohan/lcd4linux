@@ -31,6 +31,12 @@
  * int timer_process (struct timespec *delay);
  *   process timer queue
  *
+ * int timer_remove(void (*callback) (void *data), void *data);
+ *   remove a timer with given callback and data
+ *
+ * int timer_add_late(void (*callback) (void *data), void *data, const int interval, const int one_shot)
+ *   same as timer_add, but the one shot does not fire now (useful for scheduling things)
+ *
  * void timer_exit();
  *   release all timers
  *
@@ -80,6 +86,38 @@ static void timer_inc(struct timeval *tv, const int msec)
     }
 }
 
+int timer_remove(void (*callback) (void *data), void *data)
+{
+    int i;
+    for (i = 0; i < nTimers; i++) {
+	if (Timers[i].callback == callback && Timers[i].data == data && Timers[i].active) {
+	    Timers[i].active = 0;
+	    return 0;
+	}
+    }
+    return -1;
+}
+
+int timer_add_late(void (*callback) (void *data), void *data, const int interval, const int one_shot)
+{
+    if (!timer_add(callback, data, interval, 1)) {
+	return -1;
+    }
+    if (one_shot) {
+	return 0;
+    }
+    int i;
+    for (i = 0; i < nTimers; i++) {
+	if (Timers[i].callback == callback && Timers[i].data == data && Timers[i].active
+	    && Timers[i].interval == interval && Timers[i].one_shot) {
+	    //we forced it to one_shot when adding to make it late (which gives us the alternate behavior)
+	    Timers[i].one_shot = one_shot;
+	    return 0;
+	}
+    }
+
+    return -1;
+}
 
 int timer_add(void (*callback) (void *data), void *data, const int interval, const int one_shot)
 {

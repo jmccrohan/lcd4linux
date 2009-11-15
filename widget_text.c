@@ -45,9 +45,10 @@
 #include "evaluator.h"
 #include "property.h"
 #include "timer.h"
+#include "event.h"
 #include "widget.h"
 #include "widget_text.h"
-#
+
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -346,6 +347,16 @@ int widget_text_init(WIDGET * Self)
     if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG) {
 	cfg_number(section, "speed", 500, 10, -1, &(Text->speed));
     }
+    //update on this event
+    char *event_name = cfg_get(section, "event", "");
+    if (*event_name != '\0') {
+	named_event_add(event_name, widget_text_update, Self);
+	if (Text->update == 1000) {
+	    Text->update = 0;
+	}
+    }
+    free(event_name);
+
 
     /* buffer */
     Text->buffer = malloc(Text->width + 1);

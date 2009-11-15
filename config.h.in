@@ -318,11 +318,17 @@
 /* cpuinfo plugin */
 #undef PLUGIN_CPUINFO
 
+/* dbus plugin */
+#undef PLUGIN_DBUS
+
 /* diskstats plugin */
 #undef PLUGIN_DISKSTATS
 
 /* dvb plugin */
 #undef PLUGIN_DVB
+
+/* event plugin */
+#undef PLUGIN_EVENT
 
 /* exec plugin */
 #undef PLUGIN_EXEC
@@ -539,6 +545,9 @@
 
 /* PHAnderson driver */
 #undef WITH_PHANDERSON
+
+/* PICGraphic driver */
+#undef WITH_PICGRAPHIC
 
 /* picoLCD driver */
 #undef WITH_PICOLCD

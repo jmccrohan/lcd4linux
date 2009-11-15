@@ -327,7 +327,7 @@ Display HD44780-I2C {
 
 
 Display LCDTerm {
-    Driver 'LCDTerm
+    Driver 'LCDTerm'
     Port '/dev/tts/0'
     Speed 19200
     Size '20x4'
@@ -557,6 +557,31 @@ Plugin Pop3 {
    user1 'michael'
    password1 'secret'
 }
+
+
+Plugin DBus {
+       # signal 0 is displayed IM msg
+       #
+       signal0sender 'im.pidgin.purple.PurpleService'      # should be in the form com.domain.app.service,
+                                                           # the :1.23 form given by dbus-monitor will NOT work,
+                                                           # if unsure skip it
+       signal0path '/im/pidgin/purple/PurpleObject'        # find using dbus-monitor
+       signal0interface 'im.pidgin.purple.PurpleInterface' # find using dbus-monitor
+       signal0member 'DisplayedImMsg'                      # find using dbus-monitor
+       signal0eventname 'got_im' # make something up, all Text widgets with an
+                                 # event option matching this will be updated
+}
+
+
+#this example prints the second argument of signal# 0
+#(in this case it prints the message displayed)
+Widget Pidgin {
+    class 'Text'
+    expression dbus::argument(0, 1) . ': ' . dbus::argument(0, 2))
+    width 20	
+    align 'R'	
+    event 'got_im'	
+}	
 
 
 Widget OS {
