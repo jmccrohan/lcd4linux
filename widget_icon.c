@@ -188,6 +188,7 @@ int widget_icon_quit(WIDGET * Self)
 		WIDGET_ICON *Icon = Self->data;
 		property_free(&Icon->speed);
 		property_free(&Icon->visible);
+		property_free(&Icon->frame);
 		if (Icon->bitmap)
 		    free(Icon->bitmap);
 		free(Self->data);
