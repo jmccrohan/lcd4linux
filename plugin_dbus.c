@@ -358,7 +358,12 @@ void plugin_exit_dbus(void)
 static dbus_bool_t add_watch(DBusWatch * w, void *data)
 {
     (void) data;		//ignore it
-    int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
+    int fd = dbus_watch_get_unix_fd(w); 
+#else 
+    int fd = dbus_watch_get_fd(w); 
+#endif 
+    // int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
     int flags = dbus_watch_get_flags(w);
     event_add(watch_handle, w, fd, flags & DBUS_WATCH_READABLE, flags & DBUS_WATCH_WRITABLE, dbus_watch_get_enabled(w));
     return TRUE;
@@ -367,12 +372,22 @@ static dbus_bool_t add_watch(DBusWatch * w, void *data)
 static void remove_watch(DBusWatch * w, void *data)
 {
     (void) data;		//ignore it
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
     event_del(dbus_watch_get_unix_fd(w));
+#else 
+    event_del(dbus_watch_get_fd(w));
+#endif 
+    // event_del(dbus_watch_get_unix_fd(w));
 }
 
 static void toggle_watch(DBusWatch * w, void *data)
 {
-    int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
+    int fd = dbus_watch_get_unix_fd(w); 
+#else 
+    int fd = dbus_watch_get_fd(w); 
+#endif 
+    // int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
     int flags = dbus_watch_get_flags(w);
     event_modify(fd, flags & DBUS_WATCH_READABLE, flags & DBUS_WATCH_WRITABLE, dbus_watch_get_enabled(w));
 }
