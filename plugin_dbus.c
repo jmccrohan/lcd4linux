@@ -143,6 +143,7 @@ static void free_args(int argc, char **argv);
 static int lcd_dbus_init(void);
 
 static void handle_inbound_signal(void *signal, int argc, char **argv);
+static void free_handle_signal(handle_signal_t * sig);
 
 //given a signal, will add a hook so when the signal appears your callback is called
 static lcd_sig_t *lcd_register_signal(const char *sender, const char *path,
@@ -178,11 +179,17 @@ static int clear_signal_txt(const int sig)
     if (s == NULL) {
 	return 1;
     }
-    s->argc = 0;
+    int i;
     if (s->arguments != NULL) {
+	for (i = 0; i < s->argc; i++) {
+	    if (s->arguments[i] != NULL) {
+		free(s->arguments[i]);
+	    }
+	}
 	free(s->arguments);
 	s->arguments = NULL;
     }
+    s->argc = 0;
     return 0;
 }
 
@@ -309,17 +316,26 @@ static void load_dbus_cfg(void)
 	    sig_info->event_name = strdup(eventname);
 	}
 
-	if (!lcd_register_signal(sender, path, interface, member, handle_inbound_signal, sig_info, free)) {
+	if (!lcd_register_signal(sender, path, interface, member, handle_inbound_signal,
+				 sig_info, (void (*)(void *)) free_handle_signal)) {
 	    error("[DBus] Error Registering signal %d", i);
 	}
-
+      cleanup:
+	free(sender);
+	free(path);
+	free(interface);
+	free(member);
+	free(eventname);
     }
-  cleanup:
-    free(sender);
-    free(path);
-    free(interface);
-    free(member);
-    free(eventname);
+}
+
+
+static void free_handle_signal(handle_signal_t * sig)
+{
+    if (sig->event_name != NULL) {
+	free(sig->event_name);
+    }
+    free(sig);
 }
 
 /* plugin initialization */
