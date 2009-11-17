@@ -88,6 +88,7 @@ static int layout_migrate(const char *section)
 	    if (cfg_rename(section, old, new) < 0) {
 		error("WARNING: %s: both keys '%s' and '%s' may not exist!", section, old, new);
 	    }
+	    free(new);
 	}
 
 	/* next field */

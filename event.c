@@ -151,7 +151,7 @@ int event_process(const struct timespec *timeout)
 	    j++;
 	}
     }
-
+    free(fds);
     return 0;
 
 }

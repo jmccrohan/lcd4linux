@@ -37,6 +37,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -199,10 +200,10 @@ static int set_signal_txt(const int sig, const dbus_signal_t * data)
     if (sig < 0 || sig >= dbus_results.signals) {
 	int new_sigs = sig + 1;
 	//allocate it
-	dbus_results.a = realloc(dbus_results.a, sizeof(dbus_signal_t *) * new_sigs);
+	dbus_results.a = realloc(dbus_results.a, sizeof(dbus_signal_t) * new_sigs);
 	int i;
 	//clear anything just allocated that we are not writing to right now
-	for (i = dbus_results.signals + 1; i < new_sigs; i++) {
+	for (i = dbus_results.signals; i < new_sigs; i++) {
 	    dbus_results.a[i].argc = 0;
 	    dbus_results.a[i].arguments = NULL;
 	}
@@ -294,10 +295,10 @@ static void load_dbus_cfg(void)
 	eventname = cfg_get(DBUS_PLUGIN_SECTION, cfg_name, "");
 
 	if (*path == '\0' && *interface == '\0' && *member == '\0') {
-	    continue;
+	    goto cleanup;
 	} else if (*path == '\0' || *interface == '\0' || *member == '\0') {
 	    error("[DBus] Incomplete configuration specified for signal%d", i);
-	    continue;
+	    goto cleanup;
 	}
 
 	handle_signal_t *sig_info = malloc(sizeof(handle_signal_t));
@@ -313,6 +314,12 @@ static void load_dbus_cfg(void)
 	}
 
     }
+  cleanup:
+    free(sender);
+    free(path);
+    free(interface);
+    free(member);
+    free(eventname);
 }
 
 /* plugin initialization */
@@ -339,7 +346,12 @@ void plugin_exit_dbus(void)
     for (i = registered_sig_count - 1; i >= 0; i--) {
 	lcd_unregister_signal(lcd_registered_signals[i]);
     }
-
+    if (sysconn != NULL) {
+	dbus_connection_unref(sysconn);
+    }
+    if (sessconn != NULL) {
+	dbus_connection_unref(sessconn);
+    }
     //remove all knows signal results
     for (i = dbus_results.signals - 1; i >= 0; i--) {
 	clear_signal_txt(i);
@@ -358,12 +370,12 @@ void plugin_exit_dbus(void)
 static dbus_bool_t add_watch(DBusWatch * w, void *data)
 {
     (void) data;		//ignore it
-#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
-    int fd = dbus_watch_get_unix_fd(w); 
-#else 
-    int fd = dbus_watch_get_fd(w); 
-#endif 
-    // int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1)
+    int fd = dbus_watch_get_unix_fd(w);
+#else
+    int fd = dbus_watch_get_fd(w);
+#endif
+    // int fd = dbus_watch_get_unix_fd(w);      //we assume we are using unix
     int flags = dbus_watch_get_flags(w);
     event_add(watch_handle, w, fd, flags & DBUS_WATCH_READABLE, flags & DBUS_WATCH_WRITABLE, dbus_watch_get_enabled(w));
     return TRUE;
@@ -372,22 +384,23 @@ static dbus_bool_t add_watch(DBusWatch * w, void *data)
 static void remove_watch(DBusWatch * w, void *data)
 {
     (void) data;		//ignore it
-#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1)
     event_del(dbus_watch_get_unix_fd(w));
-#else 
+#else
     event_del(dbus_watch_get_fd(w));
-#endif 
+#endif
     // event_del(dbus_watch_get_unix_fd(w));
 }
 
 static void toggle_watch(DBusWatch * w, void *data)
 {
-#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1) 
-    int fd = dbus_watch_get_unix_fd(w); 
-#else 
-    int fd = dbus_watch_get_fd(w); 
-#endif 
-    // int fd = dbus_watch_get_unix_fd(w);	//we assume we are using unix
+    (void) data;
+#if (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR == 1 && DBUS_VERSION_MICRO >= 1) || (DBUS_VERSION_MAJOR == 1 && DBUS_VERSION_MINOR > 1) || (DBUS_VERSION_MAJOR > 1)
+    int fd = dbus_watch_get_unix_fd(w);
+#else
+    int fd = dbus_watch_get_fd(w);
+#endif
+    // int fd = dbus_watch_get_unix_fd(w);      //we assume we are using unix
     int flags = dbus_watch_get_flags(w);
     event_modify(fd, flags & DBUS_WATCH_READABLE, flags & DBUS_WATCH_WRITABLE, dbus_watch_get_enabled(w));
 }
@@ -466,6 +479,7 @@ static void setup_dbus_events(DBusConnection * conn)
 
 static int lcd_dbus_init(void)
 {
+
     int success = 3;
     dbus_error_init(&err);	//dbus_error_free(&err);
     sessconn = dbus_bus_get(DBUS_BUS_SESSION, &err);
@@ -474,6 +488,7 @@ static int lcd_dbus_init(void)
 	dbus_error_free(&err);
 	success &= 1;
     } else {
+	dbus_connection_ref(sessconn);
 	setup_dbus_events(sessconn);
     }
 
@@ -482,6 +497,7 @@ static int lcd_dbus_init(void)
 	info("[DBus] Error connecting to the dbus system bus: %s\n", err.message);
 	success &= 2;
     } else {
+	dbus_connection_ref(sysconn);
 	setup_dbus_events(sysconn);
     }
 
@@ -532,9 +548,8 @@ static void handle_inbound_signal(void *signal, int argc, char **argv)
     sig.argc = argc;
     sig.arguments = argv;
     set_signal_txt(signal_info->id, &sig);
-    debug("[DBUS] Got Signal");
+
     if (signal_info->event_name != NULL) {
-	debug("[DBUS] Calling Screen update");
 	named_event_trigger(signal_info->event_name);
     }
     free_args(argc, argv);
@@ -615,7 +630,6 @@ static void lcd_unregister_signal(lcd_sig_t * sig)
     if (sig == NULL) {
 	return;
     }
-    info("[DBus] Unregistering signal %p!", sig);
     //remove filter and match
     if (sessconn != NULL) {
 	dbus_connection_remove_filter(sessconn, lcd_sig_received, sig);
@@ -720,14 +734,14 @@ static void fill_args(DBusMessage * message, int *argcount, char ***argv)
 		{
 		    dbus_int64_t value;
 		    dbus_message_iter_get_basic(&iter, &value);
-		    snprintf(args[argc], LCD_MAX_MSG_LEN, "%ld", value);
+		    snprintf(args[argc], LCD_MAX_MSG_LEN, "%jd", (intmax_t) value);
 		}
 		break;
 	    case DBUS_TYPE_UINT64:
 		{
 		    dbus_uint64_t value;
 		    dbus_message_iter_get_basic(&iter, &value);
-		    snprintf(args[argc], LCD_MAX_MSG_LEN, "%lu", value);
+		    snprintf(args[argc], LCD_MAX_MSG_LEN, "%ju", (uintmax_t) value);
 		}
 		break;
 	    case DBUS_TYPE_DOUBLE:
@@ -772,6 +786,7 @@ static void fill_args(DBusMessage * message, int *argcount, char ***argv)
 
 static DBusHandlerResult lcd_sig_received(DBusConnection * connection, DBusMessage * msg, void *sigv)
 {
+    (void) connection;
     dbus_message_ref(msg);
 
     lcd_sig_t *sig = sigv;
