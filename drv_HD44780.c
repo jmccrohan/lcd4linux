@@ -111,8 +111,8 @@ static unsigned char SIGNAL_ENABLE3;
 static unsigned char SIGNAL_ENABLE4;
 
 static unsigned char SIGNAL_GPO;
-static unsigned char SIGNAL_GPI;
 #ifdef WITH_PARPORT
+static unsigned char SIGNAL_GPI;
 static unsigned char SIGNAL_BACKLIGHT;
 static unsigned char SIGNAL_POWER;
 #endif
@@ -1410,10 +1410,11 @@ int drv_HD_init(const char *section, const int quiet)
     /* initialize generic GPIO driver */
     if ((ret = drv_generic_gpio_init(section, Name)) != 0)
 	return ret;
-
+	
+#ifdef WITH_PARPORT
     if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
-
+#endif
     /* register text widget */
     wc = Widget_Text;
     wc.draw = drv_generic_text_draw;

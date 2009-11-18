@@ -33,7 +33,7 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
-  [                        EA232Graphic, G15, GLCD2USB, HD44780, HD44780-i2c, IRLCD,]
+  [                        EA232Graphic, G15, GLCD2USB, HD44780, HD44780-I2C, IRLCD,]
   [                        LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX,]
   [                        MilfordInstruments, Noritake, NULL, Pertelian, PHAnderson,]
@@ -359,26 +359,31 @@ if test "$GLCD2USB" = "yes"; then
    fi
 fi
 
-if test "$HD44780" = "yes"; then
-   if test "$has_parport" = "true"; then
-      TEXT="yes"
-      PARPORT="yes"
-      I2C="yes"
-      GPIO="yes"
-      KEYPAD="yes"
-      DRIVERS="$DRIVERS drv_HD44780.o"
-      AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
-   else
-      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: HD44780 driver disabled)
-   fi
-fi
-
 if test "$HD44780_I2C" = "yes"; then
    TEXT="yes"
    I2C="yes"
    GPIO="yes"
    DRIVERS="$DRIVERS drv_HD44780.o"
    AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+fi
+
+if test "$HD44780" = "yes"; then
+   if test "$HD44780_I2C" != "yes"; then
+      if test "$has_parport" = "true"; then
+         TEXT="yes"
+         PARPORT="yes"
+         I2C="yes"
+         GPIO="yes"
+         KEYPAD="yes"
+         DRIVERS="$DRIVERS drv_HD44780.o"
+         AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+      else
+         AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: HD44780 driver disabled)
+      fi
+   else
+      HD44780="no"
+      AC_MSG_WARN(HD44780-i2c enabled disabling HD44780)
+   fi
 fi
 
 if test "$IRLCD" = "yes"; then
