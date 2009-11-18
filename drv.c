@@ -68,6 +68,7 @@ extern DRIVER drv_LUIse;
 extern DRIVER drv_LW_ABP;
 extern DRIVER drv_M50530;
 extern DRIVER drv_MatrixOrbital;
+extern DRIVER drv_MatrixOrbitalGX;
 extern DRIVER drv_MilfordInstruments;
 extern DRIVER drv_Noritake;
 extern DRIVER drv_NULL;
@@ -160,6 +161,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_MATRIXORBITAL
     &drv_MatrixOrbital,
+#endif
+#ifdef WITH_MATRIXORBITALGX
+    &drv_MatrixOrbitalGX,
 #endif
 #ifdef WITH_MILINST
     &drv_MilfordInstruments,
