@@ -126,7 +126,7 @@ int event_process(const struct timespec *timeout)
 #if (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 4)
     int ready = ppoll(fds, j, timeout, NULL);
 #else
-    int ready = poll(fds, j, timeout->tv_sec * 1000000 + timeout->tv_nsec / 1000000);
+    int ready = poll(fds, j, timeout->tv_sec * 1000 + timeout->tv_nsec / 1000000);
 #endif
 
     if (ready > 0) {

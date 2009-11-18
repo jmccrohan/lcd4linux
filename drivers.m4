@@ -33,12 +33,13 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
-  [                        G15, GLCD2USB, HD44780, IRLCD, LCD2USB, LCDLinux, LCDTerm,]
-  [                        LPH7508, LUIse, LW_ABP, M50530, MatrixOrbital, MilfordInstruments,]
-  [                        Noritake, NULL, PNG, PPM, Pertelian, PHAnderson, PICGraphic, picoLCD,]
-  [                        picoLCDGraphic, RouterBoard, Sample, serdisplib, ShuttleVFD,]
-  [                        SimpleLCD, st2205, T6963, Trefon, ULA200, USBLCD, USBHUB,]
-  [                        VNC, WincorNixdorf, X11],
+  [                        EA232Graphic, G15, GLCD2USB, HD44780, HD44780-i2c, IRLCD,]
+  [                        LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
+  [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX,]
+  [                        MilfordInstruments, Noritake, NULL, Pertelian, PHAnderson,]
+  [                        PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,]
+  [                        Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,]
+  [                        Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11],
   drivers=$withval,
   drivers=all
 )
@@ -69,6 +70,7 @@ for driver in $drivers; do
          G15="yes"
          GLCD2USB="yes"
          HD44780="yes"
+         HD44780_I2C="yes"
 	 IRLCD="yes"
          LCD2USB="yes"
 	 LCDLINUX="yes"
@@ -358,13 +360,17 @@ if test "$GLCD2USB" = "yes"; then
 fi
 
 if test "$HD44780" = "yes"; then
-   TEXT="yes"
-   PARPORT="yes"
-   I2C="yes"
-   GPIO="yes"
-   KEYPAD="yes"
-   DRIVERS="$DRIVERS drv_HD44780.o"
-   AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+   if test "$has_parport" = "true"; then
+      TEXT="yes"
+      PARPORT="yes"
+      I2C="yes"
+      GPIO="yes"
+      KEYPAD="yes"
+      DRIVERS="$DRIVERS drv_HD44780.o"
+      AC_DEFINE(WITH_HD44780,1,[HD44780 driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: HD44780 driver disabled)
+   fi
 fi
 
 if test "$HD44780_I2C" = "yes"; then
@@ -424,11 +430,15 @@ if test "$LEDMATRIX" = "yes"; then
 fi
 
 if test "$LPH7508" = "yes"; then
-   GRAPHIC="yes"
-   GPIO="yes"
-   PARPORT="yes"
-   DRIVERS="$DRIVERS drv_LPH7508.o"
-   AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
+   if test "$has_parport" = "true"; then
+      GRAPHIC="yes"
+      GPIO="yes"
+      PARPORT="yes"
+      DRIVERS="$DRIVERS drv_LPH7508.o"
+      AC_DEFINE(WITH_LPH7508,1,[LPH7508 driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: LPH7508 driver disabled)
+   fi
 fi
 
 if test "$LUISE" = "yes"; then
@@ -450,11 +460,15 @@ if test "$LW_ABP" = "yes"; then
 fi
 
 if test "$M50530" = "yes"; then
-   TEXT="yes"
-   GPIO="yes"
-   PARPORT="yes"
-   DRIVERS="$DRIVERS drv_M50530.o"
-   AC_DEFINE(WITH_M50530,1,[M50530 driver])
+   if test "$has_parport" = "true"; then
+      TEXT="yes"
+      GPIO="yes"
+      PARPORT="yes"
+      DRIVERS="$DRIVERS drv_M50530.o"
+      AC_DEFINE(WITH_M50530,1,[M50530 driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: M50530 driver disabled)
+   fi
 fi
 
 if test "$MATRIXORBITAL" = "yes"; then
@@ -485,11 +499,15 @@ if test "$MILINST" = "yes"; then
 fi
 
 if test "$NORITAKE" = "yes"; then
-   TEXT="yes"
-   GRAPHIC="yes"
-   PARPORT="yes"
-   DRIVERS="$DRIVERS drv_Noritake.o"
-   AC_DEFINE(WITH_NORITAKE,1,[Noritake driver])
+   if test "$has_parport" = "true"; then
+      TEXT="yes"
+      GRAPHIC="yes"
+      PARPORT="yes"
+      DRIVERS="$DRIVERS drv_Noritake.o"
+      AC_DEFINE(WITH_NORITAKE,1,[Noritake driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: NORITAKE driver disabled)
+   fi
 fi
 
 if test "$NULL" = "yes"; then
@@ -575,17 +593,21 @@ if test "$ROUTERBOARD" = "yes"; then
 fi
 
 if test "$SAMPLE" = "yes"; then
-   # select either text or graphics mode
-   TEXT="yes"
-   GRAPHIC="yes"
-   # support for GPIO's
-   GPIO="yes"
-   # select bus: serial (including USB), parallel or i2c
-   SERIAL="yes"
-   PARPORT="yes"
-   #I2C="yes"
-   DRIVERS="$DRIVERS drv_Sample.o"
-   AC_DEFINE(WITH_SAMPLE,1,[Sample driver])
+   if test "$has_parport" = "true"; then
+      # select either text or graphics mode
+      TEXT="yes"
+      GRAPHIC="yes"
+      # support for GPIO's
+      GPIO="yes"
+      # select bus: serial (including USB), parallel or i2c
+      SERIAL="yes"
+      PARPORT="yes"
+      #I2C="yes"
+      DRIVERS="$DRIVERS drv_Sample.o"
+      AC_DEFINE(WITH_SAMPLE,1,[Sample driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: SAMPLE driver disabled)
+   fi
 fi
 
 if test "$SERDISPLIB" = "yes"; then
@@ -633,10 +655,14 @@ if test "$ST2205" = "yes"; then
 fi
 
 if test "$T6963" = "yes"; then
-   GRAPHIC="yes"
-   PARPORT="yes"
-   DRIVERS="$DRIVERS drv_T6963.o"
-   AC_DEFINE(WITH_T6963,1,[T6963 driver])
+   if test "$has_parport" = "true"; then
+      GRAPHIC="yes"
+      PARPORT="yes"
+      DRIVERS="$DRIVERS drv_T6963.o"
+      AC_DEFINE(WITH_T6963,1,[T6963 driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: T6963 driver disabled)
+   fi
 fi
 
 if test "$Trefon" = "yes"; then
