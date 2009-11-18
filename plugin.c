@@ -219,6 +219,8 @@ int plugin_init_meminfo(void);
 void plugin_exit_meminfo(void);
 int plugin_init_mpd(void);
 void plugin_exit_mpd(void);
+int plugin_init_mpris_dbus(void);
+void plugin_exit_mpris_dbus(void);
 int plugin_init_mysql(void);
 void plugin_exit_mysql(void);
 int plugin_init_netdev(void);
