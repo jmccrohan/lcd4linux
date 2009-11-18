@@ -123,7 +123,11 @@ int event_process(const struct timespec *timeout)
 	    j++;
 	}
     }
+#if (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 4)
     int ready = ppoll(fds, j, timeout, NULL);
+#else
+    int ready = poll(fds, j, timeout->tv_sec * 1000000 + timeout->tv_nsec / 1000000);
+#endif
 
     if (ready > 0) {
 	//search the file descriptors, call all relavant callbacks
