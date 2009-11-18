@@ -249,8 +249,8 @@ fi
 
 #DBus
 if test "$PLUGIN_DBUS" = "yes"; then
-   PKG_CHECK_MODULES(DBUS, dbus-1)
-   if test "x$DBUS_LIBS" != "x"; then
+   PKG_CHECK_MODULES(DBUS, dbus-1, dbus-1 >= 1.0, HAVE_DBUS="yes", HAVE_DBUS="no")
+   if test "x$HAVE_DBUS" != "xyes"; then
       PLUGINS="$PLUGINS plugin_dbus.o"
       PLUGINLIBS="$PLUGINLIBS $DBUS_LIBS"
       CPPFLAGS="$CPPFLAGS $DBUS_CFLAGS"

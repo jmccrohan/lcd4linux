@@ -94,6 +94,7 @@ static char *fbPG = 0, delayDone = 0;
 
 void drv_PICGraphic_delay(void *arg)
 {
+    (void)arg;
     delayDone = 1;
     debug("delay done");
 }
@@ -224,7 +225,7 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
 	drv_PICGraphic_send(fbPG, DROWS * DCOLS / 8);
 	usleep(20000);
 	// wait for reception of confirmation code
-	status = drv_PICGraphic_recv(cmd, 2, "ff");
+	status = drv_PICGraphic_recv((char *) cmd, 2, "ff");
 	if (!status) {
 	    info("received ff from device");
 	} else {
@@ -293,7 +294,7 @@ static int drv_PICGraphic_start2(const char *section)
 {
     char *s;
     char cmd[2];
-    int contrast, status, bytes = 0, tick, tack;
+    int contrast, status, tick, tack;
 
     /* read display size from config */
     s = cfg_get(section, "Size", NULL);
