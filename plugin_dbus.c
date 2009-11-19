@@ -372,6 +372,12 @@ void plugin_exit_dbus(void)
     for (i = dbus_results.signals - 1; i >= 0; i--) {
 	clear_signal_txt(i);
     }
+
+#ifdef DEBUG
+    //needs to be called to actually free everything, but might free stuff
+    //mpris_dbus uses and cause a crash on shutdown, enable for leak debugging
+    dbus_shutdown();
+#endif
 }
 
 
@@ -504,7 +510,6 @@ static int lcd_dbus_init(void)
 	dbus_error_free(&err);
 	success &= 1;
     } else {
-	dbus_connection_ref(sessconn);
 	setup_dbus_events(sessconn);
     }
 
@@ -513,7 +518,6 @@ static int lcd_dbus_init(void)
 	info("[DBus] Error connecting to the dbus system bus: %s\n", err.message);
 	success &= 2;
     } else {
-	dbus_connection_ref(sysconn);
 	setup_dbus_events(sysconn);
     }
 
@@ -568,7 +572,6 @@ static void handle_inbound_signal(void *signal, int argc, char **argv)
     if (signal_info->event_name != NULL) {
 	named_event_trigger(signal_info->event_name);
     }
-    free_args(argc, argv);
 }
 
 static lcd_sig_t *lcd_register_signal(const char *sender, const char *path,
@@ -804,7 +807,6 @@ static DBusHandlerResult lcd_sig_received(DBusConnection * connection, DBusMessa
 {
     (void) connection;
     dbus_message_ref(msg);
-
     lcd_sig_t *sig = sigv;
     //compare the signal to the one we were assigned
     if (dbus_message_get_type(msg) != DBUS_MESSAGE_TYPE_SIGNAL) {
@@ -817,15 +819,15 @@ static DBusHandlerResult lcd_sig_received(DBusConnection * connection, DBusMessa
 	dbus_message_unref(msg);
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
-
-    char **args;
-    int argc;
-    fill_args(msg, &argc, &args);
-
     //call the users function
     if (sig->callback != NULL) {
+	char **args;
+	int argc;
+	fill_args(msg, &argc, &args);
 	sig->callback(sig->user_data, argc, args);
+	free_args(argc, args);
     }
+
     dbus_message_unref(msg);
     return DBUS_HANDLER_RESULT_HANDLED;
 }

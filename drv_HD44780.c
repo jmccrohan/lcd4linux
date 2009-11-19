@@ -1410,7 +1410,7 @@ int drv_HD_init(const char *section, const int quiet)
     /* initialize generic GPIO driver */
     if ((ret = drv_generic_gpio_init(section, Name)) != 0)
 	return ret;
-	
+
 #ifdef WITH_PARPORT
     if ((ret = drv_generic_keypad_init(section, Name)) != 0)
 	return ret;
