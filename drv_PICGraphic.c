@@ -94,7 +94,7 @@ static char *fbPG = 0, delayDone = 0;
 
 void drv_PICGraphic_delay(void *arg)
 {
-    (void)arg;
+    (void) arg;
     delayDone = 1;
     debug("delay done");
 }
