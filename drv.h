@@ -41,6 +41,14 @@ typedef struct DRIVER {
  */
 extern char *output;
 
+#ifdef WITH_X11
+/* function to handle special X11 command line parameters
+ * has to be defined here because it's referenced
+ * in main before dealing with normal parameters.
+ */
+void drv_X11_parseArgs(int *argc, char *arvg[]);
+#endif
+
 int drv_list(void);
 int drv_init(const char *section, const char *driver, const int quiet);
 int drv_quit(const int quiet);

@@ -49,6 +49,7 @@
 #include <signal.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xresource.h>
 
 #include "debug.h"
 #include "cfg.h"
@@ -92,6 +93,14 @@ static Visual *vi;
 static GC gc;
 static Colormap cm;
 static Pixmap pm;
+
+static char myDisplayName[256] = "";
+static int opTableEntries = 2;
+static XrmOptionDescRec opTable[] = {
+    {"-display", ".display", XrmoptionSepArg, NULL},
+    {"-synchronous", "*synchronous", XrmoptionNoArg, "on"},
+};
+static XrmDatabase commandlineDB;
 
 
 /****************************************/
@@ -413,6 +422,8 @@ static int drv_X11_start(const char *section)
 {
     int i;
     char *s;
+    XrmValue value;
+    char *str_type[20];
     XSetWindowAttributes wa;
     XSizeHints sh;
     XEvent ev;
@@ -489,9 +500,19 @@ static int drv_X11_start(const char *section)
 	drv_X11_FB[i] = NO_COL;
     }
 
-    if ((dp = XOpenDisplay(NULL)) == NULL) {
-	error("%s: can't open display", Name);
+    if (XrmGetResource(commandlineDB, "lcd4linux.display", "Lcd4linux.Display", str_type, &value)) {
+	strncpy(myDisplayName, value.addr, value.size);
+	debug("%s: X11 display name from command line: %s", Name, myDisplayName);
+    }
+
+    if ((dp = XOpenDisplay(strlen(myDisplayName) > 0 ? myDisplayName : NULL)) == NULL) {
+	error("%s: can't open display %s", Name, XDisplayName(strlen(myDisplayName) > 0 ? myDisplayName : NULL));
 	return -1;
+    }
+
+    if (XrmGetResource(commandlineDB, "lcd4linux*synchronous", "Lcd4linux*Synchronous", str_type, &value)) {
+	debug("%s: X synchronize on", Name);
+	XSynchronize(dp, 1 /* true */ );
     }
 
     sc = DefaultScreen(dp);
@@ -592,6 +613,15 @@ int drv_X11_list(void)
 {
     printf("any X11 server");
     return 0;
+}
+
+
+/* read X11 specific command line arguments */
+/* it is defined in drv.h */
+void drv_X11_parseArgs(int *argc, char *argv[])
+{
+    XrmInitialize();
+    XrmParseCommand(&commandlineDB, opTable, opTableEntries, "lcd4linux", argc, argv);
 }
 
 

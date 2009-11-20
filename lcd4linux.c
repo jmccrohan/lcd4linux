@@ -91,6 +91,14 @@ static void usage(void)
     printf("  -F               do not fork and detach (run in foreground)\n");
     printf("  -o <output-file> write picture to file (raster driver only)\n");
     printf("  -q               suppress startup and exit splash screen\n");
+#ifdef WITH_X11
+    printf("special X11 options:\n");
+    printf("  -display <X11 display name>  preceeds X connection given in $DISPLAY\n");
+    printf("  -synchronous                 use synchronized communication with X server (for debugging)\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+#endif
 }
 
 static void interactive_mode(void)
@@ -222,6 +230,13 @@ int main(int argc, char *argv[])
     running_foreground = 0;
     running_background = 0;
 
+#ifdef WITH_X11
+    drv_X11_parseArgs(&argc, argv);
+    if (argc != thread_argc) {
+	/* info() will not work here because verbose level is not known */
+	printf("recognized special X11 parameters\n");
+    }
+#endif
     while ((c = getopt(argc, argv, "c:Ff:hilo:qvp:")) != EOF) {
 
 	switch (c) {
