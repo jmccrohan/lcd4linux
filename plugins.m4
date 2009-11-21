@@ -249,12 +249,21 @@ fi
 
 #DBus
 if test "$PLUGIN_DBUS" = "yes"; then
-   PKG_CHECK_MODULES(DBUS, dbus-1, dbus-1 >= 1.0, HAVE_DBUS="yes", HAVE_DBUS="no")
-   if test "x$HAVE_DBUS" != "xyes"; then
+   PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.0.0, HAVE_DBUS="yes", HAVE_DBUS="no")
+   if test "x$HAVE_DBUS" == "xyes"; then
       PLUGINS="$PLUGINS plugin_dbus.o"
       PLUGINLIBS="$PLUGINLIBS $DBUS_LIBS"
       CPPFLAGS="$CPPFLAGS $DBUS_CFLAGS"
       AC_DEFINE(PLUGIN_DBUS,1,[dbus plugin])
+
+      DBUS_VERSION=$($PKG_CONFIG --modversion dbus-1)
+      DBUS_VERSION_MAJOR=$(echo $DBUS_VERSION | cut -d . -f 1)
+      DBUS_VERSION_MINOR=$(echo $DBUS_VERSION | cut -d . -f 2)
+      DBUS_VERSION_MICRO=$(echo $DBUS_VERSION | cut -d . -f 3)
+
+      AC_DEFINE_UNQUOTED(DBUS_VERSION_MAJOR, $DBUS_VERSION_MAJOR, [DBus Major Version])
+      AC_DEFINE_UNQUOTED(DBUS_VERSION_MINOR, $DBUS_VERSION_MINOR, [DBus Minor Version])
+      AC_DEFINE_UNQUOTED(DBUS_VERSION_MICRO, $DBUS_VERSION_MICRO, [DBus Micro Version])
    else
       AC_MSG_WARN(dbus-1 not found check that PKG_CONFIG_PATH is set correctly: dbus plugin disabled)
    fi
