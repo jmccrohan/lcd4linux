@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -108,7 +109,7 @@ static void read_MetaData()
 		{
 		    dbus_int64_t val;
 		    dbus_message_iter_get_basic(&subiter3, &val);
-		    sprintf(str_value, "%Ld", val);
+		    sprintf(str_value, "%jd", (intmax_t)val);
 		    break;
 		}
 	    default:
@@ -244,8 +245,6 @@ static void method_PositionGet(RESULT * result, RESULT * arg1)
     value = call_PositionGet(R2S(arg1));
     //printf("\ncalled :call_PositionGet %d",value);
 
-    if (value < 0)
-	value = 0;
 
     str_tmp = hash_get(&DBUS, "mtime", NULL);
     if (str_tmp != NULL)

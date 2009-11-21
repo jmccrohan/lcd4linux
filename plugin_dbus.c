@@ -511,7 +511,7 @@ static int lcd_dbus_init(void)
 	success &= 1;
     } else {
 #ifdef DEBUG
-    dbus_connection_set_exit_on_disconnect(sessconn, FALSE);
+	dbus_connection_set_exit_on_disconnect(sessconn, FALSE);
 #endif
 	setup_dbus_events(sessconn);
     }
@@ -522,7 +522,7 @@ static int lcd_dbus_init(void)
 	success &= 2;
     } else {
 #ifdef DEBUG
-    dbus_connection_set_exit_on_disconnect(sysconn, FALSE);
+	dbus_connection_set_exit_on_disconnect(sysconn, FALSE);
 #endif
 	setup_dbus_events(sysconn);
     }
