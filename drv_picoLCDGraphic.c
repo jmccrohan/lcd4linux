@@ -608,8 +608,6 @@ int drv_pLG_quit(const int quiet)
 
     info("%s: shutting down.", Name);
 
-    drv_generic_graphic_quit();
-
     /* clear display */
     drv_pLG_clear();
 
@@ -624,6 +622,8 @@ int drv_pLG_quit(const int quiet)
 	free(Buffer);
 	BufPtr = NULL;
     }
+
+    drv_generic_graphic_quit();
 
     return (0);
 }

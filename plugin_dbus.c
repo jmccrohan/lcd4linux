@@ -510,6 +510,9 @@ static int lcd_dbus_init(void)
 	dbus_error_free(&err);
 	success &= 1;
     } else {
+#ifdef DEBUG
+    dbus_connection_set_exit_on_disconnect(sessconn, FALSE);
+#endif
 	setup_dbus_events(sessconn);
     }
 
@@ -518,6 +521,9 @@ static int lcd_dbus_init(void)
 	info("[DBus] Error connecting to the dbus system bus: %s\n", err.message);
 	success &= 2;
     } else {
+#ifdef DEBUG
+    dbus_connection_set_exit_on_disconnect(sysconn, FALSE);
+#endif
 	setup_dbus_events(sysconn);
     }
 
