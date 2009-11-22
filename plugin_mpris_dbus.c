@@ -109,7 +109,7 @@ static void read_MetaData()
 		{
 		    dbus_int64_t val;
 		    dbus_message_iter_get_basic(&subiter3, &val);
-		    sprintf(str_value, "%jd", (intmax_t)val);
+		    sprintf(str_value, "%jd", (intmax_t) val);
 		    break;
 		}
 	    default:
