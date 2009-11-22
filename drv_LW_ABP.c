@@ -40,6 +40,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <errno.h>
 
@@ -73,6 +75,7 @@
 #define KEY_RIGHT 1
 
 static char Name[] = "LW_ABP";
+static char logicway[] = "www.logicway.de";
 
 /* ring buffer for bytes received from the display */
 static unsigned char RingBuffer[256];
@@ -80,11 +83,18 @@ static unsigned int RingRPos = 0;
 static unsigned int RingWPos = 0;
 
 static int button = -1;
-static char *colors[] = { "r 0", "r 1", "g 0", "g 1", "b 0", "b 1", "c 0", "c 1", "m 0", "m 1", "y 0", "y 1", NULL };
+static char *colors[] =
+    { "r 0", "r 1", "g 0", "g 1", "b 0", "b 1", "c 0", "c 1", "m 0", "m 1", "y 0", "y 1", "w 0", "w 1", NULL };
 
 #define TIMESYNC_FIRST  600
 #define TIMESYNC_INTERVAL 24*3600
 static time_t next_timesync;
+
+static char *switchcontact = NULL;
+static int statresult = 0;
+static time_t switchcontact_lastchange = 0;
+static time_t switchcontact_time = 0;
+#define SWITCH_ACTION_DURATION 1000
 
 /****************************************/
 /***  hardware dependant functions    ***/
@@ -153,6 +163,77 @@ static int drv_LW_ABP_time(unsigned char force)
     return 0;
 }
 
+static int drv_LW_ABP_switchcontact(void)
+{
+    char cmd[] = "switch time ";
+    char command[50];
+    struct stat statinfo;
+    FILE *configfile;
+    int scanresult;
+    int config_entries;
+    char inputline[101];
+    if ((switchcontact != NULL) && (*switchcontact != '\0')) {
+	if (stat(switchcontact, &statinfo) == -1) {
+	    if (statresult != -1) {
+		error("%s: specified switch contact control file %s not found", Name, switchcontact);
+		switchcontact_time = 0;
+		sprintf(command, "%s%lu %u\r\n", cmd, (unsigned long) switchcontact_time, SWITCH_ACTION_DURATION);
+		drv_LW_ABP_send(command, strlen(command));
+		info("%s: switchtime deactivated", Name);
+		statresult = -1;
+	    }
+	} else {
+	    if (statresult == -1) {
+		info("%s: specified switch contact control file %s appeared", Name, switchcontact);
+		statresult = 0;
+	    }
+	    if ((switchcontact_lastchange == 0) || (switchcontact_lastchange < statinfo.st_mtime)) {
+		info("%s: specified switch contact control file %s has changed (%lu < %lu)", Name, switchcontact,
+		     (unsigned long) switchcontact_lastchange, (unsigned long) statinfo.st_mtime);
+		switchcontact_lastchange = statinfo.st_mtime;
+		configfile = fopen(switchcontact, "r");
+		if (configfile == NULL) {
+		    error("%s: could not open specified switch contact control file %s", Name, switchcontact);
+		} else {
+		    config_entries = 0;
+		    while (!feof(configfile)) {
+			if (fgets(inputline, 100, configfile) != NULL) {
+			    if ((scanresult = sscanf(inputline, "switchtime=%lu", &switchcontact_time)) == 1) {
+				info("%s: switchtime read %lu (file %s)", Name, (unsigned long) switchcontact_time,
+				     switchcontact);
+				config_entries++;
+			    }
+			}
+		    }
+		    fclose(configfile);
+		    if (config_entries > 0) {
+			if (switchcontact_time < time(NULL)) {
+			    switchcontact_time = 0;
+			    info("%s: switchtime is in past %lu (now %lu), so deactivated", Name,
+				 (unsigned long) switchcontact_time, time(NULL));
+			}
+		    } else {
+			switchcontact_time = 0;
+		    }
+		    if (switchcontact_time != 0) {
+			sprintf(command, "%s%lu %u\r\n", cmd, (unsigned long) switchcontact_time,
+				SWITCH_ACTION_DURATION);
+			drv_LW_ABP_send(command, strlen(command));
+			info("%s: switchtime set to %lu", Name, (unsigned long) switchcontact_time);
+		    } else {
+			sprintf(command, "%s%lu %u\r\n", cmd, (unsigned long) switchcontact_time,
+				SWITCH_ACTION_DURATION);
+			drv_LW_ABP_send(command, strlen(command));
+			info("%s: switchtime deactivated", Name);
+		    }
+		}
+	    }
+	}
+    }
+
+    return 0;
+}
+
 /* text mode displays only */
 static void drv_LW_ABP_write(const int row, const int col, const char *data, int len)
 {
@@ -200,6 +281,8 @@ static void drv_LW_ABP_process_button(void)
 
 static int drv_LW_ABP_poll(void)
 {
+    char received[100];
+
     /* read into RingBuffer */
     while (1) {
 	char buffer[32];
@@ -215,6 +298,8 @@ static int drv_LW_ABP_poll(void)
 	}
     }
 
+    received[0] = '\0';
+
     /* process RingBuffer */
     while (1) {
 	char command[32];
@@ -224,8 +309,12 @@ static int drv_LW_ABP_poll(void)
 	if (num < 0)
 	    num += sizeof(RingBuffer);
 	/* minimum packet size=3 */
-	if (num < 1)
+	if (num < 1) {
+	    if (strlen(received) > 0) {
+		debug("%s: received: %s", Name, received);
+	    }
 	    return 0;
+	}
 	if (byte(0) != '[') {
 	    goto GARBAGE;
 	}
@@ -238,8 +327,12 @@ static int drv_LW_ABP_poll(void)
 	}
 	command[n] = '\0';
 	if (command[n - 1] != ']') {
-	    if (strlen(command) < 4)
+	    if (strlen(command) < 4) {
+		if (strlen(received) > 0) {
+		    debug("%s: received: %s", Name, received);
+		}
 		return 0;
+	    }
 	    goto GARBAGE;
 	}
 	info("%s: command read from keypad: %s\n", Name, command);
@@ -253,9 +346,30 @@ static int drv_LW_ABP_poll(void)
 	if (RingRPos >= sizeof(RingBuffer))
 	    RingRPos -= sizeof(RingBuffer);
 	/* a packet arrived */
+	if (strlen(received) > 0) {
+	    debug("%s: received: %s", Name, received);
+	}
 	return 1;
       GARBAGE:
-	debug("%s: dropping garbage byte %02x", Name, byte(0));
+	switch (byte(0)) {
+	case '\n':
+	case '\r':
+	case '>':
+	    if (strlen(received) > 0) {
+		debug("%s: received: %s", Name, received);
+		received[0] = '\0';
+	    }
+	    break;
+	default:
+	    if (byte(0) < ' ')
+		debug("%s: dropping garbage byte %02x", Name, byte(0));
+	    else if ((strlen(received) + 2) > sizeof(received)) {
+		debug("%s: received: %s", Name, received);
+		received[0] = '\0';
+	    }
+	    sprintf(received, "%s%c", received, byte(0));
+	    break;
+	}
 	RingRPos++;
 	if (RingRPos >= sizeof(RingBuffer))
 	    RingRPos = 0;
@@ -273,6 +387,7 @@ static void drv_LW_ABP_timer(void __attribute__ ((unused)) * notused)
     }
 
     drv_LW_ABP_time(0);
+    drv_LW_ABP_switchcontact();
 }
 
 static int drv_LW_ABP_keypad(const int num)
@@ -375,6 +490,8 @@ static int drv_LW_ABP_start(const char *section)
 	}
     }
 
+    switchcontact = cfg_get(section, "Switchcontact", NULL);
+
     if (cfg_number(section, "Contrast", 0, 0, 255, &contrast) > 0) {
 	drv_LW_ABP_contrast(contrast);
     }
@@ -470,7 +587,7 @@ int drv_LW_ABP_init(const char *section, const int quiet)
     if (!quiet) {
 	char buffer[40];
 	qprintf(buffer, sizeof(buffer), "%s %dx%d", Name, DCOLS, DROWS);
-	if (drv_generic_text_greet(buffer, "www.logicway.de")) {
+	if (drv_generic_text_greet(buffer, logicway)) {
 	    sleep(3);
 	    drv_LW_ABP_clear();
 	}
@@ -518,6 +635,9 @@ int drv_LW_ABP_init(const char *section, const int quiet)
 /* use this function for a text display */
 int drv_LW_ABP_quit(const int quiet)
 {
+    char switchactive[] = "switch scheduled";
+    char timeinfo[17];
+    struct tm switchtime_info;
 
     info("%s: shutting down.", Name);
 
@@ -528,8 +648,22 @@ int drv_LW_ABP_quit(const int quiet)
     drv_LW_ABP_clear();
 
     /* say goodbye... */
-    if (!quiet) {
-	drv_generic_text_greet("goodbye!", NULL);
+    if (switchcontact_time < time(NULL)) {
+	switchcontact_time = 0;
+	info("%s: switchtime is in past %lu (now %lu), so deactivated", Name, (unsigned long) switchcontact_time,
+	     time(NULL));
+    }
+    if (switchcontact_time == 0) {
+	if (!quiet) {
+	    drv_generic_text_greet("goodbye!", NULL);
+	}
+    } else {
+	drv_LW_ABP_write(0, 0, logicway, strlen(logicway));
+	drv_LW_ABP_write(1, 0, switchactive, strlen(switchactive));
+	localtime_r(&switchcontact_time, &switchtime_info);
+	if (strftime(timeinfo, sizeof(timeinfo), "for %a %X", &switchtime_info) > 0) {
+	    drv_LW_ABP_write(2, 0, timeinfo, strlen(timeinfo));
+	}
     }
 
     debug("closing connection");
