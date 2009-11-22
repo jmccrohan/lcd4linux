@@ -100,6 +100,7 @@ static XrmOptionDescRec opTable[] = {
     {"-display", ".display", XrmoptionSepArg, NULL},
     {"-synchronous", "*synchronous", XrmoptionNoArg, "on"},
 };
+
 static XrmDatabase commandlineDB;
 
 
