@@ -460,6 +460,7 @@ fi
 if test "$LW_ABP" = "yes"; then
    TEXT="yes"
    SERIAL="yes"
+   KEYPAD="yes"
    DRIVERS="$DRIVERS drv_LW_ABP.o"
    AC_DEFINE(WITH_LW_ABP,1,[LW ABP driver])
 fi
