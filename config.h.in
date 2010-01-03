@@ -3,6 +3,15 @@
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 #undef CLOSEDIR_VOID
 
+/* DBus Major Version */
+#undef DBUS_VERSION_MAJOR
+
+/* DBus Micro Version */
+#undef DBUS_VERSION_MICRO
+
+/* DBus Minor Version */
+#undef DBUS_VERSION_MINOR
+
 /* Found some version of curses that we're going to use */
 #undef HAS_CURSES
 
