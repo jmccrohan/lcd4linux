@@ -41,6 +41,11 @@
 #include <ctype.h>
 #include <errno.h>
 
+#ifdef __MAC_OS_X_VERSION_10_3
+#include <mach/mach_host.h>
+#include <mach/host_info.h>
+#endif
+
 #include "debug.h"
 #include "plugin.h"
 #include "qprintf.h"
@@ -83,6 +88,10 @@ static int parse_proc_stat(void)
     age = hash_age(&Stat, NULL);
     if (age > 0 && age <= 10)
 	return 0;
+
+#if 0
+
+    /* Linux Kernel, /proc-filesystem */
 
     if (stream == NULL)
 	stream = fopen("/proc/stat", "r");
@@ -214,6 +223,35 @@ static int parse_proc_stat(void)
 	    hash_put1(buffer, beg);
 	}
     }
+
+#else
+
+    /* MACH Kernel, MacOS X */
+
+    kern_return_t  err;
+    mach_msg_type_number_t  count;
+    host_info_t  r_load;
+    host_cpu_load_info_data_t  cpu_load;
+    char  s_val[8];
+
+    r_load = &cpu_load;
+    count = HOST_CPU_LOAD_INFO_COUNT;
+    err = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, r_load, &count);
+    if (KERN_SUCCESS != err) {
+        error("Error getting cpu load");
+        return -1;
+    }
+    snprintf(s_val, sizeof(s_val), "%d", cpu_load.cpu_ticks[CPU_STATE_USER]);
+    hash_put2("cpu", "user", s_val);
+    snprintf(s_val, sizeof(s_val), "%d", cpu_load.cpu_ticks[CPU_STATE_NICE]);
+    hash_put2("cpu", "nice", s_val);
+    snprintf(s_val, sizeof(s_val), "%d", cpu_load.cpu_ticks[CPU_STATE_SYSTEM]);
+    hash_put2("cpu", "system", s_val);
+    snprintf(s_val, sizeof(s_val), "%d", cpu_load.cpu_ticks[CPU_STATE_IDLE]);
+    hash_put2("cpu", "idle", s_val);
+
+#endif
+
     return 0;
 }
 

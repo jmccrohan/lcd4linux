@@ -45,11 +45,15 @@
 #include "plugin.h"
 #include "hash.h"
 
+#ifdef __MAC_OS_X_VERSION_10_3
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
 
 static HASH CPUinfo;
 static FILE *stream = NULL;
 
-static int parse_cpuinfo(void)
+static int parse_cpuinfo(char *oid)
 {
     int age;
 
@@ -57,6 +61,10 @@ static int parse_cpuinfo(void)
     age = hash_age(&CPUinfo, NULL);
     if (age > 0 && age <= 1000)
 	return 0;
+
+#ifndef __MAC_OS_X_VERSION_10_3
+
+    /* Linux Kernel, /proc-filesystem */
 
     if (stream == NULL)
 	stream = fopen("/proc/cpuinfo", "r");
@@ -93,6 +101,34 @@ static int parse_cpuinfo(void)
 	hash_put(&CPUinfo, key, val);
 
     }
+    /* to avoid compiler unused warning */
+    oid = 0;
+
+#else
+
+    /* MACH Kernel, MacOS X */
+
+    char val_ret[256];
+    int *val;
+    size_t val_len;
+
+    if (sysctlbyname(oid, NULL, &val_len, NULL, 0) != 0) {
+    	error("Error %d by sysctl(%s): %s", errno, oid, strerror(errno));
+    	return -1;
+    }
+    if (val_len > sizeof(val_ret)) {
+    	error("Error: Result of sysctl(%s) too big (%zd > %zd)!", oid, val_len, sizeof(val_ret));
+    	return -1;
+    }
+    sysctlbyname(oid, &val_ret, &val_len, NULL, 0);
+    if (val_len == sizeof(int)) {
+    	/* we got an integer instead of a string */
+    	val = (int*)val_ret;
+    	snprintf(val_ret, sizeof(val_ret), "%d", *val);
+    }
+    hash_put(&CPUinfo, oid, val_ret);
+#endif
+
     return 0;
 }
 
@@ -101,12 +137,12 @@ static void my_cpuinfo(RESULT * result, RESULT * arg1)
 {
     char *key, *val;
 
-    if (parse_cpuinfo() < 0) {
+    key = R2S(arg1);
+    if (parse_cpuinfo(key) < 0) {
 	SetResult(&result, R_STRING, "");
 	return;
     }
 
-    key = R2S(arg1);
     val = hash_get(&CPUinfo, key, NULL);
     if (val == NULL)
 	val = "";

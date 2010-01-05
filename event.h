@@ -28,6 +28,8 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
+#include <time.h>
+
 //events are identified by their file descriptor only
 
 /*
