@@ -143,19 +143,26 @@ static void my_hwaddr(RESULT * result, RESULT * arg1)
     }
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
-    // if (ioctl(socknr, SIOCGIFHWADDR, &ifreq) < 0) {
-    // if (ioctl(socknr, SIOCGIFMAC, &ifreq) < 0) {
+#ifndef __MAC_OS_X_VERSION_10_3
+    // Linux: get interface MAC address
+    if (ioctl(socknr, SIOCGIFHWADDR, &ifreq) < 0) {
+#else
+    // MacOS: get interface MAC address
     if (ioctl(socknr, SIOCGLIFPHYADDR, &ifreq) < 0) {
-		errcount++;
+#endif
+	errcount++;
 	if (1 == errcount % 1000) {
-	    error("%s: ioctl(IFHWADDR %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
+	    error("%s: ioctl(IF_HARDW_ADDR %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
 	    error("  (skip next 1000 errors)");
 	}
 	SetResult(&result, R_STRING, "");
 	return;
     }
-    // hw = (unsigned char *) ifreq.ifr_hwaddr.sa_data;
+#ifndef __MAC_OS_X_VERSION_10_3
+    hw = (unsigned char *) ifreq.ifr_hwaddr.sa_data;
+#else
     hw = (unsigned char *) ifreq.ifr_data;
+#endif
     qprintf(value, sizeof(value), "%02x:%02x:%02x:%02x:%02x:%02x",
 	    *hw, *(hw + 1), *(hw + 2), *(hw + 3), *(hw + 4), *(hw + 5));
 
@@ -218,8 +225,11 @@ static void my_netmask(RESULT * result, RESULT * arg1)
 	SetResult(&result, R_STRING, "");
 	return;
     }
-    // sin = (struct sockaddr_in *) &ifreq.ifr_netmask;
+#ifndef __MAC_OS_X_VERSION_10_3
+    sin = (struct sockaddr_in *) &ifreq.ifr_netmask;
+#else
     sin = (struct sockaddr_in *) &ifreq.ifr_data;
+#endif
     qprintf(value, sizeof(value), "%s", inet_ntoa(sin->sin_addr));
 
     SetResult(&result, R_STRING, value);

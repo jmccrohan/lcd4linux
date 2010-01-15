@@ -113,18 +113,18 @@ static int parse_cpuinfo(char *oid)
     size_t val_len;
 
     if (sysctlbyname(oid, NULL, &val_len, NULL, 0) != 0) {
-    	error("Error %d by sysctl(%s): %s", errno, oid, strerror(errno));
-    	return -1;
+	error("Error %d by sysctl(%s): %s", errno, oid, strerror(errno));
+	return -1;
     }
     if (val_len > sizeof(val_ret)) {
-    	error("Error: Result of sysctl(%s) too big (%zd > %zd)!", oid, val_len, sizeof(val_ret));
-    	return -1;
+	error("Error: Result of sysctl(%s) too big (%zd > %zd)!", oid, val_len, sizeof(val_ret));
+	return -1;
     }
     sysctlbyname(oid, &val_ret, &val_len, NULL, 0);
     if (val_len == sizeof(int)) {
-    	/* we got an integer instead of a string */
-    	val = (int*)val_ret;
-    	snprintf(val_ret, sizeof(val_ret), "%d", *val);
+	/* we got an integer instead of a string */
+	val = (int *) val_ret;
+	snprintf(val_ret, sizeof(val_ret), "%d", *val);
     }
     hash_put(&CPUinfo, oid, val_ret);
 #endif

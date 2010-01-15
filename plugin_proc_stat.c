@@ -89,7 +89,7 @@ static int parse_proc_stat(void)
     if (age > 0 && age <= 10)
 	return 0;
 
-#if 0
+#ifndef __MAC_OS_X_VERSION_10_3
 
     /* Linux Kernel, /proc-filesystem */
 
@@ -228,18 +228,18 @@ static int parse_proc_stat(void)
 
     /* MACH Kernel, MacOS X */
 
-    kern_return_t  err;
-    mach_msg_type_number_t  count;
-    host_info_t  r_load;
-    host_cpu_load_info_data_t  cpu_load;
-    char  s_val[8];
+    kern_return_t err;
+    mach_msg_type_number_t count;
+    host_info_t r_load;
+    host_cpu_load_info_data_t cpu_load;
+    char s_val[8];
 
     r_load = &cpu_load;
     count = HOST_CPU_LOAD_INFO_COUNT;
     err = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, r_load, &count);
     if (KERN_SUCCESS != err) {
-        error("Error getting cpu load");
-        return -1;
+	error("Error getting cpu load");
+	return -1;
     }
     snprintf(s_val, sizeof(s_val), "%d", cpu_load.cpu_ticks[CPU_STATE_USER]);
     hash_put2("cpu", "user", s_val);
