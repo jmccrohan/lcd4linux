@@ -44,7 +44,7 @@
 
 /*
  * Available tokens :  # represents an int from 1 to 3 (or more)
- *  temp_input# -> temperature of sensor # (in °C)
+ *  temp_input# -> temperature of sensor # (in âˆžC)
  *  temp_max# and temp_hyst# -> max and min of sensor #
  *  in_input#, in_min# and in_max# -> voltages
  *  fan_input# -> speed (in RPM) of fan #
@@ -188,7 +188,7 @@ static int parse_i2c_sensors_procfs(const char *key)
 	return -1;
     }
 
-    running = strdupa(buffer);
+    running = strdup(buffer);
     while (1) {
 	value = strsep(&running, delim);
 	/* debug("%s pos %i -> %s", file, pos , value); */
