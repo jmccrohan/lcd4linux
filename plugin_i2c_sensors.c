@@ -74,6 +74,7 @@
 #include "cfg.h"
 #include "hash.h"
 #include "qprintf.h"
+#include "evaluator.h"		// if strndup() is not available
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -188,12 +189,7 @@ static int parse_i2c_sensors_procfs(const char *key)
 	return -1;
     }
 
-#ifndef __MAC_OS_X_VERSION_10_3
     running = strndup(buffer, sizeof(buffer));
-#else
-    // there is no strndup in OSX
-    running = strdup(buffer);
-#endif
     while (1) {
 	value = strsep(&running, delim);
 	/* debug("%s pos %i -> %s", file, pos , value); */

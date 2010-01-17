@@ -40,6 +40,11 @@ typedef struct {
     char *string;
 } RESULT;
 
+/* strndup() may be not available on several platforms */
+#ifndef HAVE_STRNDUP
+char *strndup(const char *source, size_t len);
+#endif
+
 int SetVariable(const char *name, RESULT * value);
 int SetVariableNumeric(const char *name, const double value);
 int SetVariableString(const char *name, const char *value);
