@@ -188,7 +188,7 @@ static int parse_i2c_sensors_procfs(const char *key)
 	return -1;
     }
 
-#ifndef __MAX_OS_X_VERSION_10_3
+#ifndef __MAC_OS_X_VERSION_10_3
     running = strndup(buffer, sizeof(buffer));
 #else
     // there is no strndup in OSX
