@@ -188,7 +188,12 @@ static int parse_i2c_sensors_procfs(const char *key)
 	return -1;
     }
 
+#ifndef __MAX_OS_X_VERSION_10_3
+    running = strndup(buffer, sizeof(buffer));
+#else
+    // there is no strndup in OSX
     running = strdup(buffer);
+#endif
     while (1) {
 	value = strsep(&running, delim);
 	/* debug("%s pos %i -> %s", file, pos , value); */
@@ -202,6 +207,7 @@ static int parse_i2c_sensors_procfs(const char *key)
 	    pos++;
 	}
     }
+    free(running);
     return 0;
 }
 
