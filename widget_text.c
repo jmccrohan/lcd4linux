@@ -98,12 +98,28 @@ void widget_text_scroll(void *Self)
 	if (T->scroll >= width + len)
 	    T->scroll = 0;
 	break;
-    case ALIGN_PINGPONG:
+    case ALIGN_PINGPONG_LEFT:
+    case ALIGN_PINGPONG_CENTER:
+    case ALIGN_PINGPONG_RIGHT:
 #define PINGPONGWAIT 2
 
-	/* scrolling is not necessary - center the string */
+	/* scrolling is not necessary - align the string */
 	if (len <= width) {
-	    pad = (width - len) / 2;
+	    switch (T->align) {
+	    case ALIGN_PINGPONG_LEFT:
+		pad = 0;
+		break;
+	    case ALIGN_PINGPONG_RIGHT:
+		pad = width - len;
+		if (pad < 0)
+		    pad = 0;
+		break;
+	    default:
+		pad = (width - len) / 2;
+		if (pad < 0)
+		    pad = 0;
+		break;
+	    }
 	} else {
 	    if (T->direction == 1)
 		T->scroll++;	/* scroll right */
@@ -258,14 +274,15 @@ void widget_text_update(void *Self)
 	T->scroll = 0;
 
 	/* Init pingpong scroller. start scrolling left (wrong way) to get a delay */
-	if (T->align == ALIGN_PINGPONG) {
+	if (T->align == ALIGN_PINGPONG_LEFT || T->align == ALIGN_PINGPONG_CENTER || T->align == ALIGN_PINGPONG_RIGHT) {
 	    T->direction = 0;
 	    T->delay = PINGPONGWAIT;
 	}
 	/* if there's a marquee scroller active, it has its own */
 	/* update callback timer, so we do nothing here; otherwise */
 	/* we simply call this scroll callback directly */
-	if (T->align != ALIGN_MARQUEE || T->align != ALIGN_AUTOMATIC || T->align != ALIGN_PINGPONG) {
+	if (T->align != ALIGN_MARQUEE || T->align != ALIGN_AUTOMATIC || T->align != ALIGN_PINGPONG_LEFT
+	    || T->align != ALIGN_PINGPONG_CENTER || T->align != ALIGN_PINGPONG_RIGHT) {
 	    widget_text_scroll(Self);
 	}
     }
@@ -312,7 +329,7 @@ int widget_text_init(WIDGET * Self)
 
     /* field alignment: Left (default), Center, Right or Marquee */
     c = cfg_get(section, "align", "L");
-    switch (toupper(*c)) {
+    switch (toupper(c[0])) {
     case 'L':
 	Text->align = ALIGN_LEFT;
 	break;
@@ -329,7 +346,20 @@ int widget_text_init(WIDGET * Self)
 	Text->align = ALIGN_AUTOMATIC;
 	break;
     case 'P':
-	Text->align = ALIGN_PINGPONG;
+	switch (toupper(c[1])) {
+	case 'C':
+	    Text->align = ALIGN_PINGPONG_CENTER;
+	    break;
+	case 'L':
+	    Text->align = ALIGN_PINGPONG_LEFT;
+	    break;
+	case 'R':
+	    Text->align = ALIGN_PINGPONG_RIGHT;
+	    break;
+	default:
+	    Text->align = ALIGN_PINGPONG_CENTER;
+	    error("widget %s has unknown alignment '%s', using 'Centered Pingpong'", section, c);
+	}
 	break;
     default:
 	error("widget %s has unknown alignment '%s', using 'Left'", section, c);
@@ -344,7 +374,8 @@ int widget_text_init(WIDGET * Self)
 	Text->update = 10;
 
     /* marquee scroller speed: interval (msec), default 500msec */
-    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG_LEFT
+	|| Text->align == ALIGN_PINGPONG_CENTER || Text->align == ALIGN_PINGPONG_RIGHT) {
 	cfg_number(section, "speed", 500, 10, -1, &(Text->speed));
     }
     //update on this event
@@ -370,7 +401,8 @@ int widget_text_init(WIDGET * Self)
     timer_add(widget_text_update, Self, Text->update, Text->update == 0);
 
     /* a marquee scroller has its own timer and callback */
-    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG) {
+    if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG_LEFT
+	|| Text->align == ALIGN_PINGPONG_CENTER || Text->align == ALIGN_PINGPONG_RIGHT) {
 	timer_add(widget_text_scroll, Self, Text->speed, 0);
     }
 
