@@ -105,6 +105,8 @@ static void pyt_exec_str(RESULT * result, const char *module, const char *functi
 	Py_DECREF(pModule);
     } else {
 	error("Failed to load python module \"%s\"", module);
+	/* print traceback on stderr */
+	PyErr_PrintEx(0);
     }
     SetResult(&result, R_STRING, "");
     return;
