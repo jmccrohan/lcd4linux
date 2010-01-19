@@ -32,6 +32,7 @@
  * 
  */
 
+#include "config.h"
 #include <Python.h>
 #include "debug.h"
 #include "plugin.h"
