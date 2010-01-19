@@ -93,6 +93,8 @@ static void pyt_exec_str(RESULT * result, const char *module, const char *functi
 	    } else {
 		Py_DECREF(pModule);
 		error("Python call failed (\"%s.%s\")", module, function);
+		/* print traceback on stderr */
+		PyErr_PrintEx(0);
 		SetResult(&result, R_STRING, "");
 		return;
 	    }
