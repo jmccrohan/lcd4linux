@@ -33,16 +33,14 @@
  */
 
 
-/* define the include files you need */
-#include "config.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
 /* these should always be included */
 #include "debug.h"
 #include "plugin.h"
+
+/* define the include files you need */
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>

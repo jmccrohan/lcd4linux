@@ -33,15 +33,13 @@
  *
  */
 
-
-#include "config.h"
+#include "plugin.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "debug.h"
-#include "plugin.h"
 
 
 char *Plugins[] = {

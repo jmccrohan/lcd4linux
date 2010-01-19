@@ -24,7 +24,7 @@
  *
  */
 
-
+#include "config.h"
 #include "evaluator.h"
 
 #ifndef _PLUGIN_H_
