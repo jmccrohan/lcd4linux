@@ -343,11 +343,13 @@ static void drv_X11_timer( __attribute__ ((unused))
 {
     XEvent ev;
     XRectangle exp;
+    KeySym key;
     int xoffset = border + (DCOLS / XRES) * cgap + DCOLS * (pixel + pgap);
     int yoffset = border + (DROWS / YRES) * rgap;
     static int btn = 0;
 
-    if (XCheckWindowEvent(dp, w, ExposureMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0
+    if (XCheckWindowEvent
+	(dp, w, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask, &ev) == 0
 	/* there is no ClientMessageMask, so this will be checked separately */
 	&& XCheckTypedWindowEvent(dp, w, ClientMessage, &ev) == 0)
 	return;
@@ -377,6 +379,74 @@ static void drv_X11_timer( __attribute__ ((unused))
 	    }
 	}
 	drv_X11_expose(exp.x, exp.y, exp.width, exp.height);
+	break;
+
+    case KeyPress:
+	key = XLookupKeysym(&ev.xkey, 0);
+	switch (key) {
+	case XK_Up:
+	    btn = 1;
+	    break;
+	case XK_Down:
+	    btn = 2;
+	    break;
+	case XK_Left:
+	    btn = 3;
+	    break;
+	case XK_Right:
+	    btn = 4;
+	    break;
+	case XK_Return:
+	    btn = 5;
+	    break;
+	case XK_Escape:
+	    btn = 6;
+	    break;
+	default:
+	    btn = 0;
+	}
+	/* only register key press if button is defined on GUI */
+	if ((btn > 0) && (btn <= buttons)) {
+	    debug("key for button %i pressed", btn);
+	    drv_X11_color(BG_COL, 255);
+	    XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
+			   btnheight - 2 - 1);
+	    drv_generic_keypad_press(btn);
+	} else {
+	    debug("key press for button %i ignored", btn);
+	}
+	break;
+
+    case KeyRelease:
+	key = XLookupKeysym(&ev.xkey, 0);
+	switch (key) {
+	case XK_Up:
+	    btn = 1;
+	    break;
+	case XK_Down:
+	    btn = 2;
+	    break;
+	case XK_Left:
+	    btn = 3;
+	    break;
+	case XK_Right:
+	    btn = 4;
+	    break;
+	case XK_Return:
+	    btn = 5;
+	    break;
+	case XK_Escape:
+	    btn = 6;
+	    break;
+	}
+	/* only register key release if button is defined on GUI */
+	if ((btn > 0) && (btn <= buttons)) {
+	    debug("key for button %i released", btn);
+	    XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
+		       1 /* true */ );
+	} else {
+	    debug("key release for button %i ignored", btn);
+	}
 	break;
 
     case ButtonPress:
@@ -530,7 +600,7 @@ static int drv_X11_start(const char *section)
 	btnheight = (DROWS * pixel + (DROWS - 1) * pgap) / buttons;
     }
 
-    wa.event_mask = ExposureMask | ButtonPressMask | ButtonReleaseMask;
+    wa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
 
     sh.min_width = sh.max_width = dimx + 2 * border + btnwidth;
     sh.min_height = sh.max_height = dimy + 2 * border;
