@@ -406,14 +406,16 @@ static void drv_X11_timer( __attribute__ ((unused))
 	    btn = 0;
 	}
 	/* only register key press if button is defined on GUI */
-	if ((btn > 0) && (btn <= buttons)) {
-	    debug("key for button %i pressed", btn);
-	    drv_X11_color(BG_COL, 255);
-	    XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
-			   btnheight - 2 - 1);
-	    drv_generic_keypad_press(btn);
-	} else {
-	    debug("key press for button %i ignored", btn);
+	if (btn > 0) {
+	    if (btn <= buttons) {
+		debug("key for button %i pressed", btn);
+		drv_X11_color(BG_COL, 255);
+		XFillRectangle(dp, w, gc, xoffset + 1, yoffset + (btn - 1) * (btnheight + pgap) + 1, btnwidth - 1,
+			       btnheight - 2 - 1);
+		drv_generic_keypad_press(btn);
+	    } else {
+		debug("key press for button %i ignored", btn);
+	    }
 	}
 	break;
 
@@ -440,12 +442,14 @@ static void drv_X11_timer( __attribute__ ((unused))
 	    break;
 	}
 	/* only register key release if button is defined on GUI */
-	if ((btn > 0) && (btn <= buttons)) {
-	    debug("key for button %i released", btn);
-	    XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
-		       1 /* true */ );
-	} else {
-	    debug("key release for button %i ignored", btn);
+	if (btn > 0) {
+	    if (btn <= buttons) {
+		debug("key for button %i released", btn);
+		XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
+			   1 /* true */ );
+	    } else {
+		debug("key release for button %i ignored", btn);
+	    }
 	}
 	break;
 
