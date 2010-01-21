@@ -33,6 +33,9 @@
  *
  */
 
+
+#include "config.h"
+
 #include "plugin.h"
 
 #include <stdlib.h>

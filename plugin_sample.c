@@ -33,6 +33,8 @@
  */
 
 
+#include "config.h"
+
 /* these should always be included */
 #include "debug.h"
 #include "plugin.h"
