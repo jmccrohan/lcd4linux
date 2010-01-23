@@ -42,6 +42,7 @@ typedef struct {
 
 /* strndup() may be not available on several platforms */
 #ifndef HAVE_STRNDUP
+#include <string.h>
 char *strndup(const char *source, size_t len);
 #endif
 
