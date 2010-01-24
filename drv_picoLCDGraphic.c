@@ -53,6 +53,7 @@
 #include "qprintf.h"
 #include "udelay.h"
 #include "plugin.h"
+#include "timer.h"
 #include "widget.h"
 #include "widget_text.h"
 #include "widget_icon.h"
@@ -85,6 +86,11 @@
 #define DEBUG(x)
 #endif
 
+/* "dirty" marks the display to be redrawn from frame buffer */
+static int dirty = 1;
+
+/* timer for display redraw (set to zero for "direct updates") */
+static int update = 0;
 
 static char Name[] = "picoLCDGraphic";
 static unsigned char *pLG_framebuffer;
@@ -200,8 +206,14 @@ static void drv_pLG_update_img()
     unsigned char cs, line;
     unsigned char pixel;
 
-    info("In %s\n", __FUNCTION__);
+    /* do not redraw display if frame buffer has not changed, unless
+       "direct updates" have been requested (update is zero) */
+    if ((!dirty) && (update > 0)) {
+	debug("Skipping %s\n", __FUNCTION__);
+	return;
+    }
 
+    info("In %s\n", __FUNCTION__);
 
     for (cs = 0; cs < 4; cs++) {
 	unsigned char chipsel = (cs << 2);	//chipselect
@@ -259,6 +271,8 @@ static void drv_pLG_update_img()
 	}
     }
 
+    /* mark display as up-to-date */
+    dirty = 0;
     //drv_pLG_clear();
 }
 
@@ -286,7 +300,13 @@ static void drv_pLG_blit(const int row, const int col, const int height, const i
        fprintf(stderr, "\n");
        }
      */
-    drv_pLG_update_img();
+
+    /* display needs to be redrawn from frame buffer */
+    dirty = 1;
+
+    /* if "direct updates" have been requested, redraw now */
+    if (update <= 0)
+	drv_pLG_update_img();
 }
 
 
@@ -442,6 +462,9 @@ static int drv_pLG_start(const char *section, const int quiet)
     int value;
     char *s;
 
+    /* set display redraw interval (set to zero for "direct updates") */
+    cfg_number(section, "update", 200, 0, -1, &update);
+
     s = cfg_get(section, "Size", NULL);
     if (s == NULL || *s == '\0') {
 	error("%s: no '%s.Size' entry from %s", Name, section, cfg_source());
@@ -502,6 +525,11 @@ static int drv_pLG_start(const char *section, const int quiet)
 	    drv_pLG_clear();
 	}
     }
+
+    /* setup a timer that regularly redraws the display from the frame
+       buffer (unless "direct updates" have been requested */
+    if (update > 0)
+	timer_add(drv_pLG_update_img, NULL, update, 0);
 
     return 0;
 }

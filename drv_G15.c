@@ -330,8 +330,8 @@ static int drv_G15_open()
 	    debug("%s: open %s/%s/%s", Name, bus->dirname, dev->bus->dirname, dev->filename);
 	    if ((g15_lcd = usb_open(dev))) {
 		if (dev->descriptor.idVendor == G15_VENDOR) {
-                    debug("%s: Found USB vendor ID 0x%x (Logitech), checking productID 0x%x...",
-                          Name, G15_VENDOR, dev->descriptor.idProduct);
+		    debug("%s: Found USB vendor ID 0x%x (Logitech), checking productID 0x%x...",
+			  Name, G15_VENDOR, dev->descriptor.idProduct);
 		    switch (dev->descriptor.idProduct) {
 		    case G15_DEVICE:
 		    case G15_DEVICE2:
@@ -351,8 +351,8 @@ static int drv_G15_open()
 			    break;
 			}
 		    default:
-                        debug("%s: Don't found USB product IDs 0x%x|0x%x/0x%x for G-15/M1730 or 0x%x for Z10",
-                              Name, G15_DEVICE, G15_DEVICE2, M1730_DEVICE, Z10_DEVICE);
+			debug("%s: Don't found USB product IDs 0x%x|0x%x/0x%x for G-15/M1730 or 0x%x for Z10",
+			      Name, G15_DEVICE, G15_DEVICE2, M1730_DEVICE, Z10_DEVICE);
 			usb_close(g15_lcd);
 		    }
 
