@@ -1,6 +1,7 @@
 Display picoLCD {
     Driver   'picoLCDGraphic'
     Size     '256x64'
+    Update    200
     Contrast  230
     Backlight 1
     Inverted   1
