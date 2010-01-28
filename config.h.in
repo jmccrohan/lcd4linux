@@ -354,6 +354,9 @@
 /* hddtemp plugin */
 #undef PLUGIN_HDDTEMP
 
+/* huawei plugin */
+#undef PLUGIN_HUAWEI
+
 /* i2c sensors plugin */
 #undef PLUGIN_I2C_SENSORS
 

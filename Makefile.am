@@ -133,6 +133,7 @@ plugin_fifo.c                 \
 plugin_file.c                 \
 plugin_gps.c                  \
 plugin_hddtemp.c              \
+plugin_huawei.c		      \
 plugin_i2c_sensors.c          \
 plugin_iconv.c                \
 plugin_imon.c                 \

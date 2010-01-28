@@ -53,9 +53,11 @@ for plugin in $plugins; do
       list)
          AC_MSG_RESULT(
             [available plugins:]
-            [ apm,cpuinfo,dbus,diskstats,dvb,exec,event,file,gps,i2c_sensors,iconv,imon,]
-            [ isdn,kvv,loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,]
-            [ proc_stat,sample,seti,statfs,uname,uptime,wireless,xmms])
+            [ apm,asterisk,button_exec,cpuinfo,dbus,diskstats,dvb,exec,event,]
+            [ fifo,file,gps,hddtemp,huawei,i2c_sensors,iconv,imon,isdn,kvv,]
+            [ loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,]
+	    [ proc_stat,python,qnaplog,sample,seti,statfs,uname,uptime,]
+            [ w1retap,wireless,xmms])
          AC_MSG_ERROR([run ./configure --with-plugins=...])
          ;;
       all)
@@ -72,6 +74,7 @@ for plugin in $plugins; do
          PLUGIN_FILE="yes"
          PLUGIN_GPS="yes"
          PLUGIN_HDDTEMP="yes"
+         PLUGIN_HUAWEI="yes"
          PLUGIN_I2C_SENSORS="yes"
          PLUGIN_ICONV="yes"
          PLUGIN_IMON="yes"
@@ -136,6 +139,9 @@ for plugin in $plugins; do
          ;;
       hddtemp)
          PLUGIN_HDDTEMP=$val
+         ;;
+      huawei)
+         PLUGIN_HUAWEI=$val
          ;;
       i2c_sensors)
          PLUGIN_I2C_SENSORS=$val
@@ -337,6 +343,12 @@ fi
 if test "$PLUGIN_HDDTEMP" = "yes"; then
    PLUGINS="$PLUGINS plugin_hddtemp.o"
    AC_DEFINE(PLUGIN_HDDTEMP,1,[hddtemp plugin])
+fi
+
+# Huawei
+if test "$PLUGIN_HUAWEI" = "yes"; then
+   PLUGINS="$PLUGINS plugin_huawei.o"
+   AC_DEFINE(PLUGIN_HUAWEI,1,[huawei plugin])
 fi
 
 # I2C
