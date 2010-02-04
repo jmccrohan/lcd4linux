@@ -170,12 +170,10 @@ int timer_process(struct timespec *delay)
     }
 
     /* process expired timers */
-    flag = 0;
     for (i = 0; i < nTimers; i++) {
 	if (Timers[i].active == 0)
 	    continue;
 	if (!timercmp(&Timers[i].when, &now, >)) {
-	    flag = 1;
 	    /* callback */
 	    if (Timers[i].callback != NULL) {
 		Timers[i].callback(Timers[i].data);
