@@ -439,7 +439,7 @@ static char *huawei_receive(void)
 
     /* print bytes read and buffer data when debuging enabled */
     if (debug)
-	debug("DEBUG: ->Received bytes=%i, receive buf=%s", strlen(buf), buf);
+	debug("DEBUG: ->Received bytes=%i, receive buf=%s", (int) strlen(buf), buf);
 
     return (buf);
 }
