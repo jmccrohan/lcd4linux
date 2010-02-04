@@ -110,6 +110,8 @@ static int makeFifo(void)
 	error("Couldn't create FIFO \"%s\": %s\n", fd.path, strerror(errno));
 	return -1;
     }
+    /* clear errno */
+    errno = 0;
     fd.created = 1;
     return 0;
 }
