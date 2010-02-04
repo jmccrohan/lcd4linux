@@ -174,7 +174,7 @@ int timer_process(struct timespec *delay)
     for (i = 0; i < nTimers; i++) {
 	if (Timers[i].active == 0)
 	    continue;
-	if (timercmp(&Timers[i].when, &now, <=)) {
+	if (!timercmp(&Timers[i].when, &now, >)) {
 	    flag = 1;
 	    /* callback */
 	    if (Timers[i].callback != NULL) {
