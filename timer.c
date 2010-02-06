@@ -77,13 +77,11 @@ int nTimers = 0;
 
 static void timer_inc(struct timeval *tv, const int msec)
 {
-    tv->tv_sec += msec / 1000;
-    tv->tv_usec += (msec - 1000 * (msec / 1000)) * 1000;
+    struct timeval diff;
+    diff.tv_sec = msec / 1000;
+    diff.tv_usec = (msec % 1000) * 1000;
 
-    if (tv->tv_usec >= 1000000) {
-	tv->tv_usec -= 1000000;
-	tv->tv_sec++;
-    }
+    timeradd(tv, &diff, tv);
 }
 
 int timer_remove(void (*callback) (void *data), void *data)
@@ -206,14 +204,12 @@ int timer_process(struct timespec *delay)
     }
 
     /* delay until next timer event */
-    delay->tv_sec = Timers[min].when.tv_sec - now.tv_sec;
-    delay->tv_nsec = Timers[min].when.tv_usec - now.tv_usec;
-    if (delay->tv_nsec < 0) {
-	delay->tv_sec--;
-	delay->tv_nsec += 1000000;
-    }
-    /* nanoseconds!! */
-    delay->tv_nsec *= 1000;
+    struct timeval diff;
+    timersub(&Timers[min].when, &now, &diff);
+
+    delay->tv_sec = diff.tv_sec;
+    /* microseconds to nanoseconds!! */
+    delay->tv_nsec = diff.tv_usec * 1000;
 
     /* check if date changed */
     if ((delay->tv_sec) > CLOCK_SKEW_DETECT_TIME_IN_S) {
