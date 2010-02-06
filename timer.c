@@ -180,7 +180,6 @@ int timer_process(struct timespec *delay)
 	    if (Timers[i].one_shot) {
 		Timers[i].active = 0;
 	    } else {
-		Timers[i].when = now;
 		timer_inc(&Timers[i].when, Timers[i].interval);
 	    }
 	}
@@ -202,6 +201,9 @@ int timer_process(struct timespec *delay)
 	error("huh? not one single timer left? dazed and confused...");
 	return -1;
     }
+
+    /* update the current moment to compensate for processing delay */
+    gettimeofday(&now, NULL);
 
     /* delay until next timer event */
     struct timeval diff;
