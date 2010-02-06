@@ -77,9 +77,10 @@ int nTimers = 0;
 
 static void timer_inc(struct timeval *tv, const int msec)
 {
-    struct timeval diff;
-    diff.tv_sec = msec / 1000;
-    diff.tv_usec = (msec % 1000) * 1000;
+    struct timeval diff = {
+	.tv_sec = msec / 1000,
+	.tv_usec = (msec % 1000) * 1000
+    };
 
     timeradd(tv, &diff, tv);
 }
