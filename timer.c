@@ -210,6 +210,10 @@ int timer_process(struct timespec *delay)
     struct timeval diff;
     timersub(&Timers[min].when, &now, &diff);
 
+    /* for negative delays, directly trigger next update */
+    if ((diff.tv_sec < 0) || (diff.tv_usec < 0))
+      timerclear(&diff);
+
     delay->tv_sec = diff.tv_sec;
     /* microseconds to nanoseconds!! */
     delay->tv_nsec = diff.tv_usec * 1000;
