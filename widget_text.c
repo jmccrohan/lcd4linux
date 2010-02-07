@@ -45,6 +45,7 @@
 #include "evaluator.h"
 #include "property.h"
 #include "timer.h"
+#include "timer_group.h"
 #include "event.h"
 #include "widget.h"
 #include "widget_text.h"
@@ -398,7 +399,7 @@ int widget_text_init(WIDGET * Self)
     Self->y2 = Self->row;
 
     /* add update timer, use one-shot if 'update' is zero */
-    timer_add(widget_text_update, Self, Text->update, Text->update == 0);
+    timer_add_widget(widget_text_update, Self, Text->update, Text->update == 0);
 
     /* a marquee scroller has its own timer and callback */
     if (Text->align == ALIGN_MARQUEE || Text->align == ALIGN_AUTOMATIC || Text->align == ALIGN_PINGPONG_LEFT

@@ -42,7 +42,7 @@
 #include "cfg.h"
 #include "qprintf.h"
 #include "property.h"
-#include "timer.h"
+#include "timer_group.h"
 #include "widget.h"
 #include "widget_timer.h"
 
@@ -72,7 +72,7 @@ void widget_timer_update(void *Self)
     }
 
     /* add a new one-shot timer */
-    timer_add(widget_timer_update, Self, update, 1);
+    timer_add_widget(widget_timer_update, Self, update, 1);
 }
 
 

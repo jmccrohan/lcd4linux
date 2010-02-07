@@ -59,7 +59,7 @@
 #include "cfg.h"
 #include "qprintf.h"
 #include "property.h"
-#include "timer.h"
+#include "timer_group.h"
 #include "widget.h"
 #include "widget_image.h"
 #include "rgb.h"
@@ -195,7 +195,7 @@ static void widget_image_update(void *Self)
 
     /* add a new one-shot timer */
     if (P2N(&Image->update) > 0) {
-	timer_add(widget_image_update, Self, P2N(&Image->update), 1);
+	timer_add_widget(widget_image_update, Self, P2N(&Image->update), 1);
     }
 }
 

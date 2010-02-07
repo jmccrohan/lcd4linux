@@ -41,7 +41,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "property.h"
-#include "timer.h"
+#include "timer_group.h"
 #include "widget.h"
 #include "widget_gpo.h"
 
@@ -65,7 +65,7 @@ void widget_gpo_update(void *Self)
 
     /* add a new one-shot timer */
     if (P2N(&GPO->update) > 0) {
-	timer_add(widget_gpo_update, Self, P2N(&GPO->update), 1);
+	timer_add_widget(widget_gpo_update, Self, P2N(&GPO->update), 1);
     }
 
 }

@@ -42,7 +42,7 @@
 #include "cfg.h"
 #include "qprintf.h"
 #include "property.h"
-#include "timer.h"
+#include "timer_group.h"
 #include "widget.h"
 #include "widget_icon.h"
 
@@ -121,7 +121,7 @@ void widget_icon_update(void *Self)
 
     /* add a new one-shot timer */
     if (P2N(&Icon->speed) > 0) {
-	timer_add(widget_icon_update, Self, P2N(&Icon->speed), 1);
+	timer_add_widget(widget_icon_update, Self, P2N(&Icon->speed), 1);
     }
 }
 

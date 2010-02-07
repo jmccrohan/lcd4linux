@@ -34,6 +34,7 @@ hash.c        hash.h          \
 layout.c      layout.h        \
 pid.c         pid.h           \
 timer.c       timer.h         \
+timer_group.c timer_group.h   \
 thread.c      thread.h        \
 udelay.c      udelay.h        \
 qprintf.c     qprintf.h       \

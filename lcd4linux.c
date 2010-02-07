@@ -45,6 +45,7 @@
 #include "udelay.h"
 #include "drv.h"
 #include "timer.h"
+#include "timer_group.h"
 #include "layout.h"
 #include "plugin.h"
 #include "thread.h"
@@ -413,6 +414,7 @@ int main(int argc, char *argv[])
     pid_exit(pidfile);
     cfg_exit();
     plugin_exit();
+    timer_exit_group();
     timer_exit();
 
     if (got_signal == SIGHUP) {

@@ -41,7 +41,7 @@
 #include "debug.h"
 #include "cfg.h"
 #include "property.h"
-#include "timer.h"
+#include "timer_group.h"
 #include "widget.h"
 #include "widget_bar.h"
 
@@ -204,7 +204,7 @@ int widget_bar_init(WIDGET * Self)
     free(section);
     Self->data = Bar;
 
-    timer_add(widget_bar_update, Self, Bar->update, 0);
+    timer_add_widget(widget_bar_update, Self, Bar->update, 0);
 
     return 0;
 }
