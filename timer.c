@@ -156,7 +156,7 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
 
 int timer_process(struct timespec *delay)
 {
-    int i, flag, min;
+    int i, min;
     struct timeval now;
 
     /* the current moment */
@@ -187,15 +187,12 @@ int timer_process(struct timespec *delay)
     }
 
     /* find next timer */
-    flag = 1;
     min = -1;
     for (i = 0; i < nTimers; i++) {
 	if (Timers[i].active == 0)
 	    continue;
-	if (flag || timercmp(&Timers[i].when, &Timers[min].when, <)) {
-	    flag = 0;
+	if ((min < 0) || timercmp(&Timers[i].when, &Timers[min].when, <))
 	    min = i;
-	}
     }
 
     if (min < 0) {
@@ -211,8 +208,8 @@ int timer_process(struct timespec *delay)
     timersub(&Timers[min].when, &now, &diff);
 
     /* for negative delays, directly trigger next update */
-    if ((diff.tv_sec < 0) || (diff.tv_usec < 0))
-      timerclear(&diff);
+    if (diff.tv_sec < 0)
+	timerclear(&diff);
 
     delay->tv_sec = diff.tv_sec;
     /* microseconds to nanoseconds!! */
