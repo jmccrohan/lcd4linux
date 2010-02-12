@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * plugin template
+ * Fifo plugin
  *
  * Copyright (C) 2008 Michael Vogt <michu@neophob.com>
  * Copyright (C) 2010 Mattia Jona-Lasinio <mjona@users.sourceforge.net>
@@ -25,7 +25,20 @@
  *
  */
 
-/* define the include files you need */
+/*
+ * Configuration parameters:
+ *
+ * - FifoPath 'string'	: use <string> as the fifo complete file path
+ *			  If absent use  /tmp/lcd4linux.fifo)
+ *
+ * - FifoBufSize num	: if the plugin is unable to determine the display size then
+ *			  set the size of the internal buffer to <num> characters
+ *			  otherwise use the display size (number of columns).
+ *			  If no display size is available and no FifoBufSize parameter
+  *			  is specified then arbitrarily set the internal buffer size
+ *			  to 80 characters.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -37,7 +50,6 @@
 #include <sys/stat.h>
 #include <signal.h>
 
-/* these should always be included */
 #include "debug.h"
 #include "plugin.h"
 #include "cfg.h"
@@ -78,6 +90,13 @@ static int confFifo(struct FifoData *p)
 
 	path = cfg_get(fifosect, "FifoPath", string(FIFO_DEFAULT_PATH));
 	pathlen = strlen(path);
+	if (pathlen == 0) {
+		info("[FIFO] Invalid '%s.FifoPath' entry from '%s'. "
+			"Assuming "string(FIFO_DEFAULT_PATH), fifosect, cfg_source());
+		free(path);
+		path = strdup(string(FIFO_DEFAULT_PATH));
+		pathlen = strlen(path);
+	}
 	if (pathlen > FIFO_MAXPATH) {
 		error("[FIFO] Error: Too long '%s.FifoPath' entry from '%s'. "
 			"(MAX "string(FIFO_MAXPATH)" chars)", fifosect, cfg_source());
@@ -88,7 +107,7 @@ static int confFifo(struct FifoData *p)
 
 	disp = cfg_get(NULL, "Display", NULL);
 	if (disp == NULL) {
-		error("[FIFO] Error: Could not get the Display name from '%s'.", cfg_source());
+		error("[FIFO] Error: Could not get the Display name from '%s'", cfg_source());
 		free(path);
 		return (-1);
 	}
@@ -105,21 +124,25 @@ static int confFifo(struct FifoData *p)
 
 	disp = cfg_get(sect, "Size", NULL);
 	if (disp != NULL) {
-		info("[FIFO] Getting the buffer size from '%s.Size'.", sect);
-		sscanf(disp, "%dx%*d", &p->msglen);
+		info("[FIFO] Getting the buffer size from '%s.Size'", sect);
+		if (sscanf(disp, "%dx%*d", &p->msglen) != 1) {
+			info("[FIFO] Could not determine the display size. "
+				"Assuming "string(FIFO_DEFAULT_BUFSIZE));
+			p->msglen = FIFO_DEFAULT_BUFSIZE;
+		}
+		free(disp);
 	} else {
 		info("[FIFO] Could not find a '%s.Size' entry.", sect);
 		if (cfg_number(fifosect, "FifoBufSize", FIFO_DEFAULT_BUFSIZE, 0, -1, &p->msglen) > 0) {
-			info("[FIFO] Getting the buffer size from '%s.FifoBufSize'.", fifosect);
+			info("[FIFO] Getting the buffer size from '%s.FifoBufSize'", fifosect);
 		} else {
 			info("[FIFO] Could not find a valid '%s.FifoBufSize' entry. "
-				"Assuming "string(FIFO_DEFAULT_BUFSIZE)".", fifosect);
+				"Assuming "string(FIFO_DEFAULT_BUFSIZE), fifosect);
 			p->msglen = FIFO_DEFAULT_BUFSIZE;
 		}
 	}
 	info("[FIFO] Read buffer size is '%d'", p->msglen);
 	free(sect);
-	free(disp);
 
 	if ((p->msg = malloc(2+pathlen+p->msglen)) == NULL) {
 		error("[FIFO] Error: Memory allocation failed");
