@@ -391,7 +391,7 @@ char *cfg_get(const char *section, const char *key, const char *defval)
 
     if (expression != NULL) {
 	if (*expression == '\0')
-	    return "";
+	    return strdup("");
 	if (Compile(expression, &tree) == 0 && Eval(tree, &result) == 0) {
 	    retval = strdup(R2S(&result));
 	    DelTree(tree);
