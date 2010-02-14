@@ -840,16 +840,16 @@ static void huawei_read_flowreport(const char *cmd)
 static void my_quality(RESULT * result, RESULT * arg1)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     static double value;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_quality(QUALITY);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_quality(QUALITY);
     }
 
     /* Note: R2S stands for 'Result to String' */
@@ -888,17 +888,17 @@ static void my_quality(RESULT * result, RESULT * arg1)
 static void my_mode(RESULT * result, RESULT * arg1)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     double value_num;
     char *value_str, *mode_str;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_sysinfo(SYSINFO);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_sysinfo(SYSINFO);
     }
 
     if (strncmp(R2S(arg1), "text", 4) == 0) {
@@ -945,16 +945,16 @@ static void my_mode(RESULT * result, RESULT * arg1)
 static void my_manuf(RESULT * result)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     char *value_str;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_manuf(MANUF);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_manuf(MANUF);
     }
 
     /* start with an empty string */
@@ -978,16 +978,16 @@ static void my_manuf(RESULT * result)
 static void my_model(RESULT * result)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     char *value_str;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_model(MODEL);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_model(MODEL);
     }
 
     /* start with an empty string */
@@ -1011,16 +1011,16 @@ static void my_model(RESULT * result)
 static void my_fwver(RESULT * result)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     char *value_str;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_fwver(FWVER);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_fwver(FWVER);
     }
 
     /* start with an empty string */
@@ -1044,16 +1044,16 @@ static void my_fwver(RESULT * result)
 static void my_operator(RESULT * result)
 {
     int age;
-    struct timeval now;
     static struct timeval prev_age;
     char *value_str;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_operator(OPERATOR);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_operator(OPERATOR);
     }
 
     /* start with an empty string */
@@ -1080,15 +1080,15 @@ static void my_flowreport(RESULT * result, RESULT * arg1)
     unsigned int days, hours, mins, secs;
     double value_num;
     char value_str[32];
-    struct timeval now;
     static struct timeval prev_age;
 
-    gettimeofday(&now, NULL);
     age = age_diff(prev_age);
 
-    if (age > MIN_INTERVAL && huawei_configured() == 1) {
-	prev_age = now;
-	huawei_read_flowreport(FLOWREPORT);
+    if (age < 0 || age >= MIN_INTERVAL) {
+	gettimeofday(&prev_age, NULL);
+
+	if (huawei_configured() == 1)
+	    huawei_read_flowreport(FLOWREPORT);
     }
 
     if (strncmp(R2S(arg1), "uptime", 6) == 0) {
