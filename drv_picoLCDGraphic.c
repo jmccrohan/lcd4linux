@@ -92,6 +92,10 @@ static int dirty = 1;
 /* timer for display redraw (set to zero for "direct updates") */
 static int update = 0;
 
+/* USB read timeout in ms (the picoLCD 256x64 times out on every read
+	unless a key has been pressed!)  */
+static int read_timeout = 0;
+
 static char Name[] = "picoLCDGraphic";
 static unsigned char *pLG_framebuffer;
 
@@ -178,7 +182,7 @@ static int drv_pLG_open(void)
 
 static int drv_pLG_read(unsigned char *data, int size)
 {
-    return usb_interrupt_read(lcd, USB_ENDPOINT_IN + 1, (char *) data, size, 1000);
+    return usb_interrupt_read(lcd, USB_ENDPOINT_IN + 1, (char *) data, size, read_timeout);
 }
 
 
@@ -464,6 +468,10 @@ static int drv_pLG_start(const char *section, const int quiet)
 
     /* set display redraw interval (set to zero for "direct updates") */
     cfg_number(section, "update", 200, 0, -1, &update);
+
+    /* USB read timeout in ms (the picoLCD 256x64 times out on every
+       read unless a key has been pressed!)  */
+    cfg_number(section, "Timeout", 5, 0, -1, &read_timeout);
 
     s = cfg_get(section, "Size", NULL);
     if (s == NULL || *s == '\0') {
