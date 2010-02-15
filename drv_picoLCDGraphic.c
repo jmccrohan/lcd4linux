@@ -471,7 +471,7 @@ static int drv_pLG_start(const char *section, const int quiet)
 
     /* USB read timeout in ms (the picoLCD 256x64 times out on every
        read unless a key has been pressed!)  */
-    cfg_number(section, "Timeout", 5, 0, -1, &read_timeout);
+    cfg_number(section, "Timeout", 5, 1, 1000, &read_timeout);
 
     s = cfg_get(section, "Size", NULL);
     if (s == NULL || *s == '\0') {
