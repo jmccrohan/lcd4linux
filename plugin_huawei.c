@@ -94,16 +94,16 @@
 #define MIN_INTERVAL 100	/* minimum query interval 100 ms */
 
 
-#define INIT_STRING	"ATE1;^CURC=0;^DSFLOWCLR"	/* disable unsolicited report codes and reset DS traffic
+#define INIT_STRING	"ATE1 ^CURC=0;^DSFLOWCLR"	/* disable unsolicited report codes and reset DS traffic
 							 * with local echo enabled 
 							 */
-#define QUALITY		"ATE1;+CSQ"	/* signal quality query with local echo enabled */
-#define SYSINFO		"ATE1;^SYSINFO"	/* network access query with local echo enabled */
-#define MANUF		"ATE1;+GMI"	/* manufacturer query with local echo enabled */
-#define MODEL		"ATE1;+GMM"	/* model query with local echo enabled */
-#define FWVER		"ATE1;+CGMR"	/* firmware version query with local echo enabled */
-#define FLOWREPORT	"ATE1;^DSFLOWQRY"	/* DS traffic query with local echo enabled */
-#define OPERATOR	"ATE1;+COPS=3,0;+COPS?"	/* gsm/umts operator query (3=set format only, 0=long alphanum. string)
+#define QUALITY		"ATE1 +CSQ"	/* signal quality query with local echo enabled */
+#define SYSINFO		"ATE1 ^SYSINFO"	/* network access query with local echo enabled */
+#define MANUF		"ATE1 +GMI"	/* manufacturer query with local echo enabled */
+#define MODEL		"ATE1 +GMM"	/* model query with local echo enabled */
+#define FWVER		"ATE1 +CGMR"	/* firmware version query with local echo enabled */
+#define FLOWREPORT	"ATE1 ^DSFLOWQRY"	/* DS traffic query with local echo enabled */
+#define OPERATOR	"ATE1 +COPS=3,0;+COPS?"	/* gsm/umts operator query (3=set format only, 0=long alphanum. string)
 						 * with local echo enabled
 						 */
 
@@ -738,7 +738,7 @@ static void huawei_read_fwver(const char *cmd)
 
 static void huawei_read_operator(const char *cmd)
 {
-    int bytes, i, pos, copy;
+    int bytes, i, pos = 0, copy = 0;
     char *buf;
 
     buf = huawei_send_receive(cmd);
@@ -753,9 +753,6 @@ static void huawei_read_operator(const char *cmd)
 	 */
 
 	/* parse "operator string" */
-	pos = 0;
-	copy = 0;
-
 	for (i = 6; i <= bytes; i++) {
 	    if (buf[i] == '\"' && copy == 0) {
 		i++;
