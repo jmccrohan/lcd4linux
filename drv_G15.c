@@ -328,10 +328,17 @@ static int drv_G15_open()
     for (bus = usb_get_busses(); bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
 	    debug("%s: open %s/%s/%s", Name, bus->dirname, dev->bus->dirname, dev->filename);
-	    if ((g15_lcd = usb_open(dev))) {
-		if (dev->descriptor.idVendor == G15_VENDOR) {
-		    debug("%s: Found USB vendor ID 0x%x (Logitech), checking productID 0x%x...",
-			  Name, G15_VENDOR, dev->descriptor.idProduct);
+            if (dev->descriptor.idVendor == G15_VENDOR) {
+	        if ((g15_lcd = usb_open(dev))) {
+                    // get vendor name if possible
+                    if (dev->descriptor.iManufacturer) { 
+                        retval = usb_get_string_simple(g15_lcd, dev->descriptor.iManufacturer, dname, sizeof(dname)); 
+                        if (retval <= 0) {
+                            snprintf(dname, sizeof(dname), "(unknown)");
+                        }
+                    } 
+		    debug("%s: Found USB vendor ID 0x%x (%s), checking productID 0x%x...",
+			  Name, G15_VENDOR, dname, dev->descriptor.idProduct);
 		    switch (dev->descriptor.idProduct) {
 		    case G15_DEVICE:
 		    case G15_DEVICE2:
@@ -360,6 +367,7 @@ static int drv_G15_open()
 			debug("%s: Vendor 0x%x Product 0x%x found",
 			      Name, dev->descriptor.idVendor, dev->descriptor.idProduct);
 
+#ifdef LIBUSB_HAS_GET_DRIVER_NP
 			/* detach from the kernel if we need to */
 			retval = usb_get_driver_np(g15_lcd, interf, dname, 31);
 			debug("%s: Ret %i from usb_get_driver_np(interf.%d), Drivername %s",
@@ -367,18 +375,21 @@ static int drv_G15_open()
 			switch (retval) {
 			case -EPERM:
 			    error("%s: Permission denied! eUID of this process is %i %s",
-				  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
-			    return -1;
+                                  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
+			    //return -1;
 			    break;
 			case -ENODATA:
 			    error("%s: No data available! Device switched off?", Name);
-			    return -1;
+			    //return -1;
 			    break;
 			}
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 			if (retval == 0 && strcmp(dname, "usbhid") == 0) {
 			    debug("%s: detaching...", Name);
 			    usb_detach_kernel_driver_np(g15_lcd, interf);
 			}
+#endif   // detach_kernel_driver_np
+#endif   // get_driver_np
 
 			retval = usb_set_configuration(g15_lcd, config);
 			debug("%s: Ret %d from usb_set_configuration(%d)", Name, retval, config);
@@ -400,9 +411,9 @@ static int drv_G15_open()
 		    }
 
 		}
-	    }
-	}
-    }
+	    }   // G15_Vendor
+	}   // all devices
+    }   // all busses
 
     return -1;
 }
@@ -421,7 +432,7 @@ static int drv_G15_close(void)
 static void drv_G15_update_img()
 {
     int i, j, k;
-    unsigned char *output = malloc(160 * 43 * sizeof(unsigned char));
+    unsigned char *output = malloc(DCOLS * DROWS * sizeof(unsigned char));
     int retval;
 
     DEBUG("entered");
@@ -429,27 +440,25 @@ static void drv_G15_update_img()
 	return;
 
     DEBUG("memory allocated");
-    memset(output, 0, 160 * 43);
+    memset(output, 0, DCOLS * DROWS);
     DEBUG("memory set");
     output[0] = 0x03;
     DEBUG("first output set");
 
     for (k = 0; k < 6; k++) {
-	for (i = 0; i < 160; i++) {
+	for (i = 0; i < DCOLS; i++) {
 	    int maxj = (k == 5) ? 3 : 8;
 	    for (j = 0; j < maxj; j++) {
-		if (g15_image[(k * 1280) + i + (j * 160)])
-		    output[32 + i + (k * 160)] |= (1 << j);
+		if (g15_image[(k * 1280) + i + (j * DCOLS)])
+		    output[32 + i + (k * DCOLS)] |= (1 << j);
 	    }
 	}
     }
 
     DEBUG("output array prepared");
     mutex_lock(kb_mutex);
-    //retval = usb_interrupt_write(g15_lcd, 0x02, (char *) output, 992, 1000);  // G15
-    //retval = usb_interrupt_write(g15_lcd, 0x03, (char *) output, 992, 1000);  // Z10
     retval = usb_interrupt_write(g15_lcd, usb_endpoint, (char *) output, 992, 1000);
-    //info("%s: Ret %i from usb_interrupt_write(endpoint 2)", Name, retval);
+    //info("%s: Ret %i from usb_interrupt_write(endpoint %d)", Name, retval, usb_endpoint);
     mutex_unlock(kb_mutex);
     usleep(300);
 
@@ -472,7 +481,7 @@ static void drv_G15_blit(const int row, const int col, const int height, const i
 
     for (r = row; r < row + height; r++) {
 	for (c = col; c < col + width; c++) {
-	    g15_image[r * 160 + c] = drv_generic_graphic_black(r, c);
+	    g15_image[r * DCOLS + c] = drv_generic_graphic_black(r, c);
 	}
     }
 
@@ -520,11 +529,11 @@ static int drv_G15_start(const char *section)
 
     DEBUG("allocating image buffer");
     /* you surely want to allocate a framebuffer or something... */
-    g15_image = malloc(160 * 43 * sizeof(unsigned char));
+    g15_image = malloc(DCOLS * DROWS * sizeof(unsigned char));
     if (!g15_image)
 	return -1;
     DEBUG("allocated");
-    memset(g15_image, 0, 160 * 43);
+    memset(g15_image, 0, DCOLS * DROWS);
     DEBUG("zeroed");
 
     /* open communication with the display */
