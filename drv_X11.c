@@ -201,9 +201,18 @@ static int drv_X11_brightness(int brightness)
 
 static int drv_X11_keypad(const int num)
 {
-    int val = WIDGET_KEY_PRESSED;
+    int val;
+    int new_num = num;
 
-    switch (num) {
+    if (new_num > 0)
+	val = WIDGET_KEY_PRESSED;
+    else {
+	/* negative values mark a key release */
+	new_num = -num;
+	val = WIDGET_KEY_RELEASED;
+    }
+
+    switch (new_num) {
     case 1:
 	val += WIDGET_KEY_UP;
 	break;
@@ -447,6 +456,8 @@ static void drv_X11_timer( __attribute__ ((unused))
 		debug("key for button %i released", btn);
 		XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
 			   1 /* true */ );
+		/* negative values mark a key release */
+		drv_generic_keypad_press(-btn);
 	    } else {
 		debug("key release for button %i ignored", btn);
 	    }

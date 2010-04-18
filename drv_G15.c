@@ -328,15 +328,15 @@ static int drv_G15_open()
     for (bus = usb_get_busses(); bus; bus = bus->next) {
 	for (dev = bus->devices; dev; dev = dev->next) {
 	    debug("%s: open %s/%s/%s", Name, bus->dirname, dev->bus->dirname, dev->filename);
-            if (dev->descriptor.idVendor == G15_VENDOR) {
-	        if ((g15_lcd = usb_open(dev))) {
-                    // get vendor name if possible
-                    if (dev->descriptor.iManufacturer) { 
-                        retval = usb_get_string_simple(g15_lcd, dev->descriptor.iManufacturer, dname, sizeof(dname)); 
-                        if (retval <= 0) {
-                            snprintf(dname, sizeof(dname), "(unknown)");
-                        }
-                    } 
+	    if (dev->descriptor.idVendor == G15_VENDOR) {
+		if ((g15_lcd = usb_open(dev))) {
+		    // get vendor name if possible
+		    if (dev->descriptor.iManufacturer) {
+			retval = usb_get_string_simple(g15_lcd, dev->descriptor.iManufacturer, dname, sizeof(dname));
+			if (retval <= 0) {
+			    snprintf(dname, sizeof(dname), "(unknown)");
+			}
+		    }
 		    debug("%s: Found USB vendor ID 0x%x (%s), checking productID 0x%x...",
 			  Name, G15_VENDOR, dname, dev->descriptor.idProduct);
 		    switch (dev->descriptor.idProduct) {
@@ -375,7 +375,7 @@ static int drv_G15_open()
 			switch (retval) {
 			case -EPERM:
 			    error("%s: Permission denied! eUID of this process is %i %s",
-                                  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
+				  Name, geteuid(), geteuid() != 0 ? "(not root)" : "");
 			    //return -1;
 			    break;
 			case -ENODATA:
@@ -388,8 +388,8 @@ static int drv_G15_open()
 			    debug("%s: detaching...", Name);
 			    usb_detach_kernel_driver_np(g15_lcd, interf);
 			}
-#endif   // detach_kernel_driver_np
-#endif   // get_driver_np
+#endif				// detach_kernel_driver_np
+#endif				// get_driver_np
 
 			retval = usb_set_configuration(g15_lcd, config);
 			debug("%s: Ret %d from usb_set_configuration(%d)", Name, retval, config);
@@ -411,9 +411,9 @@ static int drv_G15_open()
 		    }
 
 		}
-	    }   // G15_Vendor
-	}   // all devices
-    }   // all busses
+	    }			// G15_Vendor
+	}			// all devices
+    }				// all busses
 
     return -1;
 }
