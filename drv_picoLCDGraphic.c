@@ -58,6 +58,7 @@
 #include "widget_text.h"
 #include "widget_icon.h"
 #include "widget_bar.h"
+#include "widget_keypad.h"
 #include "drv.h"
 #include "drv_generic_gpio.h"
 #include "drv_generic_keypad.h"
@@ -281,6 +282,28 @@ static void drv_pLG_update_img()
 }
 
 
+#define _USBLCD_MAX_DATA_LEN          24
+#define IN_REPORT_KEY_STATE           0x11
+static void drv_pLG_update_keypad()
+{
+    static int pressed_key = 0;
+
+    int ret;
+    unsigned char read_packet[_USBLCD_MAX_DATA_LEN];
+    ret = drv_pLG_read(read_packet, _USBLCD_MAX_DATA_LEN);
+    if ((ret > 0) && (read_packet[0] == IN_REPORT_KEY_STATE)) {
+	debug("picoLCD: pressed key= 0x%02x\n", read_packet[1]);
+	int new_pressed_key = read_packet[1];
+	if (pressed_key != new_pressed_key) {
+	    /* negative values mark a key release */
+	    drv_generic_keypad_press(-pressed_key);
+	    drv_generic_keypad_press(new_pressed_key);
+	    pressed_key = new_pressed_key;
+	}
+    }
+}
+
+
 /* for graphic displays only */
 static void drv_pLG_blit(const int row, const int col, const int height, const int width)
 {
@@ -418,8 +441,6 @@ static int drv_pLG_backlight(int backlight)
     return backlight;
 }
 
-#define _USBLCD_MAX_DATA_LEN          24
-#define IN_REPORT_KEY_STATE           0x11
 static int drv_pLG_gpi( __attribute__ ((unused))
 		       int num)
 {
@@ -539,6 +560,11 @@ static int drv_pLG_start(const char *section, const int quiet)
     if (update > 0)
 	timer_add(drv_pLG_update_img, NULL, update, 0);
 
+    /* setup a timer that regularly checks the keypad for pressed or
+       released keys */
+    /* FIXME: make 100msec configurable */
+    timer_add(drv_pLG_update_keypad, NULL, 100, 0);
+
     return 0;
 }
 
@@ -594,6 +620,48 @@ int drv_pLG_list(void)
 }
 
 
+static int drv_pLG_keypad(const int num)
+{
+    int val;
+    int new_num = num;
+
+    if (new_num == 0)
+	return 0;
+    else if (new_num > 0)
+	val = WIDGET_KEY_PRESSED;
+    else {
+	/* negative values mark a key release */
+	new_num = -num;
+	val = WIDGET_KEY_RELEASED;
+    }
+
+    switch (new_num) {
+    case 1:
+	val += WIDGET_KEY_CANCEL;
+	break;
+    case 2:
+	val += WIDGET_KEY_LEFT;
+	break;
+    case 3:
+	val += WIDGET_KEY_RIGHT;
+	break;
+    case 5:
+	val += WIDGET_KEY_UP;
+	break;
+    case 6:
+	val += WIDGET_KEY_CONFIRM;
+	break;
+    case 7:
+	val += WIDGET_KEY_DOWN;
+	break;
+    default:
+	error("%s: unknown keypad value %d", Name, num);
+    }
+
+    return val;
+}
+
+
 /* initialize driver & display */
 int drv_pLG_init(const char *section, const int quiet)
 {
@@ -610,6 +678,7 @@ int drv_pLG_init(const char *section, const int quiet)
     GPIS = 1;
     /* real worker functions */
     drv_generic_graphic_real_blit = drv_pLG_blit;
+    drv_generic_keypad_real_press = drv_pLG_keypad;
     drv_generic_gpio_real_set = drv_pLG_gpo;
     drv_generic_gpio_real_get = drv_pLG_gpi;
 
@@ -622,6 +691,12 @@ int drv_pLG_init(const char *section, const int quiet)
     /* initialize generic graphic driver */
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
+
+
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
+	return ret;
+
 
     /* GPO's init */
 
@@ -660,6 +735,7 @@ int drv_pLG_quit(const int quiet)
     }
 
     drv_generic_graphic_quit();
+    drv_generic_keypad_quit();
 
     return (0);
 }
