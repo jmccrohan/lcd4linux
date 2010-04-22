@@ -218,7 +218,7 @@ static void drv_pLG_update_img()
 	return;
     }
 
-    info("In %s\n", __FUNCTION__);
+    debug("In %s\n", __FUNCTION__);
 
     for (cs = 0; cs < 4; cs++) {
 	unsigned char chipsel = (cs << 2);	//chipselect
@@ -348,7 +348,7 @@ void drv_pLG_clear(void)
     unsigned char cs, line;
 
 
-    info("In %s\n", __FUNCTION__);
+    debug("In %s\n", __FUNCTION__);
     drv_pLG_send(cmd, 3);
 
     for (init = 0; init < 4; init++) {
