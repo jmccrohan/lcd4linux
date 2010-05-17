@@ -705,8 +705,8 @@ int drv_pLG_init(const char *section, const int quiet)
 
     /* register plugins */
 
-    AddFunction("LCD::contrast", -1, plugin_contrast);
-    AddFunction("LCD::backlight", -1, plugin_backlight);
+    AddFunction("LCD::contrast", 1, plugin_contrast);
+    AddFunction("LCD::backlight", 1, plugin_backlight);
     AddFunction("LCD::gpo", -1, plugin_gpo);
 
     return 0;
