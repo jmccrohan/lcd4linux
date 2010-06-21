@@ -492,6 +492,9 @@
 /* Electronic Assembly RS232 graphic driver */
 #undef WITH_EA232graphic
 
+/* Allnet FW8888 driver */
+#undef WITH_FW8888
+
 /* G-15 driver */
 #undef WITH_G15
 
