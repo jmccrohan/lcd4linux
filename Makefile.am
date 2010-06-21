@@ -71,6 +71,7 @@ drv_generic_i2c.c             \
 drv_generic_i2c.h             \
 drv_generic_keypad.c          \
 drv_generic_keypad.h          \
+drv_ASTUSB.c                  \
 drv_BeckmannEgle.c            \
 drv_BWCT.c                    \
 drv_Crystalfontz.c            \

@@ -47,6 +47,7 @@
 #include "cfg.h"
 #include "drv.h"
 
+extern DRIVER drv_ASTUSB;
 extern DRIVER drv_BeckmannEgle;
 extern DRIVER drv_BWCT;
 extern DRIVER drv_Crystalfontz;
@@ -98,7 +99,12 @@ extern DRIVER drv_X11;
  */
 char *output = NULL;
 
+
+
 DRIVER *Driver[] = {
+#ifdef WITH_ASTUSB
+    &drv_ASTUSB,
+#endif
 #ifdef WITH_BECKMANNEGLE
     &drv_BeckmannEgle,
 #endif

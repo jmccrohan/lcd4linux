@@ -465,6 +465,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* ASTUSB driver */
+#undef WITH_ASTUSB
+
 /* Beckmann&Egle driver */
 #undef WITH_BECKMANNEGLE
 

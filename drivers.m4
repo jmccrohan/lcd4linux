@@ -32,7 +32,7 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
-  [                        BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
+  [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        EA232Graphic, G15, GLCD2USB, HD44780, HD44780-I2C, IRLCD,]
   [                        LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX,]
@@ -60,6 +60,7 @@ for driver in $drivers; do
 
    case "$driver" in
       all)
+         ASTUSB="yes"
          BECKMANNEGLE="yes"
          BWCT="yes"
          CRYSTALFONTZ="yes"
@@ -106,6 +107,9 @@ for driver in $drivers; do
          VNC="yes"
 	 WINCORNIXDORF="yes"
          X11="yes"
+         ;;
+      ASTUSB)
+         ASTUSB=$val
          ;;
       BeckmannEgle)
          BECKMANNEGLE=$val
@@ -269,6 +273,18 @@ KEYPAD="no"
 # generic libraries
 LIBUSB="no"
 LIBFTDI="no"
+
+if test "$ASTUSB" = "yes"; then
+   if test "$has_usb" = "true"; then
+      TEXT="yes"
+      SERIAL="yes"
+      DRIVERS="$DRIVERS drv_ASTUSB.o"
+      LIBUSB="yes"
+      AC_DEFINE(WITH_ASTUSB,1,[ASTUSB driver])
+   else
+      AC_MSG_WARN(usb.h not found: ASTUSB driver disabled)
+   fi
+fi
 
 if test "$BECKMANNEGLE" = "yes"; then
    TEXT="yes"

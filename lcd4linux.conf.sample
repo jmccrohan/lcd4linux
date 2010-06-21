@@ -480,6 +480,12 @@ Display ctinclud {
    Inverted 0
 }
 
+Display ASTUSB {
+    Driver 'ASTUSB'
+    Size '20x4'
+    Backlight 1
+}
+
 Display XWindow {
     Driver 'X11'
     Size   '120x32'
