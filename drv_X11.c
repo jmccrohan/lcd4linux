@@ -94,6 +94,8 @@ static GC gc;
 static Colormap cm;
 static Pixmap pm;
 
+static int allow_autorepeat = 1;	/* consider auto-repeated KeyPress events? */
+
 static char myDisplayName[256] = "";
 static int opTableEntries = 2;
 static XrmOptionDescRec opTable[] = {
@@ -363,6 +365,9 @@ static void drv_X11_timer( __attribute__ ((unused))
 	&& XCheckTypedWindowEvent(dp, w, ClientMessage, &ev) == 0)
 	return;
 
+    /* check whether key has been retriggered by "auto repeat" */
+    unsigned short is_retriggered = 0;
+
     switch (ev.type) {
 
     case Expose:
@@ -429,6 +434,19 @@ static void drv_X11_timer( __attribute__ ((unused))
 	break;
 
     case KeyRelease:
+	/* check whether key has been retriggered by "auto repeat" */
+	if (!allow_autorepeat && XEventsQueued(dp, QueuedAfterReading)) {
+	    XEvent nev;
+	    XPeekEvent(dp, &nev);
+
+	    if (nev.type == KeyPress && nev.xkey.time == ev.xkey.time && nev.xkey.keycode == ev.xkey.keycode) {
+		is_retriggered = 1;
+
+		/* delete retriggered KeyPress event */
+		XNextEvent(dp, &ev);
+	    }
+	}
+
 	key = XLookupKeysym(&ev.xkey, 0);
 	switch (key) {
 	case XK_Up:
@@ -451,7 +469,7 @@ static void drv_X11_timer( __attribute__ ((unused))
 	    break;
 	}
 	/* only register key release if button is defined on GUI */
-	if (btn > 0) {
+	if (!is_retriggered && (btn > 0)) {
 	    if (btn <= buttons) {
 		debug("key for button %i released", btn);
 		XClearArea(dp, w, xoffset, yoffset + (btn - 1) * (btnheight + pgap), btnwidth, btnheight - 2,
@@ -571,6 +589,9 @@ static int drv_X11_start(const char *section)
 	}
 	free(s);
     }
+
+    /* consider auto-repeated KeyPress events? */
+    cfg_number(section, "autorepeat", 1, 0, 1, &allow_autorepeat);
 
     /* virtual keyboard: number of buttons (0..6) */
     if (cfg_number(section, "buttons", 0, 0, 6, &buttons) < 0)
