@@ -37,9 +37,9 @@
 #include "config.h"
 
 #ifdef HAVE_USB_H
-# include <usb.h>
+#include <usb.h>
 #else
-# error The USB-HUB driver only makes sense with USB support
+#error The USB-HUB driver only makes sense with USB support
 #endif
 
 #include "debug.h"

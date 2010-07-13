@@ -31,14 +31,14 @@
 /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
 static inline void rep_nop(void)
 {
-# if defined(__i386) || defined(__i386__) || defined(__AMD64__) || defined(__x86_64__) || defined(__amd64__)
+#if defined(__i386) || defined(__i386__) || defined(__AMD64__) || defined(__x86_64__) || defined(__amd64__)
     /* intel or amd64 arch, the "rep" and "nop" opcodes are available */
     __asm__ __volatile__("rep; nop");
-# else
+#else
     /* other Arch, maybe add core cooldown code here, too. */
     do {
     } while (0);
-# endif
+#endif
 }
 
 void udelay_init(void);

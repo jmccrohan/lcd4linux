@@ -58,6 +58,8 @@ static char Name[] = "MatrixOrbital";
 static int Model;
 static int Protocol;
 
+static char dispBuffer[2][16];
+
 typedef struct {
     int type;
     char *name;
@@ -98,6 +100,7 @@ static MODEL Models[] = {
     {0x36, "LK202-24-USB", 2, 20, 8, 8, 2},
     {0x38, "LK204-24-USB", 4, 20, 8, 8, 2},
     {0x39, "VK204-24-USB", 4, 20, 8, 8, 2},
+    {0x40, "DE-LD011", 2, 16, 0, 0, 3},	/* Sure electronics USB LCD board Rev.I */
     {0xff, "Unknown", -1, -1, 0, 0, 0}
 };
 
@@ -108,12 +111,27 @@ static MODEL Models[] = {
 
 static void drv_MO_clear(void)
 {
+    int i, j;
+
     switch (Protocol) {
     case 1:
 	drv_generic_serial_write("\014", 1);	/* Clear Screen */
 	break;
     case 2:
 	drv_generic_serial_write("\376\130", 2);	/* Clear Screen */
+	break;
+
+    case 3:
+	/* Sure electronics USB LCD board - clear buffer */
+	for (i = 0; i < 2; i++) {
+	    for (j = 0; j < 16; j++) {
+		dispBuffer[i][j] = ' ';
+	    }
+	}
+
+	drv_MO_write(1, 1, dispBuffer[0], 16);
+	drv_MO_write(1, 2, dispBuffer[1], 16);
+
 	break;
     }
 }
@@ -123,11 +141,18 @@ static void drv_MO_write(const int row, const int col, const char *data, const i
 {
     char cmd[5] = "\376Gyx";
 
-    cmd[2] = (char) col + 1;
-    cmd[3] = (char) row + 1;
-    drv_generic_serial_write(cmd, 4);
-
-    drv_generic_serial_write(data, len);
+    if (Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
+	cmd[2] = (char) 1;
+	cmd[3] = (char) row + 1;
+	strncpy(&(dispBuffer[row][col]), data, len);
+	drv_generic_serial_write(cmd, 4);
+	drv_generic_serial_write(dispBuffer[row], 16);
+    } else {
+	cmd[2] = (char) col + 1;
+	cmd[3] = (char) row + 1;
+	drv_generic_serial_write(cmd, 4);
+	drv_generic_serial_write(data, len);
+    }
 }
 
 
@@ -302,6 +327,14 @@ static int drv_MO_start(const char *section, const int quiet)
 	Model = -1;
     }
 
+    if (Models[i].protocol == 3) {	// Sure electronics USB LCD board - full line output
+	int i, j;
+	for (i = 0; i < 2; i++) {	// Clear buffer
+	    for (j = 0; j < 16; j++) {
+		dispBuffer[i][j] = ' ';
+	    }
+	}
+    }
 
     if (drv_generic_serial_open(section, Name, 0) < 0)
 	return -1;
@@ -544,10 +577,14 @@ int drv_MO_quit(const int quiet)
     /* clear display */
     drv_MO_clear();
 
+    usleep(300000);
+
     /* say goodbye... */
     if (!quiet) {
 	drv_generic_text_greet("goodbye!", NULL);
     }
+
+    usleep(300000);
 
     drv_generic_serial_close();
 
