@@ -109,6 +109,25 @@ static MODEL Models[] = {
 /***  hardware dependant functions    ***/
 /****************************************/
 
+static void drv_MO_write(const int row, const int col, const char *data, const int len)
+{
+    char cmd[5] = "\376Gyx";
+
+    if (Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
+	cmd[2] = (char) 1;
+	cmd[3] = (char) row + 1;
+	strncpy(&(dispBuffer[row][col]), data, len);
+	drv_generic_serial_write(cmd, 4);
+	drv_generic_serial_write(dispBuffer[row], 16);
+    } else {
+	cmd[2] = (char) col + 1;
+	cmd[3] = (char) row + 1;
+	drv_generic_serial_write(cmd, 4);
+	drv_generic_serial_write(data, len);
+    }
+}
+
+
 static void drv_MO_clear(void)
 {
     int i, j;
@@ -133,25 +152,6 @@ static void drv_MO_clear(void)
 	drv_MO_write(1, 2, dispBuffer[1], 16);
 
 	break;
-    }
-}
-
-
-static void drv_MO_write(const int row, const int col, const char *data, const int len)
-{
-    char cmd[5] = "\376Gyx";
-
-    if (Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
-	cmd[2] = (char) 1;
-	cmd[3] = (char) row + 1;
-	strncpy(&(dispBuffer[row][col]), data, len);
-	drv_generic_serial_write(cmd, 4);
-	drv_generic_serial_write(dispBuffer[row], 16);
-    } else {
-	cmd[2] = (char) col + 1;
-	cmd[3] = (char) row + 1;
-	drv_generic_serial_write(cmd, 4);
-	drv_generic_serial_write(data, len);
     }
 }
 
