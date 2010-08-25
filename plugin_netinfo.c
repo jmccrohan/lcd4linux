@@ -37,8 +37,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
+#include <string.h>		/* memcpy() */
 #include <ctype.h>
+#include <math.h>		/* rint(), log2l() */
 
 #include "debug.h"
 #include "plugin.h"
@@ -201,19 +202,12 @@ static void my_ipaddr(RESULT * result, RESULT * arg1)
 }
 
 
-/* get ip netmask of network device */
-static void my_netmask(RESULT * result, RESULT * arg1)
+struct sockaddr_in *get_netmask(RESULT * arg1)
 {
     static int errcount = 0;
     struct ifreq ifreq;
     struct sockaddr_in *sin;
-    char value[16];
-
-    if (socknr < 0) {
-	/* no open socket */
-	SetResult(&result, R_STRING, "");
-	return;
-    }
+    static struct sockaddr_in sret;
 
     strncpy(ifreq.ifr_name, R2S(arg1), sizeof(ifreq.ifr_name));
     if (ioctl(socknr, SIOCGIFNETMASK, &ifreq) < 0) {
@@ -222,15 +216,59 @@ static void my_netmask(RESULT * result, RESULT * arg1)
 	    error("%s: ioctl(IFNETMASK %s) failed: %s", "plugin_netinfo", ifreq.ifr_name, strerror(errno));
 	    error("  (skip next 1000 errors)");
 	}
-	SetResult(&result, R_STRING, "");
-	return;
+	return NULL;
     }
 #ifndef __MAC_OS_X_VERSION_10_3
     sin = (struct sockaddr_in *) &ifreq.ifr_netmask;
 #else
     sin = (struct sockaddr_in *) &ifreq.ifr_data;
 #endif
-    qprintf(value, sizeof(value), "%s", inet_ntoa(sin->sin_addr));
+
+    memcpy(&sret, sin, sizeof(sret));
+    return &sret;
+}
+
+/* get ip netmask of network device */
+static void my_netmask(RESULT * result, RESULT * arg1)
+{
+    char value[16];
+    struct sockaddr_in *sin;
+
+    if (socknr < 0) {
+	/* no open socket */
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    sin = get_netmask(arg1);
+    qprintf(value, sizeof(value), "%s", NULL != sin ? inet_ntoa(sin->sin_addr) : "?");
+
+    SetResult(&result, R_STRING, value);
+}
+
+
+/* get netmask in short CIDR notation */
+static void my_netmask_short(RESULT * result, RESULT * arg1)
+{
+    char value[16];
+    struct sockaddr_in *sin;
+    int netlen = 0;
+    long double logval = 0.0;
+
+    if (socknr < 0) {
+	/* no open socket */
+	SetResult(&result, R_STRING, "");
+	return;
+    }
+
+    sin = get_netmask(arg1);
+    if (NULL != sin) {
+        logval = (long double)(get_netmask(arg1)->sin_addr.s_addr);
+        netlen = (int)rint(log2l(logval) / log2l(2.0));
+        qprintf(value, sizeof(value), "/%d", netlen);
+    } else {
+        qprintf(value, sizeof(value), "/?");
+    }
 
     SetResult(&result, R_STRING, value);
 }
@@ -275,6 +313,7 @@ int plugin_init_netinfo(void)
     AddFunction("netinfo::hwaddr", 1, my_hwaddr);
     AddFunction("netinfo::ipaddr", 1, my_ipaddr);
     AddFunction("netinfo::netmask", 1, my_netmask);
+    AddFunction("netinfo::netmask_short", 1, my_netmask_short);
     AddFunction("netinfo::bcaddr", 1, my_bcaddr);
 
     return 0;
