@@ -33,33 +33,6 @@
  *
  */
 
-/* 
- * exported functions:
- *
- * huawei::quality('%'|'dbm'|'rssi')
- * huawei::mode('text'|'number')
- * huawei::manuf()
- * huawei::model()
- * huawei::fwver()
- * huawei::operator()
- * huawei::flowreport('uptime'|'uptime_seconds'|'tx_rate'|'rx_rate'|'total_tx'|'total_rx')
- *
- * With '%' parameter, you can get the percentage (0...100%) value of RSSI (received signal strength).
- * With 'dbm' parameter, you can get the dbm value of RSSI.
- * With 'rssi' parameter, you can get the relative RSSI value 0...31.
- *
- * With 'text' parameter, you can get the mode value as text, like 'HSDPA'.
- * With 'number' parameter, you can get the mode value as number, like 5.
- *
- * With 'uptime' parameter, you can get the uptime (connection time) value as text, like '1 days 10:11:12'.
- * With 'uptime_seconds' parameter, you can get the uptime (connection time) seconds as number, like 12345.
- *
- * This plugin tries to connect per default to the Huawei user interface device at /dev/ttyUSB1.
- * If your modem is connected to another device you can use the environment variable HUAWEI_PORT.
- * For example export HUAWEI_PORT=/dev/ttyUSB2
- *
- */
-
 
 /* define the include files you need */
 #include "config.h"
@@ -112,7 +85,7 @@ static char name[] = "plugin_huawei.c";
 static char *sub_system_mode[] = {
     "NO CONN",			/* no service */
     "GSM",			/* 2G/GSM */
-    "GRPS",			/* 2.5G/GPRS */
+    "GPRS",			/* 2.5G/GPRS */
     "EDGE",			/* 2.75G/EDGE */
     "WCDMA",			/* 3G/UMTS */
     "HSDPA",			/* 3.5G/UMTS */
