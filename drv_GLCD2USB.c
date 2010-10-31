@@ -523,7 +523,7 @@ static int drv_GLCD2USB_start(const char *section)
 /* list models */
 int drv_GLCD2USB_list(void)
 {
-    printf("generic");
+    printf("GLCD2USB homebrew USB interface for graphic displays");
     return 0;
 }
 

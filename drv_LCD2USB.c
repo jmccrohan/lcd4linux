@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * driver for USB2LCD display interface
+ * driver for LCD2USB display interface
  * see http://www.harbaum.org/till/lcd2usb for schematics
  *
  * Copyright 2005 Till Harbaum <till@harbaum.org>
@@ -569,7 +569,7 @@ static void plugin_brightness(RESULT * result, RESULT * arg1)
 /* list models */
 int drv_L2U_list(void)
 {
-    printf("USB2LCD display interface");
+    printf("LCD2USB homebrew USB interface for HD44780 text displays");
     return 0;
 }
 
