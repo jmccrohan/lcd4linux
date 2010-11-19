@@ -397,6 +397,28 @@ static void drv_GLCD2USB_blit(const int row, const int col, const int height, co
     }
 }
 
+static int drv_GLCD2USB_brightness(int brightness)
+{
+    int err = 0;
+
+    printf("setting bright to %d\n", brightness);
+
+    if (brightness < 0)
+	brightness = 0;
+    if (brightness > 255)
+	brightness = 255;
+
+    buffer.bytes[0] = GLCD2USB_RID_SET_BL;
+    buffer.bytes[1] = brightness;
+    if((err = usbSetReport(dev, USB_HID_REPORT_TYPE_FEATURE, buffer.bytes, 2)) != 0) {
+      error("%s: Error freeing display: %s\n", Name, usbErrorMessage(err));
+      usbCloseDevice(dev);
+      return -1;
+    }
+
+    return brightness;
+}
+
 static void drv_GLCD2USB_timer(void __attribute__ ((unused)) * notused)
 {
     /* request button state */
@@ -424,6 +446,7 @@ static void drv_GLCD2USB_timer(void __attribute__ ((unused)) * notused)
 
 static int drv_GLCD2USB_start(const char *section)
 {
+    int brightness;
     char *s;
     int err = 0, len;
 
@@ -493,6 +516,10 @@ static int drv_GLCD2USB_start(const char *section)
     /* buffers button presses internally */
     timer_add(drv_GLCD2USB_timer, NULL, 100, 0);
 
+    if (cfg_number(section, "Brightness", 0, 0, 255, &brightness) > 0) {
+	drv_GLCD2USB_brightness(brightness);
+    }
+
     return 0;
 }
 
@@ -502,8 +529,13 @@ static int drv_GLCD2USB_start(const char *section)
 /***            plugins               ***/
 /****************************************/
 
-/* none at the moment... */
+static void plugin_brightness(RESULT * result, RESULT * arg1)
+{
+    double brightness;
 
+    brightness = drv_GLCD2USB_brightness(R2N(arg1));
+    SetResult(&result, R_NUMBER, &brightness);
+}
 
 /****************************************/
 /***        widget callbacks          ***/
@@ -565,8 +597,7 @@ int drv_GLCD2USB_init(const char *section, const __attribute__ ((unused))
 	return ret;
 
     /* register plugins */
-    /* none at the moment... */
-
+    AddFunction("LCD::brightness", 1, plugin_brightness);
 
     return 0;
 }

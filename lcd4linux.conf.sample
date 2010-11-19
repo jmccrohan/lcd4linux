@@ -57,6 +57,7 @@ Display LCD2USB {
 
 Display GLCD2USB {
     Driver 'GLCD2USB'
+    Brightness 255
 }
 
 Display ABP08-16x3 {
