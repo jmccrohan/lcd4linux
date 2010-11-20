@@ -263,11 +263,11 @@ static void my_netmask_short(RESULT * result, RESULT * arg1)
 
     sin = get_netmask(arg1);
     if (NULL != sin) {
-        logval = (long double)(get_netmask(arg1)->sin_addr.s_addr);
-        netlen = (int)rint(log2l(logval) / log2l(2.0));
-        qprintf(value, sizeof(value), "/%d", netlen);
+	logval = (long double) (get_netmask(arg1)->sin_addr.s_addr);
+	netlen = (int) rint(log2l(logval) / log2l(2.0));
+	qprintf(value, sizeof(value), "/%d", netlen);
     } else {
-        qprintf(value, sizeof(value), "/?");
+	qprintf(value, sizeof(value), "/?");
     }
 
     SetResult(&result, R_STRING, value);

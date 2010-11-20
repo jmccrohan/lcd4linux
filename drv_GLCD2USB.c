@@ -410,10 +410,10 @@ static int drv_GLCD2USB_brightness(int brightness)
 
     buffer.bytes[0] = GLCD2USB_RID_SET_BL;
     buffer.bytes[1] = brightness;
-    if((err = usbSetReport(dev, USB_HID_REPORT_TYPE_FEATURE, buffer.bytes, 2)) != 0) {
-      error("%s: Error freeing display: %s\n", Name, usbErrorMessage(err));
-      usbCloseDevice(dev);
-      return -1;
+    if ((err = usbSetReport(dev, USB_HID_REPORT_TYPE_FEATURE, buffer.bytes, 2)) != 0) {
+	error("%s: Error freeing display: %s\n", Name, usbErrorMessage(err));
+	usbCloseDevice(dev);
+	return -1;
     }
 
     return brightness;

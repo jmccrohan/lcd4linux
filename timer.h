@@ -29,7 +29,7 @@
 #define _TIMER_H_
 
 int timer_add(void (*callback) (void *data), void *data, const int interval, const int one_shot);
-//exactly the same as above but does not trigger now
+/* exactly the same as timer_add() but does not trigger immediately */
 int timer_add_late(void (*callback) (void *data), void *data, const int interval, const int one_shot);
 int timer_remove(void (*callback) (void *data), void *data);
 int timer_process(struct timespec *delay);
