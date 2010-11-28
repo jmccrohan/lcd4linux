@@ -85,7 +85,7 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
 	info(strerror(errsv));
 	exit(0);
     } else if (pid == -1) {
-	info("weird error has occured. couldn't fork.");
+	info("weird error has occurred. couldn't fork.");
     } else {
 	SetResult(&result, R_STRING, "0");
     }

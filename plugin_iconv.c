@@ -104,7 +104,7 @@ static void my_iconv(RESULT * result, RESULT * charset_from, RESULT * charset_to
 		    source_left = 0;
 		    break;
 		default:
-		    error("plugin_iconv: strange errno state (%d) occured", errno);
+		    error("plugin_iconv: strange errno state (%d) occurred", errno);
 		    source_left = 0;
 		}
 	    }

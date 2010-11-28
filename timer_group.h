@@ -29,12 +29,13 @@
 #ifndef _TIMER_GROUP_H_
 #define _TIMER_GROUP_H_
 
-int timer_add_group(void (*callback) (void *data), const int interval);
-int timer_remove_group(void (*callback) (void *data), const int interval);
+
 void timer_process_group(void *data);
+
 void timer_exit_group(void);
 
 int timer_add_widget(void (*callback) (void *data), void *data, const int interval, const int one_shot);
+
 int timer_remove_widget(void (*callback) (void *data), void *data);
 
 #endif

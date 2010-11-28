@@ -1,7 +1,7 @@
 /* $Id$
  * $URL$
  *
- * generic timer handling
+ * Generic timer handling.
  *
  * Copyright (C) 2003, 2004 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2004 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -72,19 +72,21 @@
 #include <dmalloc.h>
 #endif
 
+/* FIXME: CLOCK_SKEW_DETECT_TIME_IN_S should have a higher value */
+
 /* delay in seconds between timer events that is considered as being
    induced by clock skew */
 #define CLOCK_SKEW_DETECT_TIME_IN_S 1
 
 /* structure for storing all relevant data of a single timer */
 typedef struct TIMER {
-    /* function of type callback(void *data) that will be called when
-       the timer is processed; it will also be used to identify a
-       specific timer */
+    /* pointer to function of type void func(void *data) that will be
+       called when the timer is processed; it will also be used to
+       identify a specific timer */
     void (*callback) (void *data);
 
-    /* data which will be passed to the callback function; it will
-       also be used to identify a specific timer */
+    /* pointer to data which will be passed to the callback function;
+       it will also be used to identify a specific timer */
     void *data;
 
     /* struct to hold the time (in seconds and milliseconds since the
@@ -98,17 +100,16 @@ typedef struct TIMER {
        it is deleted (value of 0) or only once (all other values) */
     int one_shot;
 
-    /* marks timers as being active (so it will get processed) or
+    /* marks timer as being active (so it will get processed) or
        inactive (which means the timer has been deleted and its
        allocated memory may be re-used) */
     int active;
 } TIMER;
 
-
 /* number of allocated timer slots */
 int nTimers = 0;
 
-/* pointer to memory used for storing the timer slots */
+/* pointer to memory allocated for storing the timer slots */
 TIMER *Timers = NULL;
 
 
@@ -137,7 +138,7 @@ static void timer_inc(struct timeval *tv, const int interval)
 
 
 int timer_remove(void (*callback) (void *data), void *data)
-/*  Remove a new timer with given callback and data.
+/*  Remove a timer with given callback and data.
 
     callback (void pointer): function of type void func(void *data);
     here, it will be used to identify the timer
@@ -146,24 +147,29 @@ int timer_remove(void (*callback) (void *data), void *data)
 	function; here, it will be used to identify the timer
 
 	return value (integer): returns a value of 0 on successful timer
-	deletion; otherwise returns a value of -1
+	removal; otherwise returns a value of -1
 */
 {
-    int i;			/* current timer's ID */
+    int timer;			/* current timer's ID */
 
     /* loop through the timer slots and try to find the specified
        timer slot by looking for its settings */
-    for (i = 0; i < nTimers; i++) {
-	if (Timers[i].callback == callback && Timers[i].data == data && Timers[i].active) {
+    for (timer = 0; timer < nTimers; timer++) {
+	/* skip inactive (i.e. deleted) timers */
+	if (Timers[timer].active == 0)
+	    continue;
+
+	if (Timers[timer].callback == callback && Timers[timer].data == data) {
 	    /* we have found the timer slot, so mark it as being inactive;
-	       we will not actually delete the timer, so its allocated
+	       we will not actually delete the slot, so its allocated
 	       memory may be re-used */
-	    Timers[i].active = 0;
+	    Timers[timer].active = 0;
 
 	    /* signal successful timer removal */
 	    return 0;
 	}
     }
+
     /* we have NOT found the timer slot, so signal failure by
        returning a value of -1 */
     return -1;
@@ -192,25 +198,29 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
 	creation; otherwise returns a value of -1
 */
 {
-    int i;			/* current timer's ID */
+    int timer;			/* current timer's ID */
     struct timeval now;		/* struct to hold current time */
 
     /* try to minimize memory usage by looping through the timer slots
        and looking for an inactive timer */
-    for (i = 0; i < nTimers; i++) {
-	if (Timers[i].active == 0)
-	    /* we've just found one, so let's reuse it ("i" holds its ID)
-	       by breaking the loop */
+    for (timer = 0; timer < nTimers; timer++) {
+	if (Timers[timer].active == 0) {
+	    /* we've just found one, so let's reuse it ("timer" holds its
+	       ID) by breaking the loop */
 	    break;
+	}
     }
 
     /* no inactive timers (or none at all) found, so we have to add a
        new timer slot */
-    if (i >= nTimers) {
+    if (timer >= nTimers) {
 	/* increment number of timers and (re-)allocate memory used for
 	   storing the timer slots */
 	nTimers++;
 	Timers = realloc(Timers, nTimers * sizeof(*Timers));
+
+	/* make sure "timer" points to valid memory */
+	timer = nTimers - 1;
 
 	/* realloc() has failed */
 	if (Timers == NULL) {
@@ -225,21 +235,21 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
     /* get current time so the timer triggers immediately */
     gettimeofday(&now, NULL);
 
-    /* fill in timer data */
-    Timers[i].callback = callback;
-    Timers[i].data = data;
-    Timers[i].when = now;
-    Timers[i].interval = interval;
-    Timers[i].one_shot = one_shot;
+    /* initialize timer data */
+    Timers[timer].callback = callback;
+    Timers[timer].data = data;
+    Timers[timer].when = now;
+    Timers[timer].interval = interval;
+    Timers[timer].one_shot = one_shot;
 
     /* set timer to active so that it is processed and not overwritten
-       by the memory optimisation routine above */
-    Timers[i].active = 1;
+       by the memory optimization routine above */
+    Timers[timer].active = 1;
 
     /* one-shot timers should NOT fire immediately, so delay them by a
        single timer interval */
     if (one_shot) {
-	timer_inc(&Timers[i].when, interval);
+	timer_inc(&Timers[timer].when, interval);
     }
 
     /* signal successful timer creation */
@@ -279,17 +289,20 @@ int timer_add_late(void (*callback) (void *data), void *data, const int interval
 	return -1;
     }
 
-    int i;			/* current timer's ID */
+    int timer;			/* current timer's ID */
 
     /* loop through the timer slots and try to find the new timer slot
        by looking for its settings */
-    for (i = 0; i < nTimers; i++) {
-	if (Timers[i].callback == callback && Timers[i].data == data && Timers[i].active
-	    && Timers[i].interval == interval) {
+    for (timer = 0; timer < nTimers; timer++) {
+	/* skip inactive (i.e. deleted) timers */
+	if (Timers[timer].active == 0)
+	    continue;
+
+	if (Timers[timer].callback == callback && Timers[timer].data == data && Timers[timer].interval == interval) {
 	    /* we have found the new timer slot, so unmask it by setting
 	       its "one_shot" variable to the REAL value; then signal
 	       successful timer creation */
-	    Timers[i].one_shot = one_shot;
+	    Timers[timer].one_shot = one_shot;
 
 	    /* signal successful timer creation */
 	    return 0;
@@ -317,73 +330,76 @@ int timer_process(struct timespec *delay)
     /* get current time to check which timers need processing */
     gettimeofday(&now, NULL);
 
-    /* sanity check; at least one timer should need processing */
-    if (nTimers == 0) {
+    /* sanity check; by now, at least one timer should be
+       instantiated */
+    if (nTimers <= 0) {
 	/* otherwise, print an error and return a value of -1 to
 	   signal an error */
-	error("Huh? Not one single timer to process? Dazed and confused...");
+	error("Huh? Not even a single timer to process? Dazed and confused...");
 	return -1;
     }
 
-    int i;			/* current timer's ID */
+    int timer;			/* current timer's ID */
 
     /* process all expired timers */
-    for (i = 0; i < nTimers; i++) {
+    for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[i].active == 0)
+	if (Timers[timer].active == 0)
 	    continue;
+
 	/* check whether current timer needs to be processed, i.e. the
 	   timer's triggering time is less than or equal to the current
 	   time; according to the man page of timercmp(), this avoids
 	   using the operators ">=", "<=" and "==" which might be broken
 	   on some systems */
-	if (!timercmp(&Timers[i].when, &now, >)) {
+	if (!timercmp(&Timers[timer].when, &now, >)) {
 	    /* if the timer's callback function has been set, call it and
 	       pass the corresponding data */
-	    if (Timers[i].callback != NULL) {
-		Timers[i].callback(Timers[i].data);
+	    if (Timers[timer].callback != NULL) {
+		Timers[timer].callback(Timers[timer].data);
 	    }
 
 	    /* check for one-shot timers */
-	    if (Timers[i].one_shot) {
+	    if (Timers[timer].one_shot) {
 		/* mark one-shot timer as inactive (which means the timer has
 		   been deleted and its allocated memory may be re-used) */
-		Timers[i].active = 0;
+		Timers[timer].active = 0;
 	    } else {
 		/* otherwise, respawn timer by adding one triggering interval
 		   to its triggering time */
-		timer_inc(&Timers[i].when, Timers[i].interval);
+		timer_inc(&Timers[timer].when, Timers[timer].interval);
 	    }
 	}
     }
 
-    int min = -1;		/* ID of the next upcoming timer */
+    int next_timer = -1;		/* ID of the next upcoming timer */
 
     /* loop through the timer slots and try to find the next upcoming
        timer */
-    for (i = 0; i < nTimers; i++) {
+    for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[i].active == 0)
+	if (Timers[timer].active == 0)
 	    continue;
 
 	/* if this is the first timer that we check, mark it as the next
 	   upcoming timer; otherwise, we'll have nothing to compare
 	   against in this loop */
-	if (min < 0)
-	    min = i;
+	if (next_timer < 0)
+	    next_timer = timer;
 	/* check whether current timer needs processing prior to the one
 	   selected */
-	else if (timercmp(&Timers[i].when, &Timers[min].when, <))
+	else if (timercmp(&Timers[timer].when, &Timers[next_timer].when, <)) {
 	    /* if so, mark it as the next upcoming timer */
-	    min = i;
+	    next_timer = timer;
+	}
     }
 
     /* sanity check; we should by now have found the next upcoming
        timer */
-    if (min < 0) {
+    if (next_timer < 0) {
 	/* otherwise, print an error and return a value of -1 to signal an
 	   error */
-	error("Huh? Not one single timer left? Dazed and confused...");
+	error("Huh? Not even a single timer left? Dazed and confused...");
 	return -1;
     }
 
@@ -397,7 +413,7 @@ int timer_process(struct timespec *delay)
 
     /* calculate delay to the next upcoming timer event and store it
        in "diff" */
-    timersub(&Timers[min].when, &now, &diff);
+    timersub(&Timers[next_timer].when, &now, &diff);
 
     /* for negative delays, set "diff" to the Epoch so the next update
        is triggered immediately */
@@ -417,7 +433,7 @@ int timer_process(struct timespec *delay)
 	/* update time stamp and timer */
 	/* FIXME: shouldn't we update *all* timers? */
 	gettimeofday(&now, NULL);
-	Timers[min].when = now;
+	Timers[next_timer].when = now;
     }
 
     /* finally, set passed timespec "delay" to "diff" ... */
@@ -439,8 +455,8 @@ void timer_exit(void)
     /* reset number of allocated timer slots */
     nTimers = 0;
 
-    if (Timers != NULL) {
 	/* free memory used for storing the timer slots */
+    if (Timers != NULL) {
 	free(Timers);
 	Timers = NULL;
     }

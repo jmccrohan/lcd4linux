@@ -279,7 +279,7 @@ static void drv_T6_clear(const unsigned short addr, const int len)
 	drv_T6_write_auto(0x0);
 	if (bug) {
 	    bug = 0;
-	    debug("bug occured at byte %d of %d", i, len);
+	    debug("bug occurred at byte %d of %d", i, len);
 	}
     }
     drv_T6_status2();
@@ -297,7 +297,7 @@ static void drv_T6_copy(const unsigned short addr, const unsigned char *data, co
 	drv_T6_write_auto(*(data++));
 	if (bug) {
 	    bug = 0;
-	    debug("bug occured at byte %d of %d, addr=%d", i, len, addr);
+	    debug("bug occurred at byte %d of %d, addr=%d", i, len, addr);
 	}
     }
     drv_T6_status2();

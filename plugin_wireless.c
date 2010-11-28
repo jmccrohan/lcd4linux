@@ -490,7 +490,7 @@ static int get_stats(const char *dev, const char *key)
     } else {
 
 	qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.level, range.max_qual.level);
-	qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev, KEY_LEVEL);;
+	qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev, KEY_LEVEL);
 	hash_put(&wireless, key_buffer, qprintf_buffer);
 
 	qprintf(qprintf_buffer, sizeof(qprintf_buffer), "%d/%d", stats.qual.noise, range.max_qual.noise);

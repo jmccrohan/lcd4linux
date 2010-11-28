@@ -572,7 +572,7 @@ static void parse(RESULT * result, RESULT * theOptions, RESULT * displayOptions)
 	    status = nmeap_parseBuffer(&nmea, (const char *) &bufferTmp, &rem);	//parse it
 	    if (status == -1) {
 		errCounter++;
-		error("parser error occured! (cnt: %i)\n", errCounter);
+		error("parser error occurred! (cnt: %i)\n", errCounter);
 	    } else if (status == 0) {
 		incomplCounter++;
 	    } else if (status > 0)

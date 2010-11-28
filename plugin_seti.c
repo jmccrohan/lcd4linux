@@ -63,7 +63,7 @@ static int parse_seti(void)
     FILE *stream;
     int age;
 
-    /* if a fatal error occured, do nothing */
+    /* if a fatal error occurred, do nothing */
     if (fatal != 0)
 	return -1;
 
