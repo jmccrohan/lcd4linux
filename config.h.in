@@ -492,6 +492,9 @@
 /* Electronic Assembly RS232 graphic driver */
 #undef WITH_EA232graphic
 
+/* Driver for EFN LED modules and EUG 100 ethernet to serial converter */
+#undef WITH_EFN
+
 /* Allnet FW8888 driver */
 #undef WITH_FW8888
 

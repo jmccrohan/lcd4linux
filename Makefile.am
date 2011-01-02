@@ -79,6 +79,7 @@ drv_Curses.c                  \
 drv_Cwlinux.c                 \
 drv_D4D.c                     \
 drv_EA232graphic.c            \
+drv_EFN.c                     \
 drv_FW8888.c                  \
 drv_G15.c                     \
 drv_GLCD2USB.c glcd2usb.h     \

@@ -33,8 +33,8 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
-  [                        EA232Graphic, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C, IRLCD,]
-  [                        LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
+  [                        EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
+  [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX,]
   [                        MilfordInstruments, Noritake, NULL, Pertelian, PHAnderson,]
   [                        PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,]
@@ -68,6 +68,7 @@ for driver in $drivers; do
          CWLINUX="yes"
          D4D="yes"
          EA232graphic="yes"
+         EFN="yes"
          FW8888="yes"
          G15="yes"
          GLCD2USB="yes"
@@ -133,6 +134,9 @@ for driver in $drivers; do
       EA232graphic)
          EA232graphic=$val
          ;;
+      EFN)
+         EFN=$val
+	 ;;
       FW8888)
          FW8888=$val
          ;;
@@ -355,6 +359,13 @@ if test "$EA232graphic" = "yes"; then
    DRIVERS="$DRIVERS drv_EA232graphic.o"
    AC_DEFINE(WITH_EA232graphic,1,[Electronic Assembly RS232 graphic driver])
 fi
+
+if test "$EFN" = "yes"; then
+   TEXT="yes"
+   DRIVERS="$DRIVERS drv_EFN.o"
+   AC_DEFINE(WITH_EFN,1,[Driver for EFN LED modules and EUG 100 ethernet to serial converter])
+fi
+
 
 if test "$FW8888" = "yes"; then
    TEXT="yes"
