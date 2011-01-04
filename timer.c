@@ -372,7 +372,7 @@ int timer_process(struct timespec *delay)
 	}
     }
 
-    int next_timer = -1;		/* ID of the next upcoming timer */
+    int next_timer = -1;	/* ID of the next upcoming timer */
 
     /* loop through the timer slots and try to find the next upcoming
        timer */
@@ -455,7 +455,7 @@ void timer_exit(void)
     /* reset number of allocated timer slots */
     nTimers = 0;
 
-	/* free memory used for storing the timer slots */
+    /* free memory used for storing the timer slots */
     if (Timers != NULL) {
 	free(Timers);
 	Timers = NULL;
