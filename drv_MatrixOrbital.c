@@ -58,7 +58,7 @@ static char Name[] = "MatrixOrbital";
 static int Model;
 static int Protocol;
 
-static char dispBuffer[2][16];
+static char dispBuffer[4][20];
 
 typedef struct {
     int type;
@@ -101,6 +101,7 @@ static MODEL Models[] = {
     {0x38, "LK204-24-USB", 4, 20, 8, 8, 2},
     {0x39, "VK204-24-USB", 4, 20, 8, 8, 2},
     {0x40, "DE-LD011", 2, 16, 0, 0, 3},	/* Sure electronics USB LCD board Rev.I */
+    {0x41, "DE-LD021", 4, 20, 0, 0, 3},
     {0xff, "Unknown", -1, -1, 0, 0, 0}
 };
 
@@ -118,7 +119,7 @@ static void drv_MO_write(const int row, const int col, const char *data, const i
 	cmd[3] = (char) row + 1;
 	strncpy(&(dispBuffer[row][col]), data, len);
 	drv_generic_serial_write(cmd, 4);
-	drv_generic_serial_write(dispBuffer[row], 16);
+	drv_generic_serial_write(dispBuffer[row], Models[Model].cols);
     } else {
 	cmd[2] = (char) col + 1;
 	cmd[3] = (char) row + 1;
@@ -142,15 +143,12 @@ static void drv_MO_clear(void)
 
     case 3:
 	/* Sure electronics USB LCD board - clear buffer */
-	for (i = 0; i < 2; i++) {
-	    for (j = 0; j < 16; j++) {
+	for (i = 0; i < Models[Model].rows; i++) {
+	    for (j = 0; j < Models[Model].cols; j++) {
 		dispBuffer[i][j] = ' ';
 	    }
+	    drv_MO_write(1, i + 1, dispBuffer[i], Models[Model].cols);
 	}
-
-	drv_MO_write(1, 1, dispBuffer[0], 16);
-	drv_MO_write(1, 2, dispBuffer[1], 16);
-
 	break;
     }
 }
@@ -329,8 +327,8 @@ static int drv_MO_start(const char *section, const int quiet)
 
     if (Models[i].protocol == 3) {	// Sure electronics USB LCD board - full line output
 	int i, j;
-	for (i = 0; i < 2; i++) {	// Clear buffer
-	    for (j = 0; j < 16; j++) {
+	for (i = 0; i < Models[i].rows; i++) {	// Clear buffer
+	    for (j = 0; j < Models[i].cols; j++) {
 		dispBuffer[i][j] = ' ';
 	    }
 	}
