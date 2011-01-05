@@ -325,10 +325,10 @@ static int drv_MO_start(const char *section, const int quiet)
 	Model = -1;
     }
 
-    if (Models[i].protocol == 3) {	// Sure electronics USB LCD board - full line output
+    if (Model != -1 && Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
 	int i, j;
-	for (i = 0; i < Models[i].rows; i++) {	// Clear buffer
-	    for (j = 0; j < Models[i].cols; j++) {
+	for (i = 0; i < Models[Model].rows; i++) {	// Clear buffer
+	    for (j = 0; j < Models[Model].cols; j++) {
 		dispBuffer[i][j] = ' ';
 	    }
 	}
