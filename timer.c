@@ -113,27 +113,57 @@ int nTimers = 0;
 TIMER *Timers = NULL;
 
 
-static void timer_inc(struct timeval *tv, const int interval)
-/*  Update a timer's trigger by adding the given interval.
+static void timer_inc(const int timer, struct timeval *now)
+/*  Update the time a given timer updates next.
 
-    tv (timeval pointer): struct holding the last time the timer has
-    been processed
+    timer (integer): internal ID of timer that is to be updated
 
-	interval (integer): interval in milliseconds to be added to the
-    the last time the timer has been processed
+	now (timeval pointer): struct holding the "current" time
 
 	return value: void
  */
 {
-    /* split time interval to be added (given in milliseconds) into
-       microseconds and seconds */
-    struct timeval diff = {
+    /* calculate the time difference between the last time the given
+       timer has been processed and the current time */
+    struct timeval diff;
+    timersub(now, &Timers[timer].when, &diff);
+
+    /* convert this time difference to fractional seconds */
+    float fDiff = diff.tv_sec + diff.tv_usec / 1000000.0f;
+
+    /* convert time difference to fractional milliseconds */
+    fDiff = fDiff * 1000.0f;
+
+    /* calculate the number of timer intervals that have passed since
+       the last timer the given timer has been processed -- value is
+       truncated (rounded down) to an integer */
+    int number_of_intervals = (int) (fDiff / Timers[timer].interval);
+
+    /* notify the user in case one or more timer intervals have been
+       missed */
+    if (number_of_intervals > 0)
+	info("Timer #%d skipped %d interval(s) or %d ms.", timer, number_of_intervals,
+	     number_of_intervals * Timers[timer].interval);
+
+    /* increment the number of passed intervals in order to skip all
+       missed intervals -- thereby avoiding that unprocessed timers
+       stack up, continuously update and are notoriously late (certain
+       railway companies might learn a lesson from us <g>) */
+    number_of_intervals++;
+
+    /* calculate time difference between the last time the timer has
+       been processed and the next time it will be processed */
+    int interval = Timers[timer].interval * number_of_intervals;
+
+    /* convert time difference (in milliseconds) to a "timeval"
+       structure (in seconds and microseconds) */
+    struct timeval tv_interval = {
 	.tv_sec = interval / 1000,
 	.tv_usec = (interval % 1000) * 1000
     };
 
-    /* add interval to timer and store the result in the timer */
-    timeradd(tv, &diff, tv);
+    /* finally, add time difference to the timer's trigger */
+    timeradd(&Timers[timer].when, &tv_interval, &Timers[timer].when);
 }
 
 
@@ -249,7 +279,7 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
     /* one-shot timers should NOT fire immediately, so delay them by a
        single timer interval */
     if (one_shot) {
-	timer_inc(&Timers[timer].when, interval);
+	timer_inc(timer, &now);
     }
 
     /* signal successful timer creation */
@@ -365,9 +395,9 @@ int timer_process(struct timespec *delay)
 		   been deleted and its allocated memory may be re-used) */
 		Timers[timer].active = 0;
 	    } else {
-		/* otherwise, respawn timer by adding one triggering interval
+		/* otherwise, re-spawn timer by adding one triggering interval
 		   to its triggering time */
-		timer_inc(&Timers[timer].when, Timers[timer].interval);
+		timer_inc(timer, &now);
 	    }
 	}
     }
@@ -428,7 +458,7 @@ int timer_process(struct timespec *delay)
 	timerclear(&diff);
 
 	/* display an info message to inform the user */
-	info("Oops, clock skewed, update timestamp");
+	info("Oops, clock skewed, update time stamp");
 
 	/* update time stamp and timer */
 	/* FIXME: shouldn't we update *all* timers? */
