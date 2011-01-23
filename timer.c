@@ -72,11 +72,9 @@
 #include <dmalloc.h>
 #endif
 
-/* FIXME: CLOCK_SKEW_DETECT_TIME_IN_S should have a higher value */
-
-/* delay in seconds between timer events that is considered as being
-   induced by clock skew */
-#define CLOCK_SKEW_DETECT_TIME_IN_S 1
+/* threshold in milliseconds that differentiates between clock skew
+   and clock jitter */
+#define CLOCK_SKEW_DETECT_TIME_IN_MS 1000
 
 /* structure for storing all relevant data of a single timer */
 typedef struct TIMER {
@@ -129,15 +127,15 @@ static void timer_inc(const int timer, struct timeval *now)
     timersub(now, &Timers[timer].when, &diff);
 
     /* convert this time difference to fractional seconds */
-    float fDiff = diff.tv_sec + diff.tv_usec / 1000000.0f;
+    float time_difference = diff.tv_sec + diff.tv_usec / 1000000.0f;
 
     /* convert time difference to fractional milliseconds */
-    fDiff = fDiff * 1000.0f;
+    time_difference = time_difference * 1000.0f;
 
     /* calculate the number of timer intervals that have passed since
        the last timer the given timer has been processed -- value is
        truncated (rounded down) to an integer */
-    int number_of_intervals = (int) (fDiff / Timers[timer].interval);
+    int number_of_intervals = (int) (time_difference / Timers[timer].interval);
 
     /* notify the user in case one or more timer intervals have been
        missed */
@@ -156,7 +154,7 @@ static void timer_inc(const int timer, struct timeval *now)
     int interval = Timers[timer].interval * number_of_intervals;
 
     /* convert time difference (in milliseconds) to a "timeval"
-       structure (in seconds and microseconds) */
+       struct (in seconds and microseconds) */
     struct timeval tv_interval = {
 	.tv_sec = interval / 1000,
 	.tv_usec = (interval % 1000) * 1000
@@ -445,28 +443,50 @@ int timer_process(struct timespec *delay)
        in "diff" */
     timersub(&Timers[next_timer].when, &now, &diff);
 
-    /* for negative delays, set "diff" to the Epoch so the next update
-       is triggered immediately */
-    if (diff.tv_sec < 0)
+    /* convert "diff" to milliseconds */
+    int time_difference = (diff.tv_sec * 1000.0f) + (diff.tv_usec / 1000.0f);
+
+    /* a notable negative delay has occurred (positive clock skew or
+       some timers are faster than the time needed for processing
+       their callbacks) */
+    if (time_difference < (-CLOCK_SKEW_DETECT_TIME_IN_MS)) {
+	/* zero "diff" so the next update is triggered immediately */
 	timerclear(&diff);
+    } else {
+	/* if there is a notable difference between "time_difference" and
+	   the next upcoming timer's interval, assume clock skew */
+	if (time_difference > (Timers[next_timer].interval + CLOCK_SKEW_DETECT_TIME_IN_MS)) {
+	    /* extract clock skew from "time_difference" by eliminating
+	       the timer's triggering interval */
+	    int skew = time_difference - Timers[next_timer].interval;
 
-    /* check whether the delay in "diff" has been induced by clock
-       skew */
-    if (diff.tv_sec > CLOCK_SKEW_DETECT_TIME_IN_S) {
-	/* set "diff" to the Epoch so the next update is triggered
-	   directly */
-	timerclear(&diff);
+	    /* display an info message to inform the user */
+	    info("Oops, clock skewed by %d ms, updating timestamps...", skew);
 
-	/* display an info message to inform the user */
-	info("Oops, clock skewed, update time stamp");
+	    /* convert clock skew from milliseconds to "timeval"
+	       structure */
+	    struct timeval clock_skew = {
+		.tv_sec = skew / 1000,
+		.tv_usec = (skew % 1000) * 1000
+	    };
 
-	/* update time stamp and timer */
-	/* FIXME: shouldn't we update *all* timers? */
-	gettimeofday(&now, NULL);
-	Timers[next_timer].when = now;
+	    /* process all timers */
+	    for (timer = 0; timer < nTimers; timer++) {
+		/* skip inactive (i.e. deleted) timers */
+		if (Timers[timer].active == 0)
+		    continue;
+
+		/* correct timer's time stamp by clock skew */
+		timersub(&Timers[timer].when, &clock_skew, &Timers[timer].when);
+	    }
+
+	    /* finally, zero "diff" so the next update is triggered
+	       immediately */
+	    timerclear(&diff);
+	}
     }
 
-    /* finally, set passed timespec "delay" to "diff" ... */
+    /* set timespec "delay" passed by calling function to "diff" */
     delay->tv_sec = diff.tv_sec;
     /* timespec uses nanoseconds instead of microseconds!!! */
     delay->tv_nsec = diff.tv_usec * 1000;
