@@ -520,7 +520,7 @@ static int drv_pLG_start(const char *section, const int quiet)
     /* Init the command buffer */
     Buffer = (char *) malloc(1024);
     if (Buffer == NULL) {
-	error("%s: coommand buffer could not be allocated: malloc() failed", Name);
+	error("%s: command buffer could not be allocated: malloc() failed", Name);
 	return -1;
     }
     BufPtr = Buffer;

@@ -443,16 +443,16 @@ int timer_process(struct timespec *delay)
        in "diff" */
     timersub(&Timers[next_timer].when, &now, &diff);
 
-    /* convert "diff" to milliseconds */
-    int time_difference = (diff.tv_sec * 1000.0f) + (diff.tv_usec / 1000.0f);
-
-    /* a notable negative delay has occurred (positive clock skew or
-       some timers are faster than the time needed for processing
-       their callbacks) */
-    if (time_difference < (-CLOCK_SKEW_DETECT_TIME_IN_MS)) {
+    /* a negative delay has occurred (positive clock skew or some
+       timers are faster than the time needed for processing their
+       callbacks) */
+    if (diff.tv_sec < 0) {
 	/* zero "diff" so the next update is triggered immediately */
 	timerclear(&diff);
     } else {
+	/* convert "diff" to milliseconds */
+	int time_difference = diff.tv_sec * 1000 + diff.tv_usec / 1000;
+
 	/* if there is a notable difference between "time_difference" and
 	   the next upcoming timer's interval, assume clock skew */
 	if (time_difference > (Timers[next_timer].interval + CLOCK_SKEW_DETECT_TIME_IN_MS)) {
