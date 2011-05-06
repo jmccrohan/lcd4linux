@@ -1,3 +1,4 @@
+
 /* $Id$
  * $URL$
  *
@@ -596,6 +597,10 @@ int drv_GLCD2USB_init(const char *section, const __attribute__ ((unused))
     if ((ret = drv_generic_graphic_init(section, Name)) != 0)
 	return ret;
 
+    /* initialize generic key pad driver */
+    if ((ret = drv_generic_keypad_init(section, Name)) != 0)
+	return ret;
+
     /* register plugins */
     AddFunction("LCD::brightness", 1, plugin_brightness);
 
@@ -611,6 +616,8 @@ int drv_GLCD2USB_quit(const __attribute__ ((unused))
 
     info("%s: shutting down.", Name);
     drv_generic_graphic_quit();
+
+    drv_generic_keypad_quit();
 
     /* release access to display */
 
