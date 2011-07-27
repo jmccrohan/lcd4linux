@@ -552,6 +552,9 @@
 /* Milford Instruments driver */
 #undef WITH_MILINST
 
+/* Newhaven driver */
+#undef WITH_NEWHAVEN
+
 /* Noritake driver */
 #undef WITH_NORITAKE
 

@@ -97,6 +97,7 @@ drv_M50530.c                  \
 drv_MatrixOrbital.c           \
 drv_MatrixOrbitalGX.c         \
 drv_MilfordInstruments.c      \
+drv_Newhaven.c                \
 drv_Noritake.c                \
 drv_NULL.c                    \
 drv_Pertelian.c               \

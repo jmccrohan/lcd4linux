@@ -161,6 +161,12 @@ unsigned char drv_generic_i2c_wire(const char *name, const char *deflt)
 }
 
 
+void drv_generic_i2c_byte(const unsigned char data)
+{
+    i2c_smbus_write_byte(i2c_device, data);
+}
+
+
 void drv_generic_i2c_data(const unsigned char data)
 {
     my_i2c_smbus_write_byte_data(i2c_device, data);

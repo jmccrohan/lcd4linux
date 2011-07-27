@@ -35,8 +35,8 @@ AC_ARG_WITH(
   [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
   [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
-  [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX,]
-  [                        MilfordInstruments, Noritake, NULL, Pertelian, PHAnderson,]
+  [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments,]
+  [                        Newhaven, Noritake, NULL, Pertelian, PHAnderson,]
   [                        PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,]
   [                        Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,]
   [                        Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11],
@@ -86,6 +86,7 @@ for driver in $drivers; do
          MATRIXORBITAL="yes"
          MATRIXORBITALGX="yes"
          MILINST="yes"
+         NEWHAVEN="yes"
          NORITAKE="yes"
          NULL="yes"
          PERTELIAN="yes"
@@ -187,6 +188,9 @@ for driver in $drivers; do
          ;;
       MilfordInstruments)
          MILINST=$val
+         ;;
+      Newhaven)
+         NEWHAVEN=$val
          ;;
       Noritake)
          NORITAKE=$val;
@@ -540,6 +544,14 @@ if test "$MILINST" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_MilfordInstruments.o"
    AC_DEFINE(WITH_MILINST,1,[Milford Instruments driver])
+fi
+
+if test "$NEWHAVEN" = "yes"; then
+   TEXT="yes"
+   #SERIAL="yes"
+   I2C="yes"
+   DRIVERS="$DRIVERS drv_Newhaven.o"
+   AC_DEFINE(WITH_NEWHAVEN,1,[Newhaven driver])
 fi
 
 if test "$NORITAKE" = "yes"; then
