@@ -102,6 +102,7 @@ static MODEL Models[] = {
     {0x39, "VK204-24-USB", 4, 20, 8, 8, 2},
     {0x40, "DE-LD011", 2, 16, 0, 0, 3},	/* Sure electronics USB LCD board Rev.I */
     {0x41, "DE-LD021", 4, 20, 0, 0, 3},
+    {0x42, "DE-LD023", 4, 20, 0, 0, 4},
     {0xff, "Unknown", -1, -1, 0, 0, 0}
 };
 
@@ -114,7 +115,7 @@ static void drv_MO_write(const int row, const int col, const char *data, const i
 {
     char cmd[5] = "\376Gyx";
 
-    if (Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
+    if (Models[Model].protocol == 3 || Models[Model].protocol == 4) {	// Sure electronics USB LCD board - full line output
 	cmd[2] = (char) 1;
 	cmd[3] = (char) row + 1;
 	strncpy(&(dispBuffer[row][col]), data, len);
@@ -141,8 +142,9 @@ static void drv_MO_clear(void)
 	drv_generic_serial_write("\376\130", 2);	/* Clear Screen */
 	break;
 
-    case 3:
+    default:
 	/* Sure electronics USB LCD board - clear buffer */
+	/* protocol 3 and 4 */
 	for (i = 0; i < Models[Model].rows; i++) {
 	    for (j = 0; j < Models[Model].cols; j++) {
 		dispBuffer[i][j] = ' ';
@@ -325,7 +327,7 @@ static int drv_MO_start(const char *section, const int quiet)
 	Model = -1;
     }
 
-    if (Model != -1 && Models[Model].protocol == 3) {	// Sure electronics USB LCD board - full line output
+    if (Model != -1 && (Models[Model].protocol == 3 || Models[Model].protocol == 4)) {	// Sure electronics USB LCD board - full line output
 	int i, j;
 	for (i = 0; i < Models[Model].rows; i++) {	// Clear buffer
 	    for (j = 0; j < Models[Model].cols; j++) {
@@ -385,6 +387,17 @@ static int drv_MO_start(const char *section, const int quiet)
 	if (drv_generic_serial_read(buffer, 1) == 1) {
 	    info("%s: display reports firmware version 0x%x", Name, *buffer);
 	}
+    }
+
+    char cmd[5];
+    if (Protocol == 4) {
+    /* send init string */
+	cmd[0] = '\376';
+	cmd[1] = 'S';
+	cmd[2] = 'u';
+	cmd[3] = 'r';
+	cmd[4] = 'e';
+	drv_generic_serial_write(cmd, 5);
     }
 
     drv_MO_clear();
