@@ -233,6 +233,7 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 				       const char *style, const char *txt)
 {
     int c, r, x, y, len;
+    int bold;
 
     /* sanity checks */
     if (layer < 0 || layer >= LAYERS) {
@@ -249,10 +250,17 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
     c = col;
 
     /* render text into layout FB */
+    bold = 0;
     while (*txt != '\0') {
 	unsigned char *chr;
 
-	if (strstr(style, "bold") != NULL) {
+	/* magic char to toggle bold */
+	if (*txt == '\a') {
+		bold ^= 1;
+		txt++;
+		continue;
+	}
+	if (bold || strstr(style, "bold") != NULL) {
 	    chr = Font_6x8_bold[(int) *(unsigned char *) txt];
 	} else {
 	    chr = Font_6x8[(int) *(unsigned char *) txt];
