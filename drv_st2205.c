@@ -142,8 +142,8 @@ static int drv_st2205_start2(const char *section)
     fb = malloc(h->height * h->width * 3);
 
     /* set width/height from st2205 firmware specs */
-    DROWS = h->width;
-    DCOLS = h->height;
+    DROWS = h->height;
+    DCOLS = h->width;
 
     return 0;
 }
