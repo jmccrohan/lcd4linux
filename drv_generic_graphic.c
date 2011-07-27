@@ -256,9 +256,9 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 
 	/* magic char to toggle bold */
 	if (*txt == '\a') {
-		bold ^= 1;
-		txt++;
-		continue;
+	    bold ^= 1;
+	    txt++;
+	    continue;
 	}
 	if (bold || strstr(style, "bold") != NULL) {
 	    chr = Font_6x8_bold[(int) *(unsigned char *) txt];
