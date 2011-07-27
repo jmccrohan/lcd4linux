@@ -601,6 +601,7 @@ if test "$PICOLCDGRAPHIC" = "yes"; then
    if test "$has_usb" = "true"; then
       TEXT="yes"
       GRAPHIC="yes"
+      KEYPAD="yes"      
       GPIO="yes"
       SERIAL="yes"
       LIBUSB="yes"
