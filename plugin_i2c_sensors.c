@@ -223,6 +223,8 @@ static void my_i2c_sensors_path(const char *method)
     int done;
 
     if (!strcmp(method, "sysfs")) {
+	base = "/sys/class/hwmon/";
+    } else if (!strcmp(method, "sysfs-old")) {
 	base = "/sys/bus/i2c/devices/";
     } else if (!strcmp(method, "procfs")) {
 	base = "/proc/sys/dev/sensors/";
@@ -259,6 +261,16 @@ static void my_i2c_sensors_path(const char *method)
 		done = 1;
 		break;
 	    }
+	    if (!strcmp(file->d_name, "device")) {
+	        char fname[PATH_MAX];
+	        snprintf(fname, PATH_MAX, "%sdevice/temp1_input", dname);
+                if (access(fname, R_OK) == 0) {
+                    path = realloc(path, strlen(dname) + 7);
+                    sprintf(path, "%sdevice/", dname);
+                    done = 1;
+                    break;
+                }
+	    }
 	}
 	closedir(fd2);
 	if (done)
@@ -280,6 +292,8 @@ static int configure_i2c_sensors(void)
     if (path_cfg == NULL || *path_cfg == '\0') {
 	/* debug("No path to i2c sensors found in the conf, calling my_i2c_sensors_path()"); */
 	my_i2c_sensors_path("sysfs");
+	if (!path)
+	    my_i2c_sensors_path("sysfs-old");
 	if (!path)
 	    my_i2c_sensors_path("procfs");
 
