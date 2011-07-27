@@ -238,21 +238,21 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
 
 static int drv_PICGraphic_GPO(const int num, const int val)
 {
-    char cmd[3];
+    char __attribute__ ((unused)) cmd[3];
 
     cmd[0] = 'g';
     cmd[1] = val ? 's' : 'c';
     cmd[2] = num;
 
     // todo: fixme
-//    drv_PICGraphic_send(cmd, 3);
+    // drv_PICGraphic_send(cmd, 3);
 
     return 0;
 }
 
 static int drv_PICGraphic_GPI(const int num)
 {
-    char cmd[3];
+    char __attribute__ ((unused)) cmd[3];
     int ret = 0;
 
     cmd[0] = 'g';
@@ -260,8 +260,8 @@ static int drv_PICGraphic_GPI(const int num)
     cmd[2] = num;
 
     // todo: fixme
-//    drv_PICGraphic_send(cmd, 3);
-//    ret = drv_generic_serial_read(cmd, 1);
+    // drv_PICGraphic_send(cmd, 3);
+    // ret = drv_generic_serial_read(cmd, 1);
 
     if (ret)
 	return -1;
@@ -272,7 +272,7 @@ static int drv_PICGraphic_GPI(const int num)
 /* example function used in a plugin */
 static int drv_PICGraphic_contrast(int contrast)
 {
-    char cmd[2];
+    char __attribute__ ((unused)) cmd[2];
 
     /* adjust limits according to the display */
     if (contrast < 0)
@@ -284,7 +284,7 @@ static int drv_PICGraphic_contrast(int contrast)
     cmd[0] = 'c';
     cmd[1] = contrast;
     // todo: fixme
-//    drv_PICGraphic_send(cmd, 2);
+    // drv_PICGraphic_send(cmd, 2);
 
     return contrast;
 }

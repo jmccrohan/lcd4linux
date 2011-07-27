@@ -53,7 +53,7 @@
 static HASH CPUinfo;
 static FILE *stream = NULL;
 
-static int parse_cpuinfo(char *oid)
+static int parse_cpuinfo(char __attribute__ ((unused)) * oid)
 {
     int age;
 
@@ -101,8 +101,6 @@ static int parse_cpuinfo(char *oid)
 	hash_put(&CPUinfo, key, val);
 
     }
-    /* to avoid compiler unused warning */
-    oid = 0;
 
 #else
 

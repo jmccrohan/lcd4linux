@@ -355,7 +355,7 @@ static int get_sens(const char *dev, const char *key)
     char key_buffer[32];
     char buffer[64];
     int age;
-    int has_sens = 0;
+    int __attribute__ ((unused)) has_sens = 0;
     int has_range = 0;
 
     qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev, key);
@@ -404,7 +404,7 @@ static int get_sec_mode(const char *dev, const char *key)
     int age;
     int has_key = 0;
     int key_flags = 0;
-    int key_size = 0;
+    int __attribute__ ((unused)) key_size = 0;
 
     qprintf(key_buffer, sizeof(key_buffer), "%s.%s", dev, key);
     age = hash_age(&wireless, key);

@@ -83,7 +83,7 @@
 
 static char Name[] = "EFN";
 
-char Host[256];
+char *Host;
 int Port;
 int DataSocket;
 
@@ -93,7 +93,7 @@ static void drv_EFN_clear(void);
 /***  hardware dependant functions    ***/
 /****************************************/
 
-static int drv_EFN_open(const char *section)
+static int drv_EFN_open(const char __attribute__ ((unused)) * section)
 {
     int sockfd_conf, portno_conf, n;
     struct sockaddr_in serv_addr;
@@ -176,23 +176,14 @@ static int drv_EFN_close(void)
 /* dummy function that sends something to the display */
 static void drv_EFN_send(const char *data, const unsigned int len)
 {
-    int n, i;
+    int n;
 
-    // transport command stirng to EUG 100
+    // transport command string to EUG 100
     n = write(DataSocket, data, len);
 
     if (n < 0) {
 	error("%s:drv_EFN_send: Failed to write to data socket\n", Name);
-	//  return(-1);
     }
-    /*
-       printf("EFN_send: ");
-       for(i=0;i<n;i++)
-       {
-       printf("0x%02x ",data[i]);
-       }
-       printf("\n");
-     */
 }
 
 
@@ -257,7 +248,8 @@ static void drv_EFN_write(const int row, const int col, const char *data, int le
     }
 }
 
-static void drv_EFN_defchar(const int ascii, const unsigned char *matrix)
+static void drv_EFN_defchar(const int __attribute__ ((unused)) ascii, const unsigned char
+			    __attribute__ ((unused)) * matrix)
 {
     error("%s:drv_EFN_defchar: Function not supported by EFN modules\n", Name);
 }
@@ -268,16 +260,10 @@ static int drv_EFN_start(const char *section)
     int rows = -1, cols = -1;
     char *s;
 
-    s = cfg_get(section, "Host", NULL);
+    Host = cfg_get(section, "Host", NULL);
 
-    if (s == NULL || *s == '\0') {
+    if (Host == NULL || *Host == '\0') {
 	error("%s: no '%s.Host'  entry from %s", Name, section, cfg_source());
-	return -1;
-    }
-
-    if (sscanf(s, "%s", &Host) != 1) {
-	error("%s: bad %s.Size '%s' from %s", Name, section, s, cfg_source());
-	free(s);
 	return -1;
     }
 

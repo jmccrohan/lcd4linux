@@ -502,7 +502,7 @@ static char *huawei_send_receive(const char *cmd)
 
 static int huawei_configured(void)
 {
-    int port_exists, ret, bytes;
+    int port_exists, ret;
     static int connected = -1, configured = 0;
     char *buf;
 
@@ -560,7 +560,6 @@ static int huawei_configured(void)
     /* modem initialization */
     if (connected == 1 && configured != 1) {
 	buf = huawei_send_receive(INIT_STRING);
-	bytes = strlen(buf);
 
 	if (strncmp(buf, "OK", 2) == 0) {
 	    configured = 1;
@@ -576,11 +575,9 @@ static int huawei_configured(void)
 
 static void huawei_read_quality(const char *cmd)
 {
-    int bytes;
     char *buf;
 
     buf = huawei_send_receive(cmd);
-    bytes = strlen(buf);
 
     if (strncmp(buf, "+CSQ: ", 6) == 0) {
 
@@ -609,11 +606,9 @@ static void huawei_read_quality(const char *cmd)
 
 static void huawei_read_sysinfo(const char *cmd)
 {
-    int bytes;
     char *buf;
 
     buf = huawei_send_receive(cmd);
-    bytes = strlen(buf);
 
     if (strncmp(buf, "^SYSINFO:", 9) == 0) {
 
@@ -750,12 +745,10 @@ static void huawei_read_operator(const char *cmd)
 static void huawei_read_flowreport(const char *cmd)
 {
     char *buf;
-    int bytes;
     static unsigned long long int prev_tx_flow = 0, prev_rx_flow = 0;
     static unsigned long int prev_ds_time = 0;
 
     buf = huawei_send_receive(cmd);
-    bytes = strlen(buf);
 
     if (strncmp(buf, "^DSFLOWQRY:", 11) == 0) {
 

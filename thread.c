@@ -165,9 +165,7 @@ void shm_destroy(const int shmid, const void *buffer)
 
 int thread_create(const char *name, void (*thread) (void *data), void *data)
 {
-    pid_t pid, ppid;
-
-    ppid = getpid();
+    pid_t pid;
 
     switch (pid = fork()) {
     case -1:

@@ -66,7 +66,8 @@ static void zapstatus(RESULT * result, RESULT * arg1)
 {
     FILE *infile;
     int skipline = 0;		// Skip the first in the file, it throws off the detection
-    char line[100], *SipLoc, Channel[25], Location[25], State[9], Application[25], EndPoint[8], Ret[50];
+    char line[100], *SipLoc, Channel[25], Location[25], __attribute__ ((unused)) State[9], Application[25], EndPoint[8],
+	Ret[50];
     int i = 0, ChannelInt = 0, ZapLine = 0;
     struct Line Lines[32];	// Setup 32 lines, ZAP 1-32 (memory is cheap)
 

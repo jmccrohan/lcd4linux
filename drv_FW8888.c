@@ -115,32 +115,32 @@ static void drv_FW8888_clear(void)
     drv_FW8888_send_cmd(0x01);
 }
 
-static void drv_FW8888_home(void)
+static void __attribute__ ((unused)) drv_FW8888_home(void)
 {
     drv_FW8888_send_cmd(0x02);
 }
 
-static void drv_FW8888_display_off(void)
+static void __attribute__ ((unused)) drv_FW8888_display_off(void)
 {
     drv_FW8888_send_cmd(0x08);
 }
 
-static void drv_FW8888_display_on_cursor_off(void)
+static void __attribute__ ((unused)) drv_FW8888_display_on_cursor_off(void)
 {
     drv_FW8888_send_cmd(0x0C);
 }
 
-static void drv_FW8888_display_on_cursor_on(void)
+static void __attribute__ ((unused)) drv_FW8888_display_on_cursor_on(void)
 {
     drv_FW8888_send_cmd(0x0E);
 }
 
-static void drv_FW8888_backlight_off(void)
+static void __attribute__ ((unused)) drv_FW8888_backlight_off(void)
 {
     drv_FW8888_send_cmd(0x38);
 }
 
-static void drv_FW8888_backlight_on(void)
+static void __attribute__ ((unused)) drv_FW8888_backlight_on(void)
 {
     drv_FW8888_send_cmd(0x39);
 }

@@ -433,7 +433,6 @@ static void drv_G15_update_img()
 {
     int i, j, k;
     unsigned char *output = malloc(DCOLS * DROWS * sizeof(unsigned char));
-    int retval;
 
     DEBUG("entered");
     if (!output)
@@ -457,8 +456,8 @@ static void drv_G15_update_img()
 
     DEBUG("output array prepared");
     mutex_lock(kb_mutex);
-    retval = usb_interrupt_write(g15_lcd, usb_endpoint, (char *) output, 992, 1000);
-    //info("%s: Ret %i from usb_interrupt_write(endpoint %d)", Name, retval, usb_endpoint);
+    i = usb_interrupt_write(g15_lcd, usb_endpoint, (char *) output, 992, 1000);
+    //info("%s: Ret %i from usb_interrupt_write(endpoint %d)", Name, i, usb_endpoint);
     mutex_unlock(kb_mutex);
     usleep(300);
 

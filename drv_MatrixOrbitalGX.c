@@ -183,7 +183,7 @@ static int drv_MOGX_open(void)
 
 static void drv_MOGX_send(const unsigned char *data, const unsigned int size)
 {
-    int ret;
+    int __attribute__ ((unused)) ret;
 
     //unsigned char rcv_buffer[64] = "";
 

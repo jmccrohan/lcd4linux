@@ -848,7 +848,7 @@ static NODE *Level12(void)
 static NODE *Level11(void)
 {
     NODE *Root;
-    TOKEN sign = T_UNDEF;
+    OPERATOR sign = O_UNDEF;
 
     if (Token == T_OPERATOR && (Operator == O_ADD || Operator == O_SUB || Operator == O_NOT)) {
 	sign = Operator;

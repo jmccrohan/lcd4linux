@@ -189,7 +189,7 @@ static int drv_pLG_read(unsigned char *data, int size)
 
 static void drv_pLG_send(unsigned char *data, int size)
 {
-    int ret;
+    int __attribute__ ((unused)) ret;
     ret = usb_interrupt_write(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
     //fprintf(stderr, "%s written %d bytes\n", __FUNCTION__, ret);
 }

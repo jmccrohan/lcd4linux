@@ -533,12 +533,16 @@ int drv_D4D_bar_draw(WIDGET * W)
     WIDGET_BAR *Bar = W->data;
     int row, col, len, res, max, val1, val2;
     DIRECTION dir;
-    STYLE style;
+#if 0
+    STYLE style;		/* Fixme: unused variable */
+#endif
 
     row = W->row;
     col = W->col;
     dir = Bar->direction;
-    style = Bar->style;
+#if 0
+    style = Bar->style;		/* Fixme: unused variable */
+#endif
     len = Bar->length;
 
     res = dir & (DIR_EAST | DIR_WEST) ? XRES : YRES;
