@@ -568,7 +568,7 @@ fi
 
 # WLAN
 if test "$PLUGIN_WIRELESS" = "yes"; then
-   AC_CHECK_HEADERS(linux/wireless.h, [has_wireless_header="true"], [has_wireless_header="false"])
+   AC_CHECK_HEADERS(linux/wireless.h, [has_wireless_header="true"], [has_wireless_header="false"], [#include <sys/socket.h>])
    if test "$has_wireless_header" = "true"; then
        PLUGINS="$PLUGINS plugin_wireless.o"
        AC_DEFINE(PLUGIN_WIRELESS,1,[wireless plugin])
