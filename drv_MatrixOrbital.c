@@ -391,7 +391,7 @@ static int drv_MO_start(const char *section, const int quiet)
 
     char cmd[5];
     if (Protocol == 4) {
-    /* send init string */
+	/* send init string */
 	cmd[0] = '\376';
 	cmd[1] = 'S';
 	cmd[2] = 'u';

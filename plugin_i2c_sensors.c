@@ -262,14 +262,14 @@ static void my_i2c_sensors_path(const char *method)
 		break;
 	    }
 	    if (!strcmp(file->d_name, "device")) {
-	        char fname[PATH_MAX];
-	        snprintf(fname, PATH_MAX, "%sdevice/temp1_input", dname);
-                if (access(fname, R_OK) == 0) {
-                    path = realloc(path, strlen(dname) + 7);
-                    sprintf(path, "%sdevice/", dname);
-                    done = 1;
-                    break;
-                }
+		char fname[PATH_MAX];
+		snprintf(fname, PATH_MAX, "%sdevice/temp1_input", dname);
+		if (access(fname, R_OK) == 0) {
+		    path = realloc(path, strlen(dname) + 7);
+		    sprintf(path, "%sdevice/", dname);
+		    done = 1;
+		    break;
+		}
 	    }
 	}
 	closedir(fd2);

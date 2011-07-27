@@ -203,7 +203,7 @@ static void drv_PICGraphic_blit(const int row, const int col, const int height, 
 	delayDone = 0;
 	int row8, height8;
 	row8 = 8 * (row / 8);
-	height8 = 8 * (height / 8) + !!(height % 8);
+	height8 = 8 * (height / 8) + ! !(height % 8);
 	info("sending blit");
 	cmd[0] = 'b';
 	cmd[1] = row8;
