@@ -13,7 +13,7 @@ for driver in ASTUSB BeckmannEgle BWCT CrystalFontz Curses Cwlinux D4D EA232grap
 
     make distclean
     ./configure --with-drivers=$driver
-    make -s -j 2
+    make -s -j 8
     
     if [ -x lcd4linux ]; then
 	echo "Success: drv_$driver" >>smoketest.log
@@ -27,7 +27,7 @@ for plugin in apm asterisk button_exec cpuinfo dbus diskstats dvb exec event fif
 
     make distclean
     ./configure --with-drivers=NULL --with-plugins=$plugin
-    make -s -j 2
+    make -s -j 8
     
     if [ -x lcd4linux ]; then
 	echo "Success: plugin_$plugin" >>smoketest.log
