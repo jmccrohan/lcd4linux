@@ -410,11 +410,11 @@ fi
 
 # MPD
 if test "$PLUGIN_MPD" = "yes"; then
-   AC_CHECK_LIB(libmpd, [mpd_newConnection], [has_mpd_header="true"], [has_mpd_header="false"])
+   AC_CHECK_LIB(mpdclient, [mpd_connection_new], [has_mpd_header="true"], [has_mpd_header="false"])
    if test "$has_mpd_header" = "true"; then
       PLUGINS="$PLUGINS plugin_mpd.o"
-      PLUGINLIBS="$PLUGINLIBS `pkg-config libmpd --libs`"
-      CPPFLAGS="$CPPFLAGS `pkg-config libmpd --cflags`"
+      PLUGINLIBS="$PLUGINLIBS `pkg-config libmpdclient --libs`"
+      CPPFLAGS="$CPPFLAGS `pkg-config libmpdclient --cflags`"
       AC_DEFINE(PLUGIN_MPD,1,[mpd plugin])      
    else
       AC_MSG_WARN(libmpdclient.h header not found: mpd plugin disabled)
