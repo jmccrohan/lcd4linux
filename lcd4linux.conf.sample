@@ -93,6 +93,15 @@ Display LK204 {
 }
 
 
+Display MDM166A {
+    Driver   'MDM166A'
+    Brightness  1
+    Inverted   0
+    Size      '96x16'
+    Font      '6x8'
+}
+
+
 Display MI240 {
     Driver 'MilfordInstruments'
     Model 'MI240'

@@ -1443,7 +1443,7 @@ Optional Packages:
                           ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,
                           EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,
                           IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,
-                          LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments,
+                          LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,
                           Newhaven, Noritake, NULL, Pertelian, PHAnderson,
                           PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,
                           Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,
@@ -5624,6 +5624,22 @@ fi
 done
 
 
+# check for libusb-1.0/libusb.h
+for ac_header in libusb-1.0/libusb.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "libusb-1.0/libusb.h" "ac_cv_header_libusb_1_0_libusb_h" "$ac_includes_default"
+if test "x$ac_cv_header_libusb_1_0_libusb_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBUSB_1_0_LIBUSB_H 1
+_ACEOF
+ has_usb10="true"
+else
+  has_usb10="false"
+fi
+
+done
+
+
 # check for luise.h
 for ac_header in luise.h
 do :
@@ -6249,6 +6265,7 @@ for driver in $drivers; do
          M50530="yes"
          MATRIXORBITAL="yes"
          MATRIXORBITALGX="yes"
+         MDM166A="yes"
          MILINST="yes"
          NEWHAVEN="yes"
          NORITAKE="yes"
@@ -6350,6 +6367,9 @@ for driver in $drivers; do
       MatrixOrbitalGX)
          MATRIXORBITALGX=$val
          ;;
+      MDM166A)
+         MDM166A=$val
+         ;;
       MilfordInstruments)
          MILINST=$val
          ;;
@@ -6449,6 +6469,7 @@ KEYPAD="no"
 
 # generic libraries
 LIBUSB="no"
+LIBUSB10="no"
 LIBFTDI="no"
 
 if test "$ASTUSB" = "yes"; then
@@ -6765,6 +6786,21 @@ $as_echo "#define WITH_MATRIXORBITALGX 1" >>confdefs.h
     else
         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: usb.h not found: MatrixOrbitalGX driver disabled" >&5
 $as_echo "$as_me: WARNING: usb.h not found: MatrixOrbitalGX driver disabled" >&2;}
+    fi
+fi
+
+if test "$MDM166A" = "yes"; then
+   if test "$has_usb10" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_mdm166a.o"
+      GPIO="yes"
+      LIBUSB10="yes"
+
+$as_echo "#define WITH_MDM166A 1" >>confdefs.h
+
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libusb-1.0/libusb.h not found: MDM166A driver disabled" >&5
+$as_echo "$as_me: WARNING: libusb-1.0/libusb.h not found: MDM166A driver disabled" >&2;}
     fi
 fi
 
@@ -7164,6 +7200,11 @@ fi
 # libusb
 if test "$LIBUSB" = "yes"; then
    DRVLIBS="$DRVLIBS -lusb"
+fi
+
+# libusb-1.0
+if test "$LIBUSB10" = "yes"; then
+   DRVLIBS="$DRVLIBS -lusb-1.0"
 fi
 
 # libftdi

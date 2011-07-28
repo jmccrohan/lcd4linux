@@ -35,7 +35,7 @@ AC_ARG_WITH(
   [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
   [                        EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
   [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
-  [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments,]
+  [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,]
   [                        Newhaven, Noritake, NULL, Pertelian, PHAnderson,]
   [                        PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,]
   [                        Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,]
@@ -85,6 +85,7 @@ for driver in $drivers; do
          M50530="yes"
          MATRIXORBITAL="yes"
          MATRIXORBITALGX="yes"
+         MDM166A="yes"
          MILINST="yes"
          NEWHAVEN="yes"
          NORITAKE="yes"
@@ -186,6 +187,9 @@ for driver in $drivers; do
       MatrixOrbitalGX)
          MATRIXORBITALGX=$val
          ;;
+      MDM166A)
+         MDM166A=$val
+         ;;
       MilfordInstruments)
          MILINST=$val
          ;;
@@ -284,6 +288,7 @@ KEYPAD="no"
 
 # generic libraries
 LIBUSB="no"
+LIBUSB10="no"
 LIBFTDI="no"
 
 if test "$ASTUSB" = "yes"; then
@@ -538,6 +543,18 @@ if test "$MATRIXORBITALGX" = "yes"; then
         AC_MSG_WARN(usb.h not found: MatrixOrbitalGX driver disabled)
     fi
 fi
+
+if test "$MDM166A" = "yes"; then 
+   if test "$has_usb10" = "true"; then 
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_mdm166a.o" 
+      GPIO="yes" 
+      LIBUSB10="yes"
+      AC_DEFINE(WITH_MDM166A,1,[MDM166A driver]) 
+    else 
+      AC_MSG_WARN(libusb-1.0/libusb.h not found: MDM166A driver disabled) 
+    fi 
+fi 
 
 if test "$MILINST" = "yes"; then
    TEXT="yes"
@@ -860,6 +877,11 @@ fi
 # libusb
 if test "$LIBUSB" = "yes"; then
    DRVLIBS="$DRVLIBS -lusb"
+fi
+
+# libusb-1.0
+if test "$LIBUSB10" = "yes"; then
+   DRVLIBS="$DRVLIBS -lusb-1.0"
 fi
 
 # libftdi

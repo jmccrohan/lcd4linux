@@ -96,6 +96,7 @@ drv_LW_ABP.c                  \
 drv_M50530.c                  \
 drv_MatrixOrbital.c           \
 drv_MatrixOrbitalGX.c         \
+drv_mdm166a.c                 \
 drv_MilfordInstruments.c      \
 drv_Newhaven.c                \
 drv_Noritake.c                \

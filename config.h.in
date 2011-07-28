@@ -70,6 +70,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the <libusb-1.0/libusb.h> header file. */
+#undef HAVE_LIBUSB_1_0_LIBUSB_H
+
 /* Define to 1 if you have the <linux/dvb/frontend.h> header file. */
 #undef HAVE_LINUX_DVB_FRONTEND_H
 
@@ -548,6 +551,9 @@
 
 /* MatrixOrbitalGX driver */
 #undef WITH_MATRIXORBITALGX
+
+/* MDM166A driver */
+#undef WITH_MDM166A
 
 /* Milford Instruments driver */
 #undef WITH_MILINST
