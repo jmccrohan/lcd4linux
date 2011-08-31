@@ -299,7 +299,7 @@ static int configure_pop3(void)
     n = getConfig();
     /* by now, head should point to a list of all our accounts */
     if (head) {
-	info("[POP3] %d POP3 accounts have been succesfully defined", n);
+	info("[POP3] %d POP3 accounts have been successfully defined", n);
 	configured = 1;
     } else {
 	configured = -1;

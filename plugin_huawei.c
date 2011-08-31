@@ -563,7 +563,7 @@ static int huawei_configured(void)
 
 	if (strncmp(buf, "OK", 2) == 0) {
 	    configured = 1;
-	    info("%s: Modem user inerface succesfully initialized to: \'%s\'", name, INIT_STRING);
+	    info("%s: Modem user inerface successfully initialized to: \'%s\'", name, INIT_STRING);
 	} else {
 	    configured = 0;
 	    error("%s: ERROR: Invalid or empty response: \'%s\' received for: \'%s\'", name, buf, INIT_STRING);

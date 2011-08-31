@@ -318,7 +318,7 @@ static int drv_EFN_start(const char *section)
 /* list models */
 int drv_EFN_list(void)
 {
-    printf("EFN LED modules + EUG100 Ethernet to serial convertor");
+    printf("EFN LED modules + EUG100 Ethernet to serial converter");
     return 0;
 }
 
