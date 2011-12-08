@@ -3,7 +3,7 @@
  *
  * LCD4Linux driver for 4D Systems Display Graphics Modules
  *
- * Copyright (C) 2008 Sven Killig <sven@killig.de>
+ * Copyright (C) 2008, 2011 Sven Killig <sven@killig.de>
  * Modified from sample code by:
  * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -61,6 +61,9 @@
 #include "drv_generic_graphic.h"
 #include "drv_generic_serial.h"
 
+#include <sys/ioctl.h>
+#include <linux/serial.h>
+
 static char Name[] = "D4D";
 char NAME_[20];
 int FONT = 1, MODE = 0, EXTRA = 0, SECTOR = 0, SECTOR_SIZE, NOPOWERCYCLE = 0;
@@ -98,24 +101,6 @@ int RGB_24to8(int red, int grn, int blu)
 /****************************************/
 
 
-static int drv_D4D_open(const char *section)
-{
-    int fd;
-    fd = drv_generic_serial_open(section, Name, 0);
-    if (fd < 0)
-	return -1;
-    fcntl(fd, F_SETFL, 0);	/* blocking read */
-    return 0;
-}
-
-
-static int drv_D4D_close(void)
-{
-    drv_generic_serial_close();
-    return 0;
-}
-
-
 static void drv_D4D_receive_ACK()
 {
     char ret[1];
@@ -128,8 +113,11 @@ static void drv_D4D_receive_ACK()
     }
 }
 
+
 static void drv_D4D_send_nowait(const char *data, const unsigned int len)
 {
+    if (len > 1 && data[0] >= 32 && data[0] <= 127)
+	debug("drv_D4D_send_nowait('%c'", data[0]);
     drv_generic_serial_write(data, len);
 }
 
@@ -139,29 +127,153 @@ static void drv_D4D_send(const char *data, const unsigned int len)
     drv_D4D_receive_ACK();
 }
 
-static void drv_D4D_send_nowait_extra(const char *data, const unsigned int len, unsigned char pos1, unsigned char pos2)
+static void drv_D4D_send_extra_nowait(const char *data, const unsigned int len, unsigned char pos1, unsigned char pos2,
+				      unsigned char pos3, unsigned char pos4)
 {
-    /* possibly leave out bytes at pos1 and pos2 for older protocol format */
+    /* possibly leave out bytes at posn for GOLDELOX protocol format */
     if (EXTRA) {
 	drv_D4D_send_nowait(data, len);
     } else {
-	unsigned int i;
-	char send[1];
+	unsigned int i, j = 0, lenNew = len;
+	char send[len];
 	for (i = 0; i < len; i++) {
-	    if (!pos1 || i != pos1) {
-		if (!pos2 || i != pos2) {
-		    send[0] = data[i];
-		    drv_generic_serial_write(send, 1);
-		}
+	    if (i != pos1 && i != pos2 && i != pos3 && i != pos4) {
+		send[j++] = data[i];
+	    } else {
+		lenNew--;
 	    }
 	}
+	drv_D4D_send_nowait(send, lenNew);
     }
 }
 
-static void drv_D4D_send_extra(const char *data, const unsigned int len, char pos1, char pos2)
+static void drv_D4D_send_extra(const char *data, const unsigned int len, unsigned char pos1, unsigned char pos2,
+			       unsigned char pos3, unsigned char pos4)
 {
-    drv_D4D_send_nowait_extra(data, len, pos1, pos2);
+    drv_D4D_send_extra_nowait(data, len, pos1, pos2, pos3, pos4);
     drv_D4D_receive_ACK();
+}
+
+
+static int drv_D4D_open(const char *section)
+{
+    info("drv_D4D_open()");
+    int fd, picaso = 0;
+    struct termios portset;
+    static speed_t Speed = 0;
+    fd = drv_generic_serial_open(section, Name, 0);
+    if (fd < 0)
+	return -1;
+    int flags;
+    flags = fcntl(fd, F_GETFL);
+    flags &= ~FNDELAY;
+    fcntl(fd, F_SETFL, flags);
+
+    cfg_number(section, "PICASO", 0, 1200, 4000000, &picaso);
+    if (picaso) {
+	info("switching to 9600 baud");
+	if (tcgetattr(fd, &portset) == -1) {
+	    error("%s: tcgetattr failed: %s", Name, strerror(errno));
+	    return -1;
+	}
+	cfsetispeed(&portset, B9600);
+	cfsetospeed(&portset, B9600);
+	if (tcsetattr(fd, TCSANOW, &portset) == -1) {
+	    error("%s: tcsetattr failed: %s", Name, strerror(errno));
+	    return -1;
+	}
+    }
+
+    char cmd[] = { 'U' };
+    drv_D4D_send(cmd, sizeof(cmd));
+    debug("2");
+
+    if (picaso) {
+	char baud[] = { 'Q', 0 };
+	switch (picaso) {
+	case 1200:
+	    Speed = B1200;
+	    baud[1] = 0x03;
+	    break;
+	case 2400:
+	    Speed = B2400;
+	    baud[1] = 0x04;
+	    break;
+	case 4800:
+	    Speed = B4800;
+	    baud[1] = 0x05;
+	    break;
+	case 9600:
+	    Speed = B9600;
+	    baud[1] = 0x06;
+	    break;
+	case 19200:
+	    Speed = B19200;
+	    baud[1] = 0x08;
+	    break;
+	case 38400:
+	    Speed = B38400;
+	    baud[1] = 0x0A;
+	    break;
+	case 57600:
+	    Speed = B57600;
+	    baud[1] = 0x0B;
+	    break;
+	case 115200:
+	    Speed = B115200;
+	    baud[1] = 0x0D;
+	    break;
+	default:
+	    if (picaso >= 128000 && picaso < 256000) {	/* FTDI: 129032 */
+		Speed = B38400;
+		baud[1] = 0x0E;
+		break;
+	    } else if (picaso >= 256000) {	/* FTDI: 282353 */
+		Speed = B38400;
+		baud[1] = 0x0F;
+		break;
+	    }
+	    error("%s: unsupported speed '%d' from %s", Name, picaso, cfg_source());
+	    return -1;
+	}
+	drv_D4D_send_nowait(baud, sizeof(baud));
+	sleep(1);
+	debug("3");
+	cfsetispeed(&portset, Speed);
+	cfsetospeed(&portset, Speed);
+	if (picaso >= 128000) {
+	    struct serial_struct sstruct;
+	    if (ioctl(fd, TIOCGSERIAL, &sstruct) < 0) {
+		error("Error: could not get comm ioctl\n");
+		return -1;
+	    }
+	    sstruct.custom_divisor = sstruct.baud_base / picaso;
+	    info("baud_base=%d; custom_divisor=%d -> effective baud:%d", sstruct.baud_base, sstruct.custom_divisor,
+		 sstruct.baud_base / sstruct.custom_divisor);
+	    sstruct.flags |= ASYNC_SPD_CUST;
+	    if (ioctl(fd, TIOCSSERIAL, &sstruct) < 0) {
+		error("Error: could not set custom comm baud divisor\n");
+		return -1;
+	    }
+	}
+	debug("4");
+	info("switching to %d baud", picaso);
+	if (tcsetattr(fd, /*TCSANOW*/ TCSAFLUSH /*TCSADRAIN*/, &portset) == -1) {
+	    error("%s: tcsetattr failed: %s", Name, strerror(errno));
+	    return -1;
+	}
+	debug("5");
+
+    }
+
+    return 0;
+}
+
+
+static int drv_D4D_close(void)
+{
+    drv_generic_serial_close();
+    return 0;
 }
 
 
@@ -213,24 +325,33 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 	cmdNull[0] = 0;
 	drv_D4D_send(cmdNull, 1);
 
-	char cmd_user[] = { 'D', 0, 0, 0, 0, 0, msb(FG_COLOR), lsb(FG_COLOR) };	/* user defined symbols */
+	/*                       1, 2, 3, 4, 5, 6
+	   g, c,mx,lx,my,ly */
+	char cmd_user[] = { 'D', 0, 0, 0, 0, 0, 0, msb(FG_COLOR), lsb(FG_COLOR) };	/* user defined symbols */
 	for (i = 0; i < k; i++) {
 	    cmd_user[2] = user_char[i];
-	    cmd_user[3] = user_x[i];
-	    cmd_user[4] = msb(user_y[i]);
-	    cmd_user[5] = lsb(user_y[i]);
-	    drv_D4D_send_extra(cmd_user, sizeof(cmd_user), 1, 4);
+	    cmd_user[3] = msb(user_x[i]);
+	    cmd_user[4] = lsb(user_x[i]);
+	    cmd_user[5] = msb(user_y[i]);
+	    cmd_user[6] = lsb(user_y[i]);
+	    drv_D4D_send_extra(cmd_user, sizeof(cmd_user), 1, 3, 5, -1);
 	}
     } else {			/* font on SD card */
 	int sec;
-	char cmd_sd[] = { '@', 'I', 0, msb(row * YRES), lsb(row * YRES), XRES, msb(YRES), lsb(YRES), 16, 0, 0, 0 };
+	/*                          2, 3, 4              , 5              , 6        , 7        , 8        , 9        , 10,11,12,13
+	   mx,lx, my             , ly             , mw       , lw       , mh       , lh       , cm,hs,ms,ls */
+	char cmd_sd[] =
+	    { '@', 'I', 0, 0, msb(row * YRES), lsb(row * YRES), msb(XRES), lsb(XRES), msb(YRES), lsb(YRES), 16, 0, 0,
+	    0
+	};
 	for (i = 0; i < len; i++) {
-	    cmd_sd[2] = (col + i) * XRES;
+	    cmd_sd[2] = msb((col + i) * XRES);
+	    cmd_sd[3] = lsb((col + i) * XRES);
 	    sec = SECTOR + (unsigned char) data[i] * SECTOR_SIZE;
-	    cmd_sd[9] = address_hi(sec);
-	    cmd_sd[10] = address_mid(sec);
-	    cmd_sd[11] = address_lo(sec);
-	    drv_D4D_send_extra(cmd_sd, sizeof(cmd_sd), 3, 6);
+	    cmd_sd[11] = address_hi(sec);
+	    cmd_sd[12] = address_mid(sec);
+	    cmd_sd[13] = address_lo(sec);
+	    drv_D4D_send_extra(cmd_sd, sizeof(cmd_sd), 2, 4, 6, 8);
 	}
     }
 }
@@ -238,7 +359,7 @@ static void drv_D4D_write(const int row, const int col, const char *data, int le
 
 static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
 {
-    /* error("drv_D4D_defchar"); */
+    info("drv_D4D_defchar");
     char cmd[11];
     int i;
 
@@ -249,13 +370,13 @@ static void drv_D4D_defchar(const int ascii, const unsigned char *matrix)
     for (i = 0; i < 8; i++) {
 	cmd[i + 3] = *matrix++;
     }
-    drv_D4D_send_extra(cmd, sizeof(cmd), 1, 0);
+    drv_D4D_send_extra(cmd, sizeof(cmd), 1, -1, -1, -1);
 }
 
 
 static void drv_D4D_blit(const int row, const int col, const int height, const int width)
 {
-    /* error("drv_D4D_blit(%i, %i, %i, %i)",row, col, height, width); */
+    debug("drv_D4D_blit(%i, %i, %i, %i)", row, col, height, width);
     int r, c;
     RGBA rgb, pixel0_0, pixel;
     short int color;
@@ -263,7 +384,7 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 
 
     /* optimization: single colour rectangle? */
-    pixel0_0 = drv_generic_graphic_rgb(0, 0);
+    pixel0_0 = drv_generic_graphic_rgb(row, col);
     char unicolor = 1;
     for (r = row; r < row + height; r++) {
 	if (!unicolor)
@@ -279,13 +400,19 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 
     if (unicolor) {
 	color = RGB_24to16(pixel0_0.R, pixel0_0.G, pixel0_0.B);
+	char col2 = col + width - 1;
 	char row2 = row + height - 1;
 	char cmdRect[] =
-	    { 'r', col, msb(row), lsb(row), col + width - 1, msb(row2), lsb(row2), msb(color), lsb(color) };
-	drv_D4D_send_extra(cmdRect, sizeof(cmdRect), 2, 5);
+	    /*         1       , 2       , 3       , 4       , 5        , 6        , 7 */
+	{ 'r', msb(col), lsb(col), msb(row), lsb(row), msb(col2), lsb(col2), msb(row2), lsb(row2), msb(color),
+	    lsb(color)
+	};
+	drv_D4D_send_extra(cmdRect, sizeof(cmdRect), 1, 3, 5, 7);
     } else {
-	char cmd[] = { 'I', col, msb(row), lsb(row), width, msb(height), lsb(height), MODE };
-	drv_D4D_send_nowait_extra(cmd, sizeof(cmd), 2, 5);
+	/*                  1       , 2       , 3       , 4       , 5         , 6         , 7 */
+	char cmd[] =
+	    { 'I', msb(col), lsb(col), msb(row), lsb(row), msb(width), lsb(width), msb(height), lsb(height), MODE };
+	drv_D4D_send_extra_nowait(cmd, sizeof(cmd), 1, 3, 5, 7);
 	for (r = row; r < row + height; r++) {
 	    for (c = col; c < col + width; c++) {
 		rgb = drv_generic_graphic_rgb(r, c);
@@ -325,7 +452,7 @@ static int drv_D4D_contrast(int contrast)
 
 static int drv_D4D_start(const char *section)
 {
-    /* error("drv_D4D_start()"); */
+    info("drv_D4D_start()");
     int contrast;
     int xres_cfg = -1, yres_cfg = -1;
     char *s;
@@ -335,14 +462,19 @@ static int drv_D4D_start(const char *section)
 	return -1;
     }
 
-    char cmd[] = { 'U' };
-    drv_D4D_send(cmd, sizeof(cmd));
-
-
-    char getVersion[] = { 'V', 0 };
+    char getVersion[] = { 'V', 0 /*1 */  };
     drv_D4D_send_nowait(getVersion, sizeof(getVersion));
     char answer[5];
-    drv_generic_serial_read(answer, sizeof(answer));
+    debug("reading answer[0]");
+    drv_generic_serial_read(answer, 1);	/* ,5: PICASO 0/1, Speed 9600: error: "partial read(/dev/ttyUSB0): len=5 ret=1" */
+    debug("reading answer[1]");
+    drv_generic_serial_read(answer + 1, 1);
+    debug("reading answer[2]");
+    drv_generic_serial_read(answer + 2, 1);
+    debug("reading answer[3]");
+    drv_generic_serial_read(answer + 3, 1);
+    debug("reading answer[4]");
+    drv_generic_serial_read(answer + 4, 1);
     char *ids[] = { "uOLED", "uLCD", "uVGA" };
     char *id;
     if (answer[0] <= 2)
@@ -380,7 +512,8 @@ static int drv_D4D_start(const char *section)
 	    res[i] = 240;
 	    break;
 	default:
-	    error("Can't detect display dimensions!");
+	    error("Can't detect display dimensions! answer: {%d, %d, %d, %d, %d}", answer[0], answer[1], answer[2],
+		  answer[3], answer[4]);
 	    return -1;
 	}
     }
@@ -390,38 +523,38 @@ static int drv_D4D_start(const char *section)
 
     cfg_number(section, "Mode", 0, 0, 16, &MODE);
 
-    s = cfg_get(section, "Font", NULL);
-    if (s == NULL || *s == '\0') {
-	error("%s: no '%s.Font' entry from %s", Name, section, cfg_source());
-	return -1;
-    }
-    if (sscanf(s, "%dx%d", &xres_cfg, &yres_cfg) < 1 || xres_cfg < 0) {
-	error("%s: bad %s.Font '%s' from %s", Name, section, s, cfg_source());
-	free(s);
-	return -1;
-    }
-
-    if (yres_cfg == -1) {	/* font on SD card */
-	SECTOR = xres_cfg * 512;
-	char setAddress[] =
-	    { '@', 'A', address_mmsb(SECTOR), address_mlsb(SECTOR), address_lmsb(SECTOR), address_llsb(SECTOR) };
-	drv_D4D_send(setAddress, sizeof(setAddress));
-	char answer1[1];
-	char readByte[] = { '@', 'r' };
-	drv_D4D_send_nowait(readByte, sizeof(readByte));
-	drv_generic_serial_read(answer1, sizeof(answer1));
-	XRES = answer1[0];
-	drv_D4D_send_nowait(readByte, sizeof(readByte));
-	drv_generic_serial_read(answer1, sizeof(answer1));
-	YRES = answer1[0];
-	SECTOR = xres_cfg + 1;
-	SECTOR_SIZE = ceil((double) XRES * (double) YRES * 2.0 / 512.0);
-    } else {
-	XRES = xres_cfg;
-	YRES = yres_cfg;
-    }
-
     if (MODE == 0) {
+	s = cfg_get(section, "Font", NULL);
+	if (s == NULL || *s == '\0') {
+	    error("%s: no '%s.Font' entry from %s", Name, section, cfg_source());
+	    return -1;
+	}
+	if (sscanf(s, "%dx%d", &xres_cfg, &yres_cfg) < 1 || xres_cfg < 0) {
+	    error("%s: bad %s.Font '%s' from %s", Name, section, s, cfg_source());
+	    free(s);
+	    return -1;
+	}
+
+	if (yres_cfg == -1) {	/* font on SD card */
+	    SECTOR = xres_cfg * 512;
+	    char setAddress[] =
+		{ '@', 'A', address_mmsb(SECTOR), address_mlsb(SECTOR), address_lmsb(SECTOR), address_llsb(SECTOR) };
+	    drv_D4D_send(setAddress, sizeof(setAddress));
+	    char answer1[1];
+	    char readByte[] = { '@', 'r' };
+	    drv_D4D_send_nowait(readByte, sizeof(readByte));
+	    drv_generic_serial_read(answer1, sizeof(answer1));
+	    XRES = answer1[0];
+	    drv_D4D_send_nowait(readByte, sizeof(readByte));
+	    drv_generic_serial_read(answer1, sizeof(answer1));
+	    YRES = answer1[0];
+	    SECTOR = xres_cfg + 1;
+	    SECTOR_SIZE = ceil((double) XRES * (double) YRES * 2.0 / 512.0);
+	} else {
+	    XRES = xres_cfg;
+	    YRES = yres_cfg;
+	}
+
 
 	color = cfg_get(section, "foreground", "ffffff");
 	if (color2RGBA(color, &FG_COL_) < 0) {
@@ -474,7 +607,7 @@ static int drv_D4D_start(const char *section)
 
 
 
-    cfg_number(section, "NoPowerCycle", 0, 1, 65536, &NOPOWERCYCLE);
+    cfg_number(section, "NoPowerCycle", 0, 0, 1, &NOPOWERCYCLE);
     if (!NOPOWERCYCLE) {
 	char powerOn[] = { 'Y', 3, 1 };
 	drv_D4D_send(powerOn, sizeof(powerOn));
@@ -523,7 +656,7 @@ int drv_D4D_text_draw(WIDGET * W)
 }
 
 
-int lastVal[40 * 40 * 2];	/* ToDo: MAX_WIDGETS*2 */
+int lastVal[40 * 40 * 2];	/* Fixme: MAX_WIDGETS*2 */
 int drv_D4D_bar_draw(WIDGET * W)
 {
     /* optimizations:
@@ -534,14 +667,14 @@ int drv_D4D_bar_draw(WIDGET * W)
     int row, col, len, res, max, val1, val2;
     DIRECTION dir;
 #if 0
-    STYLE style;		/* Fixme: unused variable */
+    STYLE style;		/* Fixme: missing style support */
 #endif
 
     row = W->row;
     col = W->col;
     dir = Bar->direction;
 #if 0
-    style = Bar->style;		/* Fixme: unused variable */
+    style = Bar->style;		/* Fixme: missing style support */
 #endif
     len = Bar->length;
 
@@ -567,12 +700,12 @@ int drv_D4D_bar_draw(WIDGET * W)
     FG_COLOR = RGB_24to16(fg.R, fg.G, fg.B);
     BG_COLOR = RGB_24to16(bg.R, bg.G, bg.B);
 
-    char cmd[9];
+    char cmd[11];
     cmd[0] = 'r';
     int val[2];
     val[0] = val1;
     val[1] = val2;
-    int i, vals;
+    int i, vals, x1, x2;
     int lastValIndex0 = row * DCOLS + col;
     int cells = DROWS * DCOLS;
     if (val1 == val2 && lastVal[lastValIndex0] == lastVal[lastValIndex0 + cells])
@@ -582,23 +715,33 @@ int drv_D4D_bar_draw(WIDGET * W)
     for (i = 0; i < vals; i++) {
 	int lastValIndex = lastValIndex0 + cells * (i /*+1 */ );
 	int y1 = row * YRES + (YRES / 2) * i;
-	cmd[2] = msb(y1);
-	cmd[3] = lsb(y1);
-	int y2 = y1 + (YRES) / vals - 1;
-	cmd[5] = msb(y2);
-	cmd[6] = lsb(y2);
+	cmd[3] = msb(y1);
+	cmd[4] = lsb(y1);
+	int y2 = y1 + YRES / vals - 1;
+	cmd[7] = msb(y2);
+	cmd[8] = lsb(y2);
 	if (val[i] > lastVal[lastValIndex]) {
-	    cmd[1] = col * XRES + lastVal[lastValIndex];
-	    cmd[4] = cmd[1] + val[i] - lastVal[lastValIndex] - 1;
-	    cmd[7] = msb(FG_COLOR);
-	    cmd[8] = lsb(FG_COLOR);
-	    drv_D4D_send_extra(cmd, sizeof(cmd), 2, 5);
+	    x1 = col * XRES + lastVal[lastValIndex];
+	    cmd[1] = msb(x1);
+	    cmd[2] = lsb(x1);
+	    x2 = x1 + val[i] - lastVal[lastValIndex] - 1;
+	    cmd[5] = msb(x2);
+	    cmd[6] = lsb(x2);
+	    cmd[9] = msb(FG_COLOR);
+	    cmd[10] = lsb(FG_COLOR);
+	    drv_D4D_send_extra(cmd, sizeof(cmd), 1, 3, 5, 7);
 	} else if (val[i] < lastVal[lastValIndex]) {
-	    cmd[1] = col * XRES + val[i] - 1 + 1;
-	    cmd[4] = cmd[1] + lastVal[lastValIndex] - val[i];
-	    cmd[7] = msb(BG_COLOR);
-	    cmd[8] = lsb(BG_COLOR);
-	    drv_D4D_send_extra(cmd, sizeof(cmd), 2, 5);
+	    x1 = col * XRES + val[i] - 1 + 1;
+	    cmd[1] = msb(x1);
+	    cmd[2] = lsb(x1);
+	    x2 = x1 + lastVal[lastValIndex] - val[i];
+	    cmd[5] = msb(x2);
+	    cmd[6] = lsb(x2);
+	    cmd[9] = msb(BG_COLOR);
+	    cmd[10] = lsb(BG_COLOR);
+	    drv_D4D_send_extra(cmd, sizeof(cmd), 1, 3, 5, 7);
+	} else {
+	    /* do nothing */
 	}
 	lastVal[lastValIndex] = val[i];
     }
@@ -650,7 +793,7 @@ int drv_D4D_list(void)
 
 int drv_D4D_init(const char *section, const int quiet)
 {
-    /* error("drv_D4D_init()"); */
+    info("drv_D4D_init()");
     WIDGET_CLASS wc;
     int ret;
 
@@ -732,7 +875,7 @@ int drv_D4D_init(const char *section, const int quiet)
 
 int drv_D4D_quit(const int quiet)
 {
-    /* error("drv_D4D_quit()"); */
+    info("drv_D4D_quit()");
 
     info("%s: shutting down.", Name);
 
@@ -766,7 +909,7 @@ int drv_D4D_quit(const int quiet)
 	drv_D4D_send(powerDown, sizeof(powerDown));
     }
 
-    debug("closing connection");
+    info("closing connection");
     drv_D4D_close();
 
     return (0);
