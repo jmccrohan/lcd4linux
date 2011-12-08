@@ -116,7 +116,7 @@ static void drv_D4D_receive_ACK()
 
 static void drv_D4D_send_nowait(const char *data, const unsigned int len)
 {
-    if (len > 1 && data[0] >= 32 && data[0] <= 127)
+    if (len > 1 && data[0] >= 32 && data[0] < 127)
 	debug("drv_D4D_send_nowait('%c'", data[0]);
     drv_generic_serial_write(data, len);
 }
