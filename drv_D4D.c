@@ -378,60 +378,53 @@ static void drv_D4D_blit(const int row, const int col, const int height, const i
 {
     debug("drv_D4D_blit(%i, %i, %i, %i)", row, col, height, width);
     int r, c;
-    RGBA rgb, pixel0_0, pixel;
+    RGBA rgb;
     short int color;
-    char colorArray[2];
-
+    char colorArray[width * height * MODE / 8];
 
     /* optimization: single colour rectangle? */
-    pixel0_0 = drv_generic_graphic_rgb(row, col);
-    char unicolor = 1;
-    for (r = row; r < row + height; r++) {
-	if (!unicolor)
-	    break;
-	for (c = col; c < col + width; c++) {
-	    if (!unicolor)
-		break;
-	    pixel = drv_generic_graphic_rgb(r, c);
-	    if (pixel0_0.R != pixel.R || pixel0_0.G != pixel.G || pixel0_0.B != pixel.B || pixel0_0.A != pixel.A)
-		unicolor = 0;
-	}
-    }
+    /* commented out because obviously seldom used and expensive */
+    /*RGBA pixel0_0, pixel;
+       pixel0_0 = drv_generic_graphic_rgb(row, col);
+       char unicolor = 1;
+       for (r = row; (r < row + height) && unicolor; r++) {
+       for (c = col; (c < col + width) && unicolor; c++) {
+       pixel = drv_generic_graphic_rgb(r, c);
+       if (pixel0_0.R != pixel.R || pixel0_0.G != pixel.G || pixel0_0.B != pixel.B || pixel0_0.A != pixel.A)
+       unicolor = 0;
+       }
+       }
 
-    if (unicolor) {
-	color = RGB_24to16(pixel0_0.R, pixel0_0.G, pixel0_0.B);
-	char col2 = col + width - 1;
-	char row2 = row + height - 1;
-	char cmdRect[] =
-	    /*         1       , 2       , 3       , 4       , 5        , 6        , 7 */
-	{ 'r', msb(col), lsb(col), msb(row), lsb(row), msb(col2), lsb(col2), msb(row2), lsb(row2), msb(color),
-	    lsb(color)
-	};
-	drv_D4D_send_extra(cmdRect, sizeof(cmdRect), 1, 3, 5, 7);
-    } else {
-	/*                  1       , 2       , 3       , 4       , 5         , 6         , 7 */
-	char cmd[] =
-	    { 'I', msb(col), lsb(col), msb(row), lsb(row), msb(width), lsb(width), msb(height), lsb(height), MODE };
-	drv_D4D_send_extra_nowait(cmd, sizeof(cmd), 1, 3, 5, 7);
-	for (r = row; r < row + height; r++) {
-	    for (c = col; c < col + width; c++) {
-		rgb = drv_generic_graphic_rgb(r, c);
-		if (MODE == 8) {
-		    colorArray[0] = RGB_24to8(rgb.R, rgb.G, rgb.B);
-		    drv_D4D_send_nowait(colorArray, 1);
-		} else {
-		    color = RGB_24to16(rgb.R, rgb.G, rgb.B);
-		    colorArray[0] = msb(color);
-		    drv_D4D_send_nowait(colorArray, 1);	/* doesn't werk if sent together (error: "partial write(/dev/tts/1): len=2 ret=1") */
-		    /* colorArray[1]=lsb(color); */
-		    colorArray[0] = lsb(color);
-		    drv_D4D_send_nowait(colorArray, 1);
-		}
-		/* drv_D4D_send_nowait(colorArray, MODE/8); */
+       if (unicolor) {
+       color = RGB_24to16(pixel0_0.R, pixel0_0.G, pixel0_0.B);
+       unsigned char col2 = col + width - 1;
+       unsigned char row2 = row + height - 1;
+       char cmdRect[] =
+       { 'r', msb(col), lsb(col), msb(row), lsb(row), msb(col2), lsb(col2), msb(row2), lsb(row2), msb(color),
+       lsb(color)
+       };
+       debug("Rectangle(%i, %i, %i, %i, %i", col, row, col2, row2, color);
+       drv_D4D_send_extra(cmdRect, sizeof(cmdRect), 1, 3, 5, 7);
+       } else { */
+    char cmd[] =
+	{ 'I', msb(col), lsb(col), msb(row), lsb(row), msb(width), lsb(width), msb(height), lsb(height), MODE };
+    int p = 0;
+    drv_D4D_send_extra_nowait(cmd, sizeof(cmd), 1, 3, 5, 7);
+    for (r = row; r < row + height; r++) {
+	for (c = col; c < col + width; c++) {
+	    rgb = drv_generic_graphic_rgb(r, c);
+	    if (MODE == 8) {
+		colorArray[p++] = RGB_24to8(rgb.R, rgb.G, rgb.B);
+	    } else {
+		color = RGB_24to16(rgb.R, rgb.G, rgb.B);
+		colorArray[p++] = msb(color);
+		colorArray[p++] = lsb(color);
 	    }
 	}
-	drv_D4D_receive_ACK();
     }
+    drv_D4D_send_nowait(colorArray, width * height * MODE / 8);	/* doesn't werk if sent together (error: "partial write(/dev/tts/1): len=2 ret=1") */
+    drv_D4D_receive_ACK();
+    /*} */
 }
 
 
@@ -466,7 +459,7 @@ static int drv_D4D_start(const char *section)
     drv_D4D_send_nowait(getVersion, sizeof(getVersion));
     char answer[5];
     debug("reading answer[0]");
-    drv_generic_serial_read(answer, 1);	/* ,5: PICASO 0/1, Speed 9600: error: "partial read(/dev/ttyUSB0): len=5 ret=1" */
+    drv_generic_serial_read(answer + 0, 1);	/* ,5: PICASO 0/1, Speed 9600: error: "partial read(/dev/ttyUSB0): len=5 ret=1" */
     debug("reading answer[1]");
     drv_generic_serial_read(answer + 1, 1);
     debug("reading answer[2]");
@@ -907,6 +900,12 @@ int drv_D4D_quit(const int quiet)
     if (!NOPOWERCYCLE) {
 	char powerDown[] = { 'Y', 3, 0 };
 	drv_D4D_send(powerDown, sizeof(powerDown));
+    }
+
+    if (EXTRA) {
+	info("switching to 9600 baud");
+	char baud[] = { 'Q', 0x06 };
+	drv_D4D_send_nowait(baud, sizeof(baud));
     }
 
     info("closing connection");
