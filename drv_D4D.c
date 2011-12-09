@@ -66,7 +66,7 @@
 
 static char Name[] = "D4D";
 char NAME_[20];
-int FONT = 1, MODE = 0, EXTRA = 0, SECTOR = 0, SECTOR_SIZE, NOPOWERCYCLE = 0;
+int FONT = 1, MODE = 0, EXTRA = 0, SECTOR = 0, SECTOR_SIZE, POWERCYCLE = 0;
 /* int CONTRAST_; */
 
 #define address_mmsb(variable) ((variable >> 24) & 0xFF)
@@ -600,8 +600,8 @@ static int drv_D4D_start(const char *section)
 
 
 
-    cfg_number(section, "NoPowerCycle", 0, 0, 1, &NOPOWERCYCLE);
-    if (!NOPOWERCYCLE) {
+    cfg_number(section, "PowerCycle", 0, 0, 1, &POWERCYCLE);
+    if (POWERCYCLE) {
 	char powerOn[] = { 'Y', 3, 1 };
 	drv_D4D_send(powerOn, sizeof(powerOn));
 
@@ -876,7 +876,7 @@ int drv_D4D_quit(const int quiet)
 	drv_generic_text_quit();
 
 
-    if (!NOPOWERCYCLE) {
+    if (POWERCYCLE) {
 	drv_D4D_clear();
     }
 
@@ -897,7 +897,7 @@ int drv_D4D_quit(const int quiet)
     if (MODE)
 	drv_generic_graphic_quit();
 
-    if (!NOPOWERCYCLE) {
+    if (POWERCYCLE) {
 	char powerDown[] = { 'Y', 3, 0 };
 	drv_D4D_send(powerDown, sizeof(powerDown));
     }
