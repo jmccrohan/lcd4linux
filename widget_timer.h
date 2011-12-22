@@ -29,6 +29,7 @@
 #define _WIDGET_TIMER_H_
 
 #include "property.h"
+#include "widget.h"
 
 typedef struct WIDGET_TIMER {
     PROPERTY expression;	/* main timer expression */

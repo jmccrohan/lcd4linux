@@ -29,6 +29,7 @@
 #define _WIDGET_IMAGE_H_
 
 #include "property.h"
+#include "widget.h"
 #include "rgb.h"
 
 typedef struct WIDGET_IMAGE {

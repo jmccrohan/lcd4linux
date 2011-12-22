@@ -29,6 +29,7 @@
 #define _WIDGET_GPO_H_
 
 #include "property.h"
+#include "widget.h"
 
 typedef struct WIDGET_GPO {
     PROPERTY expression;	/* main GPO expression */

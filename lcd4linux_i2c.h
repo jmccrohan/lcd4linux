@@ -459,6 +459,7 @@ struct i2c_rdwr_ioctl_data {
 
 #define  I2C_RDRW_IOCTL_MAX_MSGS        42
 
+#include <stdlib.h>
 #include <sys/ioctl.h>
 
 static inline __s32 i2c_smbus_access(int file, char read_write, __u8 command, int size, union i2c_smbus_data *data)

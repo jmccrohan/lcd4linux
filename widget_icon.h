@@ -29,6 +29,7 @@
 #define _WIDGET_ICON_H_
 
 #include "property.h"
+#include "widget.h"
 
 typedef struct WIDGET_ICON {
     PROPERTY speed;		/* update interval (msec) */

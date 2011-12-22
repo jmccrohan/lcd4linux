@@ -29,6 +29,8 @@
 #define _WIDGET_BAR_H_
 
 #include "property.h"
+#include "widget.h"
+#include "rgb.h"
 
 typedef enum { DIR_EAST = 1, DIR_WEST = 2, DIR_NORTH = 4, DIR_SOUTH = 8 } DIRECTION;
 typedef enum { STYLE_HOLLOW = 1, STYLE_FIRST = 2, STYLE_LAST = 4 } STYLE;

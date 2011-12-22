@@ -31,6 +31,7 @@
 
 #include "drv_generic.h"
 #include "widget.h"
+#include "widget_bar.h"
 
 extern int CHARS, CHAR0;	/* number of user-defineable characters, ASCII of first char */
 extern int ICONS;		/* number of user-defineable characters reserved for icons */

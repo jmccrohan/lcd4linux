@@ -29,6 +29,7 @@
 #define _WIDGET_KEYPAD_H_
 
 #include "property.h"
+#include "widget.h"
 
 typedef enum {
     WIDGET_KEY_UP = 1,
