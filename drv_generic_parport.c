@@ -39,13 +39,17 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
+#ifdef WITH_OUTB
 #ifdef HAVE_SYS_IO_H
 #include <sys/io.h>
-#define WITH_OUTB
 #else
 #ifdef HAVE_ASM_IO_H
 #include <asm/io.h>
-#define WITH_OUTB
+#else
+#warning neither sys/io.h nor asm/io.h exists.
+#warning raw port I/O will be disabled.
+#undef WITH_OUTB
+#endif
 #endif
 #endif
 
@@ -88,8 +92,10 @@ static char *PPdev = NULL;
 /* Any bits set here will have their logic inverted at the parallel port */
 static unsigned char inverted_control_bits = 0;
 
+#ifdef WITH_OUTB
 /* initial value taken from linux/parport_pc.c */
 static unsigned char ctr = 0xc;
+#endif
 
 #ifdef WITH_PPDEV
 static int PPfd = -1;
@@ -130,7 +136,6 @@ int drv_generic_parport_open(const char *section, const char *driver)
 #endif
     }
 #ifdef WITH_PPDEV
-
     if (PPdev) {
 	info("%s: using ppdev %s", Driver, PPdev);
 	PPfd = open(PPdev, O_RDWR);
@@ -147,15 +152,15 @@ int drv_generic_parport_open(const char *section, const char *driver)
 	    info("%s: got exclusive access to %s.", Driver, PPdev);
 	}
 #endif
-
 	if (ioctl(PPfd, PPCLAIM)) {
 	    error("%s: ioctl(%s, PPCLAIM) failed: %d %s", Driver, PPdev, errno, strerror(errno));
 	    return -1;
 	}
-    } else
+    }
 #endif
 
-    {
+#ifdef WITH_OUTB
+    if (Port) {
 	error("using raw port 0x%x (deprecated!)", Port);
 	error("You *really* should change your setup and use ppdev!");
 	if ((Port + 3) <= 0x3ff) {
@@ -170,6 +175,7 @@ int drv_generic_parport_open(const char *section, const char *driver)
 	    }
 	}
     }
+#endif
     return 0;
 }
 
@@ -187,9 +193,11 @@ int drv_generic_parport_close(void)
 	    return -1;
 	}
 	free(PPdev);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	debug("closing raw port 0x%x", Port);
 	if ((Port + 3) <= 0x3ff) {
 	    if (ioperm(Port, 3, 0) != 0) {
@@ -203,6 +211,7 @@ int drv_generic_parport_close(void)
 	    }
 	}
     }
+#endif
 
     return 0;
 }
@@ -374,13 +383,16 @@ void drv_generic_parport_direction(const int direction)
 #ifdef WITH_PPDEV
     if (PPdev) {
 	ioctl(PPfd, PPDATADIR, &direction);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	/* code stolen from linux/parport_pc.h */
 	ctr = (ctr & ~0x20) ^ (direction ? 0x20 : 0x00);
 	outb(ctr, Port + 2);
     }
+#endif
 }
 
 
@@ -395,11 +407,14 @@ unsigned char drv_generic_parport_status(void)
 #ifdef WITH_PPDEV
     if (PPdev) {
 	ioctl(PPfd, PPRSTATUS, &data);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	data = inb(Port + 1);
     }
+#endif
 
     /* clear unused bits */
     data &= mask;
@@ -426,13 +441,16 @@ void drv_generic_parport_control(const unsigned char mask, const unsigned char v
 	frob.mask = mask;
 	frob.val = val;
 	ioctl(PPfd, PPFCONTROL, &frob);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	/* code stolen from linux/parport_pc.h */
 	ctr = (ctr & ~mask) ^ val;
 	outb(ctr, Port + 2);
     }
+#endif
 }
 
 
@@ -469,9 +487,11 @@ void drv_generic_parport_toggle(const unsigned char bits, const int level, const
 	frob.val = value2;
 	ioctl(PPfd, PPFCONTROL, &frob);
 
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	/* rise */
 	ctr = (ctr & ~bits) ^ value1;
 	outb(ctr, Port + 2);
@@ -483,6 +503,7 @@ void drv_generic_parport_toggle(const unsigned char bits, const int level, const
 	ctr = (ctr & ~bits) ^ value2;
 	outb(ctr, Port + 2);
     }
+#endif
 }
 
 
@@ -491,41 +512,51 @@ void drv_generic_parport_data(const unsigned char data)
 #ifdef WITH_PPDEV
     if (PPdev) {
 	ioctl(PPfd, PPWDATA, &data);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	outb(data, Port);
     }
+#endif
 }
 
 unsigned char drv_generic_parport_read(void)
 {
-    unsigned char data;
+    unsigned char data = 0;
 
 #ifdef WITH_PPDEV
     if (PPdev) {
 	ioctl(PPfd, PPRDATA, &data);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	data = inb(Port);
     }
+#endif
+
     return data;
 }
 
 
 void drv_generic_parport_debug(void)
 {
-    unsigned char control;
+    unsigned char control = 0;
 
 #ifdef WITH_PPDEV
     if (PPdev) {
 	ioctl(PPfd, PPRCONTROL, &control);
-    } else
+    }
 #endif
-    {
+
+#ifdef WITH_OUTB
+    if (Port) {
 	control = ctr;
     }
+#endif
 
     debug("%cSTROBE %cAUTOFD %cINIT %cSLCTIN",
 	  control & PARPORT_CONTROL_STROBE ? '-' : '+',

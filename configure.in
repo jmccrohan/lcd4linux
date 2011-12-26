@@ -105,7 +105,11 @@ if test "$with_python" = "yes"; then
 fi
 
 # check for parport
-#AC_CHECK_HEADERS(asm/io.h)
+AC_MSG_CHECKING(if raw port I/O is wanted)
+AC_ARG_WITH(outb,
+[  --with-outb             enable raw port I/O support [[default=no]]],
+[AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
+
 AC_CHECK_HEADERS([asm/io.h] [linux/parport.h linux/ppdev.h], [has_parport="true"], [has_parport="false"])
 
 # drivers
@@ -157,10 +161,10 @@ AC_OUTPUT
 
 AC_MSG_RESULT(
 [-----------------------------------------]
-[including drivers:]
+[included drivers:]
 [  $DRIVERS]
 [-----------------------------------------]
-[including plugins:]
+[included plugins:]
 [  $PLUGINS]
 [-----------------------------------------]
 )

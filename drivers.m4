@@ -565,7 +565,6 @@ fi
 
 if test "$NEWHAVEN" = "yes"; then
    TEXT="yes"
-   #SERIAL="yes"
    I2C="yes"
    DRIVERS="$DRIVERS drv_Newhaven.o"
    AC_DEFINE(WITH_NEWHAVEN,1,[Newhaven driver])
@@ -590,9 +589,7 @@ if test "$NULL" = "yes"; then
 fi
 
 if test "$PERTELIAN" = "yes"; then
-   # select either text or graphics mode
    TEXT="yes"
-   # select bus: serial (including USB), parallel or i2c
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_Pertelian.o"
    AC_DEFINE(WITH_PERTELIAN,1,[Pertelian driver])

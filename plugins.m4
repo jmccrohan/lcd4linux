@@ -101,6 +101,47 @@ for plugin in $plugins; do
          PLUGIN_WIRELESS="yes"
          PLUGIN_XMMS="yes"   
          ;;
+      none)
+         PLUGIN_APM="no"
+       	 PLUGIN_ASTERISK="no"
+	 PLUGIN_BUTTON_EXEC="no"
+         PLUGIN_CPUINFO="no"
+         PLUGIN_DBUS="no"
+         PLUGIN_DISKSTATS="no"
+         PLUGIN_DVB="no"
+         PLUGIN_EXEC="no"
+         PLUGIN_EVENT="no"
+         PLUGIN_FIFO="no"
+         PLUGIN_FILE="no"
+         PLUGIN_GPS="no"
+         PLUGIN_HDDTEMP="no"
+         PLUGIN_HUAWEI="no"
+         PLUGIN_I2C_SENSORS="no"
+         PLUGIN_ICONV="no"
+         PLUGIN_IMON="no"
+         PLUGIN_ISDN="no"
+         PLUGIN_KVV="no"
+         PLUGIN_LOADAVG="no"
+         PLUGIN_MEMINFO="no"
+         PLUGIN_MPD="no"
+	 PLUGIN_MPRIS_DBUS="no"
+         PLUGIN_MYSQL="no"
+         PLUGIN_NETDEV="no"
+         PLUGIN_NETINFO="no"
+         PLUGIN_POP3="no"
+         PLUGIN_PPP="no"
+         PLUGIN_PROC_STAT="no"
+         PLUGIN_PYTHON="no"
+         PLUGIN_QNAPLOG="no"
+         PLUGIN_SAMPLE="no"
+         PLUGIN_SETI="no"
+         PLUGIN_STATFS="no"
+         PLUGIN_UNAME="no"
+         PLUGIN_UPTIME="no"
+         PLUGIN_W1RETAP="no"    	 
+         PLUGIN_WIRELESS="no"
+         PLUGIN_XMMS="no"   
+         ;;
       apm)
          PLUGIN_APM=$val
          ;;
@@ -583,9 +624,5 @@ if test "$PLUGIN_XMMS" = "yes"; then
    AC_DEFINE(PLUGIN_XMMS,1,[xmms plugin])
 fi
 
-if test "$PLUGINS" = ""; then
-   AC_MSG_ERROR([You should include at least one plugin...])
-fi
-   
 AC_SUBST(PLUGINS)
 AC_SUBST(PLUGINLIBS)
