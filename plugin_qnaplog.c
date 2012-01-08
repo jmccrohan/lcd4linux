@@ -281,7 +281,7 @@ static void my_conn(RESULT * result, RESULT * arg1)
     time_t accesstime;
 
 
-    value = -1;
+    value = NULL;
     key = R2S(arg1);
 
     if (configureConn() >= 0) {
@@ -337,7 +337,7 @@ static void my_event(RESULT * result, RESULT * arg1)
     time_t accesstime;
 
 
-    value = -1;
+    value = NULL;
     key = R2S(arg1);
 
     if (configureEvent() >= 0) {
