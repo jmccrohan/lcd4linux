@@ -54,6 +54,7 @@ extern DRIVER drv_Crystalfontz;
 extern DRIVER drv_Curses;
 extern DRIVER drv_Cwlinux;
 extern DRIVER drv_D4D;
+extern DRIVER drv_DPF;
 extern DRIVER drv_EA232graphic;
 extern DRIVER drv_EFN;
 extern DRIVER drv_FW8888;
@@ -126,6 +127,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_D4D
     &drv_D4D,
+#endif
+#ifdef WITH_DPF
+    &drv_DPF,
 #endif
 #ifdef WITH_EA232graphic
     &drv_EA232graphic,

@@ -32,7 +32,7 @@ AC_ARG_WITH(
   [                        drivers may be excluded with 'all,!<driver>',]
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
-  [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,]
+  [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D, DPF]
   [                        EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
   [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,]
@@ -67,6 +67,7 @@ for driver in $drivers; do
          CURSES="yes"
          CWLINUX="yes"
          D4D="yes"
+         DPF="yes"
          EA232graphic="yes"
          EFN="yes"
          FW8888="yes"
@@ -132,6 +133,9 @@ for driver in $drivers; do
          ;;
       D4D)
          D4D=$val
+         ;;
+      DPF)
+         DPF=$val
          ;;
       EA232graphic)
          EA232graphic=$val
@@ -359,6 +363,17 @@ if test "$D4D" = "yes"; then
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_D4D.o"
    AC_DEFINE(WITH_D4D,1,[D4D driver])
+fi
+
+if test "$DPF" = "yes"; then
+   if test "$has_libdpf" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_dpf.o"
+      DRVLIBS="$DRVLIBS -Llibdpf -ldpf -lusb"
+      AC_DEFINE(WITH_DPF,1,[DPF driver])
+   else
+      AC_MSG_WARN(libdpf.h not found: DPF driver disabled)
+   fi
 fi
 
 if test "$EA232graphic" = "yes"; then
@@ -724,6 +739,7 @@ if test "$ST2205" = "yes"; then
       AC_MSG_WARN(st2205.h not found: st2205 driver disabled)
    fi
 fi
+
 
 if test "$T6963" = "yes"; then
    if test "$has_parport" = "true"; then

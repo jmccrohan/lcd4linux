@@ -251,7 +251,7 @@ AM_CFLAGS = -D_GNU_SOURCE -Wall -Wextra -fno-strict-aliasing
 ACLOCAL_AMFLAGS = -I m4
 # use this for lots of warnings
 #AM_CFLAGS = -D_GNU_SOURCE -std=c99 -m64 -Wall -W -pedantic -Wno-variadic-macros -fno-strict-aliasing
-lcd4linux_LDFLAGS = 
+lcd4linux_LDFLAGS = "-Wl,--as-needed"
 lcd4linux_LDADD = @DRIVERS@ @PLUGINS@ @DRVLIBS@ @PLUGINLIBS@
 lcd4linux_DEPENDENCIES = @DRIVERS@ @PLUGINS@
 lcd4linux_SOURCES = \
@@ -310,6 +310,7 @@ drv_Crystalfontz.c            \
 drv_Curses.c                  \
 drv_Cwlinux.c                 \
 drv_D4D.c                     \
+drv_dpf.c                     \
 drv_EA232graphic.c            \
 drv_EFN.c                     \
 drv_FW8888.c                  \
@@ -570,6 +571,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_USBLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_WincorNixdorf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_X11.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_dpf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_gpio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_generic_graphic.Po@am__quote@

@@ -67,6 +67,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <libdpf/libdpf.h> header file. */
+#undef HAVE_LIBDPF_LIBDPF_H
+
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
@@ -491,6 +494,9 @@
 
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
+
+/* DPF driver */
+#undef WITH_DPF
 
 /* Electronic Assembly RS232 graphic driver */
 #undef WITH_EA232graphic

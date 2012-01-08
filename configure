@@ -1442,7 +1442,7 @@ Optional Packages:
                           drivers may be excluded with 'all,!<driver>',
                           (try 'all,\!<driver>' if your shell complains...)
                           possible drivers are:
-                          ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D,
+                          ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D, DPF
                           EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,
                           IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,
                           LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,
@@ -5690,6 +5690,22 @@ fi
 done
 
 
+# check for libdpf libs
+for ac_header in libdpf/libdpf.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "libdpf/libdpf.h" "ac_cv_header_libdpf_libdpf_h" "$ac_includes_default"
+if test "x$ac_cv_header_libdpf_libdpf_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBDPF_LIBDPF_H 1
+_ACEOF
+ has_libdpf="true"
+else
+  has_libdpf="false"
+fi
+
+done
+
+
 # check for vncserver libs
 for ac_header in rfb/rfb.h
 do :
@@ -6261,6 +6277,7 @@ for driver in $drivers; do
          CURSES="yes"
          CWLINUX="yes"
          D4D="yes"
+         DPF="yes"
          EA232graphic="yes"
          EFN="yes"
          FW8888="yes"
@@ -6326,6 +6343,9 @@ for driver in $drivers; do
          ;;
       D4D)
          D4D=$val
+         ;;
+      DPF)
+         DPF=$val
          ;;
       EA232graphic)
          EA232graphic=$val
@@ -6571,6 +6591,20 @@ if test "$D4D" = "yes"; then
 
 $as_echo "#define WITH_D4D 1" >>confdefs.h
 
+fi
+
+if test "$DPF" = "yes"; then
+   if test "$has_libdpf" = "true"; then
+      GRAPHIC="yes"
+      DRIVERS="$DRIVERS drv_dpf.o"
+      DRVLIBS="$DRVLIBS -Llibdpf -ldpf -lusb"
+
+$as_echo "#define WITH_DPF 1" >>confdefs.h
+
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libdpf.h not found: DPF driver disabled" >&5
+$as_echo "$as_me: WARNING: libdpf.h not found: DPF driver disabled" >&2;}
+   fi
 fi
 
 if test "$EA232graphic" = "yes"; then
@@ -7029,6 +7063,7 @@ $as_echo "#define WITH_ST2205 1" >>confdefs.h
 $as_echo "$as_me: WARNING: st2205.h not found: st2205 driver disabled" >&2;}
    fi
 fi
+
 
 if test "$T6963" = "yes"; then
    if test "$has_parport" = "true"; then
