@@ -3,6 +3,7 @@
  *
  * Driver for Electronic Assembly serial graphic display
  *
+ * Copyright (C) 2012 Robert Resch <fli4l@robert.reschpara.de>
  * Copyright (C) 2007 Stefan Gmeiner <stefangmeiner@solnet.ch>
  * Copyright (C) 2005 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2005, 2006, 2007 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
@@ -46,6 +47,11 @@
  * GE240-7KV24         3         8       no
  * GE240-7KLWV24       3         8       no
  * GE240-6KLWV24       3         8       no
+ * KIT160-6            2         8       no
+ * KIT160-7            2         8       no
+ * KIT240-6            2         8       no
+ * KIT240-7            2         8       no
+ * KIT320-8            2         8       no
  *
  * Supported protocol commands:
  *
@@ -53,7 +59,7 @@
  * Protocol  Display  Set Output     Set Contrast    Bitmap                    Orientation
  * =======================================================================================
  *    1      DL       Y(0..7)(0..1)  K(0..20)        U(x)(y)(w)(h)(...)        Vertical
- *    2      <ESC>DL  --             <ESC>DK(0..63)  <ESC>UL(x)(y)(w)(h)(...)  Vertical
+ *    2      <ESC>DL  --             <ESC>DK(0..63)  <ESC>UL(x)(y)(w)(h)(...)  Horizontal
  *    3      DL       Y(0..7)(0..1)  --              U(x)(y)(w)(h)(...)        Horizontal
  *
  * Bitmap orientation:
@@ -141,6 +147,11 @@ static MODEL Models[] = {
 
     /* Protocol 2 models */
     {"GE128-6N9V24", 128, 64, 63, 40, 0, 2},
+    {"KIT160-6", 160, 80, 0, 0, 0, 2},
+    {"KIT160-7", 160, 128, 0, 0, 0, 2},
+    {"KIT240-6", 240, 64, 0, 0, 0, 2},
+    {"KIT240-7", 240, 128, 0, 0, 0, 2},
+    {"KIT320-8", 320, 240, 0, 0, 0, 2},
 
     /* Protocol 3 models */
     {"GE128-7KV24", 128, 128, 0, 0, 8, 3},
@@ -165,7 +176,7 @@ static int drv_EA232graphic_open(const char *section)
 {
     /* open serial port */
     /* don't mind about device, speed and stuff, this function will take care of */
-    if (drv_generic_serial_open(section, Name, 0) < 0)
+    if (drv_generic_serial_open_handshake(section, Name, 0) < 0)
 	return -1;
 
     return 0;
@@ -183,14 +194,14 @@ static int drv_EA232graphic_close(void)
 /* write data to the display */
 static void drv_EA232graphic_send(const char *data, const int len)
 {
-    drv_generic_serial_write(data, len);
+    drv_generic_serial_write_rts(data, len);
 }
 
 
 /* delete Display */
 static void drv_EA232graphic_clear_display()
 {
-    char cmd[3];
+    char cmd[4];
 
     switch (Model->protocol) {
     case 1:
@@ -205,6 +216,12 @@ static void drv_EA232graphic_clear_display()
 	cmd[1] = 'D';
 	cmd[2] = 'L';
 	drv_EA232graphic_send(cmd, 3);
+	usleep(500000);
+	cmd[0] = ESC;
+	cmd[1] = 'Q';
+	cmd[2] = 'C';
+	cmd[3] = '0';
+	drv_EA232graphic_send(cmd, 4);
 	break;
     default:
 	error("%s: undefined protocol type", Name);
@@ -218,16 +235,16 @@ static void drv_EA232graphic_clear_display()
 static void drv_EA232graphic_blit(const int row, const int col, const int height, const int width)
 {
 
-    int r, c, l, p;
+    int r, c, l, p, d;
     char *cmd;
 
     /* calculate length of command */
     l = 0;
     switch (Model->protocol) {
     case 1:
-    case 2:
 	l = ((height + 7) / 8) * width;
 	break;
+    case 2:
     case 3:
 	l = ((width + 7) / 8) * height;
 	break;
@@ -275,11 +292,20 @@ static void drv_EA232graphic_blit(const int row, const int col, const int height
     /* set pixels */
     switch (Model->protocol) {
     case 1:
-    case 2:
 	for (r = 0; r < height; r++) {
 	    for (c = 0; c < width; c++) {
 		if (drv_generic_graphic_black(r + row, c + col)) {
 		    cmd[(r / 8) * width + c + p] |= (LSB_BYTE << (r % 8));
+		}
+	    }
+	}
+	break;
+    case 2:
+	d = ((width + 7) / 8);
+	for (r = 0; r < height; r++) {
+	    for (c = 0; c < width; c++) {
+		if (drv_generic_graphic_black(r + row, c + col)) {
+		    cmd[(c / 8) + (d * r) + p] |= (MSB_BYTE >> (c % 8));
 		}
 	    }
 	}

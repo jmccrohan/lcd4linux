@@ -58,6 +58,8 @@
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
+#include <linux/serial.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -205,6 +207,25 @@ static pid_t drv_generic_serial_unlock_port(const char *Port)
     return 0;
 }
 
+int drv_generic_serial_open_handshake(const char *section, const char *driver, const unsigned int flags)
+{
+    int fd;
+    struct termios portset;
+    struct serial_struct serinfo;
+    fd = drv_generic_serial_open(section, driver, flags);	/* Open the Port with the original function */
+
+    /* We activate the Usage of the Handshake Pins */
+    tcgetattr(fd, &portset);	/* Get Port Attributes */
+    portset.c_cflag |= CRTSCTS;	/* Set Handshake */
+    tcsetattr(fd, TCSANOW, &portset);	/* Set Port Attrributes */
+
+    /* This sets the UART-Type to the simplest one: 8250. No Fifos or other Features */
+    /* Fifo destroys Handshake so needs to be disabled */
+    ioctl(fd, TIOCGSERIAL, &serinfo);	/* Get Serial Info */
+    serinfo.type = PORT_8250;	/* Set to super-simple Port Type */
+    ioctl(fd, TIOCSSERIAL, &serinfo);	/* Write Back modified Info */
+    return fd;
+}
 
 int drv_generic_serial_open(const char *section, const char *driver, const unsigned int flags)
 {
@@ -330,6 +351,22 @@ int drv_generic_serial_read(char *string, const int len)
     return ret;
 }
 
+void drv_generic_serial_write_rts(const char *string, const int len)
+{
+    int serial, p, tocnt;
+
+    for (p = 0; p < len; p++) {	/* Send Byte-by-Byte checking RTS-Line */
+	/* Timeout is 500ms */
+	tocnt = 250;		/* 250 * 2 */
+	ioctl(Device, TIOCMGET, &serial);	/* Get status of Control Lines */
+	while (!(serial & TIOCM_RTS) && tocnt) {	/* Wait until RTS is set or timeout */
+	    tocnt--;		/* decrease timeout counter */
+	    usleep(2000);	/* Wait two milliseconds */
+	    ioctl(Device, TIOCMGET, &serial);
+	}
+	drv_generic_serial_write(&string[p], 1);	/* Actually send one byte */
+    }
+}
 
 void drv_generic_serial_write(const char *string, const int len)
 {
