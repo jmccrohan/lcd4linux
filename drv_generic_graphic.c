@@ -267,10 +267,10 @@ static void drv_generic_graphic_render(const int layer, const int row, const int
 	}
 
 	for (y = 0; y < YRES; y++) {
-	    int mask = 1 << XRES;
 	    for (x = 0; x < XRES; x++) {
-		mask >>= 1;
-		if (chr[y] & mask)
+		int mask = 1 << 6;
+		mask >>= ((x * 6) / (XRES)) + 1;
+		if (chr[(y * 8) / (YRES)] & mask)
 		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = fg;
 		else
 		    drv_generic_graphic_FB[layer][(r + y) * LCOLS + c + x] = bg;

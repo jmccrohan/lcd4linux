@@ -146,11 +146,23 @@ static int drv_dpf_start2(const char *section)
     }
 
     /* Fixme: provider other fonts someday... */
-    if (XRES != 6 && YRES != 8) {
+    /* Overridden - we have scaled the textout drawing */
+/*  if (XRES != 6 && YRES != 8) {
 	error("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
 	return -1;
+    } */
+
+    /* we dont want fonts below 6 width */
+    if (XRES < 6) {
+	error("%s: bad Font '%s' width '%d' using minimum of 6)", Name, s, XRES);
+	XRES = 6;
     }
 
+    /* we dont want fonts below 8 height */
+    if (YRES < 8) {
+	error("%s: bad Font '%s' height '%d' using minimum of 8)", Name, s, YRES);
+	YRES = 8;
+    }
 
     /* open communication with the display */
     if (drv_dpf_open(section) < 0) {
