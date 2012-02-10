@@ -47,6 +47,8 @@
  * GE240-7KV24         3         8       no
  * GE240-7KLWV24       3         8       no
  * GE240-6KLWV24       3         8       no
+ * KIT120-5            4         5       no
+ * KIT129-6            4         8       no
  * KIT160-6            2         8       no
  * KIT160-7            2         8       no
  * KIT240-6            2         8       no
@@ -59,8 +61,9 @@
  * Protocol  Display  Set Output     Set Contrast    Bitmap                    Orientation
  * =======================================================================================
  *    1      DL       Y(0..7)(0..1)  K(0..20)        U(x)(y)(w)(h)(...)        Vertical
- *    2      <ESC>DL  --             <ESC>DK(0..63)  <ESC>UL(x)(y)(w)(h)(...)  Horizontal
+ *    2      <ESC>DL  <ESC>YW...     <ESC>DK(0..63)  <ESC>UL(x)(y)(w)(h)(...)  Horizontal
  *    3      DL       Y(0..7)(0..1)  --              U(x)(y)(w)(h)(...)        Horizontal
+ *    4      <ESC>DL  <ESC>YW...     --              <ESC>UL(x)(y)(w)(h)(...)  Vertical
  *
  * Bitmap orientation:
  *
@@ -147,11 +150,11 @@ static MODEL Models[] = {
 
     /* Protocol 2 models */
     {"GE128-6N9V24", 128, 64, 63, 40, 0, 2},
-    {"KIT160-6", 160, 80, 0, 0, 0, 2},
-    {"KIT160-7", 160, 128, 0, 0, 0, 2},
-    {"KIT240-6", 240, 64, 0, 0, 0, 2},
-    {"KIT240-7", 240, 128, 0, 0, 0, 2},
-    {"KIT320-8", 320, 240, 0, 0, 0, 2},
+    {"KIT160-6", 160, 80, 0, 0, 8, 2},
+    {"KIT160-7", 160, 128, 0, 0, 8, 2},
+    {"KIT240-6", 240, 64, 0, 0, 8, 2},
+    {"KIT240-7", 240, 128, 0, 0, 8, 2},
+    {"KIT320-8", 320, 240, 0, 0, 8, 2},
 
     /* Protocol 3 models */
     {"GE128-7KV24", 128, 128, 0, 0, 8, 3},
@@ -160,6 +163,10 @@ static MODEL Models[] = {
     {"GE240-7KV24", 240, 128, 0, 0, 8, 3},
     {"GE240-7KLWV24", 240, 128, 0, 0, 8, 3},
     {"GE240-6KLWV24", 240, 64, 0, 0, 8, 3},
+
+    /* Protocol 4 models */
+    {"KIT120-5", 120, 32, 0, 0, 5, 4},
+    {"KIT129-6", 128, 64, 0, 0, 8, 4},
 
     {NULL, 0, 0, 0, 0, 0, 0}
 };
@@ -206,17 +213,39 @@ static void drv_EA232graphic_clear_display()
     switch (Model->protocol) {
     case 1:
     case 3:
+	/* Clear Display */
 	cmd[0] = 'D';
 	cmd[1] = 'L';
 	drv_EA232graphic_send(cmd, 2);
 	break;
-
     case 2:
+	/* Clear Display */
 	cmd[0] = ESC;
 	cmd[1] = 'D';
 	cmd[2] = 'L';
 	drv_EA232graphic_send(cmd, 3);
 	usleep(500000);
+	/* Disable Cursor */
+	cmd[0] = ESC;
+	cmd[1] = 'Q';
+	cmd[2] = 'C';
+	cmd[3] = '0';
+	drv_EA232graphic_send(cmd, 4);
+	break;
+    case 4:
+	/* Set all GPIO to Output */
+	cmd[0] = ESC;
+	cmd[1] = 'Y';
+	cmd[2] = 'M';
+	cmd[3] = 8;
+	drv_EA232graphic_send(cmd, 4);
+	/* Clear Display */
+	cmd[0] = ESC;
+	cmd[1] = 'D';
+	cmd[2] = 'L';
+	drv_EA232graphic_send(cmd, 3);
+	usleep(500000);
+	/* Disable Cursor */
 	cmd[0] = ESC;
 	cmd[1] = 'Q';
 	cmd[2] = 'C';
@@ -242,6 +271,7 @@ static void drv_EA232graphic_blit(const int row, const int col, const int height
     l = 0;
     switch (Model->protocol) {
     case 1:
+    case 4:
 	l = ((height + 7) / 8) * width;
 	break;
     case 2:
@@ -272,6 +302,7 @@ static void drv_EA232graphic_blit(const int row, const int col, const int height
 	cmd[p++] = height;
 	break;
     case 2:
+    case 4:
 	cmd[p++] = ESC;
 	cmd[p++] = 'U';
 	cmd[p++] = 'L';
@@ -292,6 +323,7 @@ static void drv_EA232graphic_blit(const int row, const int col, const int height
     /* set pixels */
     switch (Model->protocol) {
     case 1:
+    case 4:
 	for (r = 0; r < height; r++) {
 	    for (c = 0; c < width; c++) {
 		if (drv_generic_graphic_black(r + row, c + col)) {
@@ -333,7 +365,7 @@ static void drv_EA232graphic_blit(const int row, const int col, const int height
 
 static int drv_EA232graphic_GPO(const int num, const int val)
 {
-    char cmd[4];
+    char cmd[5];
 
     if (Model->gpo == 0) {
 	error("%s: GPO not supported on this model.", Name);
@@ -346,11 +378,24 @@ static int drv_EA232graphic_GPO(const int num, const int val)
 	return -1;
     }
 
-    cmd[0] = 'Y';
-    cmd[1] = num;
-    cmd[2] = (val > 0) ? 1 : 0;
-
-    drv_EA232graphic_send(cmd, 3);
+    switch (Model->protocol) {
+    case 1:
+    case 3:
+	cmd[0] = 'Y';
+	cmd[1] = num;
+	cmd[2] = (val > 0) ? 1 : 0;
+	drv_EA232graphic_send(cmd, 3);
+	break;
+    case 2:
+    case 4:
+	cmd[0] = ESC;
+	cmd[1] = 'Y';
+	cmd[2] = 'W';
+	cmd[3] = num + 1;
+	cmd[4] = (val > 0) ? 1 : 0;
+	drv_EA232graphic_send(cmd, 5);
+	break;
+    }
 
     return 0;
 }
@@ -440,13 +485,6 @@ static int drv_EA232graphic_start(const char *section)
     YRES = -1;
     if (sscanf(s, "%dx%d", &XRES, &YRES) != 2 || XRES < 1 || YRES < 1) {
 	error("%s: bad Font '%s' from %s", Name, s, cfg_source());
-	free(s);
-	return -1;
-    }
-
-    /* Fixme: provider other fonts someday... */
-    if (XRES != 6 && YRES != 8) {
-	error("%s: bad Font '%s' from %s (only 6x8 at the moment)", Name, s, cfg_source());
 	free(s);
 	return -1;
     }
