@@ -27,6 +27,16 @@ Display SerDispLib {
 }
 
 
+Display TeakLCM {
+    Driver 'TeakLCM'
+    Size '20x2'
+    Port '/dev/ttyS1'
+    Speed 38400
+    Backlight 1
+    Icons 0
+}
+
+
 Display Trefon {
     Driver 'TREFON'
     Size '16x2'
@@ -1313,6 +1323,7 @@ Layout Debug {
 #Display 'USBLCD'
 #Display 'BWCT'
 #Display 'Image'
+#Display 'TeakLCD'
 #Display 'Trefon'
 #Display 'LCD2USB'
 #Display 'LPH7508-serdisplib'

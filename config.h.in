@@ -621,6 +621,9 @@
 /* T6963 driver */
 #undef WITH_T6963
 
+/* TeakLCM driver */
+#undef WITH_TEAK_LCM
+
 /* TREFON driver */
 #undef WITH_TREFON
 

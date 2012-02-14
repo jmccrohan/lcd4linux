@@ -1449,7 +1449,7 @@ Optional Packages:
                           Newhaven, Noritake, NULL, Pertelian, PHAnderson,
                           PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,
                           Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,
-                          Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11
+                          TeakLCM, Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
                           of avaible plugins
@@ -2821,11 +2821,11 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
-# Always define AMTAR for backward compatibility.
+# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AMTAR='$${TAR-tar}'
 
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
-am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
@@ -6317,6 +6317,7 @@ for driver in $drivers; do
 	 SHUTTLEVFD="yes"
          SIMPLELCD="yes"
          T6963="yes"
+         TeakLCM="yes"
          Trefon="yes"
          ULA200="yes"
 	 USBHUB="yes"
@@ -6459,6 +6460,9 @@ for driver in $drivers; do
          ;;
       T6963)
          T6963=$val
+         ;;
+      TeakLCM)
+         TeakLCM=$val
          ;;
       Trefon)
          Trefon=$val
@@ -7079,6 +7083,16 @@ $as_echo "#define WITH_T6963 1" >>confdefs.h
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: asm/io.h or {linux/parport.h and linux/ppdev.h} not found: T6963 driver disabled" >&5
 $as_echo "$as_me: WARNING: asm/io.h or {linux/parport.h and linux/ppdev.h} not found: T6963 driver disabled" >&2;}
    fi
+fi
+
+if test "$TeakLCM" = "yes"; then
+   TEXT="yes"
+   GPIO="no"
+   SERIAL="yes"
+   DRIVERS="$DRIVERS drv_TeakLCM.o"
+
+$as_echo "#define WITH_TEAK_LCM 1" >>confdefs.h
+
 fi
 
 if test "$Trefon" = "yes"; then

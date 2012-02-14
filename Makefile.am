@@ -114,6 +114,7 @@ drv_serdisplib.c              \
 drv_ShuttleVFD.c              \
 drv_SimpleLCD.c               \
 drv_T6963.c                   \
+drv_TeakLCM.c                 \
 drv_Trefon.c                  \
 drv_ula200.c                  \
 drv_USBHUB.c                  \

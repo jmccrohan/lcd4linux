@@ -90,6 +90,7 @@ extern DRIVER drv_serdisplib;
 extern DRIVER drv_ShuttleVFD;
 extern DRIVER drv_SimpleLCD;
 extern DRIVER drv_T6963;
+extern DRIVER drv_TeakLCM;
 extern DRIVER drv_Trefon;
 extern DRIVER drv_ula200;
 extern DRIVER drv_USBHUB;
@@ -235,6 +236,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_T6963
     &drv_T6963,
+#endif
+#ifdef WITH_TEAK_LCM
+    &drv_TeakLCM,
 #endif
 #ifdef WITH_TREFON
     &drv_Trefon,
