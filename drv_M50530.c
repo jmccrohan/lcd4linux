@@ -292,7 +292,7 @@ static int drv_M5_start(const char *section, const int quiet)
     int rows = -1, cols = -1;
     unsigned int SF;
 
-    s = cfg_get(section, "Model", "generic");
+    s = cfg_get(section, "Model", "M50530");
     if (s != NULL && *s != '\0') {
 	int i;
 	for (i = 0; Models[i].type != 0xff; i++) {
