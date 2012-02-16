@@ -758,7 +758,6 @@ fi
 
 if test "$TeakLCM" = "yes"; then
    TEXT="yes"
-   GPIO="no"
    SERIAL="yes"
    DRIVERS="$DRIVERS drv_TeakLCM.o"
    AC_DEFINE(WITH_TEAK_LCM,1,[TeakLCM driver])
