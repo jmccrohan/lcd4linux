@@ -33,7 +33,7 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D, DPF]
-  [                        EA232Graphic, EFN, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
+  [                        EA232Graphic, EFN, FutabaVFD, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
   [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,]
   [                        Newhaven, Noritake, NULL, Pertelian, PHAnderson,]
@@ -70,6 +70,7 @@ for driver in $drivers; do
          DPF="yes"
          EA232graphic="yes"
          EFN="yes"
+         FUTABAVFD="yes"
          FW8888="yes"
          G15="yes"
          GLCD2USB="yes"
@@ -144,6 +145,9 @@ for driver in $drivers; do
       EFN)
          EFN=$val
 	 ;;
+      FutabaVFD)
+         FUTABAVFD=$val
+         ;;
       FW8888)
          FW8888=$val
          ;;
@@ -393,6 +397,19 @@ if test "$EFN" = "yes"; then
    DRIVERS="$DRIVERS drv_EFN.o"
    AC_DEFINE(WITH_EFN,1,[Driver for EFN LED modules and EUG 100 ethernet to serial converter])
 fi
+
+if test "$FUTABAVFD" = "yes"; then
+   if test "$has_parport" = "true"; then
+      TEXT="yes"
+      # select bus: serial (including USB), parallel or i2c
+      PARPORT="yes"
+      DRIVERS="$DRIVERS drv_FutabaVFD.o"
+      AC_DEFINE(WITH_FUTABAVFD,1,[FutabaVFD driver])
+   else
+      AC_MSG_WARN(asm/io.h or {linux/parport.h and linux/ppdev.h} not found: FutabaVFD driver disabled)
+   fi
+fi
+
 
 
 if test "$FW8888" = "yes"; then

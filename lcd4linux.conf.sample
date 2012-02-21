@@ -557,6 +557,21 @@ Display VNC {
     HttpPort	 '5800'
 }
 
+
+Display FutabaVFD {
+    Driver 'FutabaVFD'
+    Port '/dev/parport0'	
+    Size '40x2'
+    Brightness 3
+    Wire {
+	RW      'STROBE'
+	TEST    'AUTOFD'
+	SELECT  'SLCTIN'
+	BUSY    'BUSY'
+    }
+}
+
+
 #Plugin KVV {
 #    StationID '12_701'
 #    Refresh 30
@@ -1331,6 +1346,7 @@ Layout Debug {
 #Display 'ctinclud'
 #Display 'picoLCD'
 #Display 'VNC'
+#Display 'FutabaVFD'
 Display 'GLCD2USB'
 
 #Layout 'Default'

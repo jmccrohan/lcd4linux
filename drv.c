@@ -57,6 +57,7 @@ extern DRIVER drv_D4D;
 extern DRIVER drv_DPF;
 extern DRIVER drv_EA232graphic;
 extern DRIVER drv_EFN;
+extern DRIVER drv_FutabaVFD;
 extern DRIVER drv_FW8888;
 extern DRIVER drv_G15;
 extern DRIVER drv_GLCD2USB;
@@ -137,6 +138,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_EFN
     &drv_EFN,
+#endif
+#ifdef WITH_FUTABAVFD
+    &drv_FutabaVFD,
 #endif
 #ifdef WITH_FW8888
     &drv_FW8888,

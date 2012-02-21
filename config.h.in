@@ -504,6 +504,9 @@
 /* Driver for EFN LED modules and EUG 100 ethernet to serial converter */
 #undef WITH_EFN
 
+/* FutabaVFD driver */
+#undef WITH_FUTABAVFD
+
 /* Allnet FW8888 driver */
 #undef WITH_FW8888
 
