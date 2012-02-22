@@ -66,6 +66,9 @@ fi
 # check for gd.h
 AC_CHECK_HEADERS(gd/gd.h gd.h, [has_gd="true"; break], [has_gd="false"])
 
+# check for jpeglib.h
+AC_CHECK_HEADERS(jpeglib.h, [has_jpeglib="true"], [has_jpeglib="false"])
+
 # check for sys/io.h (RouterBoard driver)
 AC_CHECK_HEADERS(sys/io.h, [has_io_h="true"], [has_io_h="false"])
 

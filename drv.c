@@ -86,6 +86,7 @@ extern DRIVER drv_picoLCD;
 extern DRIVER drv_picoLCDGraphic;
 extern DRIVER drv_RouterBoard;
 extern DRIVER drv_Sample;
+extern DRIVER drv_SamsungSPF;
 extern DRIVER drv_st2205;
 extern DRIVER drv_serdisplib;
 extern DRIVER drv_ShuttleVFD;
@@ -225,6 +226,9 @@ DRIVER *Driver[] = {
 #endif
 #ifdef WITH_SAMPLE
     &drv_Sample,
+#endif
+#ifdef WITH_SAMSUNGSPF
+    &drv_SamsungSPF,
 #endif
 #ifdef WITH_ST2205
     &drv_st2205,

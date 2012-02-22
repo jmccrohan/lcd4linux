@@ -1448,7 +1448,7 @@ Optional Packages:
                           LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,
                           Newhaven, Noritake, NULL, Pertelian, PHAnderson,
                           PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,
-                          Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,
+                          Sample, SamsungSPF, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,
                           TeakLCM, Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11
   --with-plugins=<list>   choose which plugins to compile.
                           type --with-plugins=list for a list
@@ -5596,6 +5596,22 @@ fi
 done
 
 
+# check for jpeglib.h
+for ac_header in jpeglib.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
+if test "x$ac_cv_header_jpeglib_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_JPEGLIB_H 1
+_ACEOF
+ has_jpeglib="true"
+else
+  has_jpeglib="false"
+fi
+
+done
+
+
 # check for sys/io.h (RouterBoard driver)
 for ac_header in sys/io.h
 do :
@@ -6313,6 +6329,7 @@ for driver in $drivers; do
          PPM="yes"
          ROUTERBOARD="yes"
          SAMPLE="yes"
+         SAMSUNGSPF="yes"
          ST2205="yes"
 	 SERDISPLIB="yes"
 	 SHUTTLEVFD="yes"
@@ -6449,6 +6466,9 @@ for driver in $drivers; do
          ;;
       Sample)
          SAMPLE=$val
+         ;;
+      SamsungSPF)
+         SAMSUNGSPF=$val
          ;;
       serdisplib)
          SERDISPLIB=$val;
@@ -7035,6 +7055,26 @@ $as_echo "$as_me: WARNING: asm/io.h or {linux/parport.h and linux/ppdev.h} not f
    fi
 fi
 
+if test "$SAMSUNGSPF" = "yes"; then
+   if test "$has_usb" = "true"; then
+      if test "$has_usb" = "true"; then
+      	 GRAPHIC="yes"
+      	 DRIVERS="$DRIVERS drv_SamsungSPF.o"
+      	 LIBUSB="yes"
+	 LIBJPEG="yes"
+
+$as_echo "#define WITH_SAMSUNGSPF 1" >>confdefs.h
+
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: jpeglib.h not found: SamsungSPF driver disabled" >&5
+$as_echo "$as_me: WARNING: jpeglib.h not found: SamsungSPF driver disabled" >&2;}
+      fi
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: usb.h not found: SamsungSPF driver disabled" >&5
+$as_echo "$as_me: WARNING: usb.h not found: SamsungSPF driver disabled" >&2;}
+   fi
+fi
+
 if test "$SERDISPLIB" = "yes"; then
    if test "$has_serdisplib" = "true"; then
       GRAPHIC="yes"
@@ -7276,6 +7316,11 @@ fi
 # generic keypad driver
 if test "$KEYPAD" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
+
+# libjpeg
+if test "$LIBJPEG" = "yes"; then
+   DRVLIBS="$DRVLIBS -ljpeg"
 fi
 
 # libusb

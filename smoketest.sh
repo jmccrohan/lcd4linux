@@ -9,7 +9,7 @@ rm -f smoketest.log lcd4linux
 make distclean
 ./bootstrap
 
-for driver in ASTUSB BeckmannEgle BWCT CrystalFontz Curses Cwlinux D4D DPF EA232graphic EFN FutabaVFD G15 GLCD2USB HD44780 IRLCD LCD2USB LCDLinux LCDTerm LEDMatrix LPH7508 LUIse LW_ABP M50530 MatrixOrbital MatrixOrbitalGX MilfordInstruments Noritake NULL Pertelian PHAnderson picoLCD picoLCDGraphic PNG PPM RouterBoard Sample serdisplib SimpleLCD T6963 TeakLCM Trefon ULA200 USBHUB USBLCD WincorNixdorf X11; do
+for driver in ASTUSB BeckmannEgle BWCT CrystalFontz Curses Cwlinux D4D DPF EA232graphic EFN FutabaVFD G15 GLCD2USB HD44780 IRLCD LCD2USB LCDLinux LCDTerm LEDMatrix LPH7508 LUIse LW_ABP M50530 MatrixOrbital MatrixOrbitalGX MilfordInstruments Noritake NULL Pertelian PHAnderson picoLCD picoLCDGraphic PNG PPM RouterBoard Sample SamsungSPF serdisplib SimpleLCD T6963 TeakLCM Trefon ULA200 USBHUB USBLCD WincorNixdorf X11; do
 
     make distclean
     ./configure --with-drivers=$driver

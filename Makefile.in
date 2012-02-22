@@ -346,6 +346,7 @@ drv_picoLCD.c                 \
 drv_picoLCDGraphic.c          \
 drv_RouterBoard.c             \
 drv_Sample.c                  \
+drv_SamsungSPF.c              \
 drv_st2205.c                  \
 drv_serdisplib.c              \
 drv_ShuttleVFD.c              \
@@ -568,6 +569,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Pertelian.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_RouterBoard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_Sample.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_SamsungSPF.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_ShuttleVFD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_SimpleLCD.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drv_T6963.Po@am__quote@

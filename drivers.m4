@@ -38,7 +38,7 @@ AC_ARG_WITH(
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,]
   [                        Newhaven, Noritake, NULL, Pertelian, PHAnderson,]
   [                        PICGraphic, picoLCD, picoLCDGraphic, PNG, PPM, RouterBoard,]
-  [                        Sample, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,]
+  [                        Sample, SamsungSPF, serdisplib, ShuttleVFD, SimpleLCD, st2205, T6963,]
   [                        TeakLCM, Trefon, ULA200, USBHUB, USBLCD, VNC, WincorNixdorf, X11],
   drivers=$withval,
   drivers=all
@@ -101,6 +101,7 @@ for driver in $drivers; do
          PPM="yes"
          ROUTERBOARD="yes"
          SAMPLE="yes"
+         SAMSUNGSPF="yes"
          ST2205="yes"
 	 SERDISPLIB="yes"
 	 SHUTTLEVFD="yes"
@@ -237,6 +238,9 @@ for driver in $drivers; do
          ;;
       Sample)
          SAMPLE=$val
+         ;;
+      SamsungSPF)
+         SAMSUNGSPF=$val
          ;;
       serdisplib)
          SERDISPLIB=$val;
@@ -717,6 +721,22 @@ if test "$SAMPLE" = "yes"; then
    fi
 fi
 
+if test "$SAMSUNGSPF" = "yes"; then
+   if test "$has_usb" = "true"; then 
+      if test "$has_usb" = "true"; then 
+      	 GRAPHIC="yes"
+      	 DRIVERS="$DRIVERS drv_SamsungSPF.o"
+      	 LIBUSB="yes" 
+	 LIBJPEG="yes"
+      	 AC_DEFINE(WITH_SAMSUNGSPF,1,[SamsungSPF driver])
+      else
+        AC_MSG_WARN(jpeglib.h not found: SamsungSPF driver disabled) 
+      fi
+   else
+      AC_MSG_WARN(usb.h not found: SamsungSPF driver disabled) 
+   fi
+fi
+
 if test "$SERDISPLIB" = "yes"; then
    if test "$has_serdisplib" = "true"; then
       GRAPHIC="yes"
@@ -913,6 +933,11 @@ fi
 # generic keypad driver
 if test "$KEYPAD" = "yes"; then
    DRIVERS="$DRIVERS drv_generic_keypad.o"
+fi
+
+# libjpeg
+if test "$LIBJPEG" = "yes"; then
+   DRVLIBS="$DRVLIBS -ljpeg"
 fi
 
 # libusb

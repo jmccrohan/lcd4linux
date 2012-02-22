@@ -67,6 +67,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <jpeglib.h> header file. */
+#undef HAVE_JPEGLIB_H
+
 /* Define to 1 if you have the <libdpf/libdpf.h> header file. */
 #undef HAVE_LIBDPF_LIBDPF_H
 
@@ -605,6 +608,9 @@
 
 /* Sample driver */
 #undef WITH_SAMPLE
+
+/* SamsungSPF driver */
+#undef WITH_SAMSUNGSPF
 
 /* serdisplib driver */
 #undef WITH_SERDISPLIB
