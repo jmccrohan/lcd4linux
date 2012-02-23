@@ -38,16 +38,8 @@
 
 #include "config.h"
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
-
-#include <fcntl.h>
-#include <signal.h>
-#include <time.h>
-#include <getopt.h>
 
 #include <usb.h>
 #include <jpeglib.h>
@@ -55,18 +47,70 @@
 #include "debug.h"
 #include "cfg.h"
 #include "qprintf.h"
-#include "udelay.h"
-#include "plugin.h"
 #include "timer.h"
-#include "widget.h"
-#include "widget_text.h"
-#include "widget_icon.h"
-#include "widget_bar.h"
 #include "drv.h"
 
 /* graphic display? */
 #include "drv_generic_graphic.h"
-#include "drv_SamsungSPF.h"
+
+// Drivername for verbose output
+static char Name[] = "SamsungSPF";
+
+struct SPFdev {
+    const char type[64];
+    const int vendorID;
+    struct {
+	const int storageMode;
+	const int monitorMode;
+    } productID;
+    const unsigned int xRes;
+    const unsigned int yRes;
+};
+
+static struct SPFdev spfDevices[] = {
+    {
+     .type = "SPF-75H",
+     .vendorID = 0x04e8,
+     .productID = {0x200e, 0x200f},
+     .xRes = 800,
+     .yRes = 480,
+     },
+    {
+     .type = "SPF-85H",
+     .vendorID = 0x04e8,
+     .productID = {0x2012, 0x2013},
+     .xRes = 800,
+     .yRes = 600,
+     },
+    {
+     .type = "SPF-107H",
+     .vendorID = 0x04e8,
+     .productID = {0x2027, 0x2028},
+     .xRes = 1024,
+     .yRes = 600,
+     },
+};
+
+static int numFrames = sizeof(spfDevices) / sizeof(spfDevices[0]);
+
+struct usb_device *myDev;
+usb_dev_handle *myDevHandle;
+struct SPFdev *myFrame;
+
+typedef struct {
+    unsigned char R, G, B;
+} RGB;
+
+static struct {
+    RGB *buf;
+    int dirty;
+    int fbsize;
+} image;
+
+static struct {
+    unsigned char *buf;
+    unsigned long int size;
+} jpegImage;
 
 
 /****************************************/
@@ -107,7 +151,7 @@ int convert2JPG()
 
     /* Finish compression and free internal memory */
     jpeg_finish_compress(&cinfo);
-    jpeg_destroy(&cinfo);
+    jpeg_destroy_compress(&cinfo);
 
     return 0;
 }
@@ -200,9 +244,9 @@ static int drv_SamsungSPF_open()
 
 
 /* dummy function that sends something to the display */
-static int drv_SamsungSPF_send(unsigned char *data, unsigned int len)
+static int drv_SamsungSPF_send(char *data, unsigned int len)
 {
-    char usb_hdr[USB_HDR_LEN] = { 0xa5, 0x5a, 0x18, 0x04, 0xff, 0xff,
+    char usb_hdr[12] = { 0xa5, 0x5a, 0x18, 0x04, 0xff, 0xff,
 	0xff, 0xff, 0x48, 0x00, 0x00, 0x00
     };
     char buffer[1] = { 0x0 };
@@ -212,7 +256,7 @@ static int drv_SamsungSPF_send(unsigned char *data, unsigned int len)
 
     *(int *) (usb_hdr + 4) = len;
 
-    debug("bytes_to_send: %d, offset: %d", len, USB_HDR_LEN);
+    debug("bytes_to_send: %d, offset: %d", len, 12);
 
     /* Send USB header */
     if ((ret = usb_bulk_write(myDevHandle, usb_endpoint, usb_hdr, 12, usb_timeout)) < 0) {
@@ -222,7 +266,7 @@ static int drv_SamsungSPF_send(unsigned char *data, unsigned int len)
     }
 
     /* Send JPEG image */
-    if ((ret = usb_bulk_write(myDevHandle, usb_endpoint, (char *) jpegImage.buf, len, usb_timeout)) < 0) {
+    if ((ret = usb_bulk_write(myDevHandle, usb_endpoint, data, len, usb_timeout)) < 0) {
 	error("%s: Error occurred while writing data to device.", Name);
 	error("%s: usb_bulk_write returned: %d", Name, ret);
 	return -1;
@@ -267,7 +311,7 @@ static void drv_SamsungSPF_timer( __attribute__ ((unused))
 	convert2JPG();
 
 	/* Sent image to display */
-	if ((drv_SamsungSPF_send(jpegImage.buf, jpegImage.size)) != 0) {
+	if ((drv_SamsungSPF_send((char *) jpegImage.buf, jpegImage.size)) != 0) {
 	    error("%s: Error occurred while sending jpeg image to device.", Name);
 	}
 	/* Clean dirty bit */
@@ -285,7 +329,7 @@ static void drv_SamsungSPF_timer( __attribute__ ((unused))
 /* start graphic display */
 static int drv_SamsungSPF_start(const char *section)
 {
-    unsigned int timerInterval = 1000;
+    int timerInterval = 1000;
     char *s;
 
     cfg_number(section, "update", timerInterval, 0, -1, &timerInterval);
@@ -379,7 +423,7 @@ int drv_SamsungSPF_init(const char *section, const int quiet)
     }
     // Look for specified device
     for (i = 0; i < numFrames; i++) {
-	if (strcasecmp(s, spfDevices[i].type) == NULL) {
+	if (strcasecmp(s, spfDevices[i].type) == 0) {
 	    myFrame = &spfDevices[i];
 	    info("%s: Configured for model %s.", Name, spfDevices[i].type);
 	    break;
@@ -450,7 +494,7 @@ int drv_SamsungSPF_quit(const int quiet)
 
     debug("closing connection");
     printf("%s: Closing driver...\n", Name);
-    usb_close(myDev);
+    usb_close(myDevHandle);
     free(myDev);
     free(myDevHandle);
 
