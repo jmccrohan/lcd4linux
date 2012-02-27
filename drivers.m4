@@ -723,7 +723,7 @@ fi
 
 if test "$SAMSUNGSPF" = "yes"; then
    if test "$has_usb" = "true"; then 
-      if test "$has_usb" = "true"; then 
+      if test "$has_jpeglib" = "true"; then 
       	 GRAPHIC="yes"
       	 DRIVERS="$DRIVERS drv_SamsungSPF.o"
       	 LIBUSB="yes" 
