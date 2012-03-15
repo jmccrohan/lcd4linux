@@ -432,8 +432,8 @@ static int drv_pLG_backlight(int backlight)
 
     if (backlight < 0)
 	backlight = 0;
-    if (backlight >= 1)
-	backlight = 200;
+    if (backlight > 255)
+	backlight = 255;
 
     cmd[1] = backlight;
     drv_pLG_send(cmd, 2);
