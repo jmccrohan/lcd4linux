@@ -184,14 +184,14 @@ int timer_remove(void (*callback) (void *data), void *data)
        timer slot by looking for its settings */
     for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[timer].active == 0)
+	if (Timers[timer].active == TIMER_INACTIVE)
 	    continue;
 
 	if (Timers[timer].callback == callback && Timers[timer].data == data) {
 	    /* we have found the timer slot, so mark it as being inactive;
 	       we will not actually delete the slot, so its allocated
 	       memory may be re-used */
-	    Timers[timer].active = 0;
+	    Timers[timer].active = TIMER_INACTIVE;
 
 	    /* signal successful timer removal */
 	    return 0;
@@ -232,7 +232,7 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
     /* try to minimize memory usage by looping through the timer slots
        and looking for an inactive timer */
     for (timer = 0; timer < nTimers; timer++) {
-	if (Timers[timer].active == 0) {
+	if (Timers[timer].active == TIMER_INACTIVE) {
 	    /* we've just found one, so let's reuse it ("timer" holds its
 	       ID) by breaking the loop */
 	    break;
@@ -272,7 +272,7 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
 
     /* set timer to active so that it is processed and not overwritten
        by the memory optimization routine above */
-    Timers[timer].active = 1;
+    Timers[timer].active = TIMER_ACTIVE;
 
     /* one-shot timers should NOT fire immediately, so delay them by a
        single timer interval */
@@ -323,7 +323,7 @@ int timer_add_late(void (*callback) (void *data), void *data, const int interval
        by looking for its settings */
     for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[timer].active == 0)
+	if (Timers[timer].active == TIMER_INACTIVE)
 	    continue;
 
 	if (Timers[timer].callback == callback && Timers[timer].data == data && Timers[timer].interval == interval) {
@@ -372,7 +372,7 @@ int timer_process(struct timespec *delay)
     /* process all expired timers */
     for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[timer].active == 0)
+	if (Timers[timer].active == TIMER_INACTIVE)
 	    continue;
 
 	/* check whether current timer needs to be processed, i.e. the
@@ -391,7 +391,7 @@ int timer_process(struct timespec *delay)
 	    if (Timers[timer].one_shot) {
 		/* mark one-shot timer as inactive (which means the timer has
 		   been deleted and its allocated memory may be re-used) */
-		Timers[timer].active = 0;
+		Timers[timer].active = TIMER_INACTIVE;
 	    } else {
 		/* otherwise, re-spawn timer by adding one triggering interval
 		   to its triggering time */
@@ -406,7 +406,7 @@ int timer_process(struct timespec *delay)
        timer */
     for (timer = 0; timer < nTimers; timer++) {
 	/* skip inactive (i.e. deleted) timers */
-	if (Timers[timer].active == 0)
+	if (Timers[timer].active == TIMER_INACTIVE)
 	    continue;
 
 	/* if this is the first timer that we check, mark it as the next
@@ -473,7 +473,7 @@ int timer_process(struct timespec *delay)
 	    /* process all timers */
 	    for (timer = 0; timer < nTimers; timer++) {
 		/* skip inactive (i.e. deleted) timers */
-		if (Timers[timer].active == 0)
+		if (Timers[timer].active == TIMER_INACTIVE)
 		    continue;
 
 		/* correct timer's time stamp by clock skew */

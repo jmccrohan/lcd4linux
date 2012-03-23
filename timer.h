@@ -28,6 +28,9 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
+#define TIMER_ACTIVE  1
+#define TIMER_INACTIVE  0
+
 #include <time.h>
 
 int timer_add(void (*callback) (void *data), void *data, const int interval, const int one_shot);

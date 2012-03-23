@@ -141,7 +141,7 @@ int timer_group_exists(const int interval)
        matches the specified interval */
     for (group = 0; group < nTimerGroups; group++) {
 	/* skip inactive (i.e. deleted) timer groups */
-	if (TimerGroups[group].active == 0)
+	if (TimerGroups[group].active == TIMER_INACTIVE)
 	    continue;
 
 	if (*TimerGroups[group].interval == interval) {
@@ -182,7 +182,7 @@ int timer_add_group(const int interval)
     /* try to minimize memory usage by looping through timer group
        slots and looking for an inactive timer group */
     for (group = 0; group < nTimerGroups; group++) {
-	if (TimerGroups[group].active == 0) {
+	if (TimerGroups[group].active == TIMER_INACTIVE) {
 	    /* we've just found one, so let's reuse it ("group" holds its
 	       ID) by breaking the loop */
 	    break;
@@ -225,7 +225,7 @@ int timer_add_group(const int interval)
 
     /* set timer group to active so that it is processed and not
        overwritten by the memory optimization routine above */
-    TimerGroups[group].active = 1;
+    TimerGroups[group].active = TIMER_ACTIVE;
 
     /* finally, request a generic timer that calls this group and
        signal success or failure */
@@ -255,14 +255,14 @@ int timer_remove_group(const int interval)
        with the specified update interval */
     for (widget = 0; widget < nTimerGroupWidgets; widget++) {
 	/* skip inactive (i.e. deleted) widget slots */
-	if (TimerGroupWidgets[widget].active == 0)
+	if (TimerGroupWidgets[widget].active == TIMER_INACTIVE)
 	    continue;
 
 	if (TimerGroupWidgets[widget].interval == interval) {
 	    /* we have found a matching widget slot, so mark it as being
 	       inactive; we will not actually delete the slot, so its
 	       allocated memory may be re-used */
-	    TimerGroupWidgets[widget].active = 0;
+	    TimerGroupWidgets[widget].active = TIMER_INACTIVE;
 	}
     }
 
@@ -270,14 +270,14 @@ int timer_remove_group(const int interval)
        timer group slot by looking for its settings */
     for (group = 0; group < nTimerGroups; group++) {
 	/* skip inactive (i.e. deleted) timer groups */
-	if (TimerGroups[group].active == 0)
+	if (TimerGroups[group].active == TIMER_INACTIVE)
 	    continue;
 
 	if (*TimerGroups[group].interval == interval) {
 	    /* we have found the timer group slot, so mark it as being
 	       inactive; we will not actually delete the slot, so its
 	       allocated memory may be re-used */
-	    TimerGroups[group].active = 0;
+	    TimerGroups[group].active = TIMER_INACTIVE;
 
 	    /* remove the generic timer that calls this group */
 	    if (timer_remove(timer_process_group, TimerGroups[group].interval)) {
@@ -313,7 +313,7 @@ int timer_remove_empty_group(const int interval)
        specified update interval */
     for (widget = 0; widget < nTimerGroupWidgets; widget++) {
 	/* skip inactive (i.e. deleted) widget slots */
-	if (TimerGroupWidgets[widget].active == 0)
+	if (TimerGroupWidgets[widget].active == TIMER_INACTIVE)
 	    continue;
 
 	/* at least one other widget with specified update interval
@@ -366,7 +366,7 @@ void timer_process_group(void *data)
        group's update interval */
     for (widget = 0; widget < nTimerGroupWidgets; widget++) {
 	/* skip inactive (i.e. deleted) widgets */
-	if (TimerGroupWidgets[widget].active == 0)
+	if (TimerGroupWidgets[widget].active == TIMER_INACTIVE)
 	    continue;
 
 	/* the current widget belongs to the specified timer group */
@@ -379,7 +379,7 @@ void timer_process_group(void *data)
 	    /* mark one-shot widget as inactive (which means the it has
 	       been deleted and its allocated memory may be re-used) */
 	    if (TimerGroupWidgets[widget].one_shot) {
-		TimerGroupWidgets[widget].active = 0;
+		TimerGroupWidgets[widget].active = TIMER_INACTIVE;
 
 		/* also remove the corresponding timer group if it is empty */
 		timer_remove_empty_group(interval);
@@ -425,7 +425,7 @@ int timer_add_widget(void (*callback) (void *data), void *data, const int interv
     /* try to minimize memory usage by looping through the widget
        slots and looking for an inactive widget slot */
     for (widget = 0; widget < nTimerGroupWidgets; widget++) {
-	if (TimerGroupWidgets[widget].active == 0) {
+	if (TimerGroupWidgets[widget].active == TIMER_INACTIVE) {
 	    /* we've just found one, so let's reuse it ("widget" holds its
 	       ID) by breaking the loop */
 	    break;
@@ -461,7 +461,7 @@ int timer_add_widget(void (*callback) (void *data), void *data, const int interv
 
     /* set widget slot to active so that it is processed and not
        overwritten by the memory optimization routine above */
-    TimerGroupWidgets[widget].active = 1;
+    TimerGroupWidgets[widget].active = TIMER_ACTIVE;
 
     /* signal successful addition of widget slot */
     return 0;
@@ -490,14 +490,14 @@ int timer_remove_widget(void (*callback) (void *data), void *data)
        widget slot by looking for its settings */
     for (widget = 0; widget < nTimerGroupWidgets; widget++) {
 	/* skip inactive (i.e. deleted) widget slots */
-	if (TimerGroupWidgets[widget].active == 0)
+	if (TimerGroupWidgets[widget].active == TIMER_INACTIVE)
 	    continue;
 
 	if (TimerGroupWidgets[widget].callback == callback && TimerGroupWidgets[widget].data == data) {
 	    /* we have found the widget slot, so mark it as being
 	       inactive; we will not actually delete the slot, so its
 	       allocated memory may be re-used */
-	    TimerGroupWidgets[widget].active = 0;
+	    TimerGroupWidgets[widget].active = TIMER_INACTIVE;
 
 	    /* store the widget's triggering interval for later use and
 	       break the loop */
