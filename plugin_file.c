@@ -61,7 +61,7 @@ static void my_readline(RESULT * result, RESULT * arg1, RESULT * arg2)
     reqline = R2N(arg2);
     fp = fopen(R2S(arg1), "r");
     if (!fp) {
-	error("readline couldn't open file '%s'", R2S(arg1));
+	info("readline couldn't open file '%s'", R2S(arg1));
 	value[0] = '\0';
     } else {
 	i = 0;
@@ -77,7 +77,7 @@ static void my_readline(RESULT * result, RESULT * arg1, RESULT * arg2)
 	}
 	fclose(fp);
 	if (i <= reqline) {
-	    error("readline requested line %d but file only had %d lines", reqline, i - 1);
+	    info("readline requested line %d but file only had %d lines", reqline, i - 1);
 	    value[0] = '\0';
 	}
     }
