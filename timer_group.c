@@ -191,30 +191,17 @@ int timer_add_group(const int interval)
 
     /* no inactive timer groups (or none at all) found, so we have to
        add a new timer group slot */
-    if (group >= nTimerGroups) {
-	/* increment number of timer groups and (re-)allocate memory used
-	   for storing the timer group slots */
-	nTimerGroups++;
-	TimerGroups = realloc(TimerGroups, nTimerGroups * sizeof(*TimerGroups));
-
-	/* make sure "group" points to valid memory */
-	group = nTimerGroups - 1;
-
-	/* realloc() has failed */
-	if (TimerGroups == NULL) {
-	    /* restore old number of timer groups */
-	    nTimerGroups--;
-
+    if (group == nTimerGroups) {
+        TIMER_GROUP *tmp;
+	
+	if ((tmp = realloc(TimerGroups, (nTimerGroups + 1) * sizeof(*TimerGroups))) == NULL) {
 	    /* signal unsuccessful timer group creation */
 	    return -1;
 	}
+	TimerGroups = tmp;
+	nTimerGroups++;
 
-	/* allocate memory for the underlying generic timer's callback
-	   data (i.e. the group's triggering interval in milliseconds) */
-	TimerGroups[group].interval = malloc(sizeof(int));
-
-	/* malloc() has failed */
-	if (TimerGroups[group].interval == NULL) {
+	if ((TimerGroups[group].interval = malloc(sizeof(int))) == NULL) {
 	    /* signal unsuccessful timer group creation */
 	    return -1;
 	}
@@ -434,23 +421,15 @@ int timer_add_widget(void (*callback) (void *data), void *data, const int interv
 
     /* no inactive widget slots (or none at all) found, so we have to
        add a new widget slot */
-    if (widget >= nTimerGroupWidgets) {
-	/* increment number of widget slots and (re-)allocate memory used
-	   for storing the widget slots */
-	nTimerGroupWidgets++;
-	TimerGroupWidgets = realloc(TimerGroupWidgets, nTimerGroupWidgets * sizeof(*TimerGroupWidgets));
-
-	/* make sure "widget" points to valid memory */
-	widget = nTimerGroupWidgets - 1;
-
-	/* realloc() has failed */
-	if (TimerGroupWidgets == NULL) {
-	    /* restore old number of widget slots */
-	    nTimerGroupWidgets--;
-
+    if (widget == nTimerGroupWidgets) {
+        TIMER_GROUP_WIDGET *tmp;
+	
+	if ((tmp = realloc(TimerGroupWidgets, (nTimerGroupWidgets + 1) * sizeof(*TimerGroupWidgets))) == NULL) {
 	    /* signal unsuccessful creation of widget slot */
 	    return -1;
 	}
+	TimerGroupWidgets = tmp;
+	nTimerGroupWidgets++;
     }
 
     /* initialize widget slot */

@@ -126,11 +126,8 @@ static void timer_inc(const int timer, struct timeval *now)
     struct timeval diff;
     timersub(now, &Timers[timer].when, &diff);
 
-    /* convert this time difference to fractional seconds */
-    float time_difference = diff.tv_sec + diff.tv_usec / 1000000.0f;
-
-    /* convert time difference to fractional milliseconds */
-    time_difference = time_difference * 1000.0f;
+    /* convert this time difference to fractional milliseconds */
+    float time_difference = (diff.tv_sec * 1000.0f) + (diff.tv_usec / 1000.0f);
 
     /* calculate the number of timer intervals that have passed since
        the last timer the given timer has been processed -- value is
@@ -241,23 +238,15 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
 
     /* no inactive timers (or none at all) found, so we have to add a
        new timer slot */
-    if (timer >= nTimers) {
-	/* increment number of timers and (re-)allocate memory used for
-	   storing the timer slots */
-	nTimers++;
-	Timers = realloc(Timers, nTimers * sizeof(*Timers));
+    if (timer == nTimers) {
+        TIMER *tmp;
 
-	/* make sure "timer" points to valid memory */
-	timer = nTimers - 1;
-
-	/* realloc() has failed */
-	if (Timers == NULL) {
-	    /* restore old number of timers */
-	    nTimers--;
-
+	if ((tmp = realloc(Timers, (nTimers + 1) * sizeof(*Timers))) == NULL) {
 	    /* signal unsuccessful timer creation */
 	    return -1;
 	}
+	Timers = tmp;
+	nTimers++;
     }
 
     /* get current time so the timer triggers immediately */
