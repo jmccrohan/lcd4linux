@@ -239,7 +239,7 @@ int timer_add(void (*callback) (void *data), void *data, const int interval, con
     /* no inactive timers (or none at all) found, so we have to add a
        new timer slot */
     if (timer == nTimers) {
-        TIMER *tmp;
+	TIMER *tmp;
 
 	if ((tmp = realloc(Timers, (nTimers + 1) * sizeof(*Timers))) == NULL) {
 	    /* signal unsuccessful timer creation */

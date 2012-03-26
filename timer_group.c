@@ -75,10 +75,10 @@
 
 /* structure for storing all relevant data of a single timer group */
 typedef struct TIMER_GROUP {
-    /* pointer to the group's triggering interval in milliseconds;
+    /* group's triggering interval in milliseconds;
        this will be used to identify a specific timer group and also
        as callback data for the underlying generic timer */
-    int *interval;
+    int interval;
 
     /* marks timer group as being active (so it will get processed) or
        inactive (which means the timer group has been deleted and its
@@ -144,7 +144,7 @@ int timer_group_exists(const int interval)
 	if (TimerGroups[group].active == TIMER_INACTIVE)
 	    continue;
 
-	if (*TimerGroups[group].interval == interval) {
+	if (TimerGroups[group].interval == interval) {
 	    /* matching timer group found, so signal success by returning
 	       a value of 1 */
 	    return 1;
@@ -192,23 +192,18 @@ int timer_add_group(const int interval)
     /* no inactive timer groups (or none at all) found, so we have to
        add a new timer group slot */
     if (group == nTimerGroups) {
-        TIMER_GROUP *tmp;
-	
+	TIMER_GROUP *tmp;
+
 	if ((tmp = realloc(TimerGroups, (nTimerGroups + 1) * sizeof(*TimerGroups))) == NULL) {
 	    /* signal unsuccessful timer group creation */
 	    return -1;
 	}
 	TimerGroups = tmp;
 	nTimerGroups++;
-
-	if ((TimerGroups[group].interval = malloc(sizeof(int))) == NULL) {
-	    /* signal unsuccessful timer group creation */
-	    return -1;
-	}
     }
 
     /* initialize timer group's interval */
-    *TimerGroups[group].interval = interval;
+    TimerGroups[group].interval = interval;
 
     /* set timer group to active so that it is processed and not
        overwritten by the memory optimization routine above */
@@ -216,7 +211,7 @@ int timer_add_group(const int interval)
 
     /* finally, request a generic timer that calls this group and
        signal success or failure */
-    return timer_add(timer_process_group, TimerGroups[group].interval, interval, 0);
+    return timer_add(timer_process_group, &TimerGroups[group].interval, interval, 0);
 }
 
 
@@ -260,14 +255,14 @@ int timer_remove_group(const int interval)
 	if (TimerGroups[group].active == TIMER_INACTIVE)
 	    continue;
 
-	if (*TimerGroups[group].interval == interval) {
+	if (TimerGroups[group].interval == interval) {
 	    /* we have found the timer group slot, so mark it as being
 	       inactive; we will not actually delete the slot, so its
 	       allocated memory may be re-used */
 	    TimerGroups[group].active = TIMER_INACTIVE;
 
 	    /* remove the generic timer that calls this group */
-	    if (timer_remove(timer_process_group, TimerGroups[group].interval)) {
+	    if (timer_remove(timer_process_group, &TimerGroups[group].interval)) {
 		/* signal successful removal of timer group */
 		return 0;
 	    } else {
@@ -422,8 +417,8 @@ int timer_add_widget(void (*callback) (void *data), void *data, const int interv
     /* no inactive widget slots (or none at all) found, so we have to
        add a new widget slot */
     if (widget == nTimerGroupWidgets) {
-        TIMER_GROUP_WIDGET *tmp;
-	
+	TIMER_GROUP_WIDGET *tmp;
+
 	if ((tmp = realloc(TimerGroupWidgets, (nTimerGroupWidgets + 1) * sizeof(*TimerGroupWidgets))) == NULL) {
 	    /* signal unsuccessful creation of widget slot */
 	    return -1;
@@ -509,11 +504,7 @@ void timer_exit_group(void)
     /* loop through all timer groups and remove them one by one */
     for (group = 0; group < nTimerGroups; group++) {
 	/* remove generic timer */
-	timer_remove(timer_process_group, TimerGroups[group].interval);
-
-	/* free memory allocated for callback data (i.e. the group's
-	   triggering interval in milliseconds) */
-	free(TimerGroups[group].interval);
+	timer_remove(timer_process_group, &TimerGroups[group].interval);
     }
 
     /* reset number of allocated timer groups */
