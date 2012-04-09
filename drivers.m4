@@ -33,7 +33,7 @@ AC_ARG_WITH(
   [                        (try 'all,\!<driver>' if your shell complains...)]
   [                        possible drivers are:]
   [                        ASTUSB, BeckmannEgle, BWCT, CrystalFontz, Curses, Cwlinux, D4D, DPF]
-  [                        EA232Graphic, EFN, FutabaVFD, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
+  [                        EA232graphic, EFN, FutabaVFD, FW8888, G15, GLCD2USB, HD44780, HD44780-I2C,]
   [                        IRLCD, LCD2USB, LCDLinux, LEDMatrix, LCDTerm, LPH7508, LUIse,]
   [                        LW_ABP, M50530, MatrixOrbital, MatrixOrbitalGX, MilfordInstruments, MDM166A,]
   [                        Newhaven, Noritake, NULL, Pertelian, PHAnderson,]
