@@ -631,6 +631,44 @@ static void Parse(void)
 		    Word[length++] = '\r';
 		    ExprPtr += 2;
 		    break;
+		case 'x':
+		    {
+			int i;
+			char hexC;
+			int hex[2];
+
+			for (i = 0; i < 2; i++) {
+			    hexC = *(ExprPtr + 2 + i);
+			    if (hexC >= '0' && hexC <= '9')
+				hex[i] = hexC - '0';
+			    else if (hexC >= 'a' && hexC <= 'f')
+				hex[i] = hexC - 'a' + 10;
+			    else if (hexC >= 'A' && hexC <= 'F')
+				hex[i] = hexC - 'A' + 10;
+			    else
+				break;
+			}
+			switch (i) {
+			case 1:
+			    Word[length] = hex[0];
+			    ExprPtr += 3;
+			    break;
+			case 2:
+			    Word[length] = hex[0] * 16 + hex[1];
+			    ExprPtr += 4;
+			    break;
+			default:
+			    error("Evaluator: Illegal hex sequence '\\x%c' in <%s> keeps unchanged.",
+				  *(ExprPtr + 2), Expression);
+			    Word[length] = '\\';
+			    ExprPtr += 1;
+			}
+			if (Word[length] == 0)
+			    error("Evaluator: Null character(s) in <%s> will be ignored.", Expression);
+			else
+			    length++;
+		    }
+		    break;
 		case '0':
 		case '1':
 		case '2':
