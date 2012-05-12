@@ -29,9 +29,11 @@
 #define _DRV_GENERIC_SERIAL_H_
 
 int drv_generic_serial_open(const char *section, const char *driver, const unsigned int flags);
+int drv_generic_serial_open_handshake(const char *section, const char *driver, const unsigned int flags);
 int drv_generic_serial_poll(char *string, const int len);
 int drv_generic_serial_read(char *string, const int len);
 void drv_generic_serial_write(const char *string, const int len);
+void drv_generic_serial_write_rts(const char *string, const int len);
 int drv_generic_serial_close(void);
 
 #endif
