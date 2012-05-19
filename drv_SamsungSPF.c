@@ -388,7 +388,7 @@ int drv_SamsungSPF_list(void)
 
     printf("SamsungSPF driver, supported models [");
     for (i = 0; i < numFrames; i++) {
-	printf(spfDevices[i].type);
+	printf("%s", spfDevices[i].type);
 	if (i < numFrames - 1)
 	    printf(", ");
     }

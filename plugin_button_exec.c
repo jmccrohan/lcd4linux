@@ -67,11 +67,11 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
 
     signal(SIGCHLD, SIG_IGN);
     prog = R2S(argv[0]);
-    info(prog);
+    info("%s", prog);
     for (i = 1; i < argc; i++) {
 	arg = R2S(argv[i]);
 	args[i] = arg;
-	info(arg);
+	info("%s", arg);
     }
     args[0] = prog;
     args[i] = (char *) 0;
@@ -82,7 +82,7 @@ static void my_button_exec(RESULT * result, int argc, RESULT * argv[])
 	execvp(prog, args);
 	errsv = errno;
 	info("executing program failed");
-	info(strerror(errsv));
+	info("%s", strerror(errsv));
 	exit(0);
     } else if (pid == -1) {
 	info("weird error has occurred. couldn't fork.");

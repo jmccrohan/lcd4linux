@@ -267,7 +267,7 @@ static int drv_PHAnderson_start(const char *section)
     }
 
     s = cfg_get(section, "Bootscreen", NULL);
-    printf(s);
+    printf("%s", s);
     drv_PHAnderson_bootscreen(s);
 
     drv_PHAnderson_clear();	/* clear display */
