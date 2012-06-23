@@ -72,7 +72,7 @@ void widget_timer_update(void *Self)
     }
 
     /* add a new one-shot timer */
-    timer_add_widget(widget_timer_update, Self, update, 1);
+    timer_add(widget_timer_update, Self, update, 1);
 }
 
 
