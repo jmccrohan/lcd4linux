@@ -42,7 +42,7 @@
 #include "cfg.h"
 #include "qprintf.h"
 #include "property.h"
-#include "timer_group.h"
+#include "timer.h"
 #include "widget.h"
 #include "widget_timer.h"
 
