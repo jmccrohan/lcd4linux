@@ -8,6 +8,12 @@ Variables {
    minute 60000
 }
 
+Display ACool {
+    Driver 'serdisplib'
+    Port 'USB:060c/04eb'
+    Model 'ALPHACOOL'
+}
+
 Display G15 {
     Driver 'G-15'
     Font   '6x8'
@@ -123,12 +129,16 @@ Display MI240 {
 Display CW12232 {
     Driver 'Cwlinux'
     Model 'CW12232'
-    Port '/dev/usb/tts/0'
+    Port '/dev/ttyUSB0'
     Speed 19200
     Brightness 2
     Icons 1
 }
 
+Display NULL {
+    Driver 'NULL'
+    Size '20x4'
+}
 
 Display CF631 {
     Driver 'Crystalfontz'
@@ -631,7 +641,7 @@ Widget OS {
     width 20
     align 'M'
     style 'bold'
-    speed 50	
+    speed 250	
     update tick
 }
 
@@ -1308,6 +1318,7 @@ Layout Debug {
 
 
 
+Display 'ACool'
 #Display 'SerDispLib'
 #Display 'LCD-Linux'
 #Display 'LCD2041'
@@ -1315,6 +1326,7 @@ Layout Debug {
 #Display 'LK204'
 #Display 'MI240'
 #Display 'CW12232'
+#Display 'NULL'
 #Display 'HD44780-generic'
 #Display 'HD44780-WinAmp'
 #Display 'HD44780-4bit'
@@ -1347,7 +1359,7 @@ Layout Debug {
 #Display 'picoLCD'
 #Display 'VNC'
 #Display 'FutabaVFD'
-Display 'GLCD2USB'
+#Display 'GLCD2USB'
 
 #Layout 'Default'
 Layout 'TestLayer'
