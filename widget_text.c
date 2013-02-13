@@ -58,6 +58,10 @@
 void widget_text_scroll(void *Self)
 {
     WIDGET *W = (WIDGET *) Self;
+    if (NULL == W || NULL == W->data) {
+        error("Warning: internal data error in Textwidget");
+        return;
+    }
     WIDGET_TEXT *T = W->data;
 
     char *prefix = P2S(&T->prefix);
@@ -68,6 +72,10 @@ void widget_text_scroll(void *Self)
     int num, len, width, pad;
     char *src, *dst;
 
+    if (NULL == string) {
+        error("Warning: Widget %s has no string", W->name);
+        return;
+    }
     num = 0;
     len = strlen(string);
     width = T->width - strlen(prefix) - strlen(postfix);

@@ -164,6 +164,7 @@ static int drv_SD_start(const char *section)
     sdcd = SDCONN_open(port);
     if (sdcd == NULL) {
 	error("%s: open(%s) failed: %s", Name, port, sd_geterrormsg());
+        info("%s: examples:\n  serraw:/dev/ttyS0\n  par:/dev/parport0\n  USB:<vendor>/<product>", Name);
 	return -1;
     }
 
