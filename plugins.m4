@@ -56,7 +56,7 @@ for plugin in $plugins; do
             [ apm,asterisk,button_exec,cpuinfo,dbus,diskstats,dvb,exec,event,]
             [ fifo,file,gps,hddtemp,huawei,i2c_sensors,iconv,imon,isdn,kvv,]
             [ loadavg,meminfo,mpd,mpris_dbus,mysql,netdev,netinfo,pop3,ppp,]
-	    [ proc_stat,python,qnaplog,sample,seti,statfs,uname,uptime,]
+	    [ proc_stat,python,qnaplog,raspi,sample,seti,statfs,uname,uptime,]
             [ w1retap,wireless,xmms])
          AC_MSG_ERROR([run ./configure --with-plugins=...])
          ;;
@@ -92,6 +92,7 @@ for plugin in $plugins; do
          PLUGIN_PROC_STAT="yes"
          PLUGIN_PYTHON=$with_python
          PLUGIN_QNAPLOG="yes"
+         PLUGIN_RASPI="yes"
          PLUGIN_SAMPLE="yes"
          PLUGIN_SETI="yes"
          PLUGIN_STATFS="yes"
@@ -133,6 +134,7 @@ for plugin in $plugins; do
          PLUGIN_PROC_STAT="no"
          PLUGIN_PYTHON="no"
          PLUGIN_QNAPLOG="no"
+         PLUGIN_RASPI="no"
          PLUGIN_SAMPLE="no"
          PLUGIN_SETI="no"
          PLUGIN_STATFS="no"
@@ -234,6 +236,9 @@ for plugin in $plugins; do
          ;;
       qnaplog)
          PLUGIN_QNAPLOG=$val
+         ;;
+      raspi)
+         PLUGIN_RASPI=$val
          ;;
       sample)
          PLUGIN_SAMPLE=$val
@@ -565,6 +570,12 @@ if test "$PLUGIN_QNAPLOG" = "yes"; then
    else
       AC_MSG_WARN(sqlite3.h header not found: qnaplog plugin disabled)
    fi 
+fi
+
+# raspi (Raspberry PI)
+if test "$PLUGIN_RASPI" = "yes"; then
+   PLUGINS="$PLUGINS plugin_raspi.o"
+   AC_DEFINE(PLUGIN_RASPI,1,[raspi plugin])
 fi
 
 # sample

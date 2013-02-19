@@ -141,6 +141,9 @@ char *Plugins[] = {
 #ifdef PLUGIN_PYTHON
     "python",
 #endif
+#ifdef PLUGIN_RASPI
+    "raspi",
+#endif
 #ifdef PLUGIN_SAMPLE
     "sample",
 #endif
@@ -241,6 +244,8 @@ int plugin_init_proc_stat(void);
 void plugin_exit_proc_stat(void);
 int plugin_init_python(void);
 void plugin_exit_python(void);
+int plugin_init_raspi(void);
+void plugin_exit_raspi(void);
 int plugin_init_sample(void);
 void plugin_exit_sample(void);
 int plugin_init_seti(void);
@@ -373,6 +378,9 @@ int plugin_init(void)
 #ifdef PLUGIN_PYTHON
     plugin_init_python();
 #endif
+#ifdef PLUGIN_RASPI
+    plugin_init_raspi();
+#endif
 #ifdef PLUGIN_SAMPLE
     plugin_init_sample();
 #endif
@@ -490,6 +498,9 @@ void plugin_exit(void)
 #endif
 #ifdef PLUGIN_PYTHON
     plugin_exit_python();
+#endif
+#ifdef PLUGIN_RASPI
+    plugin_exit_raspi();
 #endif
 #ifdef PLUGIN_SAMPLE
     plugin_exit_sample();
