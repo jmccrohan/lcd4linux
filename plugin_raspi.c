@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>
@@ -53,6 +54,7 @@
 #define RASPI_FREQ_PATH   "/sys/devices/system/cpu/cpu0/cpufreq/"
 #define RASPI_FREQ_VALUE  "cpuinfo_cur_freq"
 #define RASPI_FREQ_IDFILE "scaling_driver"
+#define RASPI_FREQ_ID     "BCM2835 CPUFreq"
 #define RASPI_TEMP_PATH   "/sys/class/thermal/thermal_zone0/"
 #define RASPI_TEMP_VALUE  "temp"
 #define RASPI_TEMP_IDFILE "type"
@@ -132,13 +134,30 @@ int plugin_init_raspi(void)
 {
     char checkFile[128];
 
-    AddFunction("raspi::cpufreq", 0, my_cpufreq);
-    AddFunction("raspi::cputemp", 0, my_cputemp);
-
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_TEMP_PATH, RASPI_TEMP_IDFILE);
     if (strncmp( readStr(checkFile), RASPI_TEMP_ID, strlen(RASPI_TEMP_ID) ) != 0) {
         error("Warning: no raspberry pi thermal sensor found: value of '%s' is '%s', should be '%s'",
               checkFile, readStr(checkFile), RASPI_TEMP_IDFILE);
+    }
+
+    snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_TEMP_PATH, RASPI_TEMP_VALUE);
+    if (0 == access(checkFile, R_OK)) {
+        AddFunction("raspi::cputemp", 0, my_cputemp);
+    } else {
+        error("Error: File '%s' not readable, no temperature sensor found", checkFile);
+    }
+
+    snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_FREQ_PATH, RASPI_FREQ_IDFILE);
+    if (strncmp( readStr(checkFile), RASPI_FREQ_ID, strlen(RASPI_FREQ_ID) ) != 0) {
+        error("Warning: no raspberry pi frequence sensor found: value of '%s' is '%s', should be '%s'",
+              checkFile, readStr(checkFile), RASPI_FREQ_IDFILE);
+    }
+
+    snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_FREQ_PATH, RASPI_FREQ_VALUE);
+    if (0 == access(checkFile, R_OK)) {
+        AddFunction("raspi::cpufreq", 0, my_cpufreq);
+    } else {
+        error("Error: File '%s' not readable, no frequency sensor found", checkFile);
     }
 
     return 0;
