@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2003 Michael Reinelt <michael@reinelt.co.at>
  * Copyright (C) 2013 Volker Gerng <v.gering@t-online.de>
+ * Copyright (C) 2013 Jonathan McCrohan <jmccrohan@gmail.com>
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 The LCD4Linux Team <lcd4linux-devel@users.sourceforge.net>
  *
  * This file is part of LCD4Linux.
@@ -39,6 +40,7 @@
 /* these should always be included */
 #include "debug.h"
 #include "plugin.h"
+#include "cfg.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,6 +66,8 @@
 #define strings(a, b) "_cat(a,b)"
 
 
+static char Section[] = "Plugin:raspi";
+static int plugin_enabled;
 char tmpstr[128];
 
 
@@ -132,6 +136,17 @@ static void my_cputemp(RESULT * result)
 /* MUST NOT be declared 'static'! */
 int plugin_init_raspi(void)
 {
+    /* Check if raspi plugin section exists in config file */
+    if (cfg_number(Section, "enabled", 0, 0, 1, &plugin_enabled) < 1) {
+	plugin_enabled = 0;
+    }
+
+    /* Disable plugin unless it is explicitly enabled */
+    if (plugin_enabled != 1) {
+	info("[raspi] WARNING: Plugin is not enabled! (set 'enabled 1' to enable this plugin)");
+	return 0;
+    }
+
     char checkFile[128];
 
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_TEMP_PATH, RASPI_TEMP_IDFILE);
