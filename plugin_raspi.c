@@ -74,19 +74,20 @@ char tmpstr[128];
 /* Note: all local functions should be declared 'static' */
 
 /* reading an positive integer value from path, -1 on error */
-static int readValue(char *path) {
+static int readValue(char *path)
+{
     int value = -1;
     FILE *fp;
 
     fp = fopen(path, "r");
     if (NULL != fp) {
-        fgets(tmpstr, sizeof(tmpstr), fp);
-        fclose(fp);
+	fgets(tmpstr, sizeof(tmpstr), fp);
+	fclose(fp);
 	if (1 != sscanf(tmpstr, "%i", &value)) {
-            error("[raspi] error reading integer value from %s\n", path);
-        }
+	    error("[raspi] error reading integer value from %s\n", path);
+	}
     } else {
-        error("[raspi] error opening %s: %s\n", path, strerror(errno));
+	error("[raspi] error opening %s: %s\n", path, strerror(errno));
     }
 
     return value;
@@ -94,16 +95,17 @@ static int readValue(char *path) {
 
 
 /* reads a string from path */
-static char* readStr(char *path) {
+static char *readStr(char *path)
+{
     FILE *fp;
 
     memset(tmpstr, 0, sizeof(tmpstr));
     fp = fopen(path, "r");
     if (NULL != fp) {
-        fgets(tmpstr, sizeof(tmpstr), fp);
-        fclose(fp);
+	fgets(tmpstr, sizeof(tmpstr), fp);
+	fclose(fp);
     } else {
-        error("[raspi] error reading text value from %s: %s\n", path, strerror(errno));
+	error("[raspi] error reading text value from %s: %s\n", path, strerror(errno));
     }
 
     return tmpstr;
@@ -150,29 +152,29 @@ int plugin_init_raspi(void)
     char checkFile[128];
 
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_TEMP_PATH, RASPI_TEMP_IDFILE);
-    if (strncmp( readStr(checkFile), RASPI_TEMP_ID, strlen(RASPI_TEMP_ID) ) != 0) {
-        error("Warning: no raspberry pi thermal sensor found: value of '%s' is '%s', should be '%s'",
-              checkFile, readStr(checkFile), RASPI_TEMP_IDFILE);
+    if (strncmp(readStr(checkFile), RASPI_TEMP_ID, strlen(RASPI_TEMP_ID)) != 0) {
+	error("Warning: no raspberry pi thermal sensor found: value of '%s' is '%s', should be '%s'",
+	      checkFile, readStr(checkFile), RASPI_TEMP_IDFILE);
     }
 
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_TEMP_PATH, RASPI_TEMP_VALUE);
     if (0 == access(checkFile, R_OK)) {
-        AddFunction("raspi::cputemp", 0, my_cputemp);
+	AddFunction("raspi::cputemp", 0, my_cputemp);
     } else {
-        error("Error: File '%s' not readable, no temperature sensor found", checkFile);
+	error("Error: File '%s' not readable, no temperature sensor found", checkFile);
     }
 
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_FREQ_PATH, RASPI_FREQ_IDFILE);
-    if (strncmp( readStr(checkFile), RASPI_FREQ_ID, strlen(RASPI_FREQ_ID) ) != 0) {
-        error("Warning: no raspberry pi frequence sensor found: value of '%s' is '%s', should be '%s'",
-              checkFile, readStr(checkFile), RASPI_FREQ_IDFILE);
+    if (strncmp(readStr(checkFile), RASPI_FREQ_ID, strlen(RASPI_FREQ_ID)) != 0) {
+	error("Warning: no raspberry pi frequence sensor found: value of '%s' is '%s', should be '%s'",
+	      checkFile, readStr(checkFile), RASPI_FREQ_IDFILE);
     }
 
     snprintf(checkFile, sizeof(checkFile), "%s%s", RASPI_FREQ_PATH, RASPI_FREQ_VALUE);
     if (0 == access(checkFile, R_OK)) {
-        AddFunction("raspi::cpufreq", 0, my_cpufreq);
+	AddFunction("raspi::cpufreq", 0, my_cpufreq);
     } else {
-        error("Error: File '%s' not readable, no frequency sensor found", checkFile);
+	error("Error: File '%s' not readable, no frequency sensor found", checkFile);
     }
 
     return 0;

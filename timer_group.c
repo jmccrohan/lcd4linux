@@ -185,7 +185,7 @@ int timer_add_group(const int interval)
 	if (TimerGroups[group].active == TIMER_INACTIVE) {
 	    /* we've just found one, so let's reuse it ("group" holds its
 	       ID) by breaking the loop */
-            debug("Reusing Timergroup %i", group);
+	    debug("Reusing Timergroup %i", group);
 	    break;
 	}
     }
@@ -196,17 +196,17 @@ int timer_add_group(const int interval)
 	TIMER_GROUP *tmp;
 
 	if ((tmp = realloc(TimerGroups, (nTimerGroups + 1) * sizeof(*TimerGroups))) == NULL) {
-            error("Error expanding TimerGroups");
+	    error("Error expanding TimerGroups");
 	    /* signal unsuccessful timer group creation */
 	    return -1;
 	}
 	TimerGroups = tmp;
 	nTimerGroups++;
 
-        if ((TimerGroups[group].interval = malloc(sizeof(int))) == NULL) {
-            /* signal unsuccessful timer group creation */
-            return -1;
-        }
+	if ((TimerGroups[group].interval = malloc(sizeof(int))) == NULL) {
+	    /* signal unsuccessful timer group creation */
+	    return -1;
+	}
     }
 
     /* initialize timer group's interval */
@@ -513,9 +513,9 @@ void timer_exit_group(void)
 	/* remove generic timer */
 	timer_remove(timer_process_group, TimerGroups[group].interval);
 
-        /* free memory allocated for callback data (i.e. the group's
-           triggering interval in milliseconds) */
-        free(TimerGroups[group].interval);
+	/* free memory allocated for callback data (i.e. the group's
+	   triggering interval in milliseconds) */
+	free(TimerGroups[group].interval);
     }
 
     /* reset number of allocated timer groups */
