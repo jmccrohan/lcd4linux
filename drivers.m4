@@ -378,14 +378,10 @@ if test "$D4D" = "yes"; then
 fi
 
 if test "$DPF" = "yes"; then
-   if test "$has_libdpf" = "true"; then
-      GRAPHIC="yes"
-      DRIVERS="$DRIVERS drv_dpf.o"
-      DRVLIBS="$DRVLIBS -Llibdpf -ldpf -lusb"
-      AC_DEFINE(WITH_DPF,1,[DPF driver])
-   else
-      AC_MSG_WARN(libdpf.h not found: DPF driver disabled)
-   fi
+   GRAPHIC="yes"
+   DRIVERS="$DRIVERS drv_dpf.o"
+   LIBUSB="yes"
+   AC_DEFINE(WITH_DPF,1,[DPF driver])
 fi
 
 if test "$EA232graphic" = "yes"; then
