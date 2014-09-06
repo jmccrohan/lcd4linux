@@ -30,7 +30,7 @@
 AC_PREREQ(2.59)
 AC_INIT([LCD4Linux],[0.11.0-SVN],[lcd4linux-users@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([lcd4linux.c])
-AM_INIT_AUTOMAKE([lcd4linux],0.11.0-SVN)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
