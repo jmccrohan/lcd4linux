@@ -706,10 +706,10 @@ static void drv_HD_PP_stop(void)
 
      */
 
-static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
+static void drv_HD_I2C(unsigned char controller, unsigned char byte, int rs, int rw)
 {
     unsigned char enable;
-    unsigned char command;	/* this is actually the first data byte on the PCF8574 */
+    unsigned char command = 0;	/* this is actually the first data byte on the PCF8574 */
     unsigned char data_block[2];
     /* enable signal: 'controller' is a bitmask */
     /* bit n .. send to controller #n */
@@ -738,28 +738,51 @@ static void drv_HD_I2C_nibble(unsigned char controller, unsigned char nibble)
        The main advantage we see is that we do 2 less IOCTL's from our driver.
      */
 
-    command = nibble;
-    data_block[0] = nibble | enable;
-    data_block[1] = nibble;
+    if (Bits == 4) {
+	if (rw)
+	    byte |= SIGNAL_RW;
+	if (rs)
+	    byte |= SIGNAL_RS;
+	command = byte;
+	data_block[0] = byte | enable;
+	data_block[1] = byte;
 
-    drv_generic_i2c_command(command, data_block, 2);
+    } else if (Bits == 8) {
+	if (rw)
+	    command |= SIGNAL_RW;
+	if (rs)
+	    command |= SIGNAL_RS;
+
+	data_block[0] = byte;
+	data_block[1] = enable;
+    }
+
+    drv_generic_i2c_command(command, data_block, 2, Bits);
 }
 
 
 static void drv_HD_I2C_byte(const unsigned char controller, const unsigned char data)
 {
     /* send data with RS enabled */
-    drv_HD_I2C_nibble(controller, ((data >> 4) & 0x0f) | SIGNAL_RS);
-    drv_HD_I2C_nibble(controller, (data & 0x0f) | SIGNAL_RS);
+    if (Bits == 4) {
+	drv_HD_I2C(controller, ((data >> 4) & 0x0f), 1, 0);
+	drv_HD_I2C(controller, (data & 0x0f), 1, 0);
+    } else if (Bits == 8) {
+	drv_HD_I2C(controller, data, 1, 0);
+    }
 }
 
 
 static void drv_HD_I2C_command(const unsigned char controller, const unsigned char cmd, __attribute__ ((unused))
 			       const unsigned long delay)
 {
-    /* send data with RS disabled */
-    drv_HD_I2C_nibble(controller, ((cmd >> 4) & 0x0f));
-    drv_HD_I2C_nibble(controller, ((cmd) & 0x0f));
+    /* send command data with RS disabled */
+    if (Bits == 4) {
+	drv_HD_I2C(controller, ((cmd >> 4) & 0x0f), 0, 0);
+	drv_HD_I2C(controller, ((cmd) & 0x0f), 0, 0);
+    } else if (Bits == 8) {
+	drv_HD_I2C(controller, cmd, 0, 0);
+    }
 }
 
 static void drv_HD_I2C_data(const unsigned char controller, const char *string, const int len, __attribute__ ((unused))
@@ -781,12 +804,13 @@ static int drv_HD_I2C_load(const char *section)
 {
     if (cfg_number(section, "Bits", 8, 4, 8, &Bits) < 0)
 	return -1;
-    if (Bits != 4) {
-	error("%s: bad %s.Bits '%d' from %s, should be '4'", Name, section, Bits, cfg_source());
-	return -1;
-    }
 
     info("%s: using %d bit mode", Name, Bits);
+
+    if (Bits != 4 && Bits != 8) {
+	error("%s: bad %s.Bits '%d' from %s, should be '4' or '8'", Name, section, Bits, cfg_source());
+	return -1;
+    }
 
     if (drv_generic_i2c_open(section, Name) != 0) {
 	error("%s: could not initialize i2c attached device!", Name);
@@ -804,16 +828,24 @@ static int drv_HD_I2C_load(const char *section)
     if ((SIGNAL_GPO = drv_generic_i2c_wire("GPO", "GND")) == 0xff)
 	return -1;
 
-    /* initialize display */
-    drv_HD_I2C_nibble(allControllers, 0x03);
-    udelay(T_INIT1);		/* 4 Bit mode, wait 4.1 ms */
-    drv_HD_I2C_nibble(allControllers, 0x03);
-    udelay(T_INIT2);		/* 4 Bit mode, wait 100 us */
-    drv_HD_I2C_nibble(allControllers, 0x03);
-    udelay(T_INIT1);		/* 4 Bit mode, wait 4.1 ms */
-    drv_HD_I2C_nibble(allControllers, 0x02);
-    udelay(T_INIT2);		/* 4 Bit mode, wait 100 us */
-    drv_HD_I2C_command(allControllers, 0x28, T_EXEC);	/* 4 Bit mode, 1/16 duty cycle, 5x8 font */
+    if (Bits == 4) {
+	/* initialize display */
+	drv_HD_I2C(allControllers, 0x02, 0, 0);
+	udelay(T_INIT1);	/* 4 Bit mode, wait 4.1 ms */
+	drv_HD_I2C(allControllers, 0x03, 0, 0);
+	udelay(T_INIT2);	/* 4 Bit mode, wait 100 us */
+	drv_HD_I2C(allControllers, 0x03, 0, 0);
+	udelay(T_INIT1);	/* 4 Bit mode, wait 4.1 ms */
+	drv_HD_I2C(allControllers, 0x02, 0, 0);
+	udelay(T_INIT2);	/* 4 Bit mode, wait 100 us */
+	drv_HD_I2C_command(allControllers, 0x28, T_EXEC);	/* 4 Bit mode, 1/16 duty cycle, 5x8 font */
+    } else if (Bits == 8) {
+	drv_HD_I2C(allControllers, 0x30, 0, 0);	/* 8 Bit mode, wait 4.1 ms */
+	udelay(T_INIT1);	/* 8 Bit mode, wait 4.1 ms */
+	drv_HD_I2C(allControllers, 0x30, 0, 0);	/* 8 Bit mode, wait 100 us */
+	udelay(T_INIT2);	/* 8 Bit mode, wait 4.1 ms */
+	drv_HD_I2C_command(allControllers, 0x38, T_EXEC);	/* 8 Bit mode, 1/16 duty cycle, 5x8 font */
+    }
 
     info("%s: I2C initialization done", Name);
 

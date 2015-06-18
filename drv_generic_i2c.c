@@ -62,7 +62,8 @@
 static char *Driver = "";
 static char *Section = "";
 static int i2c_device;
-
+static int ctrldev;
+static int datadev;
 
 static void my_i2c_smbus_write_byte_data(const int device, const unsigned char val)
 {
@@ -91,33 +92,49 @@ static void my_i2c_smbus_read_byte_data(const int device, const unsigned char da
 }
 #endif
 
+int drv_generic_i2c_pre_write(int dev)
+{
+
+    info("%s: selecting slave device 0x%x", Driver, dev);
+    if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
+	error("%s: error selecting slave device 0x%x\n", Driver, dev);
+	return -EPIPE;
+    }
+
+    info("%s: initializing I2C slave device 0x%x for output", Driver, dev);
+    if (i2c_smbus_write_byte_data(i2c_device, 3, 0) < 0) {
+	error("%s: error initializing device 0x%x\n", Driver, dev);
+	close(i2c_device);
+    }
+
+    return 0;
+}
 
 int drv_generic_i2c_open(const char *section, const char *driver)
 {
-    int dev;
     char *bus, *device;
     udelay_init();
     Section = (char *) section;
     Driver = (char *) driver;
     bus = cfg_get(Section, "Port", NULL);
     device = cfg_get(Section, "Device", NULL);
-    dev = atoi(device);
+    ctrldev = atoi(device);
+    device = cfg_get(Section, "DDevice", NULL);
+    datadev = atoi(device);
+
     info("%s: initializing I2C bus %s", Driver, bus);
     if ((i2c_device = open(bus, O_WRONLY)) < 0) {
 	error("%s: I2C bus %s open failed !\n", Driver, bus);
 	goto exit_error;
     }
-    info("%s: selecting slave device 0x%x", Driver, dev);
-    if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
-	error("%s: error selecting slave device 0x%x\n", Driver, dev);
-	goto exit_error;
+
+    if (datadev) {
+	if (drv_generic_i2c_pre_write(datadev) < 0)
+	    goto exit_error;
     }
 
-    info("%s: initializing I2C slave device 0x%x", Driver, dev);
-    if (i2c_smbus_write_quick(i2c_device, I2C_SMBUS_WRITE) < 0) {
-	error("%s: error initializing device 0x%x\n", Driver, dev);
-	close(i2c_device);
-    }
+    if (drv_generic_i2c_pre_write(ctrldev) < 0)
+	goto exit_error;
 
     return 0;
 
@@ -172,8 +189,30 @@ void drv_generic_i2c_data(const unsigned char data)
     my_i2c_smbus_write_byte_data(i2c_device, data);
 }
 
-
-void drv_generic_i2c_command(const unsigned char command, /*const */ unsigned char *data, const unsigned char length)
+static void i2c_out(int dev, unsigned char val)
 {
-    i2c_smbus_write_block_data(i2c_device, command, length, data);
+    info("%s: initializing I2C slave device 0x%x", Driver, dev);
+    if (ioctl(i2c_device, I2C_SLAVE, dev) < 0) {
+	error("%s: error selecting slave device 0x%x\n", Driver, dev);
+	return;
+    }
+
+    i2c_smbus_write_byte_data(i2c_device, 1, val);
+}
+
+void drv_generic_i2c_command(const unsigned char command, /*const */ unsigned char *data, const unsigned char length,
+			     int bits)
+{
+    if (bits == 4) {
+	i2c_smbus_write_block_data(i2c_device, command, length, data);
+    } else if (bits == 8 && datadev) {
+	/* set data on pins */
+	info("cmd: %08x, data0: %08x, data1: %08x\n", command, data[0], data[1]);
+	i2c_out(datadev, data[0]);
+	/* set enable pin including optional rs and rw */
+	i2c_out(ctrldev, command | data[1]);
+	/* unset enable pin including optional rs and rw */
+	i2c_out(ctrldev, command);
+    }
+
 }
