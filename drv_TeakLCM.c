@@ -37,6 +37,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -67,14 +68,14 @@ static char Name[] = "TeakLCM";
 static int global_reset_rx_flag = 0;
 
 
-#define HI8(value) ((u_int8_t)(((value)>>8) & 0xff))
-#define LO8(value) ((u_int8_t)((value) & 0xff))
+#define HI8(value) ((uint8_t)(((value)>>8) & 0xff))
+#define LO8(value) ((uint8_t)((value) & 0xff))
 
 
-static u_int16_t CRC16(u_int8_t value, u_int16_t crcin)
+static uint16_t CRC16(uint8_t value, uint16_t crcin)
 {
-    u_int16_t k = (((crcin >> 8) ^ value) & 255) << 8;
-    u_int16_t crc = 0;
+    uint16_t k = (((crcin >> 8) ^ value) & 255) << 8;
+    uint16_t crc = 0;
     int bits;
     for (bits = 8; bits; --bits) {
 	if ((crc ^ k) & 0x8000)
@@ -100,7 +101,7 @@ static char printable(const char ch)
 
 static void debug_data_int(const char *prefix, const void *data, const size_t size, const unsigned int delta)
 {
-    const u_int8_t *b = (const u_int8_t *) data;
+    const uint8_t *b = (const uint8_t *) data;
     size_t y;
     assert(delta <= 24);
     for (y = 0; y < size; y += delta) {
@@ -284,7 +285,7 @@ static
 void fsm_handle_cmd(lcm_fsm_t * fsm, const lcm_cmd_t cmd);
 
 static
-void fsm_handle_datacmd(lcm_fsm_t * fsm, const lcm_cmd_t cmd, const u_int8_t * payload, const unsigned int payload_len);
+void fsm_handle_datacmd(lcm_fsm_t * fsm, const lcm_cmd_t cmd, const uint8_t * payload, const unsigned int payload_len);
 
 static
 void try_reset(void);
@@ -304,7 +305,7 @@ void fsm_trans_data(lcm_fsm_t * fsm,
 
 
 static
-void fsm_handle_bytes(lcm_fsm_t * fsm, u_int8_t * rxbuf, const unsigned int buflen)
+void fsm_handle_bytes(lcm_fsm_t * fsm, uint8_t * rxbuf, const unsigned int buflen)
 {
     if ((buflen >= 3) && (rxbuf[0] == LCM_FRAME_MASK) && (rxbuf[2] == LCM_FRAME_MASK)) {
 	const lcm_cmd_t cmd = rxbuf[1];
@@ -322,7 +323,7 @@ void fsm_handle_bytes(lcm_fsm_t * fsm, u_int8_t * rxbuf, const unsigned int bufl
 	debug("%s Received possible data frame", __FUNCTION__);
 
 	/* unescape rxframe data in place */
-	u_int16_t crc0 = 0, crc1 = 0, crc2 = 0, crc3 = 0;
+	uint16_t crc0 = 0, crc1 = 0, crc2 = 0, crc3 = 0;
 	for (ri = 1, ci = 1; ri < buflen; ri++) {
 	    switch (rxbuf[ri]) {
 	    case LCM_ESC:
@@ -339,7 +340,7 @@ void fsm_handle_bytes(lcm_fsm_t * fsm, u_int8_t * rxbuf, const unsigned int bufl
 	    if ((rxbuf[ci - 1] == LCM_FRAME_MASK) && (rxbuf[ci - 2] == LO8(crc3)) && (rxbuf[ci - 3] == HI8(crc3))) {
 		/* looks like a complete data frame */
 		lcm_cmd_t cmd = rxbuf[1];
-		u_int16_t len = (rxbuf[3] << 8) + rxbuf[2];
+		uint16_t len = (rxbuf[3] << 8) + rxbuf[2];
 		assert(ci == (unsigned int) (1 + 1 + 2 + len + 2 + 1));
 		fsm_handle_datacmd(fsm, cmd, &rxbuf[4], len);
 		if (ri + 1 < buflen) {
@@ -420,7 +421,7 @@ static void fsm_handle_cmd(lcm_fsm_t * fsm, lcm_cmd_t cmd)
 
 
 static
-void fsm_handle_datacmd(lcm_fsm_t * fsm, const lcm_cmd_t cmd, const u_int8_t * payload, unsigned int payload_len)
+void fsm_handle_datacmd(lcm_fsm_t * fsm, const lcm_cmd_t cmd, const uint8_t * payload, unsigned int payload_len)
 {
     const lcm_state_t old_state = fsm_get_state(fsm);
     debug("fsm_handle_datacmd: old state 0x%02x %s", old_state, state2str(old_state));
@@ -677,7 +678,7 @@ void raw_send_data_frame(lcm_cmd_t cmd, const char *data, const unsigned int len
     unsigned int di;		/* data index */
     unsigned int fi;		/* frame index */
     static char frame[32];
-    u_int16_t crc = 0;
+    uint16_t crc = 0;
 
     frame[0] = LCM_FRAME_MASK;
 
@@ -740,7 +741,7 @@ void lcm_event_callback(event_flags_t flags, void *data)
     lcm_fsm_t *fsm = (lcm_fsm_t *) data;
     debug("%s: flags=%d, data=%p", __FUNCTION__, flags, data);
     if (flags & EVENT_READ) {
-	static u_int8_t rxbuf[32];
+	static uint8_t rxbuf[32];
 	const int readlen = drv_generic_serial_poll((void *) rxbuf, sizeof(rxbuf));
 	if (readlen <= 0) {
 	    debug("%s Received no data", __FUNCTION__);
@@ -901,7 +902,7 @@ static int drv_TeakLCM_start(const char *section)
     debug("%s: %s opened", Name, __FUNCTION__);
 
     /* read initial garbage data */
-    static u_int8_t rxbuf[32];
+    static uint8_t rxbuf[32];
     const int readlen = drv_generic_serial_poll((void *) rxbuf, sizeof(rxbuf));
     if (readlen >= 0) {
 	debug_data(" initial RX garbage ", rxbuf, readlen);
