@@ -539,7 +539,7 @@ static int drv_pLG_start(const char *section, const int quiet)
 	drv_pLG_contrast(value);
     }
 
-    if (cfg_number(section, "Backlight", 0, 0, 1, &value) > 0) {
+    if (cfg_number(section, "Backlight", 0, 0, 255, &value) > 0) {
 	info("Setting backlight to %d", value);
 	drv_pLG_backlight(value);
     }
