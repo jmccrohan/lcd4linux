@@ -106,6 +106,13 @@ void drv_G15_keyDown(unsigned char scancode)
     event.code = scancode;
     event.value = 1;
     write(uinput_fd, &event, sizeof(event));
+	
+/* hopefully this makes the system report the keys */
+
+    event.type = EV_SYN;
+    event.code = SYN_REPORT;
+    event.value = 0;
+    write(uinput_fd, &event, sizeof(event));
 }
 
 void drv_G15_keyUp(unsigned char scancode)
@@ -115,6 +122,13 @@ void drv_G15_keyUp(unsigned char scancode)
 
     event.type = EV_KEY;
     event.code = scancode;
+    event.value = 0;
+    write(uinput_fd, &event, sizeof(event));
+	
+/* hopefully this makes the system report the keys */
+
+    event.type = EV_SYN;
+    event.code = SYN_REPORT;
     event.value = 0;
     write(uinput_fd, &event, sizeof(event));
 }
