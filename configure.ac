@@ -29,6 +29,7 @@
 
 AC_PREREQ(2.59)
 AC_INIT([LCD4Linux],[0.11.0-SVN],[lcd4linux-users@lists.sourceforge.net])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([lcd4linux.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
@@ -40,6 +41,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
+LT_INIT
 
 # dmalloc
 AM_WITH_DMALLOC
@@ -171,6 +173,3 @@ AC_MSG_RESULT(
 [  $PLUGINS]
 [-----------------------------------------]
 )
-
-AC_CONFIG_MACRO_DIR([m4])
-LT_INIT
